@@ -11,29 +11,344 @@ and the Flutter guide for
 [developing packages and plugins](https://flutter.dev/developing-packages).
 -->
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+# Dart Dependency Injection (DDI) Library
 
-## Features
+## Overview
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+The Dart Dependency Injection (DDI) library is a robust and flexible dependency injection mechanism inspired by the Contexts and Dependency Injection (CDI) framework in Java. DDI facilitates the management of object instances and their lifecycles by introducing different scopes and customization options. This documentation aims to provide an in-depth understanding of DDI's core concepts, usage, and advanced features.
 
-## Getting started
+## Getting Started
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
-
-## Usage
-
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
+To incorporate DDI into your Dart project, you must implement the `DDI` abstract class. The default implementation, can be accessed through the `instance` getter.
 
 ```dart
-const like = 'sample';
+// Instantiate DDI
+DDI ddi = DDI.instance;
+
+// Register a singleton instance
+ddi.registerSingleton<MyService>(() => MyService());
+
+// Retrieve the singleton instance
+MyService myService = ddi.get<MyService>();
+
+// Register an application-scoped instance
+ddi.registerApplication<MyAppService>(() => MyAppService());
+
+// Retrieve the application-scoped instance
+MyAppService appService = ddi.get<MyAppService>();
+
+// ... (similar usage for other scopes)
 ```
 
-## Additional information
+# Core Concepts
+## Scopes
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+The Dart Dependency Injection (DDI) Library supports various scopes for efficient management of object instances. Each scope determines how instances are created, reused, and destroyed throughout the application lifecycle. Below are detailed characteristics of each scope, along with recommendations, use cases, and considerations for potential issues.
+
+## Singleton
+`Description`: This scope creates a single instance during registration and reuses it in all subsequent requests.
+
+`Recommendation`: Suitable for objects that need to be globally shared across the application, maintaining a single instance.
+
+`Use Case`: Sharing a configuration manager, a logging service, or a global state manager.
+        
+
+## Application
+`Description`: Generates an instance when first used and reuses it for all subsequent requests during the application's execution.
+
+`Recommendation`: Indicated for objects that need to be created only once per application and shared across different parts of the code.
+
+`Use Case`: Managing application-level resources, such as a network client or a global configuration.
+
+## Session
+`Description`: Ties an instance to a specific session, persisting throughout the session's lifespan.
+
+`Recommendation`: Suitable for objects that need to be retained while a session is active, such as user-specific data or state.
+
+`Use Case`: Managing user authentication state or caching user-specific preferences.
+
+## Dependent
+`Description`: Produces a new instance every time it is requested, ensuring independence and uniqueness.
+
+`Recommendation`: Useful for objects that should remain independent and different in each context or request.
+
+`Use Case`: Creating instances of transient objects like data repositories or request handlers.
+
+## Widget
+`Description`: Produces a new instance every time it is requested, ensuring independence and uniqueness. The only difference about *Dependent* is that it must be a Widget.
+
+`Recommendation`: Useful for Widget that should remain independent and different in each context or request.
+
+`Use Case`: Creating Platform-Specific Widget instances.
+
+
+## Common Considerations:
+`Single Registration`: Ensure that the instance to be registered is unique for a specific type or use qualifiers to enable the registration of multiple instances of the same type.
+
+`Memory Management`: Be aware of memory implications for long-lived objects, especially in the Singleton and Application scopes.
+
+`Nested Instances`: Avoid unintentional coupling by carefully managing instances within larger-scoped objects.
+
+`const and Modifiers`: Take into account the impact of const and other class modifiers on the behavior of instances within different scopes.
+
+# Qualifiers
+
+Qualifiers play a crucial role in the DDI Library by differentiating between instances of the same type, enabling to uniquely identify and retrieve specific instances within a given scope. In scenarios where multiple instances coexist within a single scope, qualifiers serve as optional labels or identifiers associated with the registration and retrieval of instances, ensuring precision in managing dependencies.
+
+## How Qualifiers Work
+When registering an instance, can provide a qualifierName as part of the registration process. This qualifier acts as metadata associated with the instance and can later be used during retrieval to specify which instance is needed.
+
+#### Example Registration with Qualifier
+
+```dart
+ddi.registerSingleton<MyService>(() => MyService(), qualifierName: "specialInstance");
+```
+
+## Retrieval with Qualifiers
+During retrieval, if multiple instances of the same type exist, can use the associated qualifier to specify the desired instance. But remember, if you register using qualifier, should retrieve with qualifier.
+
+####  Example Retrieval with Qualifier
+
+```dart
+MyService specialInstance = ddi.get<MyService>(qualifierName: "specialInstance");
+```
+## Use Cases for Qualifiers
+
+#### Configuration Variations
+
+When there are multiple configurations for a service, such as different API endpoints or connection settings.
+```dart
+ddi.registerSingleton<ApiService>(() => ApiService("endpointA"), qualifierName: "endpointA");
+ddi.registerSingleton<ApiService>(() => ApiService("endpointB"), qualifierName: "endpointB");
+```
+
+#### Feature Flags
+
+When different instances are required based on feature flags or runtime conditions.
+```dart
+ddi.registerSingleton<FeatureService>(() => FeatureService(enabled: true), qualifierName: "enabled");
+ddi.registerSingleton<FeatureService>(() => FeatureService(enabled: false), qualifierName: "disabled");
+```
+
+#### Platform-Specific Implementations
+
+In scenarios where platform-specific implementations are required, such as different services for Android and iOS, qualifiers can be employed to distinguish between the platform-specific instances.
+
+```dart
+ddi.registerSingleton<PlatformService>(() => AndroidService(), qualifierName: "android");
+ddi.registerSingleton<PlatformService>(() => iOSService(), qualifierName: "ios");
+```
+
+## Considerations
+
+`Consistent Usage:` Maintain consistent usage of qualifiers throughout the codebase to ensure clarity and avoid confusion.
+
+`Avoid Overuse:` While qualifiers offer powerful customization, avoid overusing them to keep the codebase clean and maintainable.
+
+`Type Identifiers:` Qualifiers are often implemented using string-based identifiers, which may introduce issues such as typos or potential naming conflicts. To mitigate these concerns, it is highly recommended to utilize enums or constants.
+
+# Extra Customization
+The DDI Library provides features for customizing the lifecycle of registered instances. These features include `postConstruct`, `decorators`, and `interceptor`.
+
+## PostConstruct
+The postConstruct callback allows to perform additional setup or initialization after an instance is created. This is particularly useful for executing logic that should run once the instance is ready for use.
+
+#### Example Usage:
+```dart
+ddi.registerSingleton<MyService>(
+  () => MyService(),
+  postConstruct: () {
+    // Additional setup logic after MyService instance creation.
+    print("MyService instance is ready!");
+  },
+);
+```
+
+## Decorators
+Decorators provide a way to modify or enhance the behavior of an instance before it is returned. Each decorator is a function that takes the existing instance and returns a modified instance. Multiple decorators can be applied, and they are executed in the order they are specified during registration.
+
+Example Usage:
+```dart
+ddi.registerSingleton<MyService>(
+  () => MyService(),
+  decorators: [
+    (MyService existingInstance) {
+      // Apply decorator logic.
+      return ModifiedMyService(existingInstance);
+    },
+    // Additional decorators can be added as needed.
+  ],
+);
+```
+
+## Interceptor
+Interceptor is a powerful mechanism that allows to intercept the creation, get, destruction, and disposal of instances. It provides fine-grained control over the instantiation process. It's necessary to create a custom class thar extends DDIInterceptor
+
+#### Example Usage:
+```dart
+class CustomInterceptor<T> extends DDIInterceptor<T> {
+  @override
+  T aroundConstruct(T instance) {
+    // Logic to customize or replace instance creation.
+    return CustomizedInstance();
+  }
+
+  @override
+  T aroundGet(T instance) {
+    // Logic to customize instance get.
+    return instance;
+  }
+
+  @override
+  T aroundDestroy(T instance) {
+    // Logic to customize instance destruction.
+    return instance;
+  }
+
+  @override
+  T aroundDispose(T instance) {
+    // Logic to customize instance disposal.
+    return instance;
+  }
+}
+
+ddi.registerSingleton<MyService>(
+  () => MyService(),
+  interceptor: CustomInterceptor(),
+);
+```
+
+## RegisterIf
+The registerIf parameter is a boolean function that determines whether an instance should be registered. It provides conditional registration based on a specified condition. This is particularly useful for ensuring that only a single instance is registered, preventing issues with duplicated instances.
+
+#### Example Usage:
+```dart
+ddi.registerSingleton<MyService>(
+  () => MyServiceAndroid(),
+  registerIf: () {
+    return Platform.isAndroid && MyUserService.isAdmin();
+  },
+);
+ddi.registerSingleton<MyService>(
+  () => MyServiceIos(),
+  registerIf: () {
+    return Platform.isIOS && MyUserService.isAdmin();
+  },
+);
+ddi.registerSingleton<MyService>(
+  () => MyServiceDefault(),
+  registerIf: () {
+    return !MyUserService.isAdmin();
+  },
+);
+```
+
+# API Reference
+
+## registerSingleton
+
+Registers a singleton instance. The `clazzRegister` parameter is a factory function to create the instance. Optional parameters allow customization of the instance's behavior and lifecycle.
+
+```dart
+void registerSingleton<T extends Object>(
+  T Function() clazzRegister, {
+  Object? qualifierName,
+  void Function()? postConstruct,
+  List<T Function(T)>? decorators,
+  DDIInterceptor Function()? interceptor,
+  bool Function()? registerIf,
+});
+```
+
+## registerApplication<T>
+
+Registers an application-scoped instance. The instance is created when first used and reused afterward.
+
+```dart
+void registerApplication<T extends Object>(
+  T Function() clazzRegister, {
+  Object? qualifierName,
+  void Function()? postConstruct,
+  List<T Function(T)>? decorators,
+  DDIInterceptor Function()? interceptor,
+  bool Function()? registerIf,
+});
+```
+
+## registerDependent
+
+Registers a dependent instance. A new instance is created every time it is used.
+
+```dart
+void registerDependent<T extends Object>(
+  T Function() clazzRegister, {
+  Object? qualifierName,
+  void Function()? postConstruct,
+  List<T Function(T)>? decorators,
+  DDIInterceptor Function()? interceptor,
+  bool Function()? registerIf,
+});
+```
+
+## registerSession
+
+Registers a session-scoped instance. The instance is tied to a specific session.
+
+```dart
+void registerSession<T extends Object>(
+  T Function() clazzRegister, {
+  Object? qualifierName,
+  void Function()? postConstruct,
+  List<T Function(T)>? decorators,
+  DDIInterceptor Function()? interceptor,
+  bool Function()? registerIf,
+});
+```
+
+## registerWidget
+
+Registers a widget-scoped instance. The instance is tied to a specific widget.
+
+```dart
+void registerWidget<T extends Widget>(
+  T Function() clazzRegister, {
+  Object? qualifierName,
+  void Function()? postConstruct,
+  List<T Function(T)>? decorators,
+  DDIInterceptor Function()? interceptor,
+  bool Function()? registerIf,
+});
+```
+
+## get
+
+Retrieves an instance of type T from the appropriate scope. You can provide a `qualifierName` to distinguish between instances of the same type.
+
+```dart
+T get<T extends Object>({Object? qualifierName});
+```
+
+
+## call
+
+A shorthand for get<T>(), allowing a more concise syntax for obtaining instances.
+
+```dart
+T call<T extends Object>();
+```
+
+## destroy
+
+Destroy an instance from the container. Useful for manual cleanup.
+
+```dart
+void destroy<T>({Object? qualifierName});
+```
+
+## dispose
+
+Disposes of an instance, invoking any cleanup logic. This is particularly useful for instances with resources that need to be released.
+
+```dart
+void dispose<T>({Object? qualifierName});
+```

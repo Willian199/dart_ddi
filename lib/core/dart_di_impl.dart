@@ -10,9 +10,9 @@ class _DDIImpl implements DDI {
     void Function()? postConstruct,
     List<T Function(T)>? decorators,
     DDIInterceptor Function()? interceptor,
-    bool Function()? createIf,
+    bool Function()? registerIf,
   }) {
-    if (createIf?.call() ?? true) {
+    if (registerIf?.call() ?? true) {
       Object effectiveQualifierName = qualifierName ?? T;
 
       assert(_beans[effectiveQualifierName] == null, 'Is already registered a bean with Type ${effectiveQualifierName.toString()}');
@@ -26,7 +26,7 @@ class _DDIImpl implements DDI {
       postConstruct?.call();
 
       _beans[effectiveQualifierName] = FactoryClazz<T>(
-        clazzInstance: clazz,
+        clazzInstance: interceptor?.call().aroundConstruct(clazz) ?? clazz,
         scopeType: Scopes.singleton,
         interceptor: interceptor,
       );
@@ -40,9 +40,9 @@ class _DDIImpl implements DDI {
     void Function()? postConstruct,
     List<T Function(T)>? decorators,
     DDIInterceptor Function()? interceptor,
-    bool Function()? createIf,
+    bool Function()? registerIf,
   }) {
-    if (createIf?.call() ?? true) {
+    if (registerIf?.call() ?? true) {
       _register<T>(
         clazzRegister: clazzRegister,
         scopeType: Scopes.application,
@@ -61,9 +61,9 @@ class _DDIImpl implements DDI {
     void Function()? postConstruct,
     List<T Function(T)>? decorators,
     DDIInterceptor Function()? interceptor,
-    bool Function()? createIf,
+    bool Function()? registerIf,
   }) {
-    if (createIf?.call() ?? true) {
+    if (registerIf?.call() ?? true) {
       _register<T>(
         clazzRegister: clazzRegister,
         scopeType: Scopes.session,
@@ -82,9 +82,9 @@ class _DDIImpl implements DDI {
     void Function()? postConstruct,
     List<T Function(T)>? decorators,
     DDIInterceptor Function()? interceptor,
-    bool Function()? createIf,
+    bool Function()? registerIf,
   }) {
-    if (createIf?.call() ?? true) {
+    if (registerIf?.call() ?? true) {
       _register<T>(
         clazzRegister: clazzRegister,
         scopeType: Scopes.dependent,
@@ -97,15 +97,15 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  void registerWidget<T extends Object>(
+  void registerWidget<T extends Widget>(
     T Function() clazzRegister, {
     Object? qualifierName,
     void Function()? postConstruct,
     List<T Function(T)>? decorators,
     DDIInterceptor Function()? interceptor,
-    bool Function()? createIf,
+    bool Function()? registerIf,
   }) {
-    if (createIf?.call() ?? true) {
+    if (registerIf?.call() ?? true) {
       _register<T>(
         clazzRegister: clazzRegister,
         scopeType: Scopes.widget,
@@ -146,10 +146,9 @@ class _DDIImpl implements DDI {
   }
 
   T _getSingleton<T extends Object>(FactoryClazz<T> factoryClazz) {
-    factoryClazz.interceptor?.call().aroundConstruct(factoryClazz.clazzInstance);
-
     assert(factoryClazz.clazzInstance != null, 'The Singleton Type ${T.runtimeType.toString()} is destroyed');
-    return factoryClazz.clazzInstance!;
+
+    return factoryClazz.interceptor?.call().aroundGet(factoryClazz.clazzInstance) ?? factoryClazz.clazzInstance;
   }
 
   T _getAplication<T extends Object>(FactoryClazz<T> factoryClazz, effectiveQualifierName) {
@@ -162,14 +161,13 @@ class _DDIImpl implements DDI {
 
       factoryClazz.postConstruct?.call();
 
-      _beans[effectiveQualifierName] = factoryClazz.copyWith(clazzInstance: applicationClazz);
+      _beans[effectiveQualifierName] =
+          factoryClazz.copyWith(clazzInstance: factoryClazz.interceptor?.call().aroundConstruct(applicationClazz) ?? applicationClazz);
     } else {
       debugPrint('Instância reaproveitada');
     }
 
-    factoryClazz.interceptor?.call().aroundConstruct(applicationClazz);
-
-    return applicationClazz;
+    return factoryClazz.interceptor?.call().aroundGet(applicationClazz) ?? applicationClazz;
   }
 
   T _getDependent<T extends Object>(FactoryClazz<T> factoryClazz) {
@@ -178,9 +176,10 @@ class _DDIImpl implements DDI {
     dependentClazz = _executarDecorators<T>(dependentClazz, factoryClazz.decorators);
 
     factoryClazz.postConstruct?.call();
-    factoryClazz.interceptor?.call().aroundConstruct(dependentClazz);
 
-    return dependentClazz;
+    dependentClazz = factoryClazz.interceptor?.call().aroundConstruct(dependentClazz) ?? dependentClazz;
+
+    return factoryClazz.interceptor?.call().aroundGet(dependentClazz) ?? dependentClazz;
   }
 
   @override
@@ -222,7 +221,7 @@ class _DDIImpl implements DDI {
     if (factoryClazz != null) {
       switch (factoryClazz.scopeType) {
         case Scopes.singleton:
-          remove<T>(qualifierName: qualifierName);
+          destroy<T>(qualifierName: qualifierName);
           break;
         default:
           _disposeScope<T>(factoryClazz, effectiveQualifierName);
@@ -233,7 +232,7 @@ class _DDIImpl implements DDI {
 
   void _disposeScope<T>(FactoryClazz<T>? factoryClazz, Object effectiveQualifierName) {
     if (factoryClazz != null) {
-      factoryClazz.interceptor?.call().aroundDispose(factoryClazz.clazzRegister);
+      factoryClazz.interceptor?.call().aroundDispose(factoryClazz.clazzInstance);
 
       _beans[effectiveQualifierName] = FactoryClazz<T>(
         clazzRegister: factoryClazz.clazzRegister,
@@ -246,7 +245,7 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  void remove<T>({Object? qualifierName}) {
+  void destroy<T>({Object? qualifierName}) {
     Object effectiveQualifierName = qualifierName ?? T;
     debugPrint('Removed the bean ${effectiveQualifierName.toString()}');
 

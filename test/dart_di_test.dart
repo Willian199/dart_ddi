@@ -5,7 +5,7 @@ import 'group_test/singleton_test.dart';
 import 'group_test/widget_test.dart';
 
 void main() {
-  //Basic Tests, with consists register, get, dispose, remove
+  //Basic Tests, with consists in register, get, dispose, remove
   singleton();
   application();
   session();

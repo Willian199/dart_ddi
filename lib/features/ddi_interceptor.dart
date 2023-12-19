@@ -3,6 +3,10 @@ class DDIInterceptor<T> {
     return instance;
   }
 
+  T aroundGet(T instance) {
+    return instance;
+  }
+
   T aroundDestroy(T instance) {
     return instance;
   }

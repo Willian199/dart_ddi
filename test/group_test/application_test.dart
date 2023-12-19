@@ -15,9 +15,9 @@ void application() {
     }
 
     removeApplicationBeans() {
-      DDI.instance.remove<A>();
-      DDI.instance.remove<B>();
-      DDI.instance.remove<C>();
+      DDI.instance.destroy<A>();
+      DDI.instance.destroy<B>();
+      DDI.instance.destroy<C>();
     }
 
     test('Register and retrieve Application bean', () {
@@ -130,7 +130,7 @@ void application() {
     test('Try to retrieve Application bean after removed', () {
       DDI.instance.get<C>();
 
-      DDI.instance.remove<C>();
+      DDI.instance.destroy<C>();
 
       expect(() => DDI.instance.get<C>(), throwsA(const TypeMatcher<AssertionError>()));
     });
@@ -140,7 +140,7 @@ void application() {
 
       DDI.instance.get(qualifierName: 'typeC');
 
-      DDI.instance.remove(qualifierName: 'typeC');
+      DDI.instance.destroy(qualifierName: 'typeC');
 
       expect(() => DDI.instance.get(qualifierName: 'typeC'), throwsA(const TypeMatcher<AssertionError>()));
     });
