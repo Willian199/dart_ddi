@@ -182,7 +182,7 @@ ddi.registerSingleton<MyService>(
 ```
 
 ## Interceptor
-Interceptor is a powerful mechanism that allows to intercept the creation, get, destruction, and disposal of instances. It provides fine-grained control over the instantiation process. It's necessary to create a custom class thar extends DDIInterceptor
+Interceptor is a powerful mechanism that allows to intercept the creation, get, destruction, and disposal of instances. It provides fine-grained control over the instantiation process. It's necessary to create a custom class that extends DDIInterceptor
 
 #### Example Usage:
 ```dart
@@ -353,7 +353,7 @@ Disposes of an instance, invoking any cleanup logic. This is particularly useful
 void dispose<T>({Object? qualifierName});
 ```
 
-## Adding Decorators
+## addDecorator
 
 This provides a dynamic way to enhance the behavior of registered instances by adding decorators. The `addDecorator` method allows you to apply additional functionality to instances managed by the library.
 When using the addDecorator method, keep in mind the order of execution, scope considerations, and the fact that instances already obtained remain unaffected. 

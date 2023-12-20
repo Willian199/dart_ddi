@@ -34,7 +34,7 @@ abstract class DDI {
     Object? qualifierName,
     void Function()? postConstruct,
     List<T Function(T)>? decorators,
-    DDIInterceptor Function()? interceptor,
+    DDIInterceptor<T> Function()? interceptor,
     bool Function()? registerIf,
   });
 
@@ -59,7 +59,7 @@ abstract class DDI {
     Object? qualifierName,
     void Function()? postConstruct,
     List<T Function(T)>? decorators,
-    DDIInterceptor Function()? interceptor,
+    DDIInterceptor<T>  Function()? interceptor,
     bool Function()? registerIf,
   });
 
@@ -84,7 +84,7 @@ abstract class DDI {
     Object? qualifierName,
     void Function()? postConstruct,
     List<T Function(T)>? decorators,
-    DDIInterceptor Function()? interceptor,
+    DDIInterceptor<T> Function()? interceptor,
     bool Function()? registerIf,
   });
 
@@ -109,7 +109,7 @@ abstract class DDI {
     Object? qualifierName,
     void Function()? postConstruct,
     List<T Function(T)>? decorators,
-    DDIInterceptor Function()? interceptor,
+    DDIInterceptor<T> Function()? interceptor,
     bool Function()? registerIf,
   });
 
@@ -134,7 +134,7 @@ abstract class DDI {
     Object? qualifierName,
     void Function()? postConstruct,
     List<T Function(T)>? decorators,
-    DDIInterceptor Function()? interceptor,
+    DDIInterceptor<T> Function()? interceptor,
     bool Function()? registerIf,
   });
 

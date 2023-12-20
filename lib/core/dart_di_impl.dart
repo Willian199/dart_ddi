@@ -9,7 +9,7 @@ class _DDIImpl implements DDI {
     Object? qualifierName,
     void Function()? postConstruct,
     List<T Function(T)>? decorators,
-    DDIInterceptor Function()? interceptor,
+    DDIInterceptor<T> Function()? interceptor,
     bool Function()? registerIf,
   }) {
     if (registerIf?.call() ?? true) {
@@ -21,12 +21,16 @@ class _DDIImpl implements DDI {
 
       T clazz = clazzRegister.call();
 
+      if (interceptor != null) {
+        clazz = interceptor.call().aroundConstruct(clazz);
+      }
+
       clazz = _executarDecorators(clazz, decorators);
 
       postConstruct?.call();
 
       _beans[effectiveQualifierName] = FactoryClazz<T>(
-        clazzInstance: interceptor?.call().aroundConstruct(clazz) ?? clazz,
+        clazzInstance: clazz,
         scopeType: Scopes.singleton,
         interceptor: interceptor,
       );
@@ -39,7 +43,7 @@ class _DDIImpl implements DDI {
     Object? qualifierName,
     void Function()? postConstruct,
     List<T Function(T)>? decorators,
-    DDIInterceptor Function()? interceptor,
+    DDIInterceptor<T> Function()? interceptor,
     bool Function()? registerIf,
   }) {
     if (registerIf?.call() ?? true) {
@@ -60,7 +64,7 @@ class _DDIImpl implements DDI {
     Object? qualifierName,
     void Function()? postConstruct,
     List<T Function(T)>? decorators,
-    DDIInterceptor Function()? interceptor,
+    DDIInterceptor<T> Function()? interceptor,
     bool Function()? registerIf,
   }) {
     if (registerIf?.call() ?? true) {
@@ -81,7 +85,7 @@ class _DDIImpl implements DDI {
     Object? qualifierName,
     void Function()? postConstruct,
     List<T Function(T)>? decorators,
-    DDIInterceptor Function()? interceptor,
+    DDIInterceptor<T> Function()? interceptor,
     bool Function()? registerIf,
   }) {
     if (registerIf?.call() ?? true) {
@@ -102,7 +106,7 @@ class _DDIImpl implements DDI {
     Object? qualifierName,
     void Function()? postConstruct,
     List<T Function(T)>? decorators,
-    DDIInterceptor Function()? interceptor,
+    DDIInterceptor<T> Function()? interceptor,
     bool Function()? registerIf,
   }) {
     if (registerIf?.call() ?? true) {
@@ -123,7 +127,7 @@ class _DDIImpl implements DDI {
     Object? qualifierName,
     void Function()? postConstruct,
     List<T Function(T)>? decorators,
-    DDIInterceptor Function()? interceptor,
+    DDIInterceptor<T> Function()? interceptor,
   }) {
     Object effectiveQualifierName = qualifierName ?? T;
 
@@ -148,7 +152,11 @@ class _DDIImpl implements DDI {
   T _getSingleton<T extends Object>(FactoryClazz<T> factoryClazz) {
     assert(factoryClazz.clazzInstance != null, 'The Singleton Type ${T.runtimeType.toString()} is destroyed');
 
-    return factoryClazz.interceptor?.call().aroundGet(factoryClazz.clazzInstance) ?? factoryClazz.clazzInstance;
+    if (factoryClazz.interceptor == null) {
+      return factoryClazz.clazzInstance!;
+    }
+
+    return factoryClazz.interceptor!.call().aroundGet(factoryClazz.clazzInstance!);
   }
 
   T _getAplication<T extends Object>(FactoryClazz<T> factoryClazz, effectiveQualifierName) {
@@ -157,12 +165,15 @@ class _DDIImpl implements DDI {
     if (applicationClazz == null) {
       applicationClazz = factoryClazz.clazzRegister!.call();
 
+      if (factoryClazz.interceptor != null) {
+        applicationClazz = factoryClazz.interceptor!.call().aroundConstruct(applicationClazz);
+      }
+
       applicationClazz = _executarDecorators<T>(applicationClazz, factoryClazz.decorators);
 
       factoryClazz.postConstruct?.call();
 
-      _beans[effectiveQualifierName] =
-          factoryClazz.copyWith(clazzInstance: factoryClazz.interceptor?.call().aroundConstruct(applicationClazz) ?? applicationClazz);
+      _beans[effectiveQualifierName] = factoryClazz.copyWith(clazzInstance: applicationClazz);
     } else {
       debugPrint('Instância reaproveitada');
     }
@@ -232,7 +243,9 @@ class _DDIImpl implements DDI {
 
   void _disposeScope<T>(FactoryClazz<T>? factoryClazz, Object effectiveQualifierName) {
     if (factoryClazz != null) {
-      factoryClazz.interceptor?.call().aroundDispose(factoryClazz.clazzInstance);
+      if (factoryClazz.clazzInstance != null) {
+        factoryClazz.interceptor?.call().aroundDispose(factoryClazz.clazzInstance as T);
+      }
 
       _beans[effectiveQualifierName] = FactoryClazz<T>(
         clazzRegister: factoryClazz.clazzRegister,
@@ -252,7 +265,10 @@ class _DDIImpl implements DDI {
     FactoryClazz<T>? factoryClazz = _beans[effectiveQualifierName] as FactoryClazz<T>?;
 
     if (factoryClazz != null) {
-      factoryClazz.interceptor?.call().aroundDestroy(factoryClazz.clazzRegister);
+      if (factoryClazz.clazzInstance != null) {
+        factoryClazz.interceptor?.call().aroundDestroy(factoryClazz.clazzInstance as T);
+      }
+
       _beans.remove(effectiveQualifierName);
     }
   }

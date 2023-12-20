@@ -8,7 +8,7 @@ class FactoryClazz<T> {
   final T Function()? clazzRegister;
   final List<T Function(T i)>? decorators;
   final void Function()? postConstruct;
-  final DDIInterceptor Function()? interceptor;
+  final DDIInterceptor<T> Function()? interceptor;
   final Scopes scopeType;
 
   FactoryClazz({
@@ -25,7 +25,7 @@ class FactoryClazz<T> {
     T Function()? clazzRegister,
     List<T Function(T)>? decorators,
     void Function()? postConstruct,
-    DDIInterceptor Function()? interceptor,
+    DDIInterceptor<T> Function()? interceptor,
     Scopes? scopeType,
   }) {
     return FactoryClazz<T>(
