@@ -257,7 +257,7 @@ class _DDIImpl implements DDI {
   }
 
   void _destroyAll(Scopes scope) {
-    final keys = _beans.entries.where((element) => element.value.scopeType == scope).map((e) => e.key);
+    final keys = _beans.entries.where((element) => element.value.scopeType == scope).map((e) => e.key).toList();
 
     for (var key in keys) {
       _destroy(key);
