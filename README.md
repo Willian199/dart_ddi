@@ -328,6 +328,13 @@ Retrieves an instance of type T from the appropriate scope. You can provide a `q
 T get<T extends Object>({Object? qualifierName});
 ```
 
+## getByType
+
+Retrieves all instance identifiers of type T from each scope.
+
+```dart
+List<Object> getByType<T extends Object>();
+```
 
 ## call
 
@@ -345,20 +352,34 @@ Destroy an instance from the container. Useful for manual cleanup.
 void destroy<T>({Object? qualifierName});
 ```
 
+## destroyByType
+
+Destroy all instance with type `T`.
+
+```dart
+void destroyByType<T extends Object>();
+```
+
 ## dispose
 
-Disposes of an instance, invoking any cleanup logic. This is particularly useful for instances with resources that need to be released.
+Disposes of an instance, invoking any cleanup logic. This is particularly useful for instances with resources that need to be released. If is a Singleton, they will be destroyed
 
 ```dart
 void dispose<T>({Object? qualifierName});
+```
+
+## disposeByType
+
+Disposes all instance with type `T`. If is a Singleton, they will be destroyed.
+
+```dart
+void disposeByType<T extends Object>();
 ```
 
 ## addDecorator
 
 This provides a dynamic way to enhance the behavior of registered instances by adding decorators. The `addDecorator` method allows you to apply additional functionality to instances managed by the library.
 When using the addDecorator method, keep in mind the order of execution, scope considerations, and the fact that instances already obtained remain unaffected. 
-
-#### Usage:
 
 ```dart
 void addDecorator<T extends Object>(List<T Function(T)> decorators, {Object? qualifierName});

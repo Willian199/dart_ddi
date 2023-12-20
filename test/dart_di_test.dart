@@ -1,6 +1,7 @@
 import 'group_test/add_decoratos_test.dart';
 import 'group_test/application_test.dart';
 import 'group_test/dependent_test.dart';
+import 'group_test/get_by_type_test.dart';
 import 'group_test/session_test.dart';
 import 'group_test/singleton_test.dart';
 import 'group_test/widget_test.dart';
@@ -12,6 +13,8 @@ void main() {
   session();
   dependent();
   widget();
+
+  runByType();
 
   //Decorators
   addDecorator();

@@ -59,7 +59,7 @@ abstract class DDI {
     Object? qualifierName,
     void Function()? postConstruct,
     List<T Function(T)>? decorators,
-    DDIInterceptor<T>  Function()? interceptor,
+    DDIInterceptor<T> Function()? interceptor,
     bool Function()? registerIf,
   });
 
@@ -143,6 +143,11 @@ abstract class DDI {
   /// - `qualifierName`: Optional qualifier name to distinguish between different instances of the same type.
   T get<T extends Object>({Object? qualifierName});
 
+  /// Retrieves a list of keys associated with objects of a specific type `T`.
+  ///
+  /// This method allows you to obtain all keys (qualifier names) that have been used to register objects of the specified type `T`.
+  List<Object> getByType<T extends Object>();
+
   /// Gets an instance of the registered class in [DDI].
   ///
   /// - `qualifierName`: Optional qualifier name to distinguish between different instances of the same type.
@@ -159,6 +164,9 @@ abstract class DDI {
   /// Removes all the instance registered as Session Scope.
   void destroyAllSession();
 
+  /// Removes all the instance registered as type `T`.
+  void destroyByType<T extends Object>();
+
   /// Disposes of the instance of the registered class in [DDI].
   ///
   /// - `qualifierName`: Optional qualifier name to distinguish between different instances of the same type.
@@ -169,6 +177,9 @@ abstract class DDI {
 
   /// Disposes all the instance registered as Session Scope.
   void disposeAllSession();
+
+  /// Disposes all the instance registered as type `T`.
+  void disposeByType<T extends Object>();
 
   /// Allows to dynamically add a decorators to the Bean.
   ///

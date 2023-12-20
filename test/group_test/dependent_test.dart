@@ -8,13 +8,13 @@ import '../clazz_test/c.dart';
 
 void dependent() {
   group('DDI Dependent Basic Tests', () {
-    registerDependentBeans() {
+    void registerDependentBeans() {
       DDI.instance.registerDependent(() => A(DDI.instance()));
       DDI.instance.registerDependent(() => B(DDI.instance()));
       DDI.instance.registerDependent(() => C());
     }
 
-    removeDependentBeans() {
+    void removeDependentBeans() {
       DDI.instance.destroy<A>();
       DDI.instance.destroy<B>();
       DDI.instance.destroy<C>();
@@ -23,8 +23,8 @@ void dependent() {
     test('Register and retrieve Dependent bean', () {
       registerDependentBeans();
 
-      var instance1 = DDI.instance.get<A>();
-      var instance2 = DDI.instance.get<A>();
+      final instance1 = DDI.instance.get<A>();
+      final instance2 = DDI.instance.get<A>();
 
       expect(false, identical(instance1, instance2));
       expect(false, identical(instance1.b, instance2.b));
@@ -37,10 +37,10 @@ void dependent() {
     test('Retrieve Dependent bean after a "child" bean is diposed', () {
       registerDependentBeans();
 
-      var instance = DDI.instance.get<A>();
+      final instance = DDI.instance.get<A>();
 
       DDI.instance.dispose<C>();
-      var instance1 = DDI.instance.get<A>();
+      final instance1 = DDI.instance.get<A>();
       expect(false, identical(instance1, instance));
       expect(false, identical(instance1.b, instance.b));
       expect(false, identical(instance1.b.c, instance.b.c));
@@ -52,10 +52,10 @@ void dependent() {
     test('Retrieve Dependent bean after a second "child" bean is diposed', () {
       registerDependentBeans();
 
-      var instance = DDI.instance.get<A>();
+      final instance = DDI.instance.get<A>();
 
       DDI.instance.dispose<B>();
-      var instance1 = DDI.instance.get<A>();
+      final instance1 = DDI.instance.get<A>();
       expect(false, identical(instance1, instance));
       expect(false, identical(instance1.b, instance.b));
       expect(false, identical(instance1.b.c, instance.b.c));
@@ -67,11 +67,11 @@ void dependent() {
     test('Try to retrieve Dependent bean after disposed', () {
       DDI.instance.registerDependent(() => C());
 
-      var instance1 = DDI.instance.get<C>();
+      final instance1 = DDI.instance.get<C>();
 
       DDI.instance.dispose<C>();
 
-      var instance2 = DDI.instance.get<C>();
+      final instance2 = DDI.instance.get<C>();
 
       expect(false, identical(instance1, instance2));
     });
@@ -87,8 +87,8 @@ void dependent() {
     test('Create, get and remove a qualifier bean', () {
       DDI.instance.registerDependent(() => C(), qualifierName: 'typeC');
 
-      var instance1 = DDI.instance.get(qualifierName: 'typeC');
-      var instance2 = DDI.instance.get(qualifierName: 'typeC');
+      final instance1 = DDI.instance.get(qualifierName: 'typeC');
+      final instance2 = DDI.instance.get(qualifierName: 'typeC');
 
       expect(false, identical(instance1, instance2));
 

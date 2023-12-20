@@ -7,13 +7,13 @@ import '../clazz_test/widget_c.dart';
 
 void widget() {
   group('DDI Widget Basic Tests', () {
-    registerWidgetBeans() {
+    void registerWidgetBeans() {
       DDI.instance.registerWidget(() => WidgetA(widgetB: DDI.instance()));
       DDI.instance.registerWidget(() => WidgetB(widgetC: DDI.instance()));
       DDI.instance.registerWidget(() => WidgetC());
     }
 
-    removeWidgetBeans() {
+    void removeWidgetBeans() {
       DDI.instance.destroy<WidgetA>();
       DDI.instance.destroy<WidgetB>();
       DDI.instance.destroy<WidgetC>();
@@ -22,8 +22,8 @@ void widget() {
     test('Register and retrieve Widget bean', () {
       registerWidgetBeans();
 
-      var instance1 = DDI.instance.get<WidgetA>();
-      var instance2 = DDI.instance.get<WidgetA>();
+      final instance1 = DDI.instance.get<WidgetA>();
+      final instance2 = DDI.instance.get<WidgetA>();
 
       expect(identical(instance1, instance2), false);
       expect(identical(instance1.widgetB, instance2.widgetB), false);
@@ -35,10 +35,10 @@ void widget() {
     test('Retrieve Widget bean after a "child" bean is diposed', () {
       registerWidgetBeans();
 
-      var instance1 = DDI.instance.get<WidgetA>();
+      final instance1 = DDI.instance.get<WidgetA>();
 
       DDI.instance.dispose<WidgetC>();
-      var instance2 = DDI.instance.get<WidgetA>();
+      final instance2 = DDI.instance.get<WidgetA>();
       expect(identical(instance1, instance2), false);
       expect(identical(instance1.widgetB, instance2.widgetB), false);
       expect(identical(instance1.widgetB.widgetC, instance2.widgetB.widgetC), false);
@@ -49,10 +49,10 @@ void widget() {
     test('Retrieve Widget bean after a second "child" bean is diposed', () {
       registerWidgetBeans();
 
-      var instance1 = DDI.instance.get<WidgetA>();
+      final instance1 = DDI.instance.get<WidgetA>();
 
       DDI.instance.dispose<WidgetB>();
-      var instance2 = DDI.instance.get<WidgetA>();
+      final instance2 = DDI.instance.get<WidgetA>();
       expect(identical(instance1, instance2), false);
       expect(identical(instance1.widgetB, instance2.widgetB), false);
       expect(identical(instance1.widgetB.widgetC, instance2.widgetB.widgetC), false);
@@ -63,9 +63,9 @@ void widget() {
     test('Retrieve Widget bean without const', () {
       DDI.instance.registerWidget(() => WidgetC());
 
-      var instance1 = DDI.instance.get<WidgetC>();
+      final instance1 = DDI.instance.get<WidgetC>();
 
-      var instance2 = DDI.instance.get<WidgetC>();
+      final instance2 = DDI.instance.get<WidgetC>();
 
       expect(identical(instance1, instance2), false);
 
@@ -75,9 +75,9 @@ void widget() {
     test('Retrieve Widget bean with const', () {
       DDI.instance.registerWidget(() => const WidgetC());
 
-      var instance1 = DDI.instance.get<WidgetC>();
+      final instance1 = DDI.instance.get<WidgetC>();
 
-      var instance2 = DDI.instance.get<WidgetC>();
+      final instance2 = DDI.instance.get<WidgetC>();
 
       expect(instance1, same(instance2));
 
@@ -87,11 +87,11 @@ void widget() {
     test('Try to retrieve Widget bean after disposed', () {
       DDI.instance.registerWidget(() => WidgetC());
 
-      var instance1 = DDI.instance.get<WidgetC>();
+      final instance1 = DDI.instance.get<WidgetC>();
 
       DDI.instance.dispose<WidgetC>();
 
-      var instance2 = DDI.instance.get<WidgetC>();
+      final instance2 = DDI.instance.get<WidgetC>();
 
       expect(identical(instance1, instance2), false);
     });
@@ -107,8 +107,8 @@ void widget() {
     test('Create, get and remove a qualifier bean', () {
       DDI.instance.registerWidget(() => WidgetC(), qualifierName: 'typeC');
 
-      var instance1 = DDI.instance.get(qualifierName: 'typeC');
-      var instance2 = DDI.instance.get(qualifierName: 'typeC');
+      final instance1 = DDI.instance.get(qualifierName: 'typeC');
+      final instance2 = DDI.instance.get(qualifierName: 'typeC');
 
       expect(identical(instance1, instance2), false);
 

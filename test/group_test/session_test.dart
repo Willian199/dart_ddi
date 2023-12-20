@@ -8,13 +8,13 @@ import '../clazz_test/c.dart';
 
 void session() {
   group('DDI Session Basic Tests', () {
-    registerSessionBeans() {
+    void registerSessionBeans() {
       DDI.instance.registerSession(() => A(DDI.instance()));
       DDI.instance.registerSession(() => B(DDI.instance()));
       DDI.instance.registerSession(() => C());
     }
 
-    removeSessionBeans() {
+    void removeSessionBeans() {
       DDI.instance.destroy<A>();
       DDI.instance.destroy<B>();
       DDI.instance.destroy<C>();
@@ -23,8 +23,8 @@ void session() {
     test('Register and retrieve Session bean', () {
       registerSessionBeans();
 
-      var instance1 = DDI.instance.get<A>();
-      var instance2 = DDI.instance.get<A>();
+      final instance1 = DDI.instance.get<A>();
+      final instance2 = DDI.instance.get<A>();
 
       expect(instance1, same(instance2));
       expect(instance1.b, same(instance2.b));
@@ -37,10 +37,10 @@ void session() {
     test('Retrieve Session bean after a "child" bean is diposed', () {
       registerSessionBeans();
 
-      var instance = DDI.instance.get<A>();
+      final instance = DDI.instance.get<A>();
 
       DDI.instance.dispose<C>();
-      var instance1 = DDI.instance.get<A>();
+      final instance1 = DDI.instance.get<A>();
       expect(instance1, same(instance));
       expect(instance1.b, same(instance.b));
       expect(instance.b.c, same(instance1.b.c));
@@ -52,11 +52,11 @@ void session() {
     test('Retrieve Session bean after a second "child" bean is diposed', () {
       registerSessionBeans();
 
-      var instance = DDI.instance.get<A>();
+      final instance = DDI.instance.get<A>();
 
       DDI.instance.dispose<C>();
       DDI.instance.dispose<B>();
-      var instance1 = DDI.instance.get<A>();
+      final instance1 = DDI.instance.get<A>();
       expect(instance1, same(instance));
       expect(instance1.b, same(instance.b));
       expect(instance.b.c, same(instance1.b.c));
@@ -68,10 +68,10 @@ void session() {
     test('Retrieve Session bean after the last "child" bean is diposed', () {
       registerSessionBeans();
 
-      var instance1 = DDI.instance.get<A>();
+      final instance1 = DDI.instance.get<A>();
 
       DDI.instance.dispose<A>();
-      var instance2 = DDI.instance.get<A>();
+      final instance2 = DDI.instance.get<A>();
 
       expect(false, identical(instance1, instance2));
       expect(true, identical(instance1.b, instance2.b));
@@ -84,11 +84,11 @@ void session() {
     test('Retrieve Session bean after 2 "child" bean is diposed', () {
       registerSessionBeans();
 
-      var instance1 = DDI.instance.get<A>();
+      final instance1 = DDI.instance.get<A>();
 
       DDI.instance.dispose<B>();
       DDI.instance.dispose<A>();
-      var instance2 = DDI.instance.get<A>();
+      final instance2 = DDI.instance.get<A>();
 
       expect(false, identical(instance1, instance2));
       expect(false, identical(instance1.b, instance2.b));
@@ -101,12 +101,12 @@ void session() {
     test('Retrieve Session bean after 3 "child" bean is diposed', () {
       registerSessionBeans();
 
-      var instance1 = DDI.instance.get<A>();
+      final instance1 = DDI.instance.get<A>();
 
       DDI.instance.dispose<C>();
       DDI.instance.dispose<B>();
       DDI.instance.dispose<A>();
-      var instance2 = DDI.instance.get<A>();
+      final instance2 = DDI.instance.get<A>();
 
       expect(false, identical(instance1, instance2));
       expect(false, identical(instance1.b, instance2.b));
@@ -119,11 +119,11 @@ void session() {
     test('Try to retrieve Session bean after disposed', () {
       DDI.instance.registerSession(() => C());
 
-      var instance1 = DDI.instance.get<C>();
+      final instance1 = DDI.instance.get<C>();
 
       DDI.instance.dispose<C>();
 
-      var instance2 = DDI.instance.get<C>();
+      final instance2 = DDI.instance.get<C>();
 
       expect(false, identical(instance1, instance2));
     });

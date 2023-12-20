@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'widget_c.dart';
 
 class WidgetB extends StatelessWidget {
-  final WidgetC widgetC;
   const WidgetB({required this.widgetC, super.key});
+  final WidgetC widgetC;
 
   @override
   Widget build(BuildContext context) {

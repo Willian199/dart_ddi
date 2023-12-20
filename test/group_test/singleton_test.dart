@@ -8,13 +8,13 @@ import '../clazz_test/c.dart';
 
 void singleton() {
   group('DDI Singleton Basic Tests', () {
-    registerSingletonBeans() {
+    void registerSingletonBeans() {
       DDI.instance.registerSingleton(() => C());
       DDI.instance.registerSingleton(() => B(DDI.instance()));
       DDI.instance.registerSingleton(() => A(DDI.instance()));
     }
 
-    removeSingletonBeans() {
+    void removeSingletonBeans() {
       DDI.instance.destroy<A>();
       DDI.instance.destroy<B>();
       DDI.instance.destroy<C>();
@@ -24,8 +24,8 @@ void singleton() {
       ///Where is Singleton, should the register in the correct order
       registerSingletonBeans();
 
-      var instance1 = DDI.instance.get<A>();
-      var instance2 = DDI.instance.get<A>();
+      final instance1 = DDI.instance.get<A>();
+      final instance2 = DDI.instance.get<A>();
 
       expect(instance1, same(instance2));
       expect(instance1.b, same(instance2.b));
@@ -38,10 +38,10 @@ void singleton() {
     test('Retrieve singleton bean after a "child" bean is diposed', () {
       registerSingletonBeans();
 
-      var instance = DDI.instance.get<A>();
+      final instance = DDI.instance.get<A>();
 
       DDI.instance.dispose<C>();
-      var instance1 = DDI.instance.get<A>();
+      final instance1 = DDI.instance.get<A>();
       expect(instance1, same(instance));
       expect(instance1.b, same(instance.b));
       expect(instance.b.c, same(instance1.b.c));
@@ -53,10 +53,10 @@ void singleton() {
     test('Retrieve singleton bean after a second "child" bean is diposed', () {
       registerSingletonBeans();
 
-      var instance = DDI.instance.get<A>();
+      final instance = DDI.instance.get<A>();
 
       DDI.instance.dispose<B>();
-      var instance1 = DDI.instance.get<A>();
+      final instance1 = DDI.instance.get<A>();
       expect(instance1, same(instance));
       expect(instance1.b, same(instance.b));
       expect(instance.b.c, same(instance1.b.c));

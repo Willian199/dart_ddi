@@ -7,8 +7,8 @@ import '../clazz_test/f.dart';
 
 void addDecorator() {
   group('DDI ADD Decorators Tests', () {
-    regraSoma() {
-      var instance1 = DDI.instance.get<D>();
+    void regraSoma() {
+      final instance1 = DDI.instance.get<D>();
 
       expect(instance1.value, 'bcdfghi');
 
@@ -16,7 +16,7 @@ void addDecorator() {
         (instance) => E(instance),
       ]);
 
-      var instance2 = DDI.instance.get<D>();
+      final instance2 = DDI.instance.get<D>();
 
       expect(instance2.value, 'bcdfghdef');
       expect(identical(instance1, instance2), false);

@@ -8,13 +8,13 @@ import '../clazz_test/c.dart';
 
 void application() {
   group('DDI Application Basic Tests', () {
-    registerApplicationBeans() {
+    void registerApplicationBeans() {
       DDI.instance.registerApplication(() => A(DDI.instance()));
       DDI.instance.registerApplication(() => B(DDI.instance()));
       DDI.instance.registerApplication(() => C());
     }
 
-    removeApplicationBeans() {
+    void removeApplicationBeans() {
       DDI.instance.destroy<A>();
       DDI.instance.destroy<B>();
       DDI.instance.destroy<C>();
@@ -23,8 +23,8 @@ void application() {
     test('Register and retrieve Application bean', () {
       registerApplicationBeans();
 
-      var instance1 = DDI.instance.get<A>();
-      var instance2 = DDI.instance.get<A>();
+      final instance1 = DDI.instance.get<A>();
+      final instance2 = DDI.instance.get<A>();
 
       expect(instance1, same(instance2));
       expect(instance1.b, same(instance2.b));
@@ -37,10 +37,10 @@ void application() {
     test('Retrieve Application bean after a "child" bean is diposed', () {
       registerApplicationBeans();
 
-      var instance = DDI.instance.get<A>();
+      final instance = DDI.instance.get<A>();
 
       DDI.instance.dispose<C>();
-      var instance1 = DDI.instance.get<A>();
+      final instance1 = DDI.instance.get<A>();
       expect(instance1, same(instance));
       expect(instance1.b, same(instance.b));
       expect(instance.b.c, same(instance1.b.c));
@@ -52,10 +52,10 @@ void application() {
     test('Retrieve Application bean after a second "child" bean is diposed', () {
       registerApplicationBeans();
 
-      var instance = DDI.instance.get<A>();
+      final instance = DDI.instance.get<A>();
 
       DDI.instance.dispose<B>();
-      var instance1 = DDI.instance.get<A>();
+      final instance1 = DDI.instance.get<A>();
       expect(instance1, same(instance));
       expect(instance1.b, same(instance.b));
       expect(instance.b.c, same(instance1.b.c));
@@ -67,10 +67,10 @@ void application() {
     test('Retrieve Application bean after the last "child" bean is diposed', () {
       registerApplicationBeans();
 
-      var instance1 = DDI.instance.get<A>();
+      final instance1 = DDI.instance.get<A>();
 
       DDI.instance.dispose<A>();
-      var instance2 = DDI.instance.get<A>();
+      final instance2 = DDI.instance.get<A>();
 
       expect(false, identical(instance1, instance2));
       expect(true, identical(instance1.b, instance2.b));
@@ -83,11 +83,11 @@ void application() {
     test('Retrieve Application bean after 2 "child" bean is diposed', () {
       registerApplicationBeans();
 
-      var instance1 = DDI.instance.get<A>();
+      final instance1 = DDI.instance.get<A>();
 
       DDI.instance.dispose<B>();
       DDI.instance.dispose<A>();
-      var instance2 = DDI.instance.get<A>();
+      final instance2 = DDI.instance.get<A>();
 
       expect(false, identical(instance1, instance2));
       expect(false, identical(instance1.b, instance2.b));
@@ -100,12 +100,12 @@ void application() {
     test('Retrieve Application bean after 3 "child" bean is diposed', () {
       registerApplicationBeans();
 
-      var instance1 = DDI.instance.get<A>();
+      final instance1 = DDI.instance.get<A>();
 
       DDI.instance.dispose<C>();
       DDI.instance.dispose<B>();
       DDI.instance.dispose<A>();
-      var instance2 = DDI.instance.get<A>();
+      final instance2 = DDI.instance.get<A>();
 
       expect(false, identical(instance1, instance2));
       expect(false, identical(instance1.b, instance2.b));
@@ -118,11 +118,11 @@ void application() {
     test('Try to retrieve Application bean after disposed', () {
       DDI.instance.registerApplication(() => C());
 
-      var instance1 = DDI.instance.get<C>();
+      final instance1 = DDI.instance.get<C>();
 
       DDI.instance.dispose<C>();
 
-      var instance2 = DDI.instance.get<C>();
+      final instance2 = DDI.instance.get<C>();
 
       expect(false, identical(instance1, instance2));
     });
