@@ -6,7 +6,7 @@ import 'package:dart_di/features/ddi_interceptor.dart';
 class FactoryClazz<T> {
   final T? clazzInstance;
   final T Function()? clazzRegister;
-  final List<T Function(T)>? decorators;
+  final List<T Function(T i)>? decorators;
   final void Function()? postConstruct;
   final DDIInterceptor Function()? interceptor;
   final Scopes scopeType;

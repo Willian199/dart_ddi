@@ -1,3 +1,4 @@
+import 'group_test/add_decoratos_test.dart';
 import 'group_test/application_test.dart';
 import 'group_test/dependent_test.dart';
 import 'group_test/session_test.dart';
@@ -11,4 +12,7 @@ void main() {
   session();
   dependent();
   widget();
+
+  //Decorators
+  addDecorator();
 }

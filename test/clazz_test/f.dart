@@ -1,8 +1,7 @@
-import 'e.dart';
+import 'd.dart';
 
-class F implements E {
-  @override
-  int area() {
-    return 10;
+class F extends D {
+  F(instance) {
+    super.value = '${instance.value.toString().replaceAll('e', '')}ghi';
   }
 }

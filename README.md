@@ -352,3 +352,15 @@ Disposes of an instance, invoking any cleanup logic. This is particularly useful
 ```dart
 void dispose<T>({Object? qualifierName});
 ```
+
+## Adding Decorators
+
+This provides a dynamic way to enhance the behavior of registered instances by adding decorators. The `addDecorator` method allows you to apply additional functionality to instances managed by the library.
+When using the addDecorator method, keep in mind the order of execution, scope considerations, and the fact that instances already obtained remain unaffected. 
+
+#### Usage:
+
+```dart
+void addDecorator<T extends Object>(List<T Function(T)> decorators, {Object? qualifierName});
+```
+

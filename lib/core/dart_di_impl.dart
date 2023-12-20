@@ -203,7 +203,7 @@ class _DDIImpl implements DDI {
 
   T _executarDecorators<T extends Object>(T clazz, List<T Function(T)>? decorators) {
     if (decorators != null) {
-      for (var decorator in decorators.reversed) {
+      for (var decorator in decorators) {
         clazz = decorator(clazz);
       }
     }
@@ -255,5 +255,104 @@ class _DDIImpl implements DDI {
       factoryClazz.interceptor?.call().aroundDestroy(factoryClazz.clazzRegister);
       _beans.remove(effectiveQualifierName);
     }
+  }
+
+  @override
+  void destroyAllSession() {
+    _destroyAll(Scopes.session);
+  }
+
+  @override
+  void destroyAllWidget() {
+    _destroyAll(Scopes.widget);
+  }
+
+  void _destroyAll(Scopes scope) {
+    final widgetDestroy = _beans.entries.where((element) => element.value.scopeType == scope);
+
+    for (var clazz in widgetDestroy) {
+      clazz.value.interceptor?.call().aroundDestroy(clazz.value.clazzRegister);
+      _beans.remove(clazz.key);
+    }
+  }
+
+  @override
+  void disposeAllSession() {
+    _disposeAll(Scopes.session);
+  }
+
+  @override
+  void disposeAllWidget() {
+    _disposeAll(Scopes.widget);
+  }
+
+  void _disposeAll(Scopes scope) {
+    final widgetDestroy = _beans.entries.where((element) => element.value.scopeType == scope);
+
+    for (var clazz in widgetDestroy) {
+      clazz.value.interceptor?.call().aroundDispose(clazz.value.clazzInstance);
+
+      _beans[clazz.key] = FactoryClazz(
+        clazzRegister: clazz.value.clazzRegister,
+        postConstruct: clazz.value.postConstruct,
+        decorators: clazz.value.decorators,
+        interceptor: clazz.value.interceptor,
+        scopeType: clazz.value.scopeType,
+      );
+    }
+  }
+
+  @override
+  void addDecorator<T extends Object>(List<T Function(T p1)> decorators, {Object? qualifierName}) {
+    Object effectiveQualifierName = qualifierName ?? T;
+
+    debugPrint('Add Decorator to the bean ${effectiveQualifierName.toString()}');
+
+    FactoryClazz<T>? factoryClazz = _beans[effectiveQualifierName] as FactoryClazz<T>?;
+
+    assert(factoryClazz != null, 'No Bean with Type ${effectiveQualifierName.toString()} is found');
+
+    switch (factoryClazz!.scopeType) {
+      //Singleton Scopes already have a instance
+      case Scopes.singleton:
+        var clazz = _executarDecorators<T>(factoryClazz.clazzInstance!, decorators);
+        _beans[effectiveQualifierName] = factoryClazz.copyWith(clazzInstance: clazz);
+        break;
+      //Application and Session Scopes may  have a instance created
+      case Scopes.application:
+      case Scopes.session:
+        List<T Function(T p1)> updatedDecorators = _orderDecorator(decorators, factoryClazz);
+
+        if (factoryClazz.clazzInstance != null) {
+          var clazz = _executarDecorators<T>(factoryClazz.clazzInstance!, decorators);
+          _beans[effectiveQualifierName] = factoryClazz.copyWith(clazzInstance: clazz, decorators: updatedDecorators);
+        } else {
+          _beans[effectiveQualifierName] = factoryClazz.copyWith(decorators: updatedDecorators);
+        }
+
+        break;
+      //Dependent and Widget Scopes always require a new instance
+      case Scopes.dependent:
+      case Scopes.widget:
+        List<T Function(T p1)> updatedDecorators = _orderDecorator(decorators, factoryClazz);
+        _beans[effectiveQualifierName] = factoryClazz.copyWith(decorators: updatedDecorators);
+        break;
+    }
+  }
+
+  List<T Function(T p1)> _orderDecorator<T extends Object>(List<T Function(T p1)> decorators, FactoryClazz<T> factoryClazz) {
+    List<T Function(T p1)> updatedDecorators = [];
+
+    if (factoryClazz.decorators != null) {
+      updatedDecorators = decorators.reversed.toList();
+
+      updatedDecorators.addAll(factoryClazz.decorators!.reversed.toList());
+
+      updatedDecorators = updatedDecorators.reversed.toList();
+    } else {
+      updatedDecorators = decorators;
+    }
+
+    return updatedDecorators;
   }
 }

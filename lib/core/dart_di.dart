@@ -63,7 +63,7 @@ abstract class DDI {
     bool Function()? registerIf,
   });
 
-  /// Registers an instance of a class as a Dependent.
+  /// Registers an instance of a class as a Session.
   ///
   /// - `clazzRegister`: Factory function to create the instance.
   /// - `qualifierName`: Optional qualifier name to distinguish between different instances of the same type.
@@ -72,22 +72,13 @@ abstract class DDI {
   /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
   /// - `registerIf`: Optional function to conditionally register the instance.
   ///
-  /// **Dependent Scope:**
-  /// - Creates a new instance every time it is requested.
-  /// - It does not reuse instances and provides a fresh instance for each request.
+  /// **Session Scope:**
+  /// - Ensures that only one instance of the registered class is created and shared throughout the entire application.
+  /// - Created once when first requested.
   ///
   ///  **Use Case:**
-  /// - Suitable for objects with a short lifecycle or those that need to be recreated frequently, ensuring isolation between different parts of the application.
-  /// - Examples include transient objects, temporary data holders, or components with a short lifespan.
-  void registerDependent<T extends Object>(
-    T Function() clazzRegister, {
-    Object? qualifierName,
-    void Function()? postConstruct,
-    List<T Function(T)>? decorators,
-    DDIInterceptor Function()? interceptor,
-    bool Function()? registerIf,
-  });
-
+  /// - Appropriate for objects that need to persist during the entire application's lifecycle, but may have a more dynamic nature than Singleton instances.
+  /// - Examples include managing user authentication state or caching user-specific preferences.
   void registerSession<T extends Object>(
     T Function() clazzRegister, {
     Object? qualifierName,
@@ -113,6 +104,31 @@ abstract class DDI {
   ///  **Use Case:**
   /// - Suitable for objects with a short lifecycle or those that need to be recreated frequently, ensuring isolation between different parts of the application.
   /// - Examples include transient objects, temporary data holders, or components with a short lifespan.
+  void registerDependent<T extends Object>(
+    T Function() clazzRegister, {
+    Object? qualifierName,
+    void Function()? postConstruct,
+    List<T Function(T)>? decorators,
+    DDIInterceptor Function()? interceptor,
+    bool Function()? registerIf,
+  });
+
+  /// Registers an instance of a class as a Widget Scope.
+  ///
+  /// - `clazzRegister`: Factory function to create the instance.
+  /// - `qualifierName`: Optional qualifier name to distinguish between different instances of the same type.
+  /// - `postConstruct`: Optional function to be executed after the instance is constructed.
+  /// - `decorators`: List of decoration functions to apply to the instance.
+  /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
+  /// - `registerIf`: Optional function to conditionally register the instance.
+  ///
+  /// **Widget Scope:**
+  /// - Creates a new instance every time it is requested.
+  /// - It does not reuse instances and provides a fresh instance for each request.
+  ///
+  ///  **Use Case:**
+  /// - Suitable for objects with a short lifecycle or those that need to be recreated frequently, ensuring isolation between different parts of the application.
+  /// - Examples include Plataform-Specific Widget functionalities.
   void registerWidget<T extends Widget>(
     T Function() clazzRegister, {
     Object? qualifierName,
@@ -137,8 +153,29 @@ abstract class DDI {
   /// - `qualifierName`: Optional qualifier name to distinguish between different instances of the same type.
   void destroy<T>({Object? qualifierName});
 
+  /// Removes all the instance registered as Widget Scope.
+  void destroyAllWidget();
+
+  /// Removes all the instance registered as Session Scope.
+  void destroyAllSession();
+
   /// Disposes of the instance of the registered class in [DDI].
   ///
   /// - `qualifierName`: Optional qualifier name to distinguish between different instances of the same type.
   void dispose<T>({Object? qualifierName});
+
+  /// Disposes all the instance registered as Widget Scope.
+  void disposeAllWidget();
+
+  /// Disposes all the instance registered as Session Scope.
+  void disposeAllSession();
+
+  /// Allows to dynamically add a decorators to the Bean.
+  ///
+  /// When using this method, consider the following:
+  ///
+  /// - **Order of Execution:** Decorators are applied in the order they are provided.
+  /// - **Scope Considerations:** Different scopes, such as singleton, application, session, dependent, and widget, may have varying behaviors when adding decorators.
+  /// - **Instaces Already Gets:** This no change the Instances that have been get.
+  void addDecorator<T extends Object>(List<T Function(T)> decorators, {Object? qualifierName});
 }
