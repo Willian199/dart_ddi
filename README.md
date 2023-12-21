@@ -171,7 +171,7 @@ Decorators provide a way to modify or enhance the behavior of an instance before
 ```dart
 
 class ModifiedMyService extends MyService {
-  ModifiedMyService(instance) {
+  ModifiedMyService(MyService instance) {
     super.value = 'new value';
   }
 }
@@ -179,10 +179,7 @@ class ModifiedMyService extends MyService {
 ddi.registerSingleton<MyService>(
   () => MyService(),
   decorators: [
-    (MyService existingInstance) {
-      // Apply decorator logic.
-      return ModifiedMyService(existingInstance);
-    },
+    (existingInstance) => ModifiedMyService(existingInstance),
     // Additional decorators can be added as needed.
   ],
 );
