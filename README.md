@@ -182,41 +182,26 @@ ddi.registerSingleton<MyService>(
 ```
 
 ## Interceptor
-Interceptor is a powerful mechanism that allows to intercept the creation, get, destruction, and disposal of instances. It provides fine-grained control over the instantiation process. It's necessary to create a custom class that extends DDIInterceptor
+The Interceptor is a powerful mechanism that provides fine-grained control over the instantiation, retrieval, destruction, and disposal of instances managed by the DDI Library. By creating a custom class that extends DDIInterceptor, you can inject custom logic at various stages of the instance's lifecycle.
 
-#### Example Usage:
-```dart
-class CustomInterceptor<T> extends DDIInterceptor<T> {
-  @override
-  T aroundConstruct(T instance) {
-    // Logic to customize or replace instance creation.
-    return CustomizedInstance();
-  }
+## Interceptor Methods
 
-  @override
-  T aroundGet(T instance) {
-    // Logic to customize instance get.
-    return instance;
-  }
+### aroundConstruct:
+- Invoked during the instance creation process.
+- Customize or replace the instance creation logic by returning a modified instance.
 
-  @override
-  T aroundDestroy(T instance) {
-    // Logic to customize instance destruction.
-    return instance;
-  }
+### aroundGet:
+- Invoked when retrieving an instance.
+- Customize the behavior of the retrieved instance before it is returned.
+- If you change some value, the next time you get this instance, it will apply again. Be aware that this can lead to unexpected functionality.
 
-  @override
-  T aroundDispose(T instance) {
-    // Logic to customize instance disposal.
-    return instance;
-  }
-}
+### aroundDestroy:
+- Invoked when an instance is being destroyed.
+- Allows customization of the instance destruction process.
 
-ddi.registerSingleton<MyService>(
-  () => MyService(),
-  interceptor: CustomInterceptor(),
-);
-```
+### aroundDispose:
+- Invoked during the disposal of an instance.
+- Provides an opportunity for customization before releasing resources or performing cleanup.
 
 ## RegisterIf
 The registerIf parameter is a boolean function that determines whether an instance should be registered. It provides conditional registration based on a specified condition. This is particularly useful for ensuring that only a single instance is registered, preventing issues with duplicated instances.

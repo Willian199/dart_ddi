@@ -1,11 +1,11 @@
 import 'package:dart_di/features/ddi_interceptor.dart';
-import 'package:flutter/widgets.dart';
 
-class J<T> extends DDIInterceptor<T> {
+import 'g.dart';
+import 'i.dart';
+
+class J extends DDIInterceptor<G> {
   @override
-  T aroundConstruct(T instance) {
-    debugPrint('Inicializando classe F');
-
-    return instance;
+  I aroundConstruct(G instance) {
+    return I();
   }
 }

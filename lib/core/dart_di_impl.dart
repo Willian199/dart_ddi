@@ -282,7 +282,7 @@ class _DDIImpl implements DDI {
     if (factoryClazz != null) {
       switch (factoryClazz.scopeType) {
         case Scopes.singleton:
-          destroy<T>(qualifierName: qualifierName);
+          _destroy<T>(effectiveQualifierName);
           break;
         default:
           _disposeScope<T>(factoryClazz, effectiveQualifierName);
