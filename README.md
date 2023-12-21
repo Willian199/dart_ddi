@@ -52,6 +52,7 @@ Summary
    11. [dispose](#dispose)
    12. [disposeByType](#disposebytype)
    13. [addDecorator](#adddecorator)
+   14. [addInterceptor](#addInterceptor)
 
 ## Getting Started
 
