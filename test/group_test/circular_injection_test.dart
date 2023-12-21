@@ -7,11 +7,16 @@ import '../clazz_test/mother.dart';
 
 void circularDetection() {
   group('DDI Circular Injection Detection tests', () {
-    test('Inject a Singleton bean depending from a bean that not exists yet', () {
-      expect(() => DDI.instance.registerSingleton(() => Father(mother: DDI.instance())), throwsA(const TypeMatcher<AssertionError>()));
+    test('Inject a Singleton bean depending from a bean that not exists yet',
+        () {
+      expect(
+          () => DDI.instance
+              .registerSingleton(() => Father(mother: DDI.instance())),
+          throwsA(const TypeMatcher<AssertionError>()));
     });
 
-    test('Inject a Application bean depending from a bean that not exists yet', () {
+    test('Inject a Application bean depending from a bean that not exists yet',
+        () {
       DDI.instance.registerApplication(() => Father(mother: DDI.instance()));
       DDI.instance.registerApplication(() => Mother(father: DDI.instance()));
 
@@ -23,7 +28,8 @@ void circularDetection() {
       DDI.instance.registerApplication(() => Father(mother: DDI.instance()));
       DDI.instance.registerApplication(() => Mother(father: DDI.instance()));
 
-      expect(() => DDI.instance<Mother>(), throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance<Mother>(),
+          throwsA(const TypeMatcher<AssertionError>()));
 
       DDI.instance.destroy<Mother>();
       DDI.instance.destroy<Father>();
@@ -33,7 +39,8 @@ void circularDetection() {
       DDI.instance.registerDependent(() => Father(mother: DDI.instance()));
       DDI.instance.registerDependent(() => Mother(father: DDI.instance()));
 
-      expect(() => DDI.instance<Mother>(), throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance<Mother>(),
+          throwsA(const TypeMatcher<AssertionError>()));
 
       DDI.instance.destroy<Mother>();
       DDI.instance.destroy<Father>();
@@ -43,7 +50,8 @@ void circularDetection() {
       DDI.instance.registerSession(() => Father(mother: DDI.instance()));
       DDI.instance.registerSession(() => Mother(father: DDI.instance()));
 
-      expect(() => DDI.instance<Mother>(), throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance<Mother>(),
+          throwsA(const TypeMatcher<AssertionError>()));
 
       DDI.instance.destroy<Mother>();
       DDI.instance.destroy<Father>();

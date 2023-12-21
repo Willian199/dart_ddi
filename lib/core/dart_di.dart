@@ -8,7 +8,8 @@ import 'package:flutter/material.dart';
 part 'dart_di_impl.dart';
 
 extension DDIContext on BuildContext {
-  T ddi<T extends Object>({Object? qualifierName}) => DDI.instance.get<T>(qualifierName: qualifierName);
+  T ddi<T extends Object>({Object? qualifierName}) =>
+      DDI.instance.get<T>(qualifierName: qualifierName);
 }
 
 /// [DDI] is an abstract class representing a Dependency Injection system.
@@ -192,7 +193,8 @@ abstract class DDI {
   ///
   /// - **Order of Execution:** Decorators are applied in the order they are provided.
   /// - **Instaces Already Gets:** No changes any Instances that have been get.
-  void addDecorator<T extends Object>(List<T Function(T)> decorators, {Object? qualifierName});
+  void addDecorator<T extends Object>(List<T Function(T)> decorators,
+      {Object? qualifierName});
 
   /// Allows to dynamically add a Interceptor.
   ///
@@ -202,5 +204,7 @@ abstract class DDI {
   /// - **Aorund Constructor:** Will not work with Singletons Scope.
   /// - **Order of Execution:** Interceptor are applied in the order they are provided.
   /// - **Instaces Already Gets:** No changes any Instances that have been get.
-  void addInterceptor<T extends Object>(List<DDIInterceptor<T> Function()> interceptors, {Object? qualifierName});
+  void addInterceptor<T extends Object>(
+      List<DDIInterceptor<T> Function()> interceptors,
+      {Object? qualifierName});
 }

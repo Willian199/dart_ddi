@@ -49,7 +49,8 @@ void application() {
       removeApplicationBeans();
     });
 
-    test('Retrieve Application bean after a second "child" bean is diposed', () {
+    test('Retrieve Application bean after a second "child" bean is diposed',
+        () {
       registerApplicationBeans();
 
       final instance = DDI.instance.get<A>();
@@ -64,7 +65,8 @@ void application() {
       removeApplicationBeans();
     });
 
-    test('Retrieve Application bean after the last "child" bean is diposed', () {
+    test('Retrieve Application bean after the last "child" bean is diposed',
+        () {
       registerApplicationBeans();
 
       final instance1 = DDI.instance.get<A>();
@@ -132,7 +134,8 @@ void application() {
 
       DDI.instance.destroy<C>();
 
-      expect(() => DDI.instance.get<C>(), throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance.get<C>(),
+          throwsA(const TypeMatcher<AssertionError>()));
     });
 
     test('Create, get and remove a qualifier bean', () {
@@ -142,7 +145,8 @@ void application() {
 
       DDI.instance.destroy(qualifierName: 'typeC');
 
-      expect(() => DDI.instance.get(qualifierName: 'typeC'), throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance.get(qualifierName: 'typeC'),
+          throwsA(const TypeMatcher<AssertionError>()));
     });
   });
 }

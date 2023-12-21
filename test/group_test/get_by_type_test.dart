@@ -9,12 +9,14 @@ void runByType() {
   group('DDI Process By Type', () {
     test('Application Get bean by Type that have registered and dispose', () {
       ///Where is Singleton, should the register in the correct order
-      DDI.instance.registerApplication<G>(() => H(), qualifierName: 'firtsClass');
+      DDI.instance
+          .registerApplication<G>(() => H(), qualifierName: 'firtsClass');
 
       final List<Object> keys1 = DDI.instance.getByType<G>();
 
       expect(keys1.length, 1);
-      DDI.instance.registerApplication<G>(() => I(), qualifierName: 'secondClass');
+      DDI.instance
+          .registerApplication<G>(() => I(), qualifierName: 'secondClass');
 
       final List<Object> keys2 = DDI.instance.getByType<G>();
 
@@ -28,8 +30,10 @@ void runByType() {
       DDI.instance.disposeByType<G>();
       DDI.instance.destroyByType<G>();
 
-      expect(() => DDI.instance.get(qualifierName: keys2[0]), throwsA(const TypeMatcher<AssertionError>()));
-      expect(() => DDI.instance.get(qualifierName: keys2[1]), throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance.get(qualifierName: keys2[0]),
+          throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance.get(qualifierName: keys2[1]),
+          throwsA(const TypeMatcher<AssertionError>()));
     });
 
     test('Dependent Get bean by Type that have registered and dispose', () {
@@ -39,7 +43,8 @@ void runByType() {
       final List<Object> keys1 = DDI.instance.getByType<G>();
 
       expect(keys1.length, 1);
-      DDI.instance.registerDependent<G>(() => I(), qualifierName: 'secondClass');
+      DDI.instance
+          .registerDependent<G>(() => I(), qualifierName: 'secondClass');
 
       final List<Object> keys2 = DDI.instance.getByType<G>();
 
@@ -53,8 +58,10 @@ void runByType() {
       DDI.instance.disposeByType<G>();
       DDI.instance.destroyByType<G>();
 
-      expect(() => DDI.instance.get(qualifierName: keys2[0]), throwsA(const TypeMatcher<AssertionError>()));
-      expect(() => DDI.instance.get(qualifierName: keys2[1]), throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance.get(qualifierName: keys2[0]),
+          throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance.get(qualifierName: keys2[1]),
+          throwsA(const TypeMatcher<AssertionError>()));
     });
 
     test('Session Get bean by Type that have registered and dispose', () {
@@ -78,18 +85,22 @@ void runByType() {
       DDI.instance.disposeByType<G>();
       DDI.instance.destroyByType<G>();
 
-      expect(() => DDI.instance.get(qualifierName: keys2[0]), throwsA(const TypeMatcher<AssertionError>()));
-      expect(() => DDI.instance.get(qualifierName: keys2[1]), throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance.get(qualifierName: keys2[0]),
+          throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance.get(qualifierName: keys2[1]),
+          throwsA(const TypeMatcher<AssertionError>()));
     });
 
     test('Get bean by Type that have registered and dispose', () {
       ///Where is Singleton, should the register in the correct order
-      DDI.instance.registerApplication<G>(() => H(), qualifierName: 'firtsClass');
+      DDI.instance
+          .registerApplication<G>(() => H(), qualifierName: 'firtsClass');
 
       final List<Object> keys1 = DDI.instance.getByType<G>();
 
       expect(keys1.length, 1);
-      DDI.instance.registerDependent<G>(() => I(), qualifierName: 'secondClass');
+      DDI.instance
+          .registerDependent<G>(() => I(), qualifierName: 'secondClass');
 
       final List<Object> keys2 = DDI.instance.getByType<G>();
 
@@ -103,8 +114,10 @@ void runByType() {
       DDI.instance.disposeByType<G>();
       DDI.instance.destroyByType<G>();
 
-      expect(() => DDI.instance.get(qualifierName: keys2[0]), throwsA(const TypeMatcher<AssertionError>()));
-      expect(() => DDI.instance.get(qualifierName: keys2[1]), throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance.get(qualifierName: keys2[0]),
+          throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance.get(qualifierName: keys2[1]),
+          throwsA(const TypeMatcher<AssertionError>()));
     });
   });
 }

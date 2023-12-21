@@ -81,7 +81,8 @@ void dependent() {
 
       DDI.instance.destroy<C>();
 
-      expect(() => DDI.instance.get<C>(), throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance.get<C>(),
+          throwsA(const TypeMatcher<AssertionError>()));
     });
 
     test('Create, get and remove a qualifier bean', () {
@@ -94,7 +95,8 @@ void dependent() {
 
       DDI.instance.destroy(qualifierName: 'typeC');
 
-      expect(() => DDI.instance.get(qualifierName: 'typeC'), throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance.get(qualifierName: 'typeC'),
+          throwsA(const TypeMatcher<AssertionError>()));
     });
   });
 }

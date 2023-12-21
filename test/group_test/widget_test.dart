@@ -29,7 +29,8 @@ void widget() {
 
       expect(identical(instance1, instance2), false);
       expect(identical(instance1.widgetB, instance2.widgetB), false);
-      expect(identical(instance1.widgetB.widgetC, instance2.widgetB.widgetC), false);
+      expect(identical(instance1.widgetB.widgetC, instance2.widgetB.widgetC),
+          false);
 
       removeWidgetBeans();
     });
@@ -43,7 +44,8 @@ void widget() {
       final instance2 = DDI.instance.get<WidgetA>();
       expect(identical(instance1, instance2), false);
       expect(identical(instance1.widgetB, instance2.widgetB), false);
-      expect(identical(instance1.widgetB.widgetC, instance2.widgetB.widgetC), false);
+      expect(identical(instance1.widgetB.widgetC, instance2.widgetB.widgetC),
+          false);
 
       removeWidgetBeans();
     });
@@ -57,7 +59,8 @@ void widget() {
       final instance2 = DDI.instance.get<WidgetA>();
       expect(identical(instance1, instance2), false);
       expect(identical(instance1.widgetB, instance2.widgetB), false);
-      expect(identical(instance1.widgetB.widgetC, instance2.widgetB.widgetC), false);
+      expect(identical(instance1.widgetB.widgetC, instance2.widgetB.widgetC),
+          false);
 
       removeWidgetBeans();
     });
@@ -103,7 +106,8 @@ void widget() {
 
       DDI.instance.destroy<WidgetC>();
 
-      expect(() => DDI.instance.get<WidgetC>(), throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance.get<WidgetC>(),
+          throwsA(const TypeMatcher<AssertionError>()));
     });
 
     test('Create, get and remove a qualifier bean', () {
@@ -116,7 +120,8 @@ void widget() {
 
       DDI.instance.destroy(qualifierName: 'typeC');
 
-      expect(() => DDI.instance.get(qualifierName: 'typeC'), throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance.get(qualifierName: 'typeC'),
+          throwsA(const TypeMatcher<AssertionError>()));
     });
   });
 }

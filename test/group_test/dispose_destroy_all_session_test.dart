@@ -21,9 +21,12 @@ void disposeDestroyAllSession() {
 
       DDI.instance.destroyAllSession();
 
-      expect(() => DDI.instance.get<A>(), throwsA(const TypeMatcher<AssertionError>()));
-      expect(() => DDI.instance.get<B>(), throwsA(const TypeMatcher<AssertionError>()));
-      expect(() => DDI.instance.get<C>(), throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance.get<A>(),
+          throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance.get<B>(),
+          throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance.get<C>(),
+          throwsA(const TypeMatcher<AssertionError>()));
     });
 
     test('Register, get, dispose and destroy Session bean', () {
@@ -48,9 +51,12 @@ void disposeDestroyAllSession() {
 
       DDI.instance.destroyAllSession();
 
-      expect(() => DDI.instance.get<A>(), throwsA(const TypeMatcher<AssertionError>()));
-      expect(() => DDI.instance.get<B>(), throwsA(const TypeMatcher<AssertionError>()));
-      expect(() => DDI.instance.get<C>(), throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance.get<A>(),
+          throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance.get<B>(),
+          throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance.get<C>(),
+          throwsA(const TypeMatcher<AssertionError>()));
     });
   });
 }

@@ -23,7 +23,8 @@ void interceptor() {
 
       DDI.instance.destroy<G>();
 
-      expect(() => DDI.instance.get<G>(), throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance.get<G>(),
+          throwsA(const TypeMatcher<AssertionError>()));
     });
 
     test('ADD Interceptor to a Application bean', () {
@@ -36,11 +37,13 @@ void interceptor() {
 
       DDI.instance.destroy<G>();
 
-      expect(() => DDI.instance.get<G>(), throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance.get<G>(),
+          throwsA(const TypeMatcher<AssertionError>()));
     });
 
     test('ADD Interceptor to a Application bean with qualifier', () {
-      DDI.instance.registerApplication<G>(() => H(), qualifierName: 'qualifier', interceptors: [() => J()]);
+      DDI.instance.registerApplication<G>(() => H(),
+          qualifierName: 'qualifier', interceptors: [() => J()]);
 
       final G instance = DDI.instance.get<G>(qualifierName: 'qualifier');
 
@@ -49,7 +52,8 @@ void interceptor() {
 
       DDI.instance.destroy<G>(qualifierName: 'qualifier');
 
-      expect(() => DDI.instance.get<G>(qualifierName: 'qualifier'), throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance.get<G>(qualifierName: 'qualifier'),
+          throwsA(const TypeMatcher<AssertionError>()));
     });
 
     test('ADD Interceptor to a Dependent bean', () {
@@ -62,7 +66,8 @@ void interceptor() {
 
       DDI.instance.destroy<G>();
 
-      expect(() => DDI.instance.get<G>(), throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance.get<G>(),
+          throwsA(const TypeMatcher<AssertionError>()));
     });
 
     test('ADD Interceptor to a Session bean', () {
@@ -75,7 +80,8 @@ void interceptor() {
 
       DDI.instance.destroy<G>();
 
-      expect(() => DDI.instance.get<G>(), throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance.get<G>(),
+          throwsA(const TypeMatcher<AssertionError>()));
     });
 
     test('ADD Interceptor after registered a Application bean', () {
@@ -99,7 +105,8 @@ void interceptor() {
 
       DDI.instance.destroy<G>();
 
-      expect(() => DDI.instance.get<G>(), throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance.get<G>(),
+          throwsA(const TypeMatcher<AssertionError>()));
     });
 
     test('ADD Decorators and Interceptor to a Singleton bean', () {
