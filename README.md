@@ -148,7 +148,7 @@ ddi.registerSingleton<PlatformService>(() => iOSService(), qualifierName: "ios")
 `Type Identifiers:` Qualifiers are often implemented using string-based identifiers, which may introduce issues such as typos or potential naming conflicts. To mitigate these concerns, it is highly recommended to utilize enums or constants.
 
 # Extra Customization
-The DDI Library provides features for customizing the lifecycle of registered instances. These features include `postConstruct`, `decorators`, and `interceptor`.
+The DDI Library provides features for customizing the lifecycle of registered instances. These features include `postConstruct`, `decorators`, `interceptor` and `registerIf`.
 
 ## PostConstruct
 The postConstruct callback allows to perform additional setup or initialization after an instance is created. This is particularly useful for executing logic that should run once the instance is ready for use.
@@ -167,8 +167,15 @@ ddi.registerSingleton<MyService>(
 ## Decorators
 Decorators provide a way to modify or enhance the behavior of an instance before it is returned. Each decorator is a function that takes the existing instance and returns a modified instance. Multiple decorators can be applied, and they are executed in the order they are specified during registration.
 
-Example Usage:
+#### Example Usage:
 ```dart
+
+class ModifiedMyService extends MyService {
+  ModifiedMyService(instance) {
+    super.value = 'new value';
+  }
+}
+
 ddi.registerSingleton<MyService>(
   () => MyService(),
   decorators: [
@@ -182,26 +189,56 @@ ddi.registerSingleton<MyService>(
 ```
 
 ## Interceptor
-The Interceptor is a powerful mechanism that provides fine-grained control over the instantiation, retrieval, destruction, and disposal of instances managed by the DDI Library. By creating a custom class that extends DDIInterceptor, you can inject custom logic at various stages of the instance's lifecycle.
+The Interceptor is a powerful mechanism that provides fine-grained control over the instantiation, retrieval, destruction, and disposal of instances managed by the DDI Library. By creating a custom class that extends `DDIInterceptor`, you can inject custom logic at various stages of the instance's lifecycle.
 
 ## Interceptor Methods
 
-### aroundConstruct:
+### aroundConstruct
 - Invoked during the instance creation process.
 - Customize or replace the instance creation logic by returning a modified instance.
 
-### aroundGet:
+### aroundGet
 - Invoked when retrieving an instance.
 - Customize the behavior of the retrieved instance before it is returned.
 - If you change some value, the next time you get this instance, it will apply again. Be aware that this can lead to unexpected functionality.
 
-### aroundDestroy:
+### aroundDestroy
 - Invoked when an instance is being destroyed.
 - Allows customization of the instance destruction process.
 
-### aroundDispose:
+### aroundDispose
 - Invoked during the disposal of an instance.
 - Provides an opportunity for customization before releasing resources or performing cleanup.
+
+#### Example Usage
+
+ ```dart
+ class CustomInterceptor<T> extends DDIInterceptor<T> {
+   @override
+   T aroundConstruct(T instance) {
+     // Logic to customize or replace instance creation.
+     return CustomizedInstance();
+   }
+
+   @override
+   T aroundGet(T instance) {
+     // Logic to customize the behavior of the retrieved instance.
+     return ModifiedInstance(instance);
+   }
+
+   @override
+   void aroundDestroy(T instance) {
+     // Logic to perform cleanup during instance destruction.
+     // This method is optional and can be overridden as needed.
+   }
+
+   @override
+   void aroundDispose(T instance) {
+     // Logic to release resources or perform custom cleanup during instance disposal.
+     // This method is optional and can be overridden as needed.
+   }
+ }
+ ```
 
 ## RegisterIf
 The registerIf parameter is a boolean function that determines whether an instance should be registered. It provides conditional registration based on a specified condition. This is particularly useful for ensuring that only a single instance is registered, preventing issues with duplicated instances.
