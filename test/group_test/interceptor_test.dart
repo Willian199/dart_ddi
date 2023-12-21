@@ -14,20 +14,20 @@ void interceptor() {
   group('DDI Interceptor Tests', () {
     test('ADD Interceptor to a Singleton bean', () {
       ///Where is Singleton, should the register in the correct order
-      DDI.instance.registerSingleton<G>(() => H(), interceptor: () => J());
+      DDI.instance.registerSingleton<G>(() => H(), interceptors: [() => J()]);
 
       final G instance = DDI.instance.get<G>();
 
       expect(instance.area(), 20);
       expect(instance is I, true);
 
-      DDI.instance.dispose<G>();
+      DDI.instance.destroy<G>();
 
       expect(() => DDI.instance.get<G>(), throwsA(const TypeMatcher<AssertionError>()));
     });
 
     test('ADD Interceptor to a Application bean', () {
-      DDI.instance.registerApplication<G>(() => H(), interceptor: () => J());
+      DDI.instance.registerApplication<G>(() => H(), interceptors: [() => J()]);
 
       final G instance = DDI.instance.get<G>();
 
@@ -40,7 +40,7 @@ void interceptor() {
     });
 
     test('ADD Interceptor to a Application bean with qualifier', () {
-      DDI.instance.registerApplication<G>(() => H(), qualifierName: 'qualifier', interceptor: () => J());
+      DDI.instance.registerApplication<G>(() => H(), qualifierName: 'qualifier', interceptors: [() => J()]);
 
       final G instance = DDI.instance.get<G>(qualifierName: 'qualifier');
 
@@ -53,7 +53,7 @@ void interceptor() {
     });
 
     test('ADD Interceptor to a Dependent bean', () {
-      DDI.instance.registerDependent<G>(() => H(), interceptor: () => J());
+      DDI.instance.registerDependent<G>(() => H(), interceptors: [() => J()]);
 
       final G instance = DDI.instance.get<G>();
 
@@ -66,7 +66,7 @@ void interceptor() {
     });
 
     test('ADD Interceptor to a Session bean', () {
-      DDI.instance.registerSession<G>(() => H(), interceptor: () => J());
+      DDI.instance.registerSession<G>(() => H(), interceptors: [() => J()]);
 
       final G instance = DDI.instance.get<G>();
 
@@ -86,7 +86,7 @@ void interceptor() {
           (instance) => E(instance),
           (instance) => F(instance),
         ],
-        interceptor: () => K(),
+        interceptors: [() => K()],
       );
 
       final instance1 = DDI.instance.get<D>();

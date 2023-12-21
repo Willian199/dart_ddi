@@ -8,7 +8,7 @@ class FactoryClazz<T> {
   final T Function()? clazzRegister;
   List<T Function(T i)>? decorators;
   final void Function()? postConstruct;
-  final DDIInterceptor<T> Function()? interceptor;
+  final List<DDIInterceptor<T> Function()>? interceptors;
   final Scopes scopeType;
   final Type type;
 
@@ -19,7 +19,7 @@ class FactoryClazz<T> {
     this.clazzRegister,
     this.decorators,
     this.postConstruct,
-    this.interceptor,
+    this.interceptors,
   });
 
   FactoryClazz<T> copyWith({
@@ -27,7 +27,7 @@ class FactoryClazz<T> {
     T Function()? clazzRegister,
     List<T Function(T i)>? decorators,
     void Function()? postConstruct,
-    DDIInterceptor<T> Function()? interceptor,
+    List<DDIInterceptor<T> Function()>? interceptors,
     Scopes? scopeType,
     Type? type,
   }) {
@@ -36,7 +36,7 @@ class FactoryClazz<T> {
       clazzRegister: clazzRegister ?? this.clazzRegister,
       decorators: decorators ?? this.decorators,
       postConstruct: postConstruct ?? this.postConstruct,
-      interceptor: interceptor ?? this.interceptor,
+      interceptors: interceptors ?? this.interceptors,
       scopeType: scopeType ?? this.scopeType,
       type: type ?? this.type,
     );

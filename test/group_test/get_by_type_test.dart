@@ -7,30 +7,6 @@ import '../clazz_test/i.dart';
 
 void runByType() {
   group('DDI Process By Type', () {
-    test('Singleton Get bean by Type that have registered and dispose', () {
-      ///Where is Singleton, should the register in the correct order
-      DDI.instance.registerSingleton<G>(() => H(), qualifierName: 'firtsClass');
-
-      final List<Object> keys1 = DDI.instance.getByType<G>();
-
-      expect(keys1.length, 1);
-      DDI.instance.registerSingleton<G>(() => I(), qualifierName: 'secondClass');
-
-      final List<Object> keys2 = DDI.instance.getByType<G>();
-
-      expect(keys2.length, 2);
-
-      final G instance1 = DDI.instance.get(qualifierName: keys2[0]);
-      final G instance2 = DDI.instance.get(qualifierName: keys2[1]);
-
-      expect(instance1.area(), instance2.area() / 2);
-
-      DDI.instance.disposeByType<G>();
-
-      expect(() => DDI.instance.get(qualifierName: keys2[0]), throwsA(const TypeMatcher<AssertionError>()));
-      expect(() => DDI.instance.get(qualifierName: keys2[1]), throwsA(const TypeMatcher<AssertionError>()));
-    });
-
     test('Application Get bean by Type that have registered and dispose', () {
       ///Where is Singleton, should the register in the correct order
       DDI.instance.registerApplication<G>(() => H(), qualifierName: 'firtsClass');

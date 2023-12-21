@@ -1,5 +1,6 @@
 import 'group_test/add_decoratos_test.dart';
 import 'group_test/application_test.dart';
+import 'group_test/circular_injection_test.dart';
 import 'group_test/dependent_test.dart';
 import 'group_test/dispose_destroy_all_session_test.dart';
 import 'group_test/get_by_type_test.dart';
@@ -26,4 +27,7 @@ void main() {
 
   //Interceptor
   interceptor();
+
+  //CircularDetection
+  circularDetection();
 }

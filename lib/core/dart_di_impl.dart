@@ -2,6 +2,9 @@ part of 'dart_di.dart';
 
 class _DDIImpl implements DDI {
   final Map<Object, FactoryClazz> _beans = {};
+  static const _resolutionKey = #_resolutionKey;
+
+  final Map<Object, List<Object>> _resolutionMap = Zone.current[_resolutionKey] as Map<Object, List<Object>>? ?? {};
 
   @override
   void registerSingleton<T extends Object>(
@@ -9,7 +12,7 @@ class _DDIImpl implements DDI {
     Object? qualifierName,
     void Function()? postConstruct,
     List<T Function(T)>? decorators,
-    DDIInterceptor<T> Function()? interceptor,
+    List<DDIInterceptor<T> Function()>? interceptors,
     bool Function()? registerIf,
   }) {
     if (registerIf?.call() ?? true) {
@@ -21,8 +24,10 @@ class _DDIImpl implements DDI {
 
       T clazz = clazzRegister.call();
 
-      if (interceptor != null) {
-        clazz = interceptor.call().aroundConstruct(clazz);
+      if (interceptors != null) {
+        for (var interceptor in interceptors) {
+          clazz = interceptor.call().aroundConstruct(clazz);
+        }
       }
 
       clazz = _executarDecorators(clazz, decorators);
@@ -33,7 +38,7 @@ class _DDIImpl implements DDI {
         clazzInstance: clazz,
         type: T,
         scopeType: Scopes.singleton,
-        interceptor: interceptor,
+        interceptors: interceptors,
       );
     }
   }
@@ -44,7 +49,7 @@ class _DDIImpl implements DDI {
     Object? qualifierName,
     void Function()? postConstruct,
     List<T Function(T)>? decorators,
-    DDIInterceptor<T> Function()? interceptor,
+    List<DDIInterceptor<T> Function()>? interceptors,
     bool Function()? registerIf,
   }) {
     if (registerIf?.call() ?? true) {
@@ -54,7 +59,7 @@ class _DDIImpl implements DDI {
         qualifierName: qualifierName,
         postConstruct: postConstruct,
         decorators: decorators,
-        interceptor: interceptor,
+        interceptors: interceptors,
       );
     }
   }
@@ -65,7 +70,7 @@ class _DDIImpl implements DDI {
     Object? qualifierName,
     void Function()? postConstruct,
     List<T Function(T)>? decorators,
-    DDIInterceptor<T> Function()? interceptor,
+    List<DDIInterceptor<T> Function()>? interceptors,
     bool Function()? registerIf,
   }) {
     if (registerIf?.call() ?? true) {
@@ -75,7 +80,7 @@ class _DDIImpl implements DDI {
         qualifierName: qualifierName,
         postConstruct: postConstruct,
         decorators: decorators,
-        interceptor: interceptor,
+        interceptors: interceptors,
       );
     }
   }
@@ -86,7 +91,7 @@ class _DDIImpl implements DDI {
     Object? qualifierName,
     void Function()? postConstruct,
     List<T Function(T)>? decorators,
-    DDIInterceptor<T> Function()? interceptor,
+    List<DDIInterceptor<T> Function()>? interceptors,
     bool Function()? registerIf,
   }) {
     if (registerIf?.call() ?? true) {
@@ -96,7 +101,7 @@ class _DDIImpl implements DDI {
         qualifierName: qualifierName,
         postConstruct: postConstruct,
         decorators: decorators,
-        interceptor: interceptor,
+        interceptors: interceptors,
       );
     }
   }
@@ -107,7 +112,7 @@ class _DDIImpl implements DDI {
     Object? qualifierName,
     void Function()? postConstruct,
     List<T Function(T)>? decorators,
-    DDIInterceptor<T> Function()? interceptor,
+    List<DDIInterceptor<T> Function()>? interceptors,
     bool Function()? registerIf,
   }) {
     if (registerIf?.call() ?? true) {
@@ -117,7 +122,7 @@ class _DDIImpl implements DDI {
         qualifierName: qualifierName,
         postConstruct: postConstruct,
         decorators: decorators,
-        interceptor: interceptor,
+        interceptors: interceptors,
       );
     }
   }
@@ -128,7 +133,7 @@ class _DDIImpl implements DDI {
     Object? qualifierName,
     void Function()? postConstruct,
     List<T Function(T)>? decorators,
-    DDIInterceptor<T> Function()? interceptor,
+    List<DDIInterceptor<T> Function()>? interceptors,
   }) {
     final Object effectiveQualifierName = qualifierName ?? T;
 
@@ -141,7 +146,7 @@ class _DDIImpl implements DDI {
       type: T,
       postConstruct: postConstruct,
       decorators: decorators,
-      interceptor: interceptor,
+      interceptors: interceptors,
       scopeType: scopeType,
     );
   }
@@ -154,20 +159,28 @@ class _DDIImpl implements DDI {
   T _getSingleton<T extends Object>(FactoryClazz<T> factoryClazz) {
     assert(factoryClazz.clazzInstance != null, 'The Singleton Type ${T.runtimeType.toString()} is destroyed');
 
-    return factoryClazz.interceptor?.call().aroundGet(factoryClazz.clazzInstance!) ?? factoryClazz.clazzInstance!;
+    if (factoryClazz.interceptors != null) {
+      for (var interceptor in factoryClazz.interceptors!) {
+        factoryClazz.clazzInstance = interceptor.call().aroundGet(factoryClazz.clazzInstance!);
+      }
+    }
+
+    return factoryClazz.clazzInstance!;
   }
 
   T _getAplication<T extends Object>(FactoryClazz<T> factoryClazz, effectiveQualifierName) {
     T? applicationClazz = factoryClazz.clazzInstance;
 
-    if (applicationClazz == null) {
+    if (factoryClazz.clazzInstance == null) {
       applicationClazz = factoryClazz.clazzRegister!.call();
 
-      if (factoryClazz.interceptor != null) {
-        applicationClazz = factoryClazz.interceptor!.call().aroundConstruct(applicationClazz);
+      if (factoryClazz.interceptors != null) {
+        for (final interceptor in factoryClazz.interceptors!) {
+          applicationClazz = interceptor.call().aroundConstruct(applicationClazz!);
+        }
       }
 
-      applicationClazz = _executarDecorators<T>(applicationClazz, factoryClazz.decorators);
+      applicationClazz = _executarDecorators<T>(applicationClazz!, factoryClazz.decorators);
 
       factoryClazz.postConstruct?.call();
 
@@ -176,19 +189,35 @@ class _DDIImpl implements DDI {
       debugPrint('Instância reaproveitada');
     }
 
-    return factoryClazz.interceptor?.call().aroundGet(applicationClazz) ?? applicationClazz;
+    if (factoryClazz.interceptors != null) {
+      for (final interceptor in factoryClazz.interceptors!) {
+        applicationClazz = interceptor.call().aroundGet(applicationClazz!);
+      }
+    }
+
+    return applicationClazz!;
   }
 
   T _getDependent<T extends Object>(FactoryClazz<T> factoryClazz) {
     T dependentClazz = factoryClazz.clazzRegister!.call();
 
-    dependentClazz = factoryClazz.interceptor?.call().aroundConstruct(dependentClazz) ?? dependentClazz;
+    if (factoryClazz.interceptors != null) {
+      for (final interceptor in factoryClazz.interceptors!) {
+        dependentClazz = interceptor.call().aroundConstruct(dependentClazz);
+      }
+    }
 
     dependentClazz = _executarDecorators<T>(dependentClazz, factoryClazz.decorators);
 
     factoryClazz.postConstruct?.call();
 
-    return factoryClazz.interceptor?.call().aroundGet(dependentClazz) ?? dependentClazz;
+    if (factoryClazz.interceptors != null) {
+      for (final interceptor in factoryClazz.interceptors!) {
+        dependentClazz = interceptor.call().aroundGet(dependentClazz);
+      }
+    }
+
+    return dependentClazz;
   }
 
   @override
@@ -201,11 +230,31 @@ class _DDIImpl implements DDI {
 
     assert(factoryClazz != null, 'No Bean with Type ${effectiveQualifierName.toString()} is found');
 
-    return switch (factoryClazz!.scopeType) {
-      Scopes.singleton => _getSingleton(factoryClazz),
-      Scopes.dependent || Scopes.widget => _getDependent(factoryClazz),
-      Scopes.application || Scopes.session => _getAplication(factoryClazz, effectiveQualifierName)
-    };
+    return runZoned(
+      () {
+        return _getScoped<T>(factoryClazz!, effectiveQualifierName);
+      },
+      zoneValues: {_resolutionKey: <Object, List<Object>>{}},
+    );
+  }
+
+  T _getScoped<T extends Object>(FactoryClazz<T> factoryClazz, Object effectiveQualifierName) {
+    assert(_resolutionMap[effectiveQualifierName]?.isEmpty ?? true, 'Circular Detection found for Bean Type ${effectiveQualifierName.toString()}!!!');
+
+    _resolutionMap[effectiveQualifierName] = [..._resolutionMap[effectiveQualifierName] ?? [], effectiveQualifierName];
+
+    T result;
+    try {
+      result = switch (factoryClazz.scopeType) {
+        Scopes.singleton => _getSingleton<T>(factoryClazz),
+        Scopes.dependent || Scopes.widget => _getDependent<T>(factoryClazz),
+        Scopes.application || Scopes.session => _getAplication<T>(factoryClazz, effectiveQualifierName)
+      };
+    } finally {
+      _resolutionMap[effectiveQualifierName]?.removeLast();
+    }
+
+    return result;
   }
 
   @override
@@ -238,8 +287,10 @@ class _DDIImpl implements DDI {
     final FactoryClazz<T>? factoryClazz = _beans[effectiveQualifierName] as FactoryClazz<T>?;
 
     if (factoryClazz != null) {
-      if (factoryClazz.clazzInstance != null) {
-        factoryClazz.interceptor?.call().aroundDestroy(factoryClazz.clazzInstance as T);
+      if (factoryClazz.clazzInstance != null && factoryClazz.interceptors != null) {
+        for (final interceptor in factoryClazz.interceptors!) {
+          interceptor.call().aroundDestroy(factoryClazz.clazzInstance as T);
+        }
       }
 
       _beans.remove(effectiveQualifierName);
@@ -281,23 +332,26 @@ class _DDIImpl implements DDI {
 
     if (factoryClazz != null) {
       switch (factoryClazz.scopeType) {
-        case Scopes.singleton:
-          _destroy<T>(effectiveQualifierName);
+        case Scopes.application:
+        case Scopes.session:
+          _disposeBean<T>(factoryClazz, effectiveQualifierName);
           break;
         default:
-          _disposeScope<T>(factoryClazz, effectiveQualifierName);
+          debugPrint('Only Application and Session can be disposed.');
           break;
       }
     }
   }
 
   /// Dispose only clean the class Instance
-  void _disposeScope<T>(FactoryClazz<T>? factoryClazz, Object effectiveQualifierName) {
+  void _disposeBean<T>(FactoryClazz<T>? factoryClazz, Object effectiveQualifierName) {
     debugPrint('Dispose the bean ${effectiveQualifierName.toString()}');
 
     if (factoryClazz != null) {
-      if (factoryClazz.clazzInstance != null) {
-        factoryClazz.interceptor?.call().aroundDispose(factoryClazz.clazzInstance as T);
+      if (factoryClazz.clazzInstance != null && factoryClazz.interceptors != null) {
+        for (final interceptor in factoryClazz.interceptors!) {
+          interceptor.call().aroundDispose(factoryClazz.clazzInstance as T);
+        }
       }
 
       factoryClazz.clazzInstance = null;
@@ -306,12 +360,13 @@ class _DDIImpl implements DDI {
 
   @override
   void disposeAllSession() {
-    _disposeAll(Scopes.session);
-  }
+    for (final MapEntry(:key, :value) in _beans.entries) {
+      if (value.scopeType != Scopes.session) {
+        continue;
+      }
 
-  @override
-  void disposeAllWidget() {
-    _disposeAll(Scopes.widget);
+      _disposeBean(value, key);
+    }
   }
 
   @override
@@ -321,21 +376,7 @@ class _DDIImpl implements DDI {
     final clazz = _beans.entries.where((element) => element.value.type == type).toList();
 
     for (var c in clazz) {
-      if (c.value.scopeType == Scopes.singleton) {
-        _destroy(c.key);
-      } else {
-        _disposeScope(c.value, c.key);
-      }
-    }
-  }
-
-  void _disposeAll(Scopes scope) {
-    for (final MapEntry(:key, :value) in _beans.entries) {
-      if (value.scopeType != scope) {
-        continue;
-      }
-
-      _disposeScope(value, key);
+      _disposeBean(c.value, c.key);
     }
   }
 

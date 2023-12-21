@@ -40,7 +40,7 @@ void singleton() {
 
       final instance = DDI.instance.get<A>();
 
-      DDI.instance.dispose<C>();
+      DDI.instance.destroy<C>();
       final instance1 = DDI.instance.get<A>();
       expect(instance1, same(instance));
       expect(instance1.b, same(instance.b));
@@ -55,7 +55,7 @@ void singleton() {
 
       final instance = DDI.instance.get<A>();
 
-      DDI.instance.dispose<B>();
+      DDI.instance.destroy<B>();
       final instance1 = DDI.instance.get<A>();
       expect(instance1, same(instance));
       expect(instance1.b, same(instance.b));
@@ -71,17 +71,6 @@ void singleton() {
       DDI.instance.get<C>();
 
       DDI.instance.destroy<C>();
-
-      expect(() => DDI.instance.get<C>(), throwsA(const TypeMatcher<AssertionError>()));
-    });
-
-    ///Remove or Dispose a Singleton, has the same effect
-    test('Try to retrieve singleton bean after disposed', () {
-      DDI.instance.registerSingleton(() => C());
-
-      DDI.instance.get<C>();
-
-      DDI.instance.dispose<C>();
 
       expect(() => DDI.instance.get<C>(), throwsA(const TypeMatcher<AssertionError>()));
     });

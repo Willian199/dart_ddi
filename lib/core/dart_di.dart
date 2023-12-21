@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dart_di/data/factory_clazz.dart';
 import 'package:dart_di/enum/scopes.dart';
 import 'package:dart_di/features/ddi_interceptor.dart';
@@ -34,7 +36,7 @@ abstract class DDI {
     Object? qualifierName,
     void Function()? postConstruct,
     List<T Function(T)>? decorators,
-    DDIInterceptor<T> Function()? interceptor,
+    List<DDIInterceptor<T> Function()>? interceptors,
     bool Function()? registerIf,
   });
 
@@ -59,7 +61,7 @@ abstract class DDI {
     Object? qualifierName,
     void Function()? postConstruct,
     List<T Function(T)>? decorators,
-    DDIInterceptor<T> Function()? interceptor,
+    List<DDIInterceptor<T> Function()>? interceptors,
     bool Function()? registerIf,
   });
 
@@ -84,7 +86,7 @@ abstract class DDI {
     Object? qualifierName,
     void Function()? postConstruct,
     List<T Function(T)>? decorators,
-    DDIInterceptor<T> Function()? interceptor,
+    List<DDIInterceptor<T> Function()>? interceptors,
     bool Function()? registerIf,
   });
 
@@ -109,7 +111,7 @@ abstract class DDI {
     Object? qualifierName,
     void Function()? postConstruct,
     List<T Function(T)>? decorators,
-    DDIInterceptor<T> Function()? interceptor,
+    List<DDIInterceptor<T> Function()>? interceptors,
     bool Function()? registerIf,
   });
 
@@ -134,7 +136,7 @@ abstract class DDI {
     Object? qualifierName,
     void Function()? postConstruct,
     List<T Function(T)>? decorators,
-    DDIInterceptor<T> Function()? interceptor,
+    List<DDIInterceptor<T> Function()>? interceptors,
     bool Function()? registerIf,
   });
 
@@ -171,9 +173,6 @@ abstract class DDI {
   ///
   /// - `qualifierName`: Optional qualifier name to distinguish between different instances of the same type.
   void dispose<T>({Object? qualifierName});
-
-  /// Disposes all the instance registered as Widget Scope.
-  void disposeAllWidget();
 
   /// Disposes all the instance registered as Session Scope.
   void disposeAllSession();

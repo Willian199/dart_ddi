@@ -310,7 +310,7 @@ void registerSingleton<T extends Object>(
   Object? qualifierName,
   void Function()? postConstruct,
   List<T Function(T)>? decorators,
-  DDIInterceptor Function()? interceptor,
+  List<DDIInterceptor<T> Function()>? interceptors,
   bool Function()? registerIf,
 });
 ```
@@ -325,7 +325,7 @@ void registerApplication<T extends Object>(
   Object? qualifierName,
   void Function()? postConstruct,
   List<T Function(T)>? decorators,
-  DDIInterceptor Function()? interceptor,
+  List<DDIInterceptor<T> Function()>? interceptors,
   bool Function()? registerIf,
 });
 ```
@@ -340,7 +340,7 @@ void registerDependent<T extends Object>(
   Object? qualifierName,
   void Function()? postConstruct,
   List<T Function(T)>? decorators,
-  DDIInterceptor Function()? interceptor,
+  List<DDIInterceptor<T> Function()>? interceptors,
   bool Function()? registerIf,
 });
 ```
@@ -355,7 +355,7 @@ void registerSession<T extends Object>(
   Object? qualifierName,
   void Function()? postConstruct,
   List<T Function(T)>? decorators,
-  DDIInterceptor Function()? interceptor,
+  List<DDIInterceptor<T> Function()>? interceptors,
   bool Function()? registerIf,
 });
 ```
@@ -370,7 +370,7 @@ void registerWidget<T extends Widget>(
   Object? qualifierName,
   void Function()? postConstruct,
   List<T Function(T)>? decorators,
-  DDIInterceptor Function()? interceptor,
+  List<DDIInterceptor<T> Function()>? interceptors,
   bool Function()? registerIf,
 });
 ```
@@ -417,7 +417,7 @@ void destroyByType<T extends Object>();
 
 ## dispose
 
-Disposes of an instance, invoking any cleanup logic. This is particularly useful for instances with resources that need to be released. If it's a Singleton, they will be destroyed.
+Disposes of an instance, invoking any cleanup logic. This is particularly useful for instances with resources that need to be released. Only applied to Application and Session Scopes
 
 ```dart
 void dispose<T>({Object? qualifierName});
@@ -425,7 +425,7 @@ void dispose<T>({Object? qualifierName});
 
 ## disposeByType
 
-Disposes all instance with type `T`. If is a Singleton, they will be destroyed.
+Disposes all instance with type `T`. Only applied to Application and Session Scopes
 
 ```dart
 void disposeByType<T extends Object>();
