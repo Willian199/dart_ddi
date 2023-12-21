@@ -15,33 +15,35 @@ and the Flutter guide for
 
 ## Overview
 
-The Dart Dependency Injection (DDI) library is a robust and flexible dependency injection mechanism inspired by the Contexts and Dependency Injection (CDI) framework in Java and by Get_It dart package. DDI facilitates the management of object instances and their lifecycles by introducing different scopes and customization options. This documentation aims to provide an in-depth understanding of DDI's core concepts, usage, and advanced features.
+The Dart Dependency Injection (DDI) library is a robust and flexible dependency injection mechanism inspired by the Contexts and Dependency Injection (CDI) framework in Java and by Get_It dart package. DDI facilitates the management of object instances and their lifecycles by introducing different scopes and customization options. This documentation aims to provide an in-depth understanding of DDI's core concepts, usage, and features.
 
+🚀 Contribute to the DDI by sharing your ideas, feedback, or practical examples.
 
-[Overview](#overview)
-2. [Getting Started](#getting-started)
+Summary
+
+1. [Getting Started](#getting-started)
    1. [Core Concepts](#core-concepts)
    2. [Scopes](#scopes)
    3. [Qualifiers](#qualifiers)
    4. [Extra Customization](#extra-customization)
    5. [API Reference](#api-reference)
-3. [Core Concepts](#core-concepts)
+2. [Core Concepts](#core-concepts)
    1. [Singleton](#singleton)
    2. [Application](#application)
    3. [Session](#session)
    4. [Dependent](#dependent)
    5. [Widget](#widget)
    6. [Common Considerations](#common-considerations)
-4. [Qualifiers](#qualifiers)
+3. [Qualifiers](#qualifiers)
    1. [How Qualifiers Work](#how-qualifiers-work)
    2. [Use Cases for Qualifiers](#use-cases-for-qualifiers)
    3. [Considerations](#considerations)
-5. [Extra Customization](#extra-customization)
+4. [Extra Customization](#extra-customization)
    1. [PostConstruct](#postconstruct)
    2. [Decorators](#decorators)
    3. [Interceptor](#interceptor)
    4. [RegisterIf](#registerif)
-6. [API Reference](#api-reference)
+5. [API Reference](#api-reference)
    1. [registerSingleton](#registersingleton)
    2. [registerApplication](#registerapplication)
    3. [registerDependent](#registerdependent)
