@@ -7,6 +7,10 @@ import 'package:flutter/material.dart';
 
 part 'dart_di_impl.dart';
 
+extension DDIContext on BuildContext {
+  T ddi<T extends Object>({Object? qualifierName}) => DDI.instance.get<T>(qualifierName: qualifierName);
+}
+
 /// [DDI] is an abstract class representing a Dependency Injection system.
 abstract class DDI {
   /// Creates the shared instance of the [DDI] class.
@@ -180,7 +184,7 @@ abstract class DDI {
   /// Disposes all the instance registered as type `T`.
   void disposeByType<T extends Object>();
 
-  /// Allows to dynamically add a decorators to the Bean.
+  /// Allows to dynamically add a decorators.
   ///
   /// When using this method, consider the following:
   ///
