@@ -78,6 +78,30 @@ void interceptor() {
       expect(() => DDI.instance.get<G>(), throwsA(const TypeMatcher<AssertionError>()));
     });
 
+    test('ADD Interceptor after registered a Application bean', () {
+      DDI.instance.registerApplication<G>(() => H());
+
+      final G instance = DDI.instance.get<G>();
+
+      expect(instance.area(), 10);
+      expect(instance is H, true);
+
+      DDI.instance.dispose<G>();
+
+      DDI.instance.addInterceptor([
+        () => J(),
+      ]);
+
+      final G instance2 = DDI.instance.get<G>();
+
+      expect(instance2 is I, true);
+      expect(instance2.area(), 20);
+
+      DDI.instance.destroy<G>();
+
+      expect(() => DDI.instance.get<G>(), throwsA(const TypeMatcher<AssertionError>()));
+    });
+
     test('ADD Decorators and Interceptor to a Singleton bean', () {
       ///Where is Singleton, should the register in the correct order
       DDI.instance.registerSingleton(

@@ -56,6 +56,7 @@ abstract class DDI {
   /// **Application Scope:**
   /// - Ensures that only one instance of the registered class is created and shared throughout the entire application.
   /// - Created once when first requested.
+  /// - Lazy instance creation
   ///
   ///  **Use Case:**
   /// - Appropriate for objects that need to persist during the entire application's lifecycle, but may have a more dynamic nature than Singleton instances.
@@ -81,6 +82,7 @@ abstract class DDI {
   /// **Session Scope:**
   /// - Ensures that only one instance of the registered class is created and shared throughout the entire application.
   /// - Created once when first requested.
+  /// - Lazy instance creation.
   ///
   ///  **Use Case:**
   /// - Appropriate for objects that need to persist during the entire application's lifecycle, but may have a more dynamic nature than Singleton instances.
@@ -184,12 +186,21 @@ abstract class DDI {
   /// Disposes all the instance registered as type `T`.
   void disposeByType<T extends Object>();
 
-  /// Allows to dynamically add a decorators.
+  /// Allows to dynamically add a Decorators.
   ///
   /// When using this method, consider the following:
   ///
   /// - **Order of Execution:** Decorators are applied in the order they are provided.
-  /// - **Scope Considerations:** Different scopes, such as singleton, application, session, dependent, and widget, may have varying behaviors when adding decorators.
-  /// - **Instaces Already Gets:** This no change the Instances that have been get.
+  /// - **Instaces Already Gets:** No changes any Instances that have been get.
   void addDecorator<T extends Object>(List<T Function(T)> decorators, {Object? qualifierName});
+
+  /// Allows to dynamically add a Interceptor.
+  ///
+  /// When using this method, consider the following:
+  ///
+  /// - **Scope:** Different scopes may have varying behaviors when adding interceptors.
+  /// - **Aorund Constructor:** Will not work with Singletons Scope.
+  /// - **Order of Execution:** Interceptor are applied in the order they are provided.
+  /// - **Instaces Already Gets:** No changes any Instances that have been get.
+  void addInterceptor<T extends Object>(List<DDIInterceptor<T> Function()> interceptors, {Object? qualifierName});
 }

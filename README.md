@@ -440,3 +440,10 @@ When using the addDecorator method, keep in mind the order of execution, scope c
 void addDecorator<T extends Object>(List<T Function(T)> decorators, {Object? qualifierName});
 ```
 
+## addInterceptor
+
+This feature allows you to dynamically influence the instantiation, retrieval, destruction, and disposal of instances by adding custom interceptors. The `addInterceptor` method enables you to associate specific interceptors with particular types.
+```dart
+void addInterceptor<T extends Object>(List<DDIInterceptor<T> Function()> interceptors, {Object? qualifierName});
+```
+

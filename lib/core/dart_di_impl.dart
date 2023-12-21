@@ -239,7 +239,8 @@ class _DDIImpl implements DDI {
   }
 
   T _getScoped<T extends Object>(FactoryClazz<T> factoryClazz, Object effectiveQualifierName) {
-    assert(_resolutionMap[effectiveQualifierName]?.isEmpty ?? true, 'Circular Detection found for Instance Type ${effectiveQualifierName.toString()}!!!');
+    assert(_resolutionMap[effectiveQualifierName]?.isEmpty ?? true,
+        'Circular Detection found for Instance Type ${effectiveQualifierName.toString()}!!!');
 
     _resolutionMap[effectiveQualifierName] = [..._resolutionMap[effectiveQualifierName] ?? [], effectiveQualifierName];
 
@@ -427,5 +428,22 @@ class _DDIImpl implements DDI {
     }
 
     return updatedDecorators;
+  }
+
+  @override
+  void addInterceptor<T extends Object>(List<DDIInterceptor<T> Function()> interceptors, {Object? qualifierName}) {
+    final Object effectiveQualifierName = qualifierName ?? T;
+
+    debugPrint('Add Decorator to ${effectiveQualifierName.toString()}');
+
+    final FactoryClazz<T>? factoryClazz = _beans[effectiveQualifierName] as FactoryClazz<T>?;
+
+    assert(factoryClazz != null, 'No Instance with Type ${effectiveQualifierName.toString()} is found');
+
+    if (factoryClazz!.interceptors == null) {
+      factoryClazz.interceptors = interceptors;
+    } else {
+      factoryClazz.interceptors?.addAll(interceptors);
+    }
   }
 }
