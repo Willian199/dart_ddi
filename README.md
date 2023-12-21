@@ -22,11 +22,6 @@ The Dart Dependency Injection (DDI) library is a robust and flexible dependency 
 Summary
 
 1. [Getting Started](#getting-started)
-   1. [Core Concepts](#core-concepts)
-   2. [Scopes](#scopes)
-   3. [Qualifiers](#qualifiers)
-   4. [Extra Customization](#extra-customization)
-   5. [API Reference](#api-reference)
 2. [Core Concepts](#core-concepts)
    1. [Singleton](#singleton)
    2. [Application](#application)
