@@ -38,6 +38,7 @@ Summary
    2. [Decorators](#decorators)
    3. [Interceptor](#interceptor)
    4. [RegisterIf](#registerif)
+   5. [DDIContext Extension](#ddicontext-extension)
 5. [API Reference](#api-reference)
    1. [registerSingleton](#registersingleton)
    2. [registerApplication](#registerapplication)
@@ -299,6 +300,15 @@ ddi.registerSingleton<MyService>(
 );
 ```
 
+## DDIContext Extension
+
+The `DDIContext` extension simplifies dependency injection access within the context of a Flutter widget. It provides a convenient method for retrieving instances directly in your widget's build context.
+
+```dart
+// Retrieve an instance of MyService from DDI with a specific qualifier
+MyService myService = context.ddi<MyService>(qualifierName: 'customQualifier');
+```
+
 # API Reference
 
 ## registerSingleton
@@ -398,15 +408,6 @@ A shorthand for get<T>(), allowing a more concise syntax for obtaining instances
 
 ```dart
 T call<T extends Object>();
-```
-
-## DDIContext Extension
-
-The `DDIContext` extension simplifies dependency injection access within the context of a Flutter widget. It provides a convenient method for retrieving instances directly in your widget's build context.
-
-```dart
-// Retrieve an instance of MyService from DDI with a specific qualifier
-MyService myService = context.ddi<MyService>(qualifierName: 'customQualifier');
 ```
 
 ## destroy
