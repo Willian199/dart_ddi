@@ -400,6 +400,15 @@ A shorthand for get<T>(), allowing a more concise syntax for obtaining instances
 T call<T extends Object>();
 ```
 
+## DDIContext Extension
+
+The `DDIContext` extension simplifies dependency injection access within the context of a Flutter widget. It provides a convenient method for retrieving instances directly in your widget's build context.
+
+```dart
+// Retrieve an instance of MyService from DDI with a specific qualifier
+MyService myService = context.ddi<MyService>(qualifierName: 'customQualifier');
+```
+
 ## destroy
 
 Destroy an instance from the container. Useful for manual cleanup.

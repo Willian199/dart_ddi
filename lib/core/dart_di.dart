@@ -7,7 +7,17 @@ import 'package:flutter/material.dart';
 
 part 'dart_di_impl.dart';
 
+/// Extension for convenient dependency injection access within the context of a Flutter widget.
 extension DDIContext on BuildContext {
+  /// Retrieves an instance of type `T`.
+  ///
+  /// The [qualifierName] parameter is optional and can be used to distinguish between instances of the same type.
+  ///
+  /// Example:
+  /// ```dart
+  /// MyService myService = context.ddi<MyService>(qualifierName: 'customQualifier');
+  /// ```
+  ///
   T ddi<T extends Object>({Object? qualifierName}) =>
       DDI.instance.get<T>(qualifierName: qualifierName);
 }
