@@ -1,4 +1,4 @@
-import 'package:dart_di/features/ddi_interceptor.dart';
+import 'package:dart_ddi/features/ddi_interceptor.dart';
 
 import 'g.dart';
 import 'i.dart';
