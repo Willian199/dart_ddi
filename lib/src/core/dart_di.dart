@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:dart_ddi/data/factory_clazz.dart';
-import 'package:dart_ddi/enum/scopes.dart';
-import 'package:dart_ddi/features/ddi_interceptor.dart';
+import 'package:dart_ddi/src/data/factory_clazz.dart';
+import 'package:dart_ddi/src/enum/scopes.dart';
+import 'package:dart_ddi/src/features/ddi_interceptor.dart';
 import 'package:flutter/material.dart';
 
 part 'dart_di_impl.dart';

@@ -1,4 +1,4 @@
-import 'package:dart_ddi/core/dart_di.dart';
+import 'package:dart_ddi/dart_di.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../clazz_test/g.dart';

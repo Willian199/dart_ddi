@@ -1,4 +1,4 @@
 library dart_ddi;
 
-export 'core/dart_di.dart' show DDI, DDIContext;
-export 'features/ddi_interceptor.dart';
+export 'src/core/dart_di.dart' show DDI, DDIContext;
+export 'src/features/ddi_interceptor.dart';

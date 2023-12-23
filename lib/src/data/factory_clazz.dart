@@ -1,7 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 
-import 'package:dart_ddi/enum/scopes.dart';
-import 'package:dart_ddi/features/ddi_interceptor.dart';
+import 'package:dart_ddi/src/enum/scopes.dart';
+import 'package:dart_ddi/src/features/ddi_interceptor.dart';
 
 class FactoryClazz<T> {
   T? clazzInstance;
