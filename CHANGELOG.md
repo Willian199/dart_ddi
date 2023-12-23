@@ -1,3 +1,9 @@
+## 0.0.2
+
+* Add app with example
+* Folder structure 
+
+
 ## 0.0.1
 
 * Scopes: Singleton, Application, Dependent, Session and Widget.
