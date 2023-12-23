@@ -5,7 +5,7 @@ import 'package:dart_ddi/src/enum/scopes.dart';
 import 'package:dart_ddi/src/features/ddi_interceptor.dart';
 import 'package:flutter/material.dart';
 
-part 'dart_di_impl.dart';
+part 'dart_ddi_impl.dart';
 
 /// Extension for convenient dependency injection access within the context of a Flutter widget.
 extension DDIContext on BuildContext {

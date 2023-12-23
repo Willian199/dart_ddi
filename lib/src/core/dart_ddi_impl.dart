@@ -1,4 +1,4 @@
-part of 'dart_di.dart';
+part of 'dart_ddi.dart';
 
 class _DDIImpl implements DDI {
   final Map<Object, FactoryClazz> _beans = {};

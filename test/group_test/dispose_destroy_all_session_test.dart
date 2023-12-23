@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:dart_ddi/dart_di.dart';
+import 'package:dart_ddi/dart_ddi.dart';
 
 import '../clazz_test/a.dart';
 import '../clazz_test/b.dart';
