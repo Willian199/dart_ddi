@@ -7,7 +7,10 @@ class Degrade {
   /// @return BoxDecoration()
   ///
   static BoxDecoration efeitoDegrade(
-      {List<Color> cores = const [Color.fromRGBO(21, 101, 192, 1), Color.fromRGBO(130, 177, 255, 1)],
+      {List<Color> cores = const [
+        Color.fromRGBO(21, 101, 192, 1),
+        Color.fromRGBO(130, 177, 255, 1)
+      ],
       Alignment begin = Alignment.topCenter,
       Alignment end = Alignment.bottomCenter}) {
     return BoxDecoration(
@@ -22,7 +25,8 @@ class Degrade {
   ///
   /// @return Container()
   ///
-  static Widget containerEfeitoDegrade({List<Color>? cores, Alignment? begin, Alignment? end}) {
+  static Widget containerEfeitoDegrade(
+      {List<Color>? cores, Alignment? begin, Alignment? end}) {
     return Container(
       decoration: efeitoDegrade(
         cores: cores!,

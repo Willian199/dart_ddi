@@ -64,7 +64,9 @@ abstract class _ObservableItemBase with Store {
   }
 
   void _navigate() {
-    pageController.animateToPage(page, duration: const Duration(milliseconds: 300), curve: Curves.fastOutSlowIn);
+    pageController.animateToPage(page,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.fastOutSlowIn);
   }
 
   void clear() {
@@ -82,7 +84,8 @@ abstract class _ObservableItemBase with Store {
     final retorno = await RequestService.getHtml(url: link);
 
     //Cria uma Thread para evitar lag no app
-    final DadosPerfume perfume = await compute(HtmlDecodePage.decode, retorno.data.toString());
+    final DadosPerfume perfume =
+        await compute(HtmlDecodePage.decode, retorno.data.toString());
 
     descricao = perfume.descricao;
 

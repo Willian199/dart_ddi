@@ -50,6 +50,8 @@ class GridModel {
   }
 
   String setAvaliacao(String avaliacao) {
-    return avaliacao == '0' ? 'N/A' : avaliacao.padRight(4, '0').substring(0, 4);
+    return avaliacao == '0'
+        ? 'N/A'
+        : avaliacao.padRight(4, '0').substring(0, 4);
   }
 }

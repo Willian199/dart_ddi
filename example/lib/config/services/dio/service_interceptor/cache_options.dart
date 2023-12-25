@@ -24,7 +24,8 @@ class DioCacheOptions {
     Future<List<int>> encode(List<int> valor) {
       const HtmlEscape sanitizer = HtmlEscape(HtmlEscapeMode.element);
 
-      return Future.value(latin1.encode(sanitizer.convert(base64Url.encode(valor))));
+      return Future.value(
+          latin1.encode(sanitizer.convert(base64Url.encode(valor))));
     }
 
     final CacheCipher cipher = CacheCipher(decrypt: decode, encrypt: encode);

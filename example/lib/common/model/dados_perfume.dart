@@ -1,5 +1,4 @@
 class DadosPerfume {
-
   DadosPerfume({
     required this.id,
     required this.descricao,

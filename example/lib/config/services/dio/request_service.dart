@@ -19,7 +19,8 @@ class RequestService {
   }) async {
     final Dio dio = await _dioConstruct(url, callbackErro, usarCache);
 
-    String urlCompose = ddi.get<String>(qualifierName: InjectionConstants.url) + url;
+    String urlCompose =
+        ddi.get<String>(qualifierName: InjectionConstants.url) + url;
 
     if (data is String) {
       urlCompose += '?$data';
@@ -129,7 +130,8 @@ class RequestService {
     bool usarCache,
   ) async {
     final Dio dio = Dio();
-    dio.options.baseUrl = ddi.get<String>(qualifierName: InjectionConstants.url);
+    dio.options.baseUrl =
+        ddi.get<String>(qualifierName: InjectionConstants.url);
     dio.options.connectTimeout = const Duration(seconds: 10);
     dio.options.receiveTimeout = const Duration(minutes: 2);
     dio.options.responseType = ResponseType.json;

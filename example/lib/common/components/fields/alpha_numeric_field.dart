@@ -53,7 +53,8 @@ class AlphaNumericField extends StatelessWidget {
       labelText: labelText,
       inputFormatters: [
         LengthLimitingTextInputFormatter(quantidadeMaximaCaracteres),
-        FilteringTextInputFormatter.allow(permiteNumeros ? RegExp('[a-zA-Z0-9 ]') : RegExp('[a-zA-Z ]')),
+        FilteringTextInputFormatter.allow(
+            permiteNumeros ? RegExp('[a-zA-Z0-9 ]') : RegExp('[a-zA-Z ]')),
       ],
       decoration: decoration,
       onChanged: onChanged,

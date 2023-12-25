@@ -17,15 +17,27 @@ class NotificacaoPadrao {
   }
 
   static void connectionTimeout({Function? callbackErro}) {
-    _default(asset: "assets/connection_timeout.json", mensagem: Mensagens.SEM_CONEXAO, callbackErro: callbackErro, repeat: true);
+    _default(
+        asset: "assets/connection_timeout.json",
+        mensagem: Mensagens.SEM_CONEXAO,
+        callbackErro: callbackErro,
+        repeat: true);
   }
 
   static void responseTimeout({Function? callbackErro}) {
-    _default(asset: "assets/response_timeout.json", mensagem: Mensagens.SEM_RESPOSTA, callbackErro: callbackErro, repeat: true);
+    _default(
+        asset: "assets/response_timeout.json",
+        mensagem: Mensagens.SEM_RESPOSTA,
+        callbackErro: callbackErro,
+        repeat: true);
   }
 
   static void badRequest({required String mensagem, Function? callbackErro}) {
-    _default(asset: "assets/bad_request.json", mensagem: mensagem, callbackErro: callbackErro, repeat: true);
+    _default(
+        asset: "assets/bad_request.json",
+        mensagem: mensagem,
+        callbackErro: callbackErro,
+        repeat: true);
   }
 
   static void semDados({Function? callbackErro}) {
@@ -49,7 +61,8 @@ class NotificacaoPadrao {
   }
 
   static void carregando() {
-    final BuildContext context = ddi<GlobalKey<NavigatorState>>().currentContext!;
+    final BuildContext context =
+        ddi<GlobalKey<NavigatorState>>().currentContext!;
     final ThemeData tema = Theme.of(context);
 
     Notificacao.vazia(
@@ -90,12 +103,14 @@ class NotificacaoPadrao {
   }) {
     Notificacao.close();
 
-    final BuildContext context = ddi<GlobalKey<NavigatorState>>().currentContext!;
+    final BuildContext context =
+        ddi<GlobalKey<NavigatorState>>().currentContext!;
 
     final ThemeData tema = Theme.of(context);
     final bool darkMode = ddi.get(qualifierName: InjectionConstants.darkMode);
 
-    final Color buttonColor = darkMode ? tema.colorScheme.onSecondary : tema.colorScheme.secondary;
+    final Color buttonColor =
+        darkMode ? tema.colorScheme.onSecondary : tema.colorScheme.secondary;
 
     Notificacao.vazia(
         context: context,
@@ -124,13 +139,16 @@ class NotificacaoPadrao {
               padding: const EdgeInsets.only(top: 20),
               child: ButtonNeomorphism(
                 backgroundColor: buttonColor,
-                lightColor: buttonColor.withAlpha(50).withBlue(10).withGreen(50),
-                darkColor: buttonColor.withAlpha(50).withBlue(250).withGreen(50),
+                lightColor:
+                    buttonColor.withAlpha(50).withBlue(10).withGreen(50),
+                darkColor:
+                    buttonColor.withAlpha(50).withBlue(250).withGreen(50),
                 child: Center(
                   child: Text(
                     Mensagens.OK,
                     style: TextStyle(
-                      color: darkMode ? Colors.white : tema.colorScheme.onPrimary,
+                      color:
+                          darkMode ? Colors.white : tema.colorScheme.onPrimary,
                     ),
                   ),
                 ),

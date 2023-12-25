@@ -37,20 +37,23 @@ class ItemNota extends StatelessWidget {
                         return Container(
                           height: 120,
                           width: 100,
-                          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(50), boxShadow: [
-                            BoxShadow(
-                              color: layout.notaDownColor,
-                              offset: const Offset(4, 4),
-                              blurRadius: 15,
-                              spreadRadius: 1,
-                            ),
-                            BoxShadow(
-                              color: layout.notaUpColor,
-                              offset: const Offset(-4, -4),
-                              blurRadius: 15,
-                              spreadRadius: 1,
-                            ),
-                          ]),
+                          decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(50),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: layout.notaDownColor,
+                                  offset: const Offset(4, 4),
+                                  blurRadius: 15,
+                                  spreadRadius: 1,
+                                ),
+                                BoxShadow(
+                                  color: layout.notaUpColor,
+                                  offset: const Offset(-4, -4),
+                                  blurRadius: 15,
+                                  spreadRadius: 1,
+                                ),
+                              ]),
                           child: Center(
                             child: CircleAvatar(
                               backgroundImage: imageProvider,

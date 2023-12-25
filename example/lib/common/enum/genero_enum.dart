@@ -11,7 +11,8 @@ enum Genero {
   final String nome;
   final IconData icone;
 
-  static final Map<String, Genero> _types = Map.fromEntries(Genero.values.map((value) => MapEntry(value.nome, value)));
+  static final Map<String, Genero> _types = Map.fromEntries(
+      Genero.values.map((value) => MapEntry(value.nome, value)));
 
   static Genero? forValue(String value) => _types[value];
 }

@@ -136,7 +136,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               ),
               Observer(builder: (_) {
                 return Container(
-                  padding: const EdgeInsets.only(left: 10, bottom: 10, right: 18),
+                  padding:
+                      const EdgeInsets.only(left: 10, bottom: 10, right: 18),
                   width: MediaQuery.sizeOf(context).width,
                   child: SegmentedButton<Genero>(
                     segments: <ButtonSegment<Genero>>[
@@ -181,7 +182,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   void _abrirItem(GridModel itemSelecionado) async {
-    final ImageProvider provider = CachedNetworkImageProvider(itemSelecionado.capa);
+    final ImageProvider provider =
+        CachedNetworkImageProvider(itemSelecionado.capa);
 
     provider.getBytes(format: ImageByteFormat.png).then((bytes) {
       Navigator.push(context, MaterialPageRoute(builder: (_) {
