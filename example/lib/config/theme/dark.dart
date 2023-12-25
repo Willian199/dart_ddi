@@ -49,7 +49,9 @@ class DarkTheme {
   );
 
   static Color _getColorSegmentedButton(Set<MaterialState> states) {
-    const Set<MaterialState> interactiveStates = <MaterialState>{MaterialState.selected};
+    const Set<MaterialState> interactiveStates = <MaterialState>{
+      MaterialState.selected
+    };
     if (states.any(interactiveStates.contains)) {
       return _default.colorScheme.secondary;
     }
@@ -57,7 +59,9 @@ class DarkTheme {
   }
 
   static Color _getColorSegmentedButtonIcon(Set<MaterialState> states) {
-    const Set<MaterialState> interactiveStates = <MaterialState>{MaterialState.selected};
+    const Set<MaterialState> interactiveStates = <MaterialState>{
+      MaterialState.selected
+    };
     if (states.any(interactiveStates.contains)) {
       return _default.colorScheme.onPrimary;
     }
@@ -65,9 +69,13 @@ class DarkTheme {
   }
 
   static void _registerLayout() {
-    final baseTextStyle = TextStyle(fontFamily: GoogleFonts.montserrat().fontFamily);
+    final baseTextStyle =
+        TextStyle(fontFamily: GoogleFonts.montserrat().fontFamily);
 
-    final itemsTextStyle = baseTextStyle.copyWith(color: _default.colorScheme.primary, fontSize: 12, fontWeight: FontWeight.w400);
+    final itemsTextStyle = baseTextStyle.copyWith(
+        color: _default.colorScheme.primary,
+        fontSize: 12,
+        fontWeight: FontWeight.w400);
 
     final subTituloTextStyle = itemsTextStyle.copyWith(fontSize: 12);
 
@@ -80,7 +88,11 @@ class DarkTheme {
     //ddi.destroy<Layout>();
     ddi.registerSingleton<Layout>(
       () => Layout(
-        cardDegradeColors: [const Color(0xff00F6ff), const Color(0xFF436AB7), _default.colorScheme.primaryContainer],
+        cardDegradeColors: [
+          const Color(0xff00F6ff),
+          const Color(0xFF436AB7),
+          _default.colorScheme.primaryContainer
+        ],
         baseTextStyle: baseTextStyle,
         itemsTextStyle: itemsTextStyle,
         subTituloTextStyle: subTituloTextStyle,
@@ -92,7 +104,8 @@ class DarkTheme {
         notaDownColor: _default.colorScheme.tertiaryContainer.withOpacity(0.5),
         notaUpColor: _default.colorScheme.tertiary.withOpacity(0.5),
       ),
-      registerIf: () => ddi.get<bool>(qualifierName: InjectionConstants.darkMode),
+      registerIf: () =>
+          ddi.get<bool>(qualifierName: InjectionConstants.darkMode),
     );
   }
 
@@ -102,8 +115,10 @@ class DarkTheme {
     return _default.copyWith(
       segmentedButtonTheme: _default.segmentedButtonTheme.copyWith(
         style: ButtonStyle(
-          backgroundColor: MaterialStateProperty.resolveWith(_getColorSegmentedButton),
-          iconColor: MaterialStateProperty.resolveWith(_getColorSegmentedButtonIcon),
+          backgroundColor:
+              MaterialStateProperty.resolveWith(_getColorSegmentedButton),
+          iconColor:
+              MaterialStateProperty.resolveWith(_getColorSegmentedButtonIcon),
           animationDuration: const Duration(seconds: 2),
         ),
       ),

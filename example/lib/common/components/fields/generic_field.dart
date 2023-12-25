@@ -78,7 +78,8 @@ class GenericField extends StatelessWidget {
             icon: inputIcon,
             labelText: labelText,
             border: const OutlineInputBorder(),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
             errorMaxLines: 1,
           ),
       validator: (String? value) {

@@ -36,16 +36,18 @@ class ErrorInterceptor extends Interceptor {
           case HttpStatus.forbidden:
           case HttpStatus.unauthorized:
             Notificacao.erro(
-                mensagem: err.response?.data?['mensagem']?.toString().isEmpty ?? true
-                    ? Mensagens.LOGIN_EXPIRADO
-                    : err.response?.data['mensagem'].toString(),
+                mensagem:
+                    err.response?.data?['mensagem']?.toString().isEmpty ?? true
+                        ? Mensagens.LOGIN_EXPIRADO
+                        : err.response?.data['mensagem'].toString(),
                 callbackErro: () {
                   //TODO Clear user data
                 });
             break;
           case HttpStatus.badRequest:
             NotificacaoPadrao.badRequest(
-              mensagem: (err.response?.data ?? {})['mensagem']?.toString() ?? Mensagens.ERRO_PROCESSAR_REQUISICAO,
+              mensagem: (err.response?.data ?? {})['mensagem']?.toString() ??
+                  Mensagens.ERRO_PROCESSAR_REQUISICAO,
               callbackErro: callbackErro,
             );
             break;
@@ -55,7 +57,8 @@ class ErrorInterceptor extends Interceptor {
           case HttpStatus.notAcceptable:
             Notificacao.erro(
               callbackErro: callbackErro,
-              mensagem: 'Não foi possivel prosseguir com a sua solicitação. Verifique o horário do seu dispositivo!',
+              mensagem:
+                  'Não foi possivel prosseguir com a sua solicitação. Verifique o horário do seu dispositivo!',
             );
             break;
           default:

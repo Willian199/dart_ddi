@@ -108,27 +108,6 @@ class _DDIImpl implements DDI {
     }
   }
 
-  @override
-  void registerWidget<T extends Widget>(
-    T Function() clazzRegister, {
-    Object? qualifierName,
-    void Function()? postConstruct,
-    List<T Function(T)>? decorators,
-    List<DDIInterceptor<T> Function()>? interceptors,
-    bool Function()? registerIf,
-  }) {
-    if (registerIf?.call() ?? true) {
-      _register<T>(
-        clazzRegister: clazzRegister,
-        scopeType: Scopes.widget,
-        qualifierName: qualifierName,
-        postConstruct: postConstruct,
-        decorators: decorators,
-        interceptors: interceptors,
-      );
-    }
-  }
-
   void _register<T extends Object>({
     required T Function() clazzRegister,
     required Scopes scopeType,
@@ -263,7 +242,7 @@ class _DDIImpl implements DDI {
     try {
       result = switch (factoryClazz.scopeType) {
         Scopes.singleton => _getSingleton<T>(factoryClazz),
-        Scopes.dependent || Scopes.widget => _getDependent<T>(factoryClazz),
+        Scopes.dependent => _getDependent<T>(factoryClazz),
         Scopes.application ||
         Scopes.session =>
           _getAplication<T>(factoryClazz, effectiveQualifierName)
@@ -324,11 +303,6 @@ class _DDIImpl implements DDI {
   @override
   void destroyAllSession() {
     _destroyAll(Scopes.session);
-  }
-
-  @override
-  void destroyAllWidget() {
-    _destroyAll(Scopes.widget);
   }
 
   void _destroyAll(Scopes scope) {
@@ -441,9 +415,8 @@ class _DDIImpl implements DDI {
         factoryClazz.decorators = _orderDecorator(decorators, factoryClazz);
 
         break;
-      //Dependent and Widget Scopes always require a new instance
+      //Dependent Scopes always require a new instance
       case Scopes.dependent:
-      case Scopes.widget:
         factoryClazz.decorators = _orderDecorator(decorators, factoryClazz);
         break;
     }

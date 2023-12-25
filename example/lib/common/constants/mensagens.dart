@@ -54,16 +54,20 @@ class Mensagens {
   static const String CARREGANDO_DADOS = 'CARREGANDO DADOS';
   static const String CARREGANDO = 'Carregando...';
   static const String PROCESSANDO_REQUISICAO = 'PROCESSANDO A SUA REQUISIÇÃO';
-  static const String EXECUTADO_SUCESSO = 'A SOLICITAÇÃO FOI EXECUTADA COM SUCESSO';
+  static const String EXECUTADO_SUCESSO =
+      'A SOLICITAÇÃO FOI EXECUTADA COM SUCESSO';
 
-  static const String SEM_INTERNET = 'Humm... Parece que você está sem internet';
+  static const String SEM_INTERNET =
+      'Humm... Parece que você está sem internet';
   static const String SEM_CONEXAO = 'Não consegui me conectar ao servidor';
   static const String SEM_RESPOSTA = 'Não consegui receber as informações';
   static const String NAO_HA_DADOS = 'Não encontrei nenhuma informação';
 
   static const String ERRO = 'ERRO';
-  static const String ERRO_PROCESSAR_SOLICITACAO = 'OCORREU UM ERRO AO PROCESSAR A SUA SOLICITAÇÃO';
+  static const String ERRO_PROCESSAR_SOLICITACAO =
+      'OCORREU UM ERRO AO PROCESSAR A SUA SOLICITAÇÃO';
   static const String ERRO_PROCESSAR_REQUISICAO = 'Ouch, ocorreu alguma falha';
 
-  static const String LOGIN_EXPIRADO = 'LOGIN EXPIRADO. FAÇA O LOGIN NOVAMENTE!!!';
+  static const String LOGIN_EXPIRADO =
+      'LOGIN EXPIRADO. FAÇA O LOGIN NOVAMENTE!!!';
 }

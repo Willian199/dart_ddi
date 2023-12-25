@@ -51,7 +51,9 @@ class _ItemPageState extends State<ItemPage> {
         style: TextStyle(
           fontSize: 10,
           fontWeight: FontWeight.bold,
-          color: nota.posicao == _observableItem.tabSelecionada.first.posicao ? layout.segmentedButtonSelected : layout.segmentedButtonDeselected,
+          color: nota.posicao == _observableItem.tabSelecionada.first.posicao
+              ? layout.segmentedButtonSelected
+              : layout.segmentedButtonDeselected,
         ),
       ),
     );
@@ -80,7 +82,9 @@ class _ItemPageState extends State<ItemPage> {
       body: Padding(
         padding: EdgeInsets.only(
           top: 25,
-          left: MediaQuery.of(context).orientation == Orientation.portrait ? 0 : 30,
+          left: MediaQuery.of(context).orientation == Orientation.portrait
+              ? 0
+              : 30,
         ),
         child: SingleChildScrollView(
           child: Column(
@@ -128,13 +132,16 @@ class _ItemPageState extends State<ItemPage> {
                     onPageChanged: _observableItem.pageChange,
                     children: [
                       Observer(
-                        builder: (_) => ItemNota(lista: _observableItem.notasTopo),
+                        builder: (_) =>
+                            ItemNota(lista: _observableItem.notasTopo),
                       ),
                       Observer(
-                        builder: (_) => ItemNota(lista: _observableItem.notasCoracao),
+                        builder: (_) =>
+                            ItemNota(lista: _observableItem.notasCoracao),
                       ),
                       Observer(
-                        builder: (_) => ItemNota(lista: _observableItem.notasBase),
+                        builder: (_) =>
+                            ItemNota(lista: _observableItem.notasBase),
                       ),
                     ],
                   ),

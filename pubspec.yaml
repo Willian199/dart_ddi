@@ -1,11 +1,10 @@
 name: dart_ddi
 description: "A Dependency Injection package, inspired by Java CDI and get_it."
 version: 0.0.2
-homepage: https://github.com/Willian199/dart-di
+homepage: https://github.com/Willian199/dart_ddi
 
 environment:
-  sdk: ">=3.2.3 <4.0.0"
-  flutter: ">=3.10.0"
+  sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
   flutter:

@@ -27,8 +27,7 @@ Summary
    2. [Application](#application)
    3. [Session](#session)
    4. [Dependent](#dependent)
-   5. [Widget](#widget)
-   6. [Common Considerations](#common-considerations)
+   5. [Common Considerations](#common-considerations)
 3. [Qualifiers](#qualifiers)
    1. [How Qualifiers Work](#how-qualifiers-work)
    2. [Use Cases for Qualifiers](#use-cases-for-qualifiers)
@@ -44,16 +43,15 @@ Summary
    2. [registerApplication](#registerapplication)
    3. [registerDependent](#registerdependent)
    4. [registerSession](#registersession)
-   5. [registerWidget](#registerwidget)
-   6. [get](#get)
-   7. [getByType](#getbytype)
-   8. [call](#call)
-   9. [destroy](#destroy)
-   10. [destroyByType](#destroybytype)
-   11. [dispose](#dispose)
-   12. [disposeByType](#disposebytype)
-   13. [addDecorator](#adddecorator)
-   14. [addInterceptor](#addInterceptor)
+   5. [get](#get)
+   6. [getByType](#getbytype)
+   7. [call](#call)
+   8. [destroy](#destroy)
+   9. [destroyByType](#destroybytype)
+   10. [dispose](#dispose)
+   11. [disposeByType](#disposebytype)
+   12. [addDecorator](#adddecorator)
+   13. [addInterceptor](#addInterceptor)
 
 ## Getting Started
 
@@ -111,14 +109,6 @@ The Dart Dependency Injection (DDI) Library supports various scopes for efficien
 `Recommendation`: Useful for objects that should remain independent and different in each context or request.
 
 `Use Case`: Creating instances of transient objects like data repositories or request handlers.
-
-## Widget
-`Description`: Produces a new instance every time it is requested, ensuring independence and uniqueness. The only difference about *Dependent* is that it must be a Widget.
-
-`Recommendation`: Useful for Widget that should remain independent and different in each context or request.
-
-`Use Case`: Creating Platform-Specific Widget instances.
-
 
 ## Common Considerations:
 `Single Registration`: Ensure that the instance to be registered is unique for a specific type or use qualifiers to enable the registration of multiple instances of the same type.
@@ -362,21 +352,6 @@ Registers a session-scoped instance. The instance is tied to a specific session.
 
 ```dart
 void registerSession<T extends Object>(
-  T Function() clazzRegister, {
-  Object? qualifierName,
-  void Function()? postConstruct,
-  List<T Function(T)>? decorators,
-  List<DDIInterceptor<T> Function()>? interceptors,
-  bool Function()? registerIf,
-});
-```
-
-## registerWidget
-
-Registers a widget-scoped instance. The instance is tied to a specific widget.
-
-```dart
-void registerWidget<T extends Widget>(
   T Function() clazzRegister, {
   Object? qualifierName,
   void Function()? postConstruct,

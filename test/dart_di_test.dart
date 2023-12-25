@@ -8,7 +8,6 @@ import 'group_test/interceptor_test.dart';
 import 'group_test/register_if_test.dart';
 import 'group_test/session_test.dart';
 import 'group_test/singleton_test.dart';
-import 'group_test/widget_test.dart';
 
 void main() {
   //Basic Tests, with consists in register, get, dispose, remove
@@ -16,7 +15,6 @@ void main() {
   application();
   session();
   dependent();
-  widget();
 
   runByType();
   disposeDestroyAllSession();

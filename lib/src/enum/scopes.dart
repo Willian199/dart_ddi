@@ -1,1 +1,1 @@
-enum Scopes { singleton, application, dependent, session, widget }
+enum Scopes { singleton, application, dependent, session }

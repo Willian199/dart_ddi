@@ -30,10 +30,17 @@ class HtmlDecodePage {
         .getElementById("main-content")
         ?.getElementsByClassName("cell small-12")[26];*/
 
-    final List<String?> acordes =
-        document.getElementById("main-content")?.getElementsByClassName("cell small-6")[1].nodes[2].nodes.map((item) => item.text).toList() ?? [];
+    final List<String?> acordes = document
+            .getElementById("main-content")
+            ?.getElementsByClassName("cell small-6")[1]
+            .nodes[2]
+            .nodes
+            .map((item) => item.text)
+            .toList() ??
+        [];
 
-    final Node? nodeNotas = document.getElementById("pyramid")?.nodes.first.nodes.first.nodes[1];
+    final Node? nodeNotas =
+        document.getElementById("pyramid")?.nodes.first.nodes.first.nodes[1];
 
     return DadosPerfume(
       id: 1,
@@ -46,7 +53,13 @@ class HtmlDecodePage {
   }
 
   static String _processarDescricao(Document document) {
-    final String? descricao = document.getElementById("main-content")?.getElementsByClassName("reviewstrigger").first.parent?.firstChild?.text;
+    final String? descricao = document
+        .getElementById("main-content")
+        ?.getElementsByClassName("reviewstrigger")
+        .first
+        .parent
+        ?.firstChild
+        ?.text;
 
     if (descricao?.isEmpty ?? true) {
       return "O Perfume não possui uma descrição";
@@ -98,7 +111,8 @@ class HtmlDecodePage {
     if (node != null) {
       for (var item in node) {
         final String nome = item.text!;
-        final String link = item.firstChild?.nodes.first.attributes['src'] ?? '';
+        final String link =
+            item.firstChild?.nodes.first.attributes['src'] ?? '';
 
         map[nome] = link;
       }
