@@ -99,7 +99,6 @@ linter:
     control_flow_in_finally: true
     curly_braces_in_flow_control_structures: true
     empty_catches: true
-    invariant_booleans: true
     missing_whitespace_between_adjacent_strings: true
     prefer_if_null_operators: true
     prefer_interpolation_to_compose_strings: true

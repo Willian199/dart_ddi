@@ -132,31 +132,6 @@ abstract class DDI {
     bool Function()? registerIf,
   });
 
-  /// Registers an instance of a class as a Widget Scope.
-  ///
-  /// - `clazzRegister`: Factory function to create the instance.
-  /// - `qualifierName`: Optional qualifier name to distinguish between different instances of the same type.
-  /// - `postConstruct`: Optional function to be executed after the instance is constructed.
-  /// - `decorators`: List of decoration functions to apply to the instance.
-  /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
-  /// - `registerIf`: Optional function to conditionally register the instance.
-  ///
-  /// **Widget Scope:**
-  /// - Creates a new instance every time it is requested.
-  /// - It does not reuse instances and provides a fresh instance for each request.
-  ///
-  ///  **Use Case:**
-  /// - Suitable for objects with a short lifecycle or those that need to be recreated frequently, ensuring isolation between different parts of the application.
-  /// - Examples include Plataform-Specific Widget functionalities.
-  void registerWidget<T extends Widget>(
-    T Function() clazzRegister, {
-    Object? qualifierName,
-    void Function()? postConstruct,
-    List<T Function(T)>? decorators,
-    List<DDIInterceptor<T> Function()>? interceptors,
-    bool Function()? registerIf,
-  });
-
   /// Gets an instance of the registered class in [DDI].
   ///
   /// - `qualifierName`: Optional qualifier name to distinguish between different instances of the same type.
@@ -176,9 +151,6 @@ abstract class DDI {
   ///
   /// - `qualifierName`: Optional qualifier name to distinguish between different instances of the same type.
   void destroy<T>({Object? qualifierName});
-
-  /// Removes all the instance registered as Widget Scope.
-  void destroyAllWidget();
 
   /// Removes all the instance registered as Session Scope.
   void destroyAllSession();
