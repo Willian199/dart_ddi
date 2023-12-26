@@ -85,8 +85,8 @@ class LigthTheme {
       fontWeight: FontWeight.w600,
     );
 
-    ddi.registerSingleton<Layout>(
-      () => Layout(
+    ddi.registerObject<Layout>(
+      Layout(
         cardDegradeColors: [
           const Color(0xff00F6ff),
           const Color(0xFF436AB7),
@@ -103,8 +103,7 @@ class LigthTheme {
         notaDownColor: _default.colorScheme.onPrimaryContainer,
         notaUpColor: _default.colorScheme.primaryContainer,
       ),
-      registerIf: () =>
-          !ddi.get<bool>(qualifierName: InjectionConstants.darkMode),
+      registerIf: () => !ddi.get<bool>(qualifier: InjectionConstants.darkMode),
     );
   }
 

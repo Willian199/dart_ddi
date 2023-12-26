@@ -107,7 +107,7 @@ class NotificacaoPadrao {
         ddi<GlobalKey<NavigatorState>>().currentContext!;
 
     final ThemeData tema = Theme.of(context);
-    final bool darkMode = ddi.get(qualifierName: InjectionConstants.darkMode);
+    final bool darkMode = ddi.get(qualifier: InjectionConstants.darkMode);
 
     final Color buttonColor =
         darkMode ? tema.colorScheme.onSecondary : tema.colorScheme.secondary;

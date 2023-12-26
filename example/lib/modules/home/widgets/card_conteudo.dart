@@ -1,8 +1,8 @@
-import 'package:dart_ddi/dart_di.dart';
 import 'package:flutter/material.dart';
 import 'package:perfumei/common/components/widgets/degrade.dart';
 import 'package:perfumei/common/model/grid_model.dart';
 import 'package:perfumei/common/model/layout.dart';
+import 'package:perfumei/config/services/injection.dart';
 import 'package:perfumei/modules/home/widgets/row_value.dart';
 
 class CardConteudo extends StatelessWidget {
@@ -12,7 +12,7 @@ class CardConteudo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Layout layout = context.ddi<Layout>();
+    final Layout layout = ddi<Layout>();
 
     return Container(
       margin: const EdgeInsets.fromLTRB(87.0, 12, 5, 5),

@@ -1,8 +1,8 @@
-import 'package:dart_ddi/dart_di.dart';
 import 'package:flutter/material.dart';
 import 'package:perfumei/common/components/widgets/cache_image.dart';
 import 'package:perfumei/common/model/grid_model.dart';
 import 'package:perfumei/common/model/layout.dart';
+import 'package:perfumei/config/services/injection.dart';
 import 'package:perfumei/modules/home/widgets/card_conteudo.dart';
 
 class GridRow extends StatelessWidget {
@@ -18,7 +18,7 @@ class GridRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Layout layout = context.ddi<Layout>();
+    final Layout layout = ddi<Layout>();
 
     return Stack(
       children: <Widget>[

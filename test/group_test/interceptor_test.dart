@@ -43,16 +43,16 @@ void interceptor() {
 
     test('ADD Interceptor to a Application bean with qualifier', () {
       DDI.instance.registerApplication<G>(() => H(),
-          qualifierName: 'qualifier', interceptors: [() => J()]);
+          qualifier: 'qualifier', interceptors: [() => J()]);
 
-      final G instance = DDI.instance.get<G>(qualifierName: 'qualifier');
+      final G instance = DDI.instance.get<G>(qualifier: 'qualifier');
 
       expect(instance.area(), 20);
       expect(instance is I, true);
 
-      DDI.instance.destroy<G>(qualifierName: 'qualifier');
+      DDI.instance.destroy<G>(qualifier: 'qualifier');
 
-      expect(() => DDI.instance.get<G>(qualifierName: 'qualifier'),
+      expect(() => DDI.instance.get<G>(qualifier: 'qualifier'),
           throwsA(const TypeMatcher<AssertionError>()));
     });
 

@@ -3,24 +3,8 @@ import 'dart:async';
 import 'package:dart_ddi/src/data/factory_clazz.dart';
 import 'package:dart_ddi/src/enum/scopes.dart';
 import 'package:dart_ddi/src/features/ddi_interceptor.dart';
-import 'package:flutter/material.dart';
 
 part 'dart_ddi_impl.dart';
-
-/// Extension for convenient dependency injection access within the context of a Flutter widget.
-extension DDIContext on BuildContext {
-  /// Retrieves an instance of type `T`.
-  ///
-  /// The [qualifierName] parameter is optional and can be used to distinguish between instances of the same type.
-  ///
-  /// Example:
-  /// ```dart
-  /// MyService myService = context.ddi<MyService>(qualifierName: 'customQualifier');
-  /// ```
-  ///
-  T ddi<T extends Object>({Object? qualifierName}) =>
-      DDI.instance.get<T>(qualifierName: qualifierName);
-}
 
 /// [DDI] is an abstract class representing a Dependency Injection system.
 abstract class DDI {
@@ -33,7 +17,7 @@ abstract class DDI {
   /// Registers an instance of a class as a Singleton.
   ///
   /// - `clazzRegister`: Factory function to create the instance.
-  /// - `qualifierName`: Optional qualifier name to distinguish between different instances of the same type.
+  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
   /// - `postConstruct`: Optional function to be executed after the instance is constructed.
   /// - `decorators`: List of decoration functions to apply to the instance.
   /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
@@ -48,7 +32,7 @@ abstract class DDI {
   /// - Examples include utility classes, configuration objects, or services that maintain global state.
   void registerSingleton<T extends Object>(
     T Function() clazzRegister, {
-    Object? qualifierName,
+    Object? qualifier,
     void Function()? postConstruct,
     List<T Function(T)>? decorators,
     List<DDIInterceptor<T> Function()>? interceptors,
@@ -59,7 +43,7 @@ abstract class DDI {
   /// Registers an instance of a class as a Application.
   ///
   /// - `clazzRegister`: Factory function to create the instance.
-  /// - `qualifierName`: Optional qualifier name to distinguish between different instances of the same type.
+  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
   /// - `postConstruct`: Optional function to be executed after the instance is constructed.
   /// - `decorators`: List of decoration functions to apply to the instance.
   /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
@@ -76,7 +60,7 @@ abstract class DDI {
   /// - Examples include managers, controllers, or services that should persist but might be recreated under certain circumstances.
   void registerApplication<T extends Object>(
     T Function() clazzRegister, {
-    Object? qualifierName,
+    Object? qualifier,
     void Function()? postConstruct,
     List<T Function(T)>? decorators,
     List<DDIInterceptor<T> Function()>? interceptors,
@@ -87,7 +71,7 @@ abstract class DDI {
   /// Registers an instance of a class as a Session.
   ///
   /// - `clazzRegister`: Factory function to create the instance.
-  /// - `qualifierName`: Optional qualifier name to distinguish between different instances of the same type.
+  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
   /// - `postConstruct`: Optional function to be executed after the instance is constructed.
   /// - `decorators`: List of decoration functions to apply to the instance.
   /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
@@ -104,7 +88,7 @@ abstract class DDI {
   /// - Examples include managing user authentication state or caching user-specific preferences.
   void registerSession<T extends Object>(
     T Function() clazzRegister, {
-    Object? qualifierName,
+    Object? qualifier,
     void Function()? postConstruct,
     List<T Function(T)>? decorators,
     List<DDIInterceptor<T> Function()>? interceptors,
@@ -115,7 +99,7 @@ abstract class DDI {
   /// Registers an instance of a class as a Dependent.
   ///
   /// - `clazzRegister`: Factory function to create the instance.
-  /// - `qualifierName`: Optional qualifier name to distinguish between different instances of the same type.
+  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
   /// - `postConstruct`: Optional function to be executed after the instance is constructed.
   /// - `decorators`: List of decoration functions to apply to the instance.
   /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
@@ -131,7 +115,35 @@ abstract class DDI {
   /// - Examples include transient objects, temporary data holders, or components with a short lifespan.
   void registerDependent<T extends Object>(
     T Function() clazzRegister, {
-    Object? qualifierName,
+    Object? qualifier,
+    void Function()? postConstruct,
+    List<T Function(T)>? decorators,
+    List<DDIInterceptor<T> Function()>? interceptors,
+    bool Function()? registerIf,
+    bool destroyable = true,
+  });
+
+  /// Registers an Object.
+  ///
+  /// - `register`: The Object to be registered.
+  /// - `qualifier`: Qualifier name to identify the object.
+  /// - `postConstruct`: Optional function to be executed after the instance is constructed.
+  /// - `decorators`: List of decoration functions to apply to the instance.
+  /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
+  /// - `registerIf`: Optional function to conditionally register the instance.
+  /// - `destroyable`: Optional parameter to make the instance indestructible.
+  ///
+  /// **Object Scope:**
+  /// - Ensures that the registered Object is created and shared throughout the entire application.
+  /// - Created once when registered.
+  /// - Works like Singleton Scope.
+  ///
+  ///  **Use Case:**
+  /// - Suitable for objects that are stateless or have shared state across the entire application.
+  /// - Examples include application or device properties, like platform or dark mode.
+  void registerObject<T extends Object>(
+    T register, {
+    Object? qualifier,
     void Function()? postConstruct,
     List<T Function(T)>? decorators,
     List<DDIInterceptor<T> Function()>? interceptors,
@@ -141,8 +153,8 @@ abstract class DDI {
 
   /// Gets an instance of the registered class in [DDI].
   ///
-  /// - `qualifierName`: Optional qualifier name to distinguish between different instances of the same type.
-  T get<T extends Object>({Object? qualifierName});
+  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
+  T get<T extends Object>({Object? qualifier});
 
   /// Retrieves a list of keys associated with objects of a specific type `T`.
   ///
@@ -151,13 +163,13 @@ abstract class DDI {
 
   /// Gets an instance of the registered class in [DDI].
   ///
-  /// - `qualifierName`: Optional qualifier name to distinguish between different instances of the same type.
+  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
   T call<T extends Object>();
 
   /// Removes the instance of the registered class in [DDI].
   ///
-  /// - `qualifierName`: Optional qualifier name to distinguish between different instances of the same type.
-  void destroy<T>({Object? qualifierName});
+  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
+  void destroy<T>({Object? qualifier});
 
   /// Removes all the instance registered as Session Scope.
   void destroyAllSession();
@@ -167,8 +179,8 @@ abstract class DDI {
 
   /// Disposes of the instance of the registered class in [DDI].
   ///
-  /// - `qualifierName`: Optional qualifier name to distinguish between different instances of the same type.
-  void dispose<T>({Object? qualifierName});
+  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
+  void dispose<T>({Object? qualifier});
 
   /// Disposes all the instance registered as Session Scope.
   void disposeAllSession();
@@ -183,17 +195,27 @@ abstract class DDI {
   /// - **Order of Execution:** Decorators are applied in the order they are provided.
   /// - **Instaces Already Gets:** No changes any Instances that have been get.
   void addDecorator<T extends Object>(List<T Function(T)> decorators,
-      {Object? qualifierName});
+      {Object? qualifier});
 
   /// Allows to dynamically add a Interceptor.
   ///
   /// When using this method, consider the following:
   ///
   /// - **Scope:** Different scopes may have varying behaviors when adding interceptors.
-  /// - **Aorund Constructor:** Will not work with Singletons Scope.
+  /// - **Around Constructor:** Will not work with Singletons Scope.
   /// - **Order of Execution:** Interceptor are applied in the order they are provided.
   /// - **Instaces Already Gets:** No changes any Instances that have been get.
   void addInterceptor<T extends Object>(
       List<DDIInterceptor<T> Function()> interceptors,
-      {Object? qualifierName});
+      {Object? qualifier});
+
+  /// Allows to dynamically refresh the Object.
+  ///
+  /// When using this method, consider the following:
+  ///
+  /// - **Instaces Already Gets:** No changes any Instances that have been get.
+  void refreshObject<T extends Object>(
+    T register, {
+    Object? qualifier,
+  });
 }
