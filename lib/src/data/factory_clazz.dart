@@ -11,10 +11,12 @@ class FactoryClazz<T> {
   final void Function()? postConstruct;
   final Scopes scopeType;
   final Type type;
+  final bool destroyable;
 
   FactoryClazz({
     required this.scopeType,
     required this.type,
+    required this.destroyable,
     this.clazzInstance,
     this.clazzRegister,
     this.decorators,
@@ -24,21 +26,23 @@ class FactoryClazz<T> {
 
   FactoryClazz<T> copyWith({
     T? clazzInstance,
-    T Function()? clazzRegister,
     List<T Function(T i)>? decorators,
-    void Function()? postConstruct,
     List<DDIInterceptor<T> Function()>? interceptors,
+    T Function()? clazzRegister,
+    void Function()? postConstruct,
     Scopes? scopeType,
     Type? type,
+    bool? destroyable,
   }) {
     return FactoryClazz<T>(
       clazzInstance: clazzInstance ?? this.clazzInstance,
-      clazzRegister: clazzRegister ?? this.clazzRegister,
       decorators: decorators ?? this.decorators,
-      postConstruct: postConstruct ?? this.postConstruct,
       interceptors: interceptors ?? this.interceptors,
+      clazzRegister: clazzRegister ?? this.clazzRegister,
+      postConstruct: postConstruct ?? this.postConstruct,
       scopeType: scopeType ?? this.scopeType,
       type: type ?? this.type,
+      destroyable: destroyable ?? this.destroyable,
     );
   }
 }

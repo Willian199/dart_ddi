@@ -53,6 +53,7 @@ abstract class DDI {
     List<T Function(T)>? decorators,
     List<DDIInterceptor<T> Function()>? interceptors,
     bool Function()? registerIf,
+    bool destroyable = true,
   });
 
   /// Registers an instance of a class as a Application.
@@ -63,6 +64,7 @@ abstract class DDI {
   /// - `decorators`: List of decoration functions to apply to the instance.
   /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
   /// - `registerIf`: Optional function to conditionally register the instance.
+  /// - `destroyable`: Optional parameter to make the instance indestructible.
   ///
   /// **Application Scope:**
   /// - Ensures that only one instance of the registered class is created and shared throughout the entire application.
@@ -79,6 +81,7 @@ abstract class DDI {
     List<T Function(T)>? decorators,
     List<DDIInterceptor<T> Function()>? interceptors,
     bool Function()? registerIf,
+    bool destroyable = true,
   });
 
   /// Registers an instance of a class as a Session.
@@ -89,6 +92,7 @@ abstract class DDI {
   /// - `decorators`: List of decoration functions to apply to the instance.
   /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
   /// - `registerIf`: Optional function to conditionally register the instance.
+  /// - `destroyable`: Optional parameter to make the instance indestructible.
   ///
   /// **Session Scope:**
   /// - Ensures that only one instance of the registered class is created and shared throughout the entire application.
@@ -105,6 +109,7 @@ abstract class DDI {
     List<T Function(T)>? decorators,
     List<DDIInterceptor<T> Function()>? interceptors,
     bool Function()? registerIf,
+    bool destroyable = true,
   });
 
   /// Registers an instance of a class as a Dependent.
@@ -115,6 +120,7 @@ abstract class DDI {
   /// - `decorators`: List of decoration functions to apply to the instance.
   /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
   /// - `registerIf`: Optional function to conditionally register the instance.
+  /// - `destroyable`: Optional parameter to make the instance indestructible.
   ///
   /// **Dependent Scope:**
   /// - Creates a new instance every time it is requested.
@@ -130,6 +136,7 @@ abstract class DDI {
     List<T Function(T)>? decorators,
     List<DDIInterceptor<T> Function()>? interceptors,
     bool Function()? registerIf,
+    bool destroyable = true,
   });
 
   /// Gets an instance of the registered class in [DDI].

@@ -15,6 +15,7 @@ class _DDIImpl implements DDI {
     List<T Function(T)>? decorators,
     List<DDIInterceptor<T> Function()>? interceptors,
     bool Function()? registerIf,
+    bool destroyable = true,
   }) {
     if (registerIf?.call() ?? true) {
       final Object effectiveQualifierName = qualifierName ?? T;
@@ -41,6 +42,7 @@ class _DDIImpl implements DDI {
         type: T,
         scopeType: Scopes.singleton,
         interceptors: interceptors,
+        destroyable: destroyable,
       );
     }
   }
@@ -53,6 +55,7 @@ class _DDIImpl implements DDI {
     List<T Function(T)>? decorators,
     List<DDIInterceptor<T> Function()>? interceptors,
     bool Function()? registerIf,
+    bool destroyable = true,
   }) {
     if (registerIf?.call() ?? true) {
       _register<T>(
@@ -62,6 +65,7 @@ class _DDIImpl implements DDI {
         postConstruct: postConstruct,
         decorators: decorators,
         interceptors: interceptors,
+        destroyable: destroyable,
       );
     }
   }
@@ -74,6 +78,7 @@ class _DDIImpl implements DDI {
     List<T Function(T)>? decorators,
     List<DDIInterceptor<T> Function()>? interceptors,
     bool Function()? registerIf,
+    bool destroyable = true,
   }) {
     if (registerIf?.call() ?? true) {
       _register<T>(
@@ -83,6 +88,7 @@ class _DDIImpl implements DDI {
         postConstruct: postConstruct,
         decorators: decorators,
         interceptors: interceptors,
+        destroyable: destroyable,
       );
     }
   }
@@ -95,6 +101,7 @@ class _DDIImpl implements DDI {
     List<T Function(T)>? decorators,
     List<DDIInterceptor<T> Function()>? interceptors,
     bool Function()? registerIf,
+    bool destroyable = true,
   }) {
     if (registerIf?.call() ?? true) {
       _register<T>(
@@ -104,6 +111,7 @@ class _DDIImpl implements DDI {
         postConstruct: postConstruct,
         decorators: decorators,
         interceptors: interceptors,
+        destroyable: destroyable,
       );
     }
   }
@@ -111,6 +119,7 @@ class _DDIImpl implements DDI {
   void _register<T extends Object>({
     required T Function() clazzRegister,
     required Scopes scopeType,
+    required bool destroyable,
     Object? qualifierName,
     void Function()? postConstruct,
     List<T Function(T)>? decorators,
@@ -130,6 +139,7 @@ class _DDIImpl implements DDI {
       decorators: decorators,
       interceptors: interceptors,
       scopeType: scopeType,
+      destroyable: destroyable,
     );
   }
 
@@ -283,12 +293,12 @@ class _DDIImpl implements DDI {
   }
 
   void _destroy<T>(effectiveQualifierName) {
-    debugPrint('Removed ${effectiveQualifierName.toString()}');
-
     final FactoryClazz<T>? factoryClazz =
         _beans[effectiveQualifierName] as FactoryClazz<T>?;
 
-    if (factoryClazz != null) {
+    if (factoryClazz != null && factoryClazz.destroyable) {
+      debugPrint('Removed ${effectiveQualifierName.toString()}');
+
       if (factoryClazz.clazzInstance != null &&
           factoryClazz.interceptors != null) {
         for (final interceptor in factoryClazz.interceptors!) {
@@ -307,7 +317,8 @@ class _DDIImpl implements DDI {
 
   void _destroyAll(Scopes scope) {
     final keys = _beans.entries
-        .where((element) => element.value.scopeType == scope)
+        .where((element) =>
+            element.value.scopeType == scope && element.value.destroyable)
         .map((e) => e.key)
         .toList();
 

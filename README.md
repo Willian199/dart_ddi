@@ -37,7 +37,8 @@ Summary
    2. [Decorators](#decorators)
    3. [Interceptor](#interceptor)
    4. [RegisterIf](#registerif)
-   5. [DDIContext Extension](#ddicontext-extension)
+   5. [Destroyable](#destroyable)
+   6. [DDIContext Extension](#ddicontext-extension)
 5. [API Reference](#api-reference)
    1. [registerSingleton](#registersingleton)
    2. [registerApplication](#registerapplication)
@@ -176,7 +177,7 @@ ddi.registerSingleton<PlatformService>(() => iOSService(), qualifierName: "ios")
 `Type Identifiers:` Qualifiers are often implemented using string-based identifiers, which may introduce issues such as typos or potential naming conflicts. To mitigate these concerns, it is highly recommended to utilize enums or constants.
 
 # Extra Customization
-The DDI Library provides features for customizing the lifecycle of registered instances. These features include `postConstruct`, `decorators`, `interceptor` and `registerIf`.
+The DDI Library provides features for customizing the lifecycle of registered instances. These features include `postConstruct`, `decorators`, `interceptor`, `registerIf` and `destroyable`.
 
 ## PostConstruct
 The postConstruct callback allows to perform additional setup or initialization after an instance is created. This is particularly useful for executing logic that should run once the instance is ready for use.
@@ -290,6 +291,18 @@ ddi.registerSingleton<MyService>(
 );
 ```
 
+## Destroyable 
+The destroyable parameter, introduced in various registration methods, is optional and can be set to false if you want to make the registered instance indestructible. When set to false, the instance cannot be removed using the `destroy` or `destroyByType` methods, providing control over the lifecycle and preventing accidental removal.
+
+#### Example Usage:
+```dart
+// Register an Application instance that is indestructible
+ddi.registerApplication<MyService>(
+  () => MyService(),
+  destroyable: false,
+);
+```
+
 ## DDIContext Extension
 
 The `DDIContext` extension simplifies dependency injection access within the context of a Flutter widget. It provides a convenient method for retrieving instances directly in your widget's build context.
@@ -313,6 +326,7 @@ void registerSingleton<T extends Object>(
   List<T Function(T)>? decorators,
   List<DDIInterceptor<T> Function()>? interceptors,
   bool Function()? registerIf,
+  bool destroyable = true,
 });
 ```
 
@@ -328,6 +342,7 @@ void registerApplication<T extends Object>(
   List<T Function(T)>? decorators,
   List<DDIInterceptor<T> Function()>? interceptors,
   bool Function()? registerIf,
+  bool destroyable = true,
 });
 ```
 
@@ -343,6 +358,7 @@ void registerDependent<T extends Object>(
   List<T Function(T)>? decorators,
   List<DDIInterceptor<T> Function()>? interceptors,
   bool Function()? registerIf,
+  bool destroyable = true,
 });
 ```
 
@@ -358,6 +374,7 @@ void registerSession<T extends Object>(
   List<T Function(T)>? decorators,
   List<DDIInterceptor<T> Function()>? interceptors,
   bool Function()? registerIf,
+  bool destroyable = true,
 });
 ```
 

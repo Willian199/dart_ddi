@@ -5,6 +5,8 @@ import 'package:dart_ddi/dart_ddi.dart';
 import '../clazz_test/a.dart';
 import '../clazz_test/b.dart';
 import '../clazz_test/c.dart';
+import '../clazz_test/undestroyable/application_destroy_get.dart';
+import '../clazz_test/undestroyable/application_destroy_register.dart';
 
 void application() {
   group('DDI Application Basic Tests', () {
@@ -146,6 +148,33 @@ void application() {
       DDI.instance.destroy(qualifierName: 'typeC');
 
       expect(() => DDI.instance.get(qualifierName: 'typeC'),
+          throwsA(const TypeMatcher<AssertionError>()));
+    });
+
+    test('Try to destroy a undestroyable Application bean', () {
+      DDI.instance.registerApplication(() => ApplicationDestroyGet(),
+          destroyable: false);
+
+      final instance1 = DDI.instance.get<ApplicationDestroyGet>();
+
+      DDI.instance.destroy<ApplicationDestroyGet>();
+
+      final instance2 = DDI.instance.get<ApplicationDestroyGet>();
+
+      expect(instance1, same(instance2));
+    });
+
+    test('Try to register again a undestroyable Application bean', () {
+      DDI.instance.registerApplication(() => ApplicationDestroyRegister(),
+          destroyable: false);
+
+      DDI.instance.get<ApplicationDestroyRegister>();
+
+      DDI.instance.destroy<ApplicationDestroyRegister>();
+
+      expect(
+          () => DDI.instance
+              .registerApplication(() => ApplicationDestroyRegister()),
           throwsA(const TypeMatcher<AssertionError>()));
     });
   });

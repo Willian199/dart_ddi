@@ -5,6 +5,8 @@ import 'package:dart_ddi/dart_ddi.dart';
 import '../clazz_test/a.dart';
 import '../clazz_test/b.dart';
 import '../clazz_test/c.dart';
+import '../clazz_test/undestroyable/dependent_destroy_get.dart';
+import '../clazz_test/undestroyable/dependent_destroy_register.dart';
 
 void dependent() {
   group('DDI Dependent Basic Tests', () {
@@ -96,6 +98,34 @@ void dependent() {
       DDI.instance.destroy(qualifierName: 'typeC');
 
       expect(() => DDI.instance.get(qualifierName: 'typeC'),
+          throwsA(const TypeMatcher<AssertionError>()));
+    });
+
+    test('Try to destroy a undestroyable Dependent bean', () {
+      DDI.instance
+          .registerDependent(() => DependentDestroyGet(), destroyable: false);
+
+      final instance1 = DDI.instance.get<DependentDestroyGet>();
+
+      DDI.instance.destroy<DependentDestroyGet>();
+
+      final instance2 = DDI.instance.get<DependentDestroyGet>();
+
+      expect(instance2, isNotNull);
+      expect(false, identical(instance1, instance2));
+    });
+
+    test('Try to register again a undestroyable Dependent bean', () {
+      DDI.instance.registerDependent(() => DependentDestroyRegister(),
+          destroyable: false);
+
+      DDI.instance.get<DependentDestroyRegister>();
+
+      DDI.instance.destroy<DependentDestroyRegister>();
+
+      expect(
+          () =>
+              DDI.instance.registerDependent(() => DependentDestroyRegister()),
           throwsA(const TypeMatcher<AssertionError>()));
     });
   });

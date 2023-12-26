@@ -5,6 +5,8 @@ import 'package:dart_ddi/dart_ddi.dart';
 import '../clazz_test/a.dart';
 import '../clazz_test/b.dart';
 import '../clazz_test/c.dart';
+import '../clazz_test/undestroyable/session_destroy_get.dart';
+import '../clazz_test/undestroyable/session_destroy_register.dart';
 
 void session() {
   group('DDI Session Basic Tests', () {
@@ -145,6 +147,31 @@ void session() {
       DDI.instance.destroy(qualifierName: 'typeC');
 
       expect(() => DDI.instance.get(qualifierName: 'typeC'),
+          throwsA(const TypeMatcher<AssertionError>()));
+    });
+
+    test('Try to destroy a undestroyable Session bean', () {
+      DDI.instance
+          .registerSession(() => SessionDestroyGet(), destroyable: false);
+
+      final instance1 = DDI.instance.get<SessionDestroyGet>();
+
+      DDI.instance.destroy<SessionDestroyGet>();
+
+      final instance2 = DDI.instance.get<SessionDestroyGet>();
+
+      expect(instance1, same(instance2));
+    });
+
+    test('Try to register again a undestroyable Session bean', () {
+      DDI.instance
+          .registerSession(() => SessionDestroyRegister(), destroyable: false);
+
+      DDI.instance.get<SessionDestroyRegister>();
+
+      DDI.instance.destroy<SessionDestroyRegister>();
+
+      expect(() => DDI.instance.registerSession(() => SessionDestroyRegister()),
           throwsA(const TypeMatcher<AssertionError>()));
     });
   });
