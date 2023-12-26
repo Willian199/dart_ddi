@@ -88,16 +88,16 @@ void dependent() {
     });
 
     test('Create, get and remove a qualifier bean', () {
-      DDI.instance.registerDependent(() => C(), qualifierName: 'typeC');
+      DDI.instance.registerDependent(() => C(), qualifier: 'typeC');
 
-      final instance1 = DDI.instance.get(qualifierName: 'typeC');
-      final instance2 = DDI.instance.get(qualifierName: 'typeC');
+      final instance1 = DDI.instance.get(qualifier: 'typeC');
+      final instance2 = DDI.instance.get(qualifier: 'typeC');
 
       expect(false, identical(instance1, instance2));
 
-      DDI.instance.destroy(qualifierName: 'typeC');
+      DDI.instance.destroy(qualifier: 'typeC');
 
-      expect(() => DDI.instance.get(qualifierName: 'typeC'),
+      expect(() => DDI.instance.get(qualifier: 'typeC'),
           throwsA(const TypeMatcher<AssertionError>()));
     });
 

@@ -140,13 +140,13 @@ void session() {
     });
 
     test('Create, get and remove a qualifier bean', () {
-      DDI.instance.registerSession(() => C(), qualifierName: 'typeC');
+      DDI.instance.registerSession(() => C(), qualifier: 'typeC');
 
-      DDI.instance.get(qualifierName: 'typeC');
+      DDI.instance.get(qualifier: 'typeC');
 
-      DDI.instance.destroy(qualifierName: 'typeC');
+      DDI.instance.destroy(qualifier: 'typeC');
 
-      expect(() => DDI.instance.get(qualifierName: 'typeC'),
+      expect(() => DDI.instance.get(qualifier: 'typeC'),
           throwsA(const TypeMatcher<AssertionError>()));
     });
 

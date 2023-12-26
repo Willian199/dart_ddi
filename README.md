@@ -111,6 +111,20 @@ The Dart Dependency Injection (DDI) Library supports various scopes for efficien
 
 `Use Case`: Creating instances of transient objects like data repositories or request handlers.
 
+## Dependent
+`Description`: Produces a new instance every time it is requested, ensuring independence and uniqueness.
+
+`Recommendation`: Useful for objects that should remain independent and different in each context or request.
+
+`Use Case`: Creating instances of transient objects like data repositories or request handlers.
+
+## Object
+`Description`: Registers an Object in the Object Scope, ensuring it is created once and shared throughout the entire application, functioning similarly to a Singleton.
+
+`Recommendation`: Suitable for objects that are stateless or have shared state across the entire application.
+
+`Use Case`: Application or device properties, like platform or dark mode settings, where the object's state needs to be consistent across the entire application.
+
 ## Common Considerations:
 `Single Registration`: Ensure that the instance to be registered is unique for a specific type or use qualifiers to enable the registration of multiple instances of the same type.
 
@@ -125,12 +139,12 @@ The Dart Dependency Injection (DDI) Library supports various scopes for efficien
 Qualifiers play a crucial role in the DDI Library by differentiating between instances of the same type, enabling to uniquely identify and retrieve specific instances within a given scope. In scenarios where multiple instances coexist within a single scope, qualifiers serve as optional labels or identifiers associated with the registration and retrieval of instances, ensuring precision in managing dependencies.
 
 ## How Qualifiers Work
-When registering an instance, can provide a qualifierName as part of the registration process. This qualifier acts as metadata associated with the instance and can later be used during retrieval to specify which instance is needed.
+When registering an instance, can provide a qualifier as part of the registration process. This qualifier acts as metadata associated with the instance and can later be used during retrieval to specify which instance is needed.
 
 #### Example Registration with Qualifier
 
 ```dart
-ddi.registerSingleton<MyService>(() => MyService(), qualifierName: "specialInstance");
+ddi.registerSingleton<MyService>(() => MyService(), qualifier: "specialInstance");
 ```
 
 ## Retrieval with Qualifiers
@@ -139,7 +153,7 @@ During retrieval, if multiple instances of the same type exist, can use the asso
 ####  Example Retrieval with Qualifier
 
 ```dart
-MyService specialInstance = ddi.get<MyService>(qualifierName: "specialInstance");
+MyService specialInstance = ddi.get<MyService>(qualifier: "specialInstance");
 ```
 ## Use Cases for Qualifiers
 
@@ -147,16 +161,16 @@ MyService specialInstance = ddi.get<MyService>(qualifierName: "specialInstance")
 
 When there are multiple configurations for a service, such as different API endpoints or connection settings.
 ```dart
-ddi.registerSingleton<ApiService>(() => ApiService("endpointA"), qualifierName: "endpointA");
-ddi.registerSingleton<ApiService>(() => ApiService("endpointB"), qualifierName: "endpointB");
+ddi.registerSingleton<ApiService>(() => ApiService("endpointA"), qualifier: "endpointA");
+ddi.registerSingleton<ApiService>(() => ApiService("endpointB"), qualifier: "endpointB");
 ```
 
 #### Feature Flags
 
 When different instances are required based on feature flags or runtime conditions.
 ```dart
-ddi.registerSingleton<FeatureService>(() => FeatureService(enabled: true), qualifierName: "enabled");
-ddi.registerSingleton<FeatureService>(() => FeatureService(enabled: false), qualifierName: "disabled");
+ddi.registerSingleton<FeatureService>(() => FeatureService(enabled: true), qualifier: "enabled");
+ddi.registerSingleton<FeatureService>(() => FeatureService(enabled: false), qualifier: "disabled");
 ```
 
 #### Platform-Specific Implementations
@@ -164,8 +178,8 @@ ddi.registerSingleton<FeatureService>(() => FeatureService(enabled: false), qual
 In scenarios where platform-specific implementations are required, such as different services for Android and iOS, qualifiers can be employed to distinguish between the platform-specific instances.
 
 ```dart
-ddi.registerSingleton<PlatformService>(() => AndroidService(), qualifierName: "android");
-ddi.registerSingleton<PlatformService>(() => iOSService(), qualifierName: "ios");
+ddi.registerSingleton<PlatformService>(() => AndroidService(), qualifier: "android");
+ddi.registerSingleton<PlatformService>(() => iOSService(), qualifier: "ios");
 ```
 
 ## Considerations
@@ -303,15 +317,6 @@ ddi.registerApplication<MyService>(
 );
 ```
 
-## DDIContext Extension
-
-The `DDIContext` extension simplifies dependency injection access within the context of a Flutter widget. It provides a convenient method for retrieving instances directly in your widget's build context.
-
-```dart
-// Retrieve an instance of MyService from DDI with a specific qualifier
-MyService myService = context.ddi<MyService>(qualifierName: 'customQualifier');
-```
-
 # API Reference
 
 ## registerSingleton
@@ -321,7 +326,7 @@ Registers a singleton instance. The `clazzRegister` parameter is a factory funct
 ```dart
 void registerSingleton<T extends Object>(
   T Function() clazzRegister, {
-  Object? qualifierName,
+  Object? qualifier,
   void Function()? postConstruct,
   List<T Function(T)>? decorators,
   List<DDIInterceptor<T> Function()>? interceptors,
@@ -337,7 +342,7 @@ Registers an application-scoped instance. The instance is created when first use
 ```dart
 void registerApplication<T extends Object>(
   T Function() clazzRegister, {
-  Object? qualifierName,
+  Object? qualifier,
   void Function()? postConstruct,
   List<T Function(T)>? decorators,
   List<DDIInterceptor<T> Function()>? interceptors,
@@ -353,7 +358,7 @@ Registers a dependent instance. A new instance is created every time it is used.
 ```dart
 void registerDependent<T extends Object>(
   T Function() clazzRegister, {
-  Object? qualifierName,
+  Object? qualifier,
   void Function()? postConstruct,
   List<T Function(T)>? decorators,
   List<DDIInterceptor<T> Function()>? interceptors,
@@ -369,7 +374,23 @@ Registers a session-scoped instance. The instance is tied to a specific session.
 ```dart
 void registerSession<T extends Object>(
   T Function() clazzRegister, {
-  Object? qualifierName,
+  Object? qualifier,
+  void Function()? postConstruct,
+  List<T Function(T)>? decorators,
+  List<DDIInterceptor<T> Function()>? interceptors,
+  bool Function()? registerIf,
+  bool destroyable = true,
+});
+```
+
+## registerObject
+
+Registers an Object values as instance. The `register` parameter is the value shared across de application.
+
+```dart
+void registerObject<T extends Object>({
+  required Object qualifier,
+  required T register,
   void Function()? postConstruct,
   List<T Function(T)>? decorators,
   List<DDIInterceptor<T> Function()>? interceptors,
@@ -380,10 +401,10 @@ void registerSession<T extends Object>(
 
 ## get
 
-Retrieves an instance of type T from the appropriate scope. You can provide a `qualifierName` to distinguish between instances of the same type.
+Retrieves an instance of type T from the appropriate scope. You can provide a `qualifier` to distinguish between instances of the same type.
 
 ```dart
-T get<T extends Object>({Object? qualifierName});
+T get<T extends Object>({Object? qualifier});
 ```
 
 ## getByType
@@ -407,7 +428,7 @@ T call<T extends Object>();
 Destroy an instance from the container. Useful for manual cleanup.
 
 ```dart
-void destroy<T>({Object? qualifierName});
+void destroy<T>({Object? qualifier});
 ```
 
 ## destroyByType
@@ -423,7 +444,7 @@ void destroyByType<T extends Object>();
 Disposes of an instance, invoking any cleanup logic. This is particularly useful for instances with resources that need to be released. Only applied to Application and Session Scopes
 
 ```dart
-void dispose<T>({Object? qualifierName});
+void dispose<T>({Object? qualifier});
 ```
 
 ## disposeByType
@@ -440,13 +461,21 @@ This provides a dynamic way to enhance the behavior of registered instances by a
 When using the addDecorator method, keep in mind the order of execution, scope considerations, and the fact that instances already obtained remain unaffected. 
 
 ```dart
-void addDecorator<T extends Object>(List<T Function(T)> decorators, {Object? qualifierName});
+void addDecorator<T extends Object>(List<T Function(T)> decorators, {Object? qualifier});
 ```
 
 ## addInterceptor
 
 This feature allows you to dynamically influence the instantiation, retrieval, destruction, and disposal of instances by adding custom interceptors. The `addInterceptor` method enables you to associate specific interceptors with particular types.
 ```dart
-void addInterceptor<T extends Object>(List<DDIInterceptor<T> Function()> interceptors, {Object? qualifierName});
+void addInterceptor<T extends Object>(List<DDIInterceptor<T> Function()> interceptors, {Object? qualifier});
+```
+
+## refreshObject
+
+Enables the dynamic refreshing of an object within the Object Scope. Use it to update the existing object without affecting instances already obtained.
+```dart
+void refreshObject<T extends Object>({required Object qualifier, required T register,
+});
 ```
 
