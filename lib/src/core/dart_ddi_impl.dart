@@ -140,9 +140,9 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  void registerObject<T extends Object>({
-    required Object qualifier,
-    required T register,
+  void registerObject<T extends Object>(
+    T register, {
+    Object? qualifier,
     void Function()? postConstruct,
     List<T Function(T)>? decorators,
     List<DDIInterceptor<T> Function()>? interceptors,
@@ -150,8 +150,10 @@ class _DDIImpl implements DDI {
     bool destroyable = true,
   }) {
     if (registerIf?.call() ?? true) {
-      assert(_beans[qualifier] == null,
-          'Is already registered a instance with Type ${qualifier.toString()}');
+      final Object effectiveQualifierName = qualifier ?? T;
+
+      assert(_beans[effectiveQualifierName] == null,
+          'Is already registered a instance with Type ${effectiveQualifierName.toString()}');
 
       if (interceptors != null) {
         for (final interceptor in interceptors) {
@@ -163,7 +165,7 @@ class _DDIImpl implements DDI {
 
       postConstruct?.call();
 
-      _beans[qualifier] = FactoryClazz<T>(
+      _beans[effectiveQualifierName] = FactoryClazz<T>(
         clazzInstance: register,
         type: T,
         scopeType: Scopes.object,
@@ -490,11 +492,13 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  void refreshObject<T extends Object>({
-    required Object qualifier,
-    required T register,
+  void refreshObject<T extends Object>(
+    T register, {
+    Object? qualifier,
   }) {
-    final FactoryClazz<T>? factoryClazz = _beans[qualifier] as FactoryClazz<T>?;
+    final Object effectiveQualifierName = qualifier ?? T;
+    final FactoryClazz<T>? factoryClazz =
+        _beans[effectiveQualifierName] as FactoryClazz<T>?;
 
     assert(factoryClazz != null && factoryClazz.scopeType == Scopes.object,
         'No Object registered with Type ${qualifier.toString()}');

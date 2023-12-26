@@ -141,9 +141,9 @@ abstract class DDI {
   ///  **Use Case:**
   /// - Suitable for objects that are stateless or have shared state across the entire application.
   /// - Examples include application or device properties, like platform or dark mode.
-  void registerObject<T extends Object>({
-    required Object qualifier,
-    required T register,
+  void registerObject<T extends Object>(
+    T register, {
+    Object? qualifier,
     void Function()? postConstruct,
     List<T Function(T)>? decorators,
     List<DDIInterceptor<T> Function()>? interceptors,
@@ -214,8 +214,8 @@ abstract class DDI {
   /// When using this method, consider the following:
   ///
   /// - **Instaces Already Gets:** No changes any Instances that have been get.
-  void refreshObject<T extends Object>({
-    required Object qualifier,
-    required T register,
+  void refreshObject<T extends Object>(
+    T register, {
+    Object? qualifier,
   });
 }

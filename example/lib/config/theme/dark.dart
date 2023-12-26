@@ -86,8 +86,8 @@ class DarkTheme {
     );
 
     //ddi.destroy<Layout>();
-    ddi.registerSingleton<Layout>(
-      () => Layout(
+    ddi.registerObject<Layout>(
+      Layout(
         cardDegradeColors: [
           const Color(0xff00F6ff),
           const Color(0xFF436AB7),
@@ -104,8 +104,7 @@ class DarkTheme {
         notaDownColor: _default.colorScheme.tertiaryContainer.withOpacity(0.5),
         notaUpColor: _default.colorScheme.tertiary.withOpacity(0.5),
       ),
-      registerIf: () =>
-          ddi.get<bool>(qualifierName: InjectionConstants.darkMode),
+      registerIf: () => ddi.get<bool>(qualifier: InjectionConstants.darkMode),
     );
   }
 
