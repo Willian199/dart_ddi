@@ -37,7 +37,8 @@ Summary
    2. [Decorators](#decorators)
    3. [Interceptor](#interceptor)
    4. [RegisterIf](#registerif)
-   5. [DDIContext Extension](#ddicontext-extension)
+   5. [Destroyable](#destroyable)
+   6. [DDIContext Extension](#ddicontext-extension)
 5. [API Reference](#api-reference)
    1. [registerSingleton](#registersingleton)
    2. [registerApplication](#registerapplication)
@@ -176,7 +177,7 @@ ddi.registerSingleton<PlatformService>(() => iOSService(), qualifierName: "ios")
 `Type Identifiers:` Qualifiers are often implemented using string-based identifiers, which may introduce issues such as typos or potential naming conflicts. To mitigate these concerns, it is highly recommended to utilize enums or constants.
 
 # Extra Customization
-The DDI Library provides features for customizing the lifecycle of registered instances. These features include `postConstruct`, `decorators`, `interceptor` and `registerIf`.
+The DDI Library provides features for customizing the lifecycle of registered instances. These features include `postConstruct`, `decorators`, `interceptor`, `registerIf` and `destroyable`.
 
 ## PostConstruct
 The postConstruct callback allows to perform additional setup or initialization after an instance is created. This is particularly useful for executing logic that should run once the instance is ready for use.
