@@ -27,7 +27,8 @@ Summary
    2. [Application](#application)
    3. [Session](#session)
    4. [Dependent](#dependent)
-   5. [Common Considerations](#common-considerations)
+   5. [Object](#object)
+   6. [Common Considerations](#common-considerations)
 3. [Qualifiers](#qualifiers)
    1. [How Qualifiers Work](#how-qualifiers-work)
    2. [Use Cases for Qualifiers](#use-cases-for-qualifiers)
@@ -38,21 +39,22 @@ Summary
    3. [Interceptor](#interceptor)
    4. [RegisterIf](#registerif)
    5. [Destroyable](#destroyable)
-   6. [DDIContext Extension](#ddicontext-extension)
 5. [API Reference](#api-reference)
    1. [registerSingleton](#registersingleton)
    2. [registerApplication](#registerapplication)
    3. [registerDependent](#registerdependent)
    4. [registerSession](#registersession)
-   5. [get](#get)
-   6. [getByType](#getbytype)
-   7. [call](#call)
-   8. [destroy](#destroy)
-   9. [destroyByType](#destroybytype)
-   10. [dispose](#dispose)
-   11. [disposeByType](#disposebytype)
-   12. [addDecorator](#adddecorator)
-   13. [addInterceptor](#addInterceptor)
+   5. [registerObject](#registerobject)
+   6. [get](#get)
+   7. [getByType](#getbytype)
+   8. [call](#call)
+   9. [destroy](#destroy)
+   10. [destroyByType](#destroybytype)
+   11. [dispose](#dispose)
+   12. [disposeByType](#disposebytype)
+   13. [addDecorator](#adddecorator)
+   14. [addInterceptor](#addinterceptor)
+   15. [refreshObject](#refreshobject)
 
 ## Getting Started
 
@@ -103,13 +105,6 @@ The Dart Dependency Injection (DDI) Library supports various scopes for efficien
 `Recommendation`: Suitable for objects that need to be retained while a session is active, such as user-specific data or state.
 
 `Use Case`: Managing user authentication state or caching user-specific preferences.
-
-## Dependent
-`Description`: Produces a new instance every time it is requested, ensuring independence and uniqueness.
-
-`Recommendation`: Useful for objects that should remain independent and different in each context or request.
-
-`Use Case`: Creating instances of transient objects like data repositories or request handlers.
 
 ## Dependent
 `Description`: Produces a new instance every time it is requested, ensuring independence and uniqueness.
