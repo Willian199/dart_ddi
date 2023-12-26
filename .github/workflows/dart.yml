@@ -35,4 +35,4 @@ jobs:
       # package:test for this step to succeed. Note that Flutter projects will
       # want to change this to 'flutter test'.
       - name: Run tests
-        run: flutter test test/dart_di_test.dart
+        run: flutter test test/dart_ddi_test.dart

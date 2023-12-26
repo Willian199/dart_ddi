@@ -290,6 +290,18 @@ ddi.registerSingleton<MyService>(
 );
 ```
 
+## Destroyable 
+The destroyable parameter, introduced in various registration methods, is optional and can be set to false if you want to make the registered instance indestructible. When set to false, the instance cannot be removed using the `destroy` or `destroyByType` methods, providing control over the lifecycle and preventing accidental removal.
+
+#### Example Usage:
+```dart
+// Register an Application instance that is indestructible
+ddi.registerApplication<MyService>(
+  () => MyService(),
+  destroyable: false,
+);
+```
+
 ## DDIContext Extension
 
 The `DDIContext` extension simplifies dependency injection access within the context of a Flutter widget. It provides a convenient method for retrieving instances directly in your widget's build context.
@@ -313,6 +325,7 @@ void registerSingleton<T extends Object>(
   List<T Function(T)>? decorators,
   List<DDIInterceptor<T> Function()>? interceptors,
   bool Function()? registerIf,
+  bool destroyable = true,
 });
 ```
 
@@ -328,6 +341,7 @@ void registerApplication<T extends Object>(
   List<T Function(T)>? decorators,
   List<DDIInterceptor<T> Function()>? interceptors,
   bool Function()? registerIf,
+  bool destroyable = true,
 });
 ```
 
@@ -343,6 +357,7 @@ void registerDependent<T extends Object>(
   List<T Function(T)>? decorators,
   List<DDIInterceptor<T> Function()>? interceptors,
   bool Function()? registerIf,
+  bool destroyable = true,
 });
 ```
 
@@ -358,6 +373,7 @@ void registerSession<T extends Object>(
   List<T Function(T)>? decorators,
   List<DDIInterceptor<T> Function()>? interceptors,
   bool Function()? registerIf,
+  bool destroyable = true,
 });
 ```
 
