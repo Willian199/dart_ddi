@@ -5,6 +5,8 @@ import 'package:dart_ddi/dart_ddi.dart';
 import '../clazz_test/a.dart';
 import '../clazz_test/b.dart';
 import '../clazz_test/c.dart';
+import '../clazz_test/undestroyable/singleton_destroy_get.dart';
+import '../clazz_test/undestroyable/singleton_destroy_register.dart';
 
 void singleton() {
   group('DDI Singleton Basic Tests', () {
@@ -84,6 +86,33 @@ void singleton() {
       DDI.instance.destroy(qualifierName: 'typeC');
 
       expect(() => DDI.instance.get(qualifierName: 'typeC'),
+          throwsA(const TypeMatcher<AssertionError>()));
+    });
+
+    test('Try to destroy a undestroyable Singleton bean', () {
+      DDI.instance
+          .registerSingleton(() => SingletonDestroyGet(), destroyable: false);
+
+      final instance1 = DDI.instance.get<SingletonDestroyGet>();
+
+      DDI.instance.destroy<SingletonDestroyGet>();
+
+      final instance2 = DDI.instance.get<SingletonDestroyGet>();
+
+      expect(instance1, same(instance2));
+    });
+
+    test('Try to register again a undestroyable Singleton bean', () {
+      DDI.instance.registerSingleton(() => SingletonDestroyRegister(),
+          destroyable: false);
+
+      DDI.instance.get<SingletonDestroyRegister>();
+
+      DDI.instance.destroy<SingletonDestroyRegister>();
+
+      expect(
+          () =>
+              DDI.instance.registerSingleton(() => SingletonDestroyRegister()),
           throwsA(const TypeMatcher<AssertionError>()));
     });
   });
