@@ -139,6 +139,34 @@ abstract class DDI {
     bool destroyable = true,
   });
 
+  /// Registers an Object.
+  ///
+  /// - `register`: The Object to be registered.
+  /// - `qualifierName`: Optional qualifier name to distinguish between different instances of the same type.
+  /// - `postConstruct`: Optional function to be executed after the instance is constructed.
+  /// - `decorators`: List of decoration functions to apply to the instance.
+  /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
+  /// - `registerIf`: Optional function to conditionally register the instance.
+  /// - `destroyable`: Optional parameter to make the instance indestructible.
+  ///
+  /// **Object Scope:**
+  /// - Ensures that the registered Object is created and shared throughout the entire application.
+  /// - Created once when registered.
+  /// - Works like Singleton Scope.
+  ///
+  ///  **Use Case:**
+  /// - Suitable for objects that are stateless or have shared state across the entire application.
+  /// - Examples include application or device properties, like platform or dark mode.
+  void registerObject<T extends Object>({
+    required Object qualifierName,
+    required T register,
+    void Function()? postConstruct,
+    List<T Function(T)>? decorators,
+    List<DDIInterceptor<T> Function()>? interceptors,
+    bool Function()? registerIf,
+    bool destroyable = true,
+  });
+
   /// Gets an instance of the registered class in [DDI].
   ///
   /// - `qualifierName`: Optional qualifier name to distinguish between different instances of the same type.

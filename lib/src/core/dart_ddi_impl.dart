@@ -144,6 +144,42 @@ class _DDIImpl implements DDI {
   }
 
   @override
+  void registerObject<T extends Object>({
+    required Object qualifierName,
+    required T register,
+    void Function()? postConstruct,
+    List<T Function(T)>? decorators,
+    List<DDIInterceptor<T> Function()>? interceptors,
+    bool Function()? registerIf,
+    bool destroyable = true,
+  }) {
+    if (registerIf?.call() ?? true) {
+      assert(_beans[qualifierName] == null,
+          'Is already registered a instance with Type ${qualifierName.toString()}');
+
+      debugPrint('Registered ${qualifierName.toString()}');
+
+      if (interceptors != null) {
+        for (var interceptor in interceptors) {
+          register = interceptor.call().aroundConstruct(register);
+        }
+      }
+
+      register = _executarDecorators(register, decorators);
+
+      postConstruct?.call();
+
+      _beans[qualifierName] = FactoryClazz<T>(
+        clazzInstance: register,
+        type: T,
+        scopeType: Scopes.object,
+        interceptors: interceptors,
+        destroyable: destroyable,
+      );
+    }
+  }
+
+  @override
   T call<T extends Object>() {
     return get();
   }
@@ -251,7 +287,7 @@ class _DDIImpl implements DDI {
     T result;
     try {
       result = switch (factoryClazz.scopeType) {
-        Scopes.singleton => _getSingleton<T>(factoryClazz),
+        Scopes.singleton || Scopes.object => _getSingleton<T>(factoryClazz),
         Scopes.dependent => _getDependent<T>(factoryClazz),
         Scopes.application ||
         Scopes.session =>
@@ -412,6 +448,7 @@ class _DDIImpl implements DDI {
     switch (factoryClazz!.scopeType) {
       //Singleton Scopes already have a instance
       case Scopes.singleton:
+      case Scopes.object:
         factoryClazz.clazzInstance =
             _executarDecorators<T>(factoryClazz.clazzInstance!, decorators);
         break;
