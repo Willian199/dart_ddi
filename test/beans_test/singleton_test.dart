@@ -2,11 +2,11 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dart_ddi/dart_ddi.dart';
 
-import '../clazz_test/a.dart';
-import '../clazz_test/b.dart';
-import '../clazz_test/c.dart';
-import '../clazz_test/undestroyable/singleton_destroy_get.dart';
-import '../clazz_test/undestroyable/singleton_destroy_register.dart';
+import '../clazz_samples/a.dart';
+import '../clazz_samples/b.dart';
+import '../clazz_samples/c.dart';
+import '../clazz_samples/undestroyable/singleton_destroy_get.dart';
+import '../clazz_samples/undestroyable/singleton_destroy_register.dart';
 
 void singleton() {
   group('DDI Singleton Basic Tests', () {

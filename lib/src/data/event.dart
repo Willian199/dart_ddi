@@ -4,20 +4,33 @@ class Event<T> {
   final void Function(T) event;
   final Type type;
   final bool destroyable;
+  final int priority;
+  final bool isAsync;
+  final bool unsubscribeAfterFire;
 
   Event({
     required this.event,
     required this.type,
     required this.destroyable,
+    required this.priority,
+    this.isAsync = false,
+    this.unsubscribeAfterFire = false,
   });
 
   @override
   bool operator ==(covariant Event<T> other) {
     if (identical(this, other)) return true;
 
-    return other.event == event && other.type == type && other.destroyable == destroyable;
+    return other.event == event &&
+        other.type == type &&
+        other.destroyable == destroyable &&
+        other.priority == priority &&
+        other.isAsync == isAsync &&
+        other.unsubscribeAfterFire == unsubscribeAfterFire;
   }
 
   @override
-  int get hashCode => event.hashCode ^ type.hashCode ^ destroyable.hashCode;
+  int get hashCode {
+    return event.hashCode ^ type.hashCode ^ destroyable.hashCode ^ priority.hashCode ^ isAsync.hashCode ^ unsubscribeAfterFire.hashCode;
+  }
 }

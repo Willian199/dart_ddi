@@ -1,7 +1,7 @@
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../clazz_test/l.dart';
+import '../clazz_samples/l.dart';
 
 void postConstructPreDestroyTest() {
   group('DDI PostConstruct and PreDestroy test', () {

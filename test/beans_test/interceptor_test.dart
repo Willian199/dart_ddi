@@ -1,14 +1,14 @@
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../clazz_test/d.dart';
-import '../clazz_test/e.dart';
-import '../clazz_test/f.dart';
-import '../clazz_test/g.dart';
-import '../clazz_test/h.dart';
-import '../clazz_test/i.dart';
-import '../clazz_test/j.dart';
-import '../clazz_test/k.dart';
+import '../clazz_samples/d.dart';
+import '../clazz_samples/e.dart';
+import '../clazz_samples/f.dart';
+import '../clazz_samples/g.dart';
+import '../clazz_samples/h.dart';
+import '../clazz_samples/i.dart';
+import '../clazz_samples/j.dart';
+import '../clazz_samples/k.dart';
 
 void interceptor() {
   group('DDI Interceptor Tests', () {

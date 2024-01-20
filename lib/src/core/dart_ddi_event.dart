@@ -14,6 +14,9 @@ abstract class DDIEvent {
     Object? qualifier,
     bool Function()? registerIf,
     bool destroyable = true,
+    int priority = 0,
+    bool isAsync = false,
+    bool unsubscribeAfterFire = false,
   });
 
   /// Removes the event registered class in [DDIEvent].

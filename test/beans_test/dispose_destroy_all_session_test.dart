@@ -2,9 +2,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:dart_ddi/dart_ddi.dart';
 
-import '../clazz_test/a.dart';
-import '../clazz_test/b.dart';
-import '../clazz_test/c.dart';
+import '../clazz_samples/a.dart';
+import '../clazz_samples/b.dart';
+import '../clazz_samples/c.dart';
 
 void disposeDestroyAllSession() {
   group('DDI Dispose Destroy ALl Session Tests', () {
