@@ -20,7 +20,7 @@ class _DDIEventImpl implements DDIEvent {
 
       _events.putIfAbsent(effectiveQualifierName, () => []);
 
-      final existingEvents = _events[effectiveQualifierName]!;
+      final existingEvents = _events[effectiveQualifierName]!.cast<Event<T>>();
       final isDuplicate = existingEvents.any((existingEvent) => identical(existingEvent.event, event));
 
       if (!isDuplicate) {
@@ -45,12 +45,11 @@ class _DDIEventImpl implements DDIEvent {
   }) {
     final effectiveQualifierName = qualifier ?? T;
 
-    final eventsList = _events[effectiveQualifierName];
+    //Without the cast, removeWhere fails beacause the type is Event<dynamic>
+    final eventsList = _events[effectiveQualifierName]?.cast<Event<T>>();
 
     if (eventsList != null) {
-      eventsList.removeWhere(
-        (e) => e.destroyable && identical(e.event, event),
-      );
+      eventsList.removeWhere((e) => e.destroyable && identical(e.event, event));
     }
   }
 
@@ -58,16 +57,14 @@ class _DDIEventImpl implements DDIEvent {
   void fire<T extends Object>(T value, {Object? qualifier}) {
     final effectiveQualifierName = qualifier ?? T;
 
-    final eventsList = _events[effectiveQualifierName] as Set<Event<T>>?;
+    final eventsList = _events[effectiveQualifierName]?.cast<Event<T>>();
 
     if (eventsList != null) {
       final eventsToRemove = <Event<T>>[];
 
       for (final Event<T> event in eventsList) {
         if (event.isAsync) {
-          Future.microtask(() {
-            event.event(value);
-          });
+          Future.microtask(() => event.event(value));
         } else {
           event.event(value);
         }

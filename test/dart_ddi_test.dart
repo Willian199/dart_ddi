@@ -10,6 +10,7 @@ import 'beans_test/post_construct_pre_destroy_test.dart';
 import 'beans_test/register_if_test.dart';
 import 'beans_test/session_test.dart';
 import 'beans_test/singleton_test.dart';
+import 'event_test/event_test.dart';
 
 void main() {
   //Basic Tests, with consists in register, get, dispose, remove
@@ -32,4 +33,7 @@ void main() {
 
   //CircularDetection
   circularDetection();
+
+  //Events
+  eventTest();
 }
