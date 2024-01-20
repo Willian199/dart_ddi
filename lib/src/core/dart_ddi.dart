@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:dart_ddi/src/data/factory_clazz.dart';
 import 'package:dart_ddi/src/enum/scopes.dart';
 import 'package:dart_ddi/src/features/ddi_interceptor.dart';
+import 'package:dart_ddi/src/features/post_construct.dart';
+import 'package:dart_ddi/src/features/pre_destroy.dart';
 
 part 'dart_ddi_impl.dart';
 
@@ -169,7 +171,7 @@ abstract class DDI {
   /// Removes the instance of the registered class in [DDI].
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
-  void destroy<T>({Object? qualifier});
+  void destroy<T extends Object>({Object? qualifier});
 
   /// Removes all the instance registered as Session Scope.
   void destroyAllSession();
@@ -194,8 +196,7 @@ abstract class DDI {
   ///
   /// - **Order of Execution:** Decorators are applied in the order they are provided.
   /// - **Instaces Already Gets:** No changes any Instances that have been get.
-  void addDecorator<T extends Object>(List<T Function(T)> decorators,
-      {Object? qualifier});
+  void addDecorator<T extends Object>(List<T Function(T)> decorators, {Object? qualifier});
 
   /// Allows to dynamically add a Interceptor.
   ///
@@ -205,9 +206,7 @@ abstract class DDI {
   /// - **Around Constructor:** Will not work with Singletons Scope.
   /// - **Order of Execution:** Interceptor are applied in the order they are provided.
   /// - **Instaces Already Gets:** No changes any Instances that have been get.
-  void addInterceptor<T extends Object>(
-      List<DDIInterceptor<T> Function()> interceptors,
-      {Object? qualifier});
+  void addInterceptor<T extends Object>(List<DDIInterceptor<T> Function()> interceptors, {Object? qualifier});
 
   /// Allows to dynamically refresh the Object.
   ///
