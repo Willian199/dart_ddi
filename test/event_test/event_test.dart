@@ -45,7 +45,8 @@ void eventTest() {
       int localValue = 0;
       void eventFunction(int value) => localValue += value;
 
-      DDIEvent.instance.subscribe<int>(eventFunction, unsubscribeAfterFire: true);
+      DDIEvent.instance
+          .subscribe<int>(eventFunction, unsubscribeAfterFire: true);
 
       expect(localValue, 0);
 
@@ -155,7 +156,8 @@ void eventTest() {
       int localValue = 0;
       void eventFunction(int value) => localValue += value;
 
-      DDIEvent.instance.subscribe(eventFunction, qualifier: 'testQualifier', allowUnsubscribe: false);
+      DDIEvent.instance.subscribe(eventFunction,
+          qualifier: 'testQualifier', allowUnsubscribe: false);
 
       expect(localValue, 0);
 
@@ -170,7 +172,8 @@ void eventTest() {
       expect(localValue, 2);
     });
 
-    test('subscribe with allowUnsubscribe event, with unsubscribeAfterFire', () {
+    test('subscribe with allowUnsubscribe event, with unsubscribeAfterFire',
+        () {
       int localValue = 0;
       void eventFunction(int value) => localValue += value;
 
@@ -191,7 +194,8 @@ void eventTest() {
         localValue += value;
       }
 
-      DDIEvent.instance.subscribe(eventFunction, qualifier: 'testQualifier', runAsIsolate: true);
+      DDIEvent.instance.subscribe(eventFunction,
+          qualifier: 'testQualifier', runAsIsolate: true);
 
       expect(localValue, 0);
 

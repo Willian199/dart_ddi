@@ -57,8 +57,7 @@ class ErrorInterceptor extends Interceptor {
           case HttpStatus.notAcceptable:
             Notificacao.erro(
               callbackErro: callbackErro,
-              mensagem:
-                  'Não foi possivel prosseguir com a sua solicitação.',
+              mensagem: 'Não foi possivel prosseguir com a sua solicitação.',
             );
             break;
           default:

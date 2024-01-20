@@ -43,7 +43,8 @@ abstract class DDIEvent {
   /// - `event`: The callback function to be unsubscribed.
   ///
   /// - `qualifier`: Optional qualifier name used to distinguish between different events of the same type.
-  void unsubscribe<T extends Object>(void Function(T) event, {Object? qualifier});
+  void unsubscribe<T extends Object>(void Function(T) event,
+      {Object? qualifier});
 
   /// Fires an event with the specified value.
   ///

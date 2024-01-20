@@ -23,7 +23,8 @@ class _DDIEventImpl implements DDIEvent {
       _events.putIfAbsent(effectiveQualifierName, () => []);
 
       final existingEvents = _events[effectiveQualifierName]!.cast<Event<T>>();
-      final isDuplicate = existingEvents.any((existingEvent) => identical(existingEvent.event, event));
+      final isDuplicate = existingEvents
+          .any((existingEvent) => identical(existingEvent.event, event));
 
       if (!isDuplicate) {
         existingEvents.add(Event<T>(
@@ -51,7 +52,8 @@ class _DDIEventImpl implements DDIEvent {
     final eventsList = _events[effectiveQualifierName]?.cast<Event<T>>();
 
     if (eventsList != null) {
-      eventsList.removeWhere((e) => e.allowUnsubscribe && identical(e.event, event));
+      eventsList
+          .removeWhere((e) => e.allowUnsubscribe && identical(e.event, event));
     }
   }
 
