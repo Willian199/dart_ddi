@@ -1,0 +1,3 @@
+mixin PreDestroy {
+  void onPreDestroy();
+}

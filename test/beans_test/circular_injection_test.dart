@@ -1,9 +1,9 @@
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../clazz_test/c.dart';
-import '../clazz_test/father.dart';
-import '../clazz_test/mother.dart';
+import '../clazz_samples/c.dart';
+import '../clazz_samples/father.dart';
+import '../clazz_samples/mother.dart';
 
 void circularDetection() {
   group('DDI Circular Injection Detection tests', () {

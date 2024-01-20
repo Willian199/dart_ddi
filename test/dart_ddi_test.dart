@@ -1,14 +1,16 @@
-import 'group_test/add_decoratos_test.dart';
-import 'group_test/application_test.dart';
-import 'group_test/circular_injection_test.dart';
-import 'group_test/dependent_test.dart';
-import 'group_test/dispose_destroy_all_session_test.dart';
-import 'group_test/get_by_type_test.dart';
-import 'group_test/interceptor_test.dart';
-import 'group_test/object_test.dart';
-import 'group_test/register_if_test.dart';
-import 'group_test/session_test.dart';
-import 'group_test/singleton_test.dart';
+import 'beans_test/add_decoratos_test.dart';
+import 'beans_test/application_test.dart';
+import 'beans_test/circular_injection_test.dart';
+import 'beans_test/dependent_test.dart';
+import 'beans_test/dispose_destroy_all_session_test.dart';
+import 'beans_test/get_by_type_test.dart';
+import 'beans_test/interceptor_test.dart';
+import 'beans_test/object_test.dart';
+import 'beans_test/post_construct_pre_destroy_test.dart';
+import 'beans_test/register_if_test.dart';
+import 'beans_test/session_test.dart';
+import 'beans_test/singleton_test.dart';
+import 'event_test/event_test.dart';
 
 void main() {
   //Basic Tests, with consists in register, get, dispose, remove
@@ -21,6 +23,7 @@ void main() {
   runByType();
   disposeDestroyAllSession();
   registerIf();
+  postConstructPreDestroyTest();
 
   //Decorators
   addDecorator();
@@ -30,4 +33,7 @@ void main() {
 
   //CircularDetection
   circularDetection();
+
+  //Events
+  eventTest();
 }

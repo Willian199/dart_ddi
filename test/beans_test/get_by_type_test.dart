@@ -1,9 +1,9 @@
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../clazz_test/g.dart';
-import '../clazz_test/h.dart';
-import '../clazz_test/i.dart';
+import '../clazz_samples/g.dart';
+import '../clazz_samples/h.dart';
+import '../clazz_samples/i.dart';
 
 void runByType() {
   group('DDI Process By Type', () {

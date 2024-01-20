@@ -35,6 +35,10 @@ class _DDIImpl implements DDI {
 
       postConstruct?.call();
 
+      if (clazz is PostConstruct) {
+        clazz.onPostConstruct();
+      }
+
       _beans[effectiveQualifierName] = FactoryClazz<T>(
         clazzInstance: clazz,
         type: T,
@@ -165,6 +169,10 @@ class _DDIImpl implements DDI {
 
       postConstruct?.call();
 
+      if (register is PostConstruct) {
+        register.onPostConstruct();
+      }
+
       _beans[effectiveQualifierName] = FactoryClazz<T>(
         clazzInstance: register,
         type: T,
@@ -213,6 +221,10 @@ class _DDIImpl implements DDI {
 
       factoryClazz.postConstruct?.call();
 
+      if (applicationClazz is PostConstruct) {
+        applicationClazz.onPostConstruct();
+      }
+
       factoryClazz.clazzInstance = applicationClazz;
     }
 
@@ -238,6 +250,10 @@ class _DDIImpl implements DDI {
         _executarDecorators<T>(dependentClazz, factoryClazz.decorators);
 
     factoryClazz.postConstruct?.call();
+
+    if (dependentClazz is PostConstruct) {
+      dependentClazz.onPostConstruct();
+    }
 
     if (factoryClazz.interceptors != null) {
       for (final interceptor in factoryClazz.interceptors!) {
@@ -314,7 +330,7 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  void destroy<T>({Object? qualifier}) {
+  void destroy<T extends Object>({Object? qualifier}) {
     final Object effectiveQualifierName = qualifier ?? T;
 
     _destroy<T>(effectiveQualifierName);
@@ -325,10 +341,15 @@ class _DDIImpl implements DDI {
         _beans[effectiveQualifierName] as FactoryClazz<T>?;
 
     if (factoryClazz != null && factoryClazz.destroyable) {
-      if (factoryClazz.clazzInstance != null &&
-          factoryClazz.interceptors != null) {
-        for (final interceptor in factoryClazz.interceptors!) {
-          interceptor.call().aroundDestroy(factoryClazz.clazzInstance as T);
+      if (factoryClazz.clazzInstance != null) {
+        if (factoryClazz.interceptors != null) {
+          for (final interceptor in factoryClazz.interceptors!) {
+            interceptor.call().aroundDestroy(factoryClazz.clazzInstance as T);
+          }
+        }
+
+        if (factoryClazz.clazzInstance is PreDestroy) {
+          (factoryClazz.clazzInstance as PreDestroy).onPreDestroy();
         }
       }
 

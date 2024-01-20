@@ -1,9 +1,9 @@
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../clazz_test/d.dart';
-import '../clazz_test/e.dart';
-import '../clazz_test/f.dart';
+import '../clazz_samples/d.dart';
+import '../clazz_samples/e.dart';
+import '../clazz_samples/f.dart';
 
 void addDecorator() {
   group('DDI ADD Decorators Tests', () {

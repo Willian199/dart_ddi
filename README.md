@@ -39,7 +39,14 @@ Summary
    3. [Interceptor](#interceptor)
    4. [RegisterIf](#registerif)
    5. [Destroyable](#destroyable)
-5. [API Reference](#api-reference)
+5. [Events](#events)
+   1. [Creating and Managing Events](#creating-and-managing-events)
+   2. [Subscribing an Event](#subscribing-an-event)
+   3. [Unsubscribing an Event](#unsubscribing-an-event)
+   4. [Firing an Event](#firing-an-event)
+   5. [Events Considerations](#events-considerations)
+   6. [Use Cases](#use-cases)
+6. [API Reference](#api-reference)
    1. [registerSingleton](#registersingleton)
    2. [registerApplication](#registerapplication)
    3. [registerDependent](#registerdependent)
@@ -311,6 +318,135 @@ ddi.registerApplication<MyService>(
   destroyable: false,
 );
 ```
+
+## Mixins
+
+### Post Construct Mixin
+
+The PostConstruct mixin has been added to provide the ability to execute specific rules after the construction of an instance of the class using it. Its primary purpose is to offer an extension point for additional logic that needs to be executed immediately after an object is created.
+
+By including the PostConstruct mixin in a class and implementing the onPostConstruct() method, you can ensure that this custom logic is automatically executed right after the instantiation of the class.
+
+#### Example Usage:
+```dart
+class MyClass with PostConstruct {
+  final String name;
+
+  MyClass(this.name);
+
+  @override
+  void onPostConstruct() {
+    // Custom logic to be executed after construction.
+    print('Instance of MyClass has been successfully constructed.');
+    print('Name: $_name');
+  }
+}
+```
+
+### Pre Destroy Mixin
+
+The PreDestroy mixin has been created to provide a mechanism for executing specific actions just before an object is destroyed. This mixin serves as a counterpart to the PostConstruct mixin, allowing to define custom cleanup logic that needs to be performed before an object's lifecycle ends.
+
+#### Example Usage:
+```dart
+class MyClass with PreDestroy {
+  final String name;
+
+  MyClass(this.name);
+
+  @override
+  void onPreDestroy() {
+    // Custom cleanup logic to be executed before destruction.
+    print('Instance of MyClass is about to be destroyed.');
+    print('Performing cleanup for $name');
+  }
+}
+
+void main() {
+  // Registering an instance of MyClass
+  ddi.registerSingleton<MyClass>(
+     () => MyClass('Willian'),
+  );
+  
+  // Destroying the instance (removing it from the container).
+  ddi.remove<MyClass>();
+  
+  // Output:
+  // Instance of MyClass is about to be destroyed.
+  // Performing cleanup for Willian
+}
+```
+
+# Events
+Designed for flexibility and efficiency, this system empowers you to seamlessly manage, subscribe to, and respond to events, making it a crucial asset for building reactive and scalable Dart applications.
+
+## Creating and Managing Events
+The Events follow a straightforward flow. Functions or methods `subscribe` to specific events using the subscribe method of the `DDIEvent` class. Events are fired using the `fire` method, triggering the execution of all subscribed callbacks. Subscribed callbacks are then executed, handling the event data and performing any specified tasks. Subscriptions can be removed using the `unsubscribe` function.
+
+### Subscribing an Event
+To subscribe to an event, use the `subscribe` function:
+
+- `event:` The callback function to be executed when the event is fired.
+- `qualifier:` Optional qualifier name to distinguish between different events of the same type.
+- `registerIf:` A bool function that if returns true, allows the subscription to proceed.
+- `allowUnsubscribe:` Indicates if the event can be unsubscribe.
+- `priority:` Priority of the subscription relative to other subscriptions (lower values indicate higher priority).
+- `isAsync:` If true, the callback function will be executed asynchronously.
+- `unsubscribeAfterFire:` If true, the subscription will be automatically removed after the first time the event is fired.
+- `runAsIsolate:` If true, the subscription callback will be executed in a separate isolate for concurrent event handling.
+
+```dart
+
+void myEvent(String message) {
+    print('Event received: $message');
+};
+
+DDIEvent.instance.subscribe<String>(
+  myEvent,
+  qualifier: 'exampleEvent',
+  priority: 1,
+  isAsync: true,
+  unsubscribeAfterFire: false,
+  runAsIsolate: true,
+);
+```
+
+### Unsubscribing an Event
+
+To unsubscribe from an event, use the `unsubscribe` function:
+
+```dart
+DDIEvent.instance.unsubscribe<String>(
+  myEvent,
+  qualifier: 'exampleEvent',
+);
+```
+
+### Firing an Event
+
+To fire an event, use the `fire` function:
+
+```dart
+DDIEvent.instance.fire('Hello, Dart DDI!', qualifier: 'exampleEvent');
+```
+
+## Events Considerations
+
+When using the Event System, consider the following:
+
+`Async Event Handling:` You will not abble to await an Async event run.
+
+`Possible Problems:` Be cautious of potential issues such as race conditions and excessive use of isolate-based event handling, which may impact performance.
+
+See the considerations about [Qualifiers](#considerations).
+
+## Use Cases
+
+`Cross-State Communication:` Facilitate communication between differents Cubits/Bloc or other State Management in a Flutter application.
+
+`Network Request Handling`: Manage events related to network requests and responses for streamlined communication.
+
+`Background Task`: Coordinate background tasks and events for efficient task execution.
 
 # API Reference
 
