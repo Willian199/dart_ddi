@@ -319,6 +319,64 @@ ddi.registerApplication<MyService>(
 );
 ```
 
+## Mixins
+
+### Post Construct Mixin
+
+The PostConstruct mixin has been added to provide the ability to execute specific rules after the construction of an instance of the class using it. Its primary purpose is to offer an extension point for additional logic that needs to be executed immediately after an object is created.
+
+By including the PostConstruct mixin in a class and implementing the onPostConstruct() method, you can ensure that this custom logic is automatically executed right after the instantiation of the class.
+
+#### Example Usage:
+```dart
+class MyClass with PostConstruct {
+  final String name;
+
+  MyClass(this.name);
+
+  @override
+  void onPostConstruct() {
+    // Custom logic to be executed after construction.
+    print('Instance of MyClass has been successfully constructed.');
+    print('Name: $_name');
+  }
+}
+```
+
+### Pre Destroy Mixin
+
+The PreDestroy mixin has been created to provide a mechanism for executing specific actions just before an object is destroyed. This mixin serves as a counterpart to the PostConstruct mixin, allowing to define custom cleanup logic that needs to be performed before an object's lifecycle ends.
+
+#### Example Usage:
+```dart
+class MyClass with PreDestroy {
+  final String name;
+
+  MyClass(this.name);
+
+  @override
+  void onPreDestroy() {
+    // Custom cleanup logic to be executed before destruction.
+    print('Instance of MyClass is about to be destroyed.');
+    print('Performing cleanup for $name');
+  }
+}
+
+void main() {
+  // Registering an instance of MyClass
+  ddi.registerSingleton<MyClass>(
+     () => MyClass('Willian'),
+  );
+  
+  // Destroying the instance (removing it from the container).
+  ddi.remove<MyClass>();
+  
+  // Output:
+  // Instance of MyClass is about to be destroyed.
+  // Performing cleanup for Willian
+}
+```
+
 # Events
 Designed for flexibility and efficiency, this system empowers you to seamlessly manage, subscribe to, and respond to events, making it a crucial asset for building reactive and scalable Dart applications.
 
