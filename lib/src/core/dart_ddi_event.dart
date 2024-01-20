@@ -18,7 +18,7 @@ abstract class DDIEvent {
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different events of the same type.
   ///
-  /// - `registerIf`: A function that, if provided and returns true, allows the subscription to proceed; otherwise, it will be skipped.
+  /// - `registerIf`: A bool function that if returns true, allows the subscription to proceed.
   ///
   /// - `allowUnsubscribe`: Indicates if the event can be unsubscribe.
   ///
