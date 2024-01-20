@@ -312,6 +312,77 @@ ddi.registerApplication<MyService>(
 );
 ```
 
+# Events
+Designed for flexibility and efficiency, this system empowers you to seamlessly manage, subscribe to, and respond to events, making it a crucial asset for building reactive and scalable Dart applications.
+
+## Creating and Managing Events
+The Events follow a straightforward flow. Functions or methods `subscribe` to specific events using the subscribe method of the `DDIEvent` class. Events are fired using the `fire` method, triggering the execution of all subscribed callbacks. Subscribed callbacks are then executed, handling the event data and performing any specified tasks. Subscriptions can be removed using the `unsubscribe` function.
+
+### Subscribing an Event
+To subscribe to an event, use the `subscribe` function:
+
+- `event:` The callback function to be executed when the event is fired.
+- `qualifier:` Optional qualifier name to distinguish between different events of the same type.
+- `registerIf:` A bool function that if returns true, allows the subscription to proceed.
+- `allowUnsubscribe:` Indicates if the event can be unsubscribe.
+- `priority:` Priority of the subscription relative to other subscriptions (lower values indicate higher priority).
+- `isAsync:` If true, the callback function will be executed asynchronously.
+- `unsubscribeAfterFire:` If true, the subscription will be automatically removed after the first time the event is fired.
+- `runAsIsolate:` If true, the subscription callback will be executed in a separate isolate for concurrent event handling.
+
+```dart
+
+void myEvent(String message) {
+    print('Event received: $message');
+};
+
+DDIEvent.instance.subscribe<String>(
+  myEvent,
+  qualifier: 'exampleEvent',
+  priority: 1,
+  isAsync: true,
+  unsubscribeAfterFire: false,
+  runAsIsolate: true,
+);
+```
+
+### Unsubscribing an Event
+
+To unsubscribe from an event, use the `unsubscribe` function:
+
+```dart
+DDIEvent.instance.unsubscribe<String>(
+  myEvent,
+  qualifier: 'exampleEvent',
+);
+```
+
+### Firing an Event
+
+To fire an event, use the `fire` function:
+
+```dart
+DDIEvent.instance.fire('Hello, Dart DDI!', qualifier: 'exampleEvent');
+```
+
+## Events Considerations
+
+When using the Event System, consider the following:
+
+`Async Event Handling:` You will not abble to await an Async event run.
+
+`Possible Problems:` Be cautious of potential issues such as race conditions and excessive use of isolate-based event handling, which may impact performance.
+
+See the considerations about [Qualifiers](#considerations).
+
+## Use Cases
+
+`Cross-State Communication:` Facilitate communication between differents Cubits/Bloc or other State Management in a Flutter application.
+
+`Network Request Handling`: Manage events related to network requests and responses for streamlined communication.
+
+`Background Task`: Coordinate background tasks and events for efficient task execution.
+
 # API Reference
 
 ## registerSingleton
