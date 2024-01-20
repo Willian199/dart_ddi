@@ -1,4 +1,4 @@
-import 'package:dart_ddi/src/core/dart_ddi_event.dart';
+import 'package:dart_ddi/dart_ddi.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void eventTest() {
@@ -151,11 +151,11 @@ void eventTest() {
       expect(localValue, 0);
     });
 
-    test('subscribe a non destroyable event', () {
+    test('subscribe a non allowUnsubscribe event', () {
       int localValue = 0;
       void eventFunction(int value) => localValue += value;
 
-      DDIEvent.instance.subscribe(eventFunction, qualifier: 'testQualifier', destroyable: false);
+      DDIEvent.instance.subscribe(eventFunction, qualifier: 'testQualifier', allowUnsubscribe: false);
 
       expect(localValue, 0);
 
@@ -170,12 +170,36 @@ void eventTest() {
       expect(localValue, 2);
     });
 
-    test('subscribe a non destroyable event, with unsubscribeAfterFire', () {
+    test('subscribe with allowUnsubscribe event, with unsubscribeAfterFire', () {
       int localValue = 0;
       void eventFunction(int value) => localValue += value;
 
-      expect(() => DDIEvent.instance.subscribe(eventFunction, qualifier: 'testQualifier', destroyable: false, unsubscribeAfterFire: true),
+      expect(
+          () => DDIEvent.instance.subscribe(
+                eventFunction,
+                qualifier: 'testQualifier',
+                allowUnsubscribe: false,
+                unsubscribeAfterFire: true,
+              ),
           throwsA(const TypeMatcher<AssertionError>()));
+    });
+
+    test('subscribe a isolate event', () {
+      int localValue = 0;
+      void eventFunction(int value) {
+        print('Isolate event');
+        localValue += value;
+      }
+
+      DDIEvent.instance.subscribe(eventFunction, qualifier: 'testQualifier', runAsIsolate: true);
+
+      expect(localValue, 0);
+
+      DDIEvent.instance.fire(1, qualifier: 'testQualifier');
+
+      expect(localValue, 0);
+
+      DDIEvent.instance.unsubscribe(eventFunction, qualifier: 'testQualifier');
     });
   });
 }

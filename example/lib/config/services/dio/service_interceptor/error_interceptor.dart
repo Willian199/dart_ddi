@@ -38,7 +38,7 @@ class ErrorInterceptor extends Interceptor {
             Notificacao.erro(
                 mensagem:
                     err.response?.data?['mensagem']?.toString().isEmpty ?? true
-                        ? Mensagens.LOGIN_EXPIRADO
+                        ? Mensagens.CHAVE_EXPIRADA
                         : err.response?.data['mensagem'].toString(),
                 callbackErro: () {
                   //TODO Clear user data
@@ -58,7 +58,7 @@ class ErrorInterceptor extends Interceptor {
             Notificacao.erro(
               callbackErro: callbackErro,
               mensagem:
-                  'Não foi possivel prosseguir com a sua solicitação. Verifique o horário do seu dispositivo!',
+                  'Não foi possivel prosseguir com a sua solicitação.',
             );
             break;
           default:

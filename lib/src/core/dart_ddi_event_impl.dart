@@ -8,15 +8,17 @@ class _DDIEventImpl implements DDIEvent {
     void Function(T) event, {
     Object? qualifier,
     bool Function()? registerIf,
-    bool destroyable = true,
+    bool allowUnsubscribe = true,
     int priority = 0,
     bool isAsync = false,
     bool unsubscribeAfterFire = false,
+    bool runAsIsolate = false,
   }) {
     if (registerIf?.call() ?? true) {
       final Object effectiveQualifierName = qualifier ?? T;
 
-      assert(destroyable || (!destroyable && !unsubscribeAfterFire), 'Not possible to set destroyable to false and unsubscribeAfterFire to true');
+      assert(allowUnsubscribe || (!allowUnsubscribe && !unsubscribeAfterFire),
+          'Not possible to set allowUnsubscribe to false and unsubscribeAfterFire to true');
 
       _events.putIfAbsent(effectiveQualifierName, () => []);
 
@@ -25,13 +27,13 @@ class _DDIEventImpl implements DDIEvent {
 
       if (!isDuplicate) {
         existingEvents.add(Event<T>(
-          event: event,
-          type: T,
-          destroyable: destroyable,
-          priority: priority,
-          isAsync: isAsync,
-          unsubscribeAfterFire: unsubscribeAfterFire,
-        ));
+            event: event,
+            type: T,
+            allowUnsubscribe: allowUnsubscribe,
+            priority: priority,
+            isAsync: isAsync,
+            unsubscribeAfterFire: unsubscribeAfterFire,
+            runAsIsolate: runAsIsolate));
 
         existingEvents.sort((a, b) => a.priority.compareTo(b.priority));
       }
@@ -49,7 +51,7 @@ class _DDIEventImpl implements DDIEvent {
     final eventsList = _events[effectiveQualifierName]?.cast<Event<T>>();
 
     if (eventsList != null) {
-      eventsList.removeWhere((e) => e.destroyable && identical(e.event, event));
+      eventsList.removeWhere((e) => e.allowUnsubscribe && identical(e.event, event));
     }
   }
 
@@ -63,10 +65,16 @@ class _DDIEventImpl implements DDIEvent {
       final eventsToRemove = <Event<T>>[];
 
       for (final Event<T> event in eventsList) {
-        if (event.isAsync) {
-          Future.microtask(() => event.event(value));
-        } else {
-          event.event(value);
+        switch (event) {
+          case Event(runAsIsolate: true):
+            Isolate.run(() => event.event(value));
+            break;
+          case Event(isAsync: false):
+            event.event(value);
+            break;
+          case Event(isAsync: true):
+            Future.microtask(() => event.event(value));
+            break;
         }
 
         if (event.unsubscribeAfterFire) {

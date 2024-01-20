@@ -3,18 +3,20 @@
 class Event<T> {
   final void Function(T) event;
   final Type type;
-  final bool destroyable;
+  final bool allowUnsubscribe;
   final int priority;
   final bool isAsync;
   final bool unsubscribeAfterFire;
+  final bool runAsIsolate;
 
   Event({
     required this.event,
     required this.type,
-    required this.destroyable,
+    required this.allowUnsubscribe,
     required this.priority,
     this.isAsync = false,
     this.unsubscribeAfterFire = false,
+    this.runAsIsolate = false,
   });
 
   @override
@@ -23,14 +25,21 @@ class Event<T> {
 
     return other.event == event &&
         other.type == type &&
-        other.destroyable == destroyable &&
+        other.allowUnsubscribe == allowUnsubscribe &&
         other.priority == priority &&
         other.isAsync == isAsync &&
-        other.unsubscribeAfterFire == unsubscribeAfterFire;
+        other.unsubscribeAfterFire == unsubscribeAfterFire &&
+        other.runAsIsolate == runAsIsolate;
   }
 
   @override
   int get hashCode {
-    return event.hashCode ^ type.hashCode ^ destroyable.hashCode ^ priority.hashCode ^ isAsync.hashCode ^ unsubscribeAfterFire.hashCode;
+    return event.hashCode ^
+        type.hashCode ^
+        allowUnsubscribe.hashCode ^
+        priority.hashCode ^
+        isAsync.hashCode ^
+        unsubscribeAfterFire.hashCode ^
+        runAsIsolate.hashCode;
   }
 }

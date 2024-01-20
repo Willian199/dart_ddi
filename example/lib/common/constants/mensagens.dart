@@ -64,10 +64,9 @@ class Mensagens {
   static const String NAO_HA_DADOS = 'Não encontrei nenhuma informação';
 
   static const String ERRO = 'ERRO';
-  static const String ERRO_PROCESSAR_SOLICITACAO =
-      'OCORREU UM ERRO AO PROCESSAR A SUA SOLICITAÇÃO';
+
   static const String ERRO_PROCESSAR_REQUISICAO = 'Ouch, ocorreu alguma falha';
 
-  static const String LOGIN_EXPIRADO =
-      'LOGIN EXPIRADO. FAÇA O LOGIN NOVAMENTE!!!';
+  static const String CHAVE_EXPIRADA =
+      'CHAVE EXPIRADA. ADQUIRA UMA NOVA CHAVE!!!';
 }

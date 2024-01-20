@@ -53,7 +53,7 @@ class Notificacao {
       return;
     }
     if (mensagem == null || mensagem.isEmpty) {
-      mensagem = Mensagens.ERRO_PROCESSAR_SOLICITACAO;
+      mensagem = Mensagens.ERRO_PROCESSAR_REQUISICAO;
     }
     _isOpen = true;
 
