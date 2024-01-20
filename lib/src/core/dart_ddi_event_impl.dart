@@ -1,7 +1,7 @@
 part of 'dart_ddi_event.dart';
 
 class _DDIEventImpl implements DDIEvent {
-  final Map<Object, List<Events>> _events = {};
+  final Map<Object, Set<Event>> _events = {};
 
   @override
   void subscribe<T extends Object>(
@@ -13,9 +13,9 @@ class _DDIEventImpl implements DDIEvent {
     if (registerIf?.call() ?? true) {
       final Object effectiveQualifierName = qualifier ?? T;
 
-      _events.putIfAbsent(effectiveQualifierName, () => []);
+      _events.putIfAbsent(effectiveQualifierName, () => {});
 
-      _events[effectiveQualifierName]!.add(Events<T>(
+      _events[effectiveQualifierName]!.add(Event<T>(
         event: event,
         type: T,
         destroyable: destroyable,
@@ -24,28 +24,26 @@ class _DDIEventImpl implements DDIEvent {
   }
 
   @override
-  void destroy<T extends Object>({Object? qualifier, Events<T>? specificEvent}) {
-    final Object effectiveQualifierName = qualifier ?? T;
+  void unsubscribe<T extends Object>(void Function(T) event, {Object? qualifier}) {
+    final effectiveQualifierName = qualifier ?? T;
 
-    final List<Events<T>>? eventsList = _events[effectiveQualifierName] as List<Events<T>>?;
+    final eventsSet = _events[effectiveQualifierName];
 
-    if (eventsList != null) {
-      if (specificEvent != null) {
-        eventsList.remove(specificEvent);
-      } else {
-        _events.remove(effectiveQualifierName);
-      }
+    if (eventsSet != null) {
+      eventsSet.removeWhere(
+        (e) => e.destroyable && identical(e.event, event),
+      );
     }
   }
 
   @override
   void fire<T extends Object>(T value, {Object? qualifier}) {
-    final Object effectiveQualifierName = qualifier ?? T;
+    final effectiveQualifierName = qualifier ?? T;
 
-    final List<Events<T>>? eventsList = _events[effectiveQualifierName] as List<Events<T>>?;
+    final eventsSet = _events[effectiveQualifierName] as Set<Event<T>>?;
 
-    if (eventsList != null) {
-      for (final Events<T> event in eventsList) {
+    if (eventsSet != null) {
+      for (final Event<T> event in eventsSet) {
         event.event(value);
       }
     }

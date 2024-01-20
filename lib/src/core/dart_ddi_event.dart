@@ -19,7 +19,7 @@ abstract class DDIEvent {
   /// Removes the event registered class in [DDIEvent].
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different events of the same type.
-  void destroy<T extends Object>({Object? qualifier});
+  void unsubscribe<T extends Object>(void Function(T) event, {Object? qualifier});
 
   void fire<T extends Object>(T value, {Object? qualifier});
 }
