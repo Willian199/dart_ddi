@@ -38,7 +38,8 @@ class _ItemPageState extends State<ItemPage> {
     });
   }
 
-  ButtonSegment<NotasEnum> _makeSegmentedButton(NotasEnum nota, Set<NotasEnum> tabSelecionada) {
+  ButtonSegment<NotasEnum> _makeSegmentedButton(
+      NotasEnum nota, Set<NotasEnum> tabSelecionada) {
     return ButtonSegment<NotasEnum>(
       value: nota,
       label: Text(
@@ -46,7 +47,9 @@ class _ItemPageState extends State<ItemPage> {
         style: TextStyle(
           fontSize: 10,
           fontWeight: FontWeight.bold,
-          color: nota.posicao == tabSelecionada.first.posicao ? layout.segmentedButtonSelected : layout.segmentedButtonDeselected,
+          color: nota.posicao == tabSelecionada.first.posicao
+              ? layout.segmentedButtonSelected
+              : layout.segmentedButtonDeselected,
         ),
       ),
     );
@@ -82,7 +85,9 @@ class _ItemPageState extends State<ItemPage> {
       body: Padding(
         padding: EdgeInsets.only(
           top: 25,
-          left: MediaQuery.orientationOf(context) == Orientation.portrait ? 0 : 30,
+          left: MediaQuery.orientationOf(context) == Orientation.portrait
+              ? 0
+              : 30,
         ),
         child: SingleChildScrollView(
           child: BlocProvider<PerfumeCubit>(
@@ -94,7 +99,8 @@ class _ItemPageState extends State<ItemPage> {
                   bytes: widget.bytes,
                 ),
                 BlocBuilder<PerfumeCubit, PerfumeState>(
-                  buildWhen: (previous, current) => previous.dadosPerfume != current.dadosPerfume,
+                  buildWhen: (previous, current) =>
+                      previous.dadosPerfume != current.dadosPerfume,
                   builder: (_, PerfumeState state) {
                     if (state.dadosPerfume?.notasBase.isEmpty ?? true) {
                       return const SizedBox();
@@ -117,15 +123,21 @@ class _ItemPageState extends State<ItemPage> {
                             builder: (_, TabState state) {
                               return SegmentedButton<NotasEnum>(
                                 segments: <ButtonSegment<NotasEnum>>[
-                                  _makeSegmentedButton(NotasEnum.TOPO, state.tabSelecionada),
-                                  _makeSegmentedButton(NotasEnum.CORACAO, state.tabSelecionada),
-                                  _makeSegmentedButton(NotasEnum.BASE, state.tabSelecionada),
+                                  _makeSegmentedButton(
+                                      NotasEnum.TOPO, state.tabSelecionada),
+                                  _makeSegmentedButton(
+                                      NotasEnum.CORACAO, state.tabSelecionada),
+                                  _makeSegmentedButton(
+                                      NotasEnum.BASE, state.tabSelecionada),
                                 ],
                                 selected: state.tabSelecionada,
                                 onSelectionChanged: (Set<NotasEnum> value) {
                                   _tabCubit.changeTabSelecionada(value);
-                                  pageController.animateToPage(value.first.posicao,
-                                      duration: const Duration(milliseconds: 300), curve: Curves.fastOutSlowIn);
+                                  pageController.animateToPage(
+                                      value.first.posicao,
+                                      duration:
+                                          const Duration(milliseconds: 300),
+                                      curve: Curves.fastOutSlowIn);
                                 },
                                 showSelectedIcon: false,
                               );
@@ -142,7 +154,8 @@ class _ItemPageState extends State<ItemPage> {
                     width: width,
                     height: 210,
                     child: BlocBuilder<PerfumeCubit, PerfumeState>(
-                      buildWhen: (previous, current) => previous.dadosPerfume != current.dadosPerfume,
+                      buildWhen: (previous, current) =>
+                          previous.dadosPerfume != current.dadosPerfume,
                       builder: (_, PerfumeState state) {
                         return PageView(
                           controller: pageController,

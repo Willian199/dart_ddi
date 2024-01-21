@@ -12,7 +12,6 @@ import 'package:perfumei/modules/item/cubit/imagem_cubit.dart';
 import 'package:perfumei/modules/item/cubit/item_cubit.dart';
 import 'package:perfumei/modules/item/cubit/perfume_cubit.dart';
 
-
 final DDI ddi = DDI.instance;
 
 class Injection {

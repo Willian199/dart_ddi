@@ -138,10 +138,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   ),
                 ),
                 BlocBuilder<HomeCubit, HomeState>(
-                  buildWhen: (previous, current) => previous.tabSelecionada != current.tabSelecionada,
+                  buildWhen: (previous, current) =>
+                      previous.tabSelecionada != current.tabSelecionada,
                   builder: (_, HomeState state) {
                     return Container(
-                      padding: const EdgeInsets.only(left: 10, bottom: 10, right: 18),
+                      padding: const EdgeInsets.only(
+                          left: 10, bottom: 10, right: 18),
                       width: MediaQuery.sizeOf(context).width,
                       child: SegmentedButton<Genero>(
                         segments: <ButtonSegment<Genero>>[
@@ -162,7 +164,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 ),
                 Expanded(
                   child: BlocBuilder<HomeCubit, HomeState>(
-                    buildWhen: (previous, current) => previous.dataChange != current.dataChange,
+                    buildWhen: (previous, current) =>
+                        previous.dataChange != current.dataChange,
                     builder: (_, HomeState state) {
                       if (_controller.dados?.isEmpty ?? true) {
                         return Center(
@@ -191,7 +194,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   void _abrirItem(GridModel itemSelecionado) async {
-    final ImageProvider provider = CachedNetworkImageProvider(itemSelecionado.capa);
+    final ImageProvider provider =
+        CachedNetworkImageProvider(itemSelecionado.capa);
 
     provider.getBytes(format: ImageByteFormat.png).then((bytes) {
       Navigator.push(context, MaterialPageRoute(builder: (_) {

@@ -52,8 +52,8 @@ class _DDIEventImpl implements DDIEvent {
     final eventsList = _events[effectiveQualifierName]?.cast<Event<T>>();
 
     if (eventsList != null) {
-      eventsList
-          .removeWhere((e) => e.allowUnsubscribe && e.event.hashCode == event.hashCode);
+      eventsList.removeWhere(
+          (e) => e.allowUnsubscribe && e.event.hashCode == event.hashCode);
     }
   }
 

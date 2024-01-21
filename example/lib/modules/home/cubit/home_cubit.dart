@@ -26,20 +26,25 @@ class HomeCubit extends Cubit<HomeState> {
     pesquisaFocus.unfocus();
     NotificacaoPadrao.carregando();
 
-    const String attributesToRetrieve = '["naslov","dizajner","godina","url.PT","rating","spol"]';
+    const String attributesToRetrieve =
+        '["naslov","dizajner","godina","url.PT","rating","spol"]';
 
     const String facets =
         '"spol","dizajner","godina","ingredients.PT","rating_rounded","nosevi","osobine.PT","designer_meta.country","designer_meta.category","designer_meta.parent_company","designer_meta.main_activity"]';
 
-    final String filter = state.tabSelecionada.first.nome.isEmpty ? '' : 'facetFilters=%5B%5B%22spol%3A${state.tabSelecionada.first.nome}%22%5D%5D&';
+    final String filter = state.tabSelecionada.first.nome.isEmpty
+        ? ''
+        : 'facetFilters=%5B%5B%22spol%3A${state.tabSelecionada.first.nome}%22%5D%5D&';
 
-    const String highlight = 'highlightPostTag=__/ais-highlight__&highlightPreTag=__ais-highlight__';
+    const String highlight =
+        'highlightPostTag=__/ais-highlight__&highlightPreTag=__ais-highlight__';
 
     const String hitsPerPage = 'hitsPerPage=80&maxValuesPerFacet=10';
 
     const String page = 'page=0&tagFilters=';
 
-    String params = 'attributesToRetrieve=$attributesToRetrieve&facets=$facets&$filter';
+    String params =
+        'attributesToRetrieve=$attributesToRetrieve&facets=$facets&$filter';
 
     params += '$highlight&$hitsPerPage&$page';
 
@@ -56,7 +61,8 @@ class HomeCubit extends Cubit<HomeState> {
         'MzM1YmRkM2RhNjllNzU5YmEyMmFjNjA0MGZmOWMwNzk1MzYwNWYwOTg4ZThkNDM1NDM0MWM2ODk4OTQxMjZkYnZhbGlkVW50aWw9MTcwNjY0MjAwNg==';
 
     final retorno = await RequestService.post(
-        url: '/1/indexes/*/queries?x-algolia-api-key=$applicatinoKey&x-algolia-application-id=$applicationId',
+        url:
+            '/1/indexes/*/queries?x-algolia-api-key=$applicatinoKey&x-algolia-application-id=$applicationId',
         data: obj,
         usarCache: true,
         callbackErro: () {
