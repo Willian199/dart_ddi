@@ -24,7 +24,7 @@ class _DDIEventImpl implements DDIEvent {
 
       final existingEvents = _events[effectiveQualifierName]!.cast<Event<T>>();
       final isDuplicate = existingEvents
-          .any((existingEvent) => identical(existingEvent.event, event));
+          .any((existingEvent) => existingEvent.hashCode == event.hashCode);
 
       if (!isDuplicate) {
         existingEvents.add(Event<T>(
@@ -53,7 +53,7 @@ class _DDIEventImpl implements DDIEvent {
 
     if (eventsList != null) {
       eventsList
-          .removeWhere((e) => e.allowUnsubscribe && identical(e.event, event));
+          .removeWhere((e) => e.allowUnsubscribe && e.event.hashCode == event.hashCode);
     }
   }
 

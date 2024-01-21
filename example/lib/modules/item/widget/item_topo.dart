@@ -1,23 +1,27 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:perfumei/common/model/grid_model.dart';
 import 'package:perfumei/modules/item/widget/descricao.dart';
 import 'package:perfumei/modules/item/widget/imagem_perfume.dart';
 
 class ItemTopo extends StatelessWidget {
-  const ItemTopo({required this.item, super.key});
+  const ItemTopo({required this.item, this.bytes, super.key});
 
   final GridModel item;
+  final Uint8List? bytes;
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('building ItemTopo');
+
     final ThemeData tema = Theme.of(context);
-    final double width = MediaQuery.of(context).size.width - 140;
+    final double width = MediaQuery.sizeOf(context).width - 140;
 
     return SizedBox(
       height: 500,
       child: Stack(
         children: [
-          const ImagemPerfume(),
+          ImagemPerfume(bytes: bytes),
           Positioned(
             left: 0,
             top: 60,

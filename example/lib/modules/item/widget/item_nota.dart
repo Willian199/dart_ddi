@@ -10,6 +10,7 @@ class ItemNota extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('building ItemNota');
     final Layout layout = ddi<Layout>();
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10),
