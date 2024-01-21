@@ -1,3 +1,4 @@
+import 'package:dart_ddi/dart_ddi.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:perfumei/common/components/notification/notificacao.dart';
@@ -6,12 +7,19 @@ import 'package:perfumei/common/enum/genero_enum.dart';
 import 'package:perfumei/config/services/dio/request_service.dart';
 import 'package:perfumei/modules/home/state/home_state.dart';
 
-class HomeCubit extends Cubit<HomeState> {
+class HomeCubit extends Cubit<HomeState> with PostConstruct {
   HomeCubit() : super(HomeState(tabSelecionada: {Genero.TODOS}));
   TextEditingController pesquisaController = TextEditingController();
   FocusNode pesquisaFocus = FocusNode();
 
   List? dados;
+
+  @override
+  void onPostConstruct() {
+    Future.delayed(const Duration(milliseconds: 1), () {
+      carregarDados();
+    });
+  }
 
   void changePesquisa(String value) {
     emit(state.copyWith(pesquisa: value));
@@ -74,7 +82,7 @@ class HomeCubit extends Cubit<HomeState> {
 
     emit(state.copyWith(dataChange: !state.dataChange));
 
-    Future.delayed(const Duration(seconds: 1), () {
+    Future.delayed(const Duration(milliseconds: 500), () {
       Notificacao.close();
       pesquisaFocus.unfocus();
     });

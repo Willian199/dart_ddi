@@ -36,10 +36,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       vsync: this,
       duration: const Duration(milliseconds: 450),
     );
-
-    Future.delayed(const Duration(milliseconds: 1), () {
-      _controller.carregarDados();
-    });
   }
 
   @override

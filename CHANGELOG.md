@@ -1,3 +1,12 @@
+## 0.2.0
+
+* Added Mixin PostConstruct with execution after class construction.
+* Added Mixin PreDestroy with execution before the class is destroyed.
+* Added support for Events.
+    * Subscribe, unsubscribe and fire events.
+    * Conditional subscription.
+    * Asynchronous and Isolate events.
+
 ## 0.1.0
 
 * Added a new `Object Scope`.
