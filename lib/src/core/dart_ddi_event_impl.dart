@@ -23,8 +23,8 @@ class _DDIEventImpl implements DDIEvent {
       _events.putIfAbsent(effectiveQualifierName, () => []);
 
       final existingEvents = _events[effectiveQualifierName]!.cast<Event<T>>();
-      final isDuplicate = existingEvents
-          .any((existingEvent) => existingEvent.event.hashCode == event.hashCode);
+      final isDuplicate = existingEvents.any(
+          (existingEvent) => existingEvent.event.hashCode == event.hashCode);
 
       if (!isDuplicate) {
         existingEvents.add(Event<T>(
