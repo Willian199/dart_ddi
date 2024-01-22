@@ -8,22 +8,22 @@ class _DDIImpl implements DDI {
       Zone.current[_resolutionKey] as Map<Object, List<Object>>? ?? {};
 
   @override
-  void registerSingleton<T extends Object>(
-    T Function() clazzRegister, {
+  void registerSingleton<BeanT extends Object>(
+    BeanT Function() clazzRegister, {
     Object? qualifier,
     void Function()? postConstruct,
-    List<T Function(T)>? decorators,
-    List<DDIInterceptor<T> Function()>? interceptors,
+    List<BeanT Function(BeanT)>? decorators,
+    List<DDIInterceptor<BeanT> Function()>? interceptors,
     bool Function()? registerIf,
     bool destroyable = true,
   }) {
     if (registerIf?.call() ?? true) {
-      final Object effectiveQualifierName = qualifier ?? T;
+      final Object effectiveQualifierName = qualifier ?? BeanT;
 
       assert(_beans[effectiveQualifierName] == null,
           'Is already registered a instance with Type ${effectiveQualifierName.toString()}');
 
-      T clazz = clazzRegister.call();
+      BeanT clazz = clazzRegister.call();
 
       if (interceptors != null) {
         for (final interceptor in interceptors) {
@@ -39,9 +39,9 @@ class _DDIImpl implements DDI {
         clazz.onPostConstruct();
       }
 
-      _beans[effectiveQualifierName] = FactoryClazz<T>(
+      _beans[effectiveQualifierName] = FactoryClazz<BeanT>(
         clazzInstance: clazz,
-        type: T,
+        type: BeanT,
         scopeType: Scopes.singleton,
         interceptors: interceptors,
         destroyable: destroyable,
@@ -50,17 +50,17 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  void registerApplication<T extends Object>(
-    T Function() clazzRegister, {
+  void registerApplication<BeanT extends Object>(
+    BeanT Function() clazzRegister, {
     Object? qualifier,
     void Function()? postConstruct,
-    List<T Function(T)>? decorators,
-    List<DDIInterceptor<T> Function()>? interceptors,
+    List<BeanT Function(BeanT)>? decorators,
+    List<DDIInterceptor<BeanT> Function()>? interceptors,
     bool Function()? registerIf,
     bool destroyable = true,
   }) {
     if (registerIf?.call() ?? true) {
-      _register<T>(
+      _register<BeanT>(
         clazzRegister: clazzRegister,
         scopeType: Scopes.application,
         qualifier: qualifier,
@@ -73,17 +73,17 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  void registerSession<T extends Object>(
-    T Function() clazzRegister, {
+  void registerSession<BeanT extends Object>(
+    BeanT Function() clazzRegister, {
     Object? qualifier,
     void Function()? postConstruct,
-    List<T Function(T)>? decorators,
-    List<DDIInterceptor<T> Function()>? interceptors,
+    List<BeanT Function(BeanT)>? decorators,
+    List<DDIInterceptor<BeanT> Function()>? interceptors,
     bool Function()? registerIf,
     bool destroyable = true,
   }) {
     if (registerIf?.call() ?? true) {
-      _register<T>(
+      _register<BeanT>(
         clazzRegister: clazzRegister,
         scopeType: Scopes.session,
         qualifier: qualifier,
@@ -96,17 +96,17 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  void registerDependent<T extends Object>(
-    T Function() clazzRegister, {
+  void registerDependent<BeanT extends Object>(
+    BeanT Function() clazzRegister, {
     Object? qualifier,
     void Function()? postConstruct,
-    List<T Function(T)>? decorators,
-    List<DDIInterceptor<T> Function()>? interceptors,
+    List<BeanT Function(BeanT)>? decorators,
+    List<DDIInterceptor<BeanT> Function()>? interceptors,
     bool Function()? registerIf,
     bool destroyable = true,
   }) {
     if (registerIf?.call() ?? true) {
-      _register<T>(
+      _register<BeanT>(
         clazzRegister: clazzRegister,
         scopeType: Scopes.dependent,
         qualifier: qualifier,
@@ -118,23 +118,23 @@ class _DDIImpl implements DDI {
     }
   }
 
-  void _register<T extends Object>({
-    required T Function() clazzRegister,
+  void _register<BeanT extends Object>({
+    required BeanT Function() clazzRegister,
     required Scopes scopeType,
     required bool destroyable,
     Object? qualifier,
     void Function()? postConstruct,
-    List<T Function(T)>? decorators,
-    List<DDIInterceptor<T> Function()>? interceptors,
+    List<BeanT Function(BeanT)>? decorators,
+    List<DDIInterceptor<BeanT> Function()>? interceptors,
   }) {
-    final Object effectiveQualifierName = qualifier ?? T;
+    final Object effectiveQualifierName = qualifier ?? BeanT;
 
     assert(_beans[effectiveQualifierName] == null,
         'Is already registered a instance with Type ${effectiveQualifierName.toString()}');
 
-    _beans[effectiveQualifierName] = FactoryClazz<T>(
+    _beans[effectiveQualifierName] = FactoryClazz<BeanT>(
       clazzRegister: clazzRegister,
-      type: T,
+      type: BeanT,
       postConstruct: postConstruct,
       decorators: decorators,
       interceptors: interceptors,
@@ -144,17 +144,17 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  void registerObject<T extends Object>(
-    T register, {
+  void registerObject<BeanT extends Object>(
+    BeanT register, {
     Object? qualifier,
     void Function()? postConstruct,
-    List<T Function(T)>? decorators,
-    List<DDIInterceptor<T> Function()>? interceptors,
+    List<BeanT Function(BeanT)>? decorators,
+    List<DDIInterceptor<BeanT> Function()>? interceptors,
     bool Function()? registerIf,
     bool destroyable = true,
   }) {
     if (registerIf?.call() ?? true) {
-      final Object effectiveQualifierName = qualifier ?? T;
+      final Object effectiveQualifierName = qualifier ?? BeanT;
 
       assert(_beans[effectiveQualifierName] == null,
           'Is already registered a instance with Type ${effectiveQualifierName.toString()}');
@@ -173,9 +173,9 @@ class _DDIImpl implements DDI {
         register.onPostConstruct();
       }
 
-      _beans[effectiveQualifierName] = FactoryClazz<T>(
+      _beans[effectiveQualifierName] = FactoryClazz<BeanT>(
         clazzInstance: register,
-        type: T,
+        type: BeanT,
         scopeType: Scopes.object,
         interceptors: interceptors,
         destroyable: destroyable,
@@ -184,13 +184,13 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  T call<T extends Object>() {
+  BeanT call<BeanT extends Object>() {
     return get();
   }
 
-  T _getSingleton<T extends Object>(FactoryClazz<T> factoryClazz) {
+  BeanT _getSingleton<BeanT extends Object>(FactoryClazz<BeanT> factoryClazz) {
     assert(factoryClazz.clazzInstance != null,
-        'The Singleton Type ${T.runtimeType.toString()} is destroyed');
+        'The Singleton Type ${BeanT.runtimeType.toString()} is destroyed');
 
     if (factoryClazz.interceptors != null) {
       for (final interceptor in factoryClazz.interceptors!) {
@@ -202,9 +202,9 @@ class _DDIImpl implements DDI {
     return factoryClazz.clazzInstance!;
   }
 
-  T _getAplication<T extends Object>(
-      FactoryClazz<T> factoryClazz, effectiveQualifierName) {
-    T? applicationClazz = factoryClazz.clazzInstance;
+  BeanT _getAplication<BeanT extends Object>(
+      FactoryClazz<BeanT> factoryClazz, effectiveQualifierName) {
+    BeanT? applicationClazz = factoryClazz.clazzInstance;
 
     if (factoryClazz.clazzInstance == null) {
       applicationClazz = factoryClazz.clazzRegister!.call();
@@ -216,8 +216,8 @@ class _DDIImpl implements DDI {
         }
       }
 
-      applicationClazz =
-          _executarDecorators<T>(applicationClazz!, factoryClazz.decorators);
+      applicationClazz = _executarDecorators<BeanT>(
+          applicationClazz!, factoryClazz.decorators);
 
       factoryClazz.postConstruct?.call();
 
@@ -237,8 +237,8 @@ class _DDIImpl implements DDI {
     return applicationClazz!;
   }
 
-  T _getDependent<T extends Object>(FactoryClazz<T> factoryClazz) {
-    T dependentClazz = factoryClazz.clazzRegister!.call();
+  BeanT _getDependent<BeanT extends Object>(FactoryClazz<BeanT> factoryClazz) {
+    BeanT dependentClazz = factoryClazz.clazzRegister!.call();
 
     if (factoryClazz.interceptors != null) {
       for (final interceptor in factoryClazz.interceptors!) {
@@ -247,7 +247,7 @@ class _DDIImpl implements DDI {
     }
 
     dependentClazz =
-        _executarDecorators<T>(dependentClazz, factoryClazz.decorators);
+        _executarDecorators<BeanT>(dependentClazz, factoryClazz.decorators);
 
     factoryClazz.postConstruct?.call();
 
@@ -265,25 +265,25 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  T get<T extends Object>({Object? qualifier}) {
-    final Object effectiveQualifierName = qualifier ?? T;
+  BeanT get<BeanT extends Object>({Object? qualifier}) {
+    final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    final FactoryClazz<T>? factoryClazz =
-        _beans[effectiveQualifierName] as FactoryClazz<T>?;
+    final FactoryClazz<BeanT>? factoryClazz =
+        _beans[effectiveQualifierName] as FactoryClazz<BeanT>?;
 
     assert(factoryClazz != null,
         'No Instance with Type ${effectiveQualifierName.toString()} is found');
 
     return runZoned(
       () {
-        return _getScoped<T>(factoryClazz!, effectiveQualifierName);
+        return _getScoped<BeanT>(factoryClazz!, effectiveQualifierName);
       },
       zoneValues: {_resolutionKey: <Object, List<Object>>{}},
     );
   }
 
-  T _getScoped<T extends Object>(
-      FactoryClazz<T> factoryClazz, Object effectiveQualifierName) {
+  BeanT _getScoped<BeanT extends Object>(
+      FactoryClazz<BeanT> factoryClazz, Object effectiveQualifierName) {
     assert(_resolutionMap[effectiveQualifierName]?.isEmpty ?? true,
         'Circular Detection found for Instance Type ${effectiveQualifierName.toString()}!!!');
 
@@ -292,14 +292,14 @@ class _DDIImpl implements DDI {
       effectiveQualifierName
     ];
 
-    T result;
+    BeanT result;
     try {
       result = switch (factoryClazz.scopeType) {
-        Scopes.singleton || Scopes.object => _getSingleton<T>(factoryClazz),
-        Scopes.dependent => _getDependent<T>(factoryClazz),
+        Scopes.singleton || Scopes.object => _getSingleton<BeanT>(factoryClazz),
+        Scopes.dependent => _getDependent<BeanT>(factoryClazz),
         Scopes.application ||
         Scopes.session =>
-          _getAplication<T>(factoryClazz, effectiveQualifierName)
+          _getAplication<BeanT>(factoryClazz, effectiveQualifierName)
       };
     } finally {
       _resolutionMap[effectiveQualifierName]?.removeLast();
@@ -309,8 +309,8 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  List<Object> getByType<T extends Object>() {
-    final Type type = T;
+  List<Object> getByType<BeanT extends Object>() {
+    final Type type = BeanT;
 
     return _beans.entries
         .where((element) => element.value.type == type)
@@ -318,8 +318,8 @@ class _DDIImpl implements DDI {
         .toList();
   }
 
-  T _executarDecorators<T extends Object>(
-      T clazz, List<T Function(T)>? decorators) {
+  BeanT _executarDecorators<BeanT extends Object>(
+      BeanT clazz, List<BeanT Function(BeanT)>? decorators) {
     if (decorators != null) {
       for (final decorator in decorators) {
         clazz = decorator(clazz);
@@ -330,21 +330,23 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  void destroy<T extends Object>({Object? qualifier}) {
-    final Object effectiveQualifierName = qualifier ?? T;
+  void destroy<BeanT extends Object>({Object? qualifier}) {
+    final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    _destroy<T>(effectiveQualifierName);
+    _destroy<BeanT>(effectiveQualifierName);
   }
 
-  void _destroy<T>(effectiveQualifierName) {
-    final FactoryClazz<T>? factoryClazz =
-        _beans[effectiveQualifierName] as FactoryClazz<T>?;
+  void _destroy<BeanT>(effectiveQualifierName) {
+    final FactoryClazz<BeanT>? factoryClazz =
+        _beans[effectiveQualifierName] as FactoryClazz<BeanT>?;
 
     if (factoryClazz != null && factoryClazz.destroyable) {
       if (factoryClazz.clazzInstance != null) {
         if (factoryClazz.interceptors != null) {
           for (final interceptor in factoryClazz.interceptors!) {
-            interceptor.call().aroundDestroy(factoryClazz.clazzInstance as T);
+            interceptor
+                .call()
+                .aroundDestroy(factoryClazz.clazzInstance as BeanT);
           }
         }
 
@@ -375,8 +377,8 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  void destroyByType<T extends Object>() {
-    final keys = getByType<T>();
+  void destroyByType<BeanT extends Object>() {
+    final keys = getByType<BeanT>();
 
     for (final key in keys) {
       _destroy(key);
@@ -384,17 +386,17 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  void dispose<T>({Object? qualifier}) {
-    final Object effectiveQualifierName = qualifier ?? T;
+  void dispose<BeanT>({Object? qualifier}) {
+    final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    final FactoryClazz<T>? factoryClazz =
-        _beans[effectiveQualifierName] as FactoryClazz<T>?;
+    final FactoryClazz<BeanT>? factoryClazz =
+        _beans[effectiveQualifierName] as FactoryClazz<BeanT>?;
 
     if (factoryClazz != null) {
       switch (factoryClazz.scopeType) {
         case Scopes.application:
         case Scopes.session:
-          _disposeBean<T>(factoryClazz, effectiveQualifierName);
+          _disposeBean<BeanT>(factoryClazz, effectiveQualifierName);
           break;
         default:
           break;
@@ -403,13 +405,13 @@ class _DDIImpl implements DDI {
   }
 
   /// Dispose only clean the class Instance
-  void _disposeBean<T>(
-      FactoryClazz<T>? factoryClazz, Object effectiveQualifierName) {
+  void _disposeBean<BeanT>(
+      FactoryClazz<BeanT>? factoryClazz, Object effectiveQualifierName) {
     if (factoryClazz != null) {
       if (factoryClazz.clazzInstance != null &&
           factoryClazz.interceptors != null) {
         for (final interceptor in factoryClazz.interceptors!) {
-          interceptor.call().aroundDispose(factoryClazz.clazzInstance as T);
+          interceptor.call().aroundDispose(factoryClazz.clazzInstance as BeanT);
         }
       }
 
@@ -429,8 +431,8 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  void disposeByType<T extends Object>() {
-    final Type type = T;
+  void disposeByType<BeanT extends Object>() {
+    final Type type = BeanT;
 
     final clazz =
         _beans.entries.where((element) => element.value.type == type).toList();
@@ -441,12 +443,13 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  void addDecorator<T extends Object>(List<T Function(T)> decorators,
+  void addDecorator<BeanT extends Object>(
+      List<BeanT Function(BeanT)> decorators,
       {Object? qualifier}) {
-    final Object effectiveQualifierName = qualifier ?? T;
+    final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    final FactoryClazz<T>? factoryClazz =
-        _beans[effectiveQualifierName] as FactoryClazz<T>?;
+    final FactoryClazz<BeanT>? factoryClazz =
+        _beans[effectiveQualifierName] as FactoryClazz<BeanT>?;
 
     assert(factoryClazz != null,
         'No Instance with Type ${effectiveQualifierName.toString()} is found');
@@ -456,14 +459,14 @@ class _DDIImpl implements DDI {
       case Scopes.singleton:
       case Scopes.object:
         factoryClazz.clazzInstance =
-            _executarDecorators<T>(factoryClazz.clazzInstance!, decorators);
+            _executarDecorators<BeanT>(factoryClazz.clazzInstance!, decorators);
         break;
       //Application and Session Scopes may  have a instance created
       case Scopes.application:
       case Scopes.session:
         if (factoryClazz.clazzInstance != null) {
-          factoryClazz.clazzInstance =
-              _executarDecorators<T>(factoryClazz.clazzInstance!, decorators);
+          factoryClazz.clazzInstance = _executarDecorators<BeanT>(
+              factoryClazz.clazzInstance!, decorators);
         }
 
         factoryClazz.decorators = _orderDecorator(decorators, factoryClazz);
@@ -476,9 +479,10 @@ class _DDIImpl implements DDI {
     }
   }
 
-  List<T Function(T p1)> _orderDecorator<T extends Object>(
-      List<T Function(T p1)> decorators, FactoryClazz<T> factoryClazz) {
-    List<T Function(T p1)> updatedDecorators = [];
+  List<BeanT Function(BeanT p1)> _orderDecorator<BeanT extends Object>(
+      List<BeanT Function(BeanT p1)> decorators,
+      FactoryClazz<BeanT> factoryClazz) {
+    List<BeanT Function(BeanT p1)> updatedDecorators = [];
 
     if (factoryClazz.decorators != null) {
       updatedDecorators = decorators.reversed.toList();
@@ -494,13 +498,13 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  void addInterceptor<T extends Object>(
-      List<DDIInterceptor<T> Function()> interceptors,
+  void addInterceptor<BeanT extends Object>(
+      List<DDIInterceptor<BeanT> Function()> interceptors,
       {Object? qualifier}) {
-    final Object effectiveQualifierName = qualifier ?? T;
+    final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    final FactoryClazz<T>? factoryClazz =
-        _beans[effectiveQualifierName] as FactoryClazz<T>?;
+    final FactoryClazz<BeanT>? factoryClazz =
+        _beans[effectiveQualifierName] as FactoryClazz<BeanT>?;
 
     assert(factoryClazz != null,
         'No Instance with Type ${effectiveQualifierName.toString()} is found');
@@ -513,13 +517,13 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  void refreshObject<T extends Object>(
-    T register, {
+  void refreshObject<BeanT extends Object>(
+    BeanT register, {
     Object? qualifier,
   }) {
-    final Object effectiveQualifierName = qualifier ?? T;
-    final FactoryClazz<T>? factoryClazz =
-        _beans[effectiveQualifierName] as FactoryClazz<T>?;
+    final Object effectiveQualifierName = qualifier ?? BeanT;
+    final FactoryClazz<BeanT>? factoryClazz =
+        _beans[effectiveQualifierName] as FactoryClazz<BeanT>?;
 
     assert(factoryClazz != null && factoryClazz.scopeType == Scopes.object,
         'No Object registered with Type ${qualifier.toString()}');

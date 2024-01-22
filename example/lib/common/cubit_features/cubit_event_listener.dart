@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 abstract class CubitListener<State, Listen extends Object>
     extends Cubit<State> {
   CubitListener({required State initialState}) : super(initialState) {
-    DDIEvent.instance.subscribe<Listen>(onEvent, isAsync: true);
+    DDIEvent.instance.subscribeAsync<Listen>(onEvent);
   }
 
   void onEvent(Listen listen);

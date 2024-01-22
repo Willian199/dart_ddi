@@ -1,5 +1,5 @@
 import 'package:dart_ddi/dart_ddi.dart';
-import 'package:flutter_test/flutter_test.dart';
+import 'package:test/test.dart';
 
 void object() {
   group('DDI Object Basic Tests', () {
