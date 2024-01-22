@@ -80,8 +80,10 @@ class _DDIEventImpl implements DDIEvent {
 
       _events.putIfAbsent(effectiveQualifierName, () => []);
 
-      final existingEvents = _events[effectiveQualifierName]!.cast<Event<EventTypeT>>();
-      final isDuplicate = existingEvents.any((existingEvent) => existingEvent.event.hashCode == event.hashCode);
+      final existingEvents =
+          _events[effectiveQualifierName]!.cast<Event<EventTypeT>>();
+      final isDuplicate = existingEvents.any(
+          (existingEvent) => existingEvent.event.hashCode == event.hashCode);
 
       if (!isDuplicate) {
         existingEvents.add(Event<EventTypeT>(
@@ -106,10 +108,12 @@ class _DDIEventImpl implements DDIEvent {
     final effectiveQualifierName = qualifier ?? EventTypeT;
 
     //Without the cast, removeWhere fails beacause the type is Event<dynamic>
-    final eventsList = _events[effectiveQualifierName]?.cast<Event<EventTypeT>>();
+    final eventsList =
+        _events[effectiveQualifierName]?.cast<Event<EventTypeT>>();
 
     if (eventsList != null) {
-      eventsList.removeWhere((e) => e.allowUnsubscribe && e.event.hashCode == event.hashCode);
+      eventsList.removeWhere(
+          (e) => e.allowUnsubscribe && e.event.hashCode == event.hashCode);
     }
   }
 
@@ -117,7 +121,8 @@ class _DDIEventImpl implements DDIEvent {
   void fire<EventTypeT extends Object>(EventTypeT value, {Object? qualifier}) {
     final effectiveQualifierName = qualifier ?? EventTypeT;
 
-    final eventsList = _events[effectiveQualifierName]?.cast<Event<EventTypeT>>();
+    final eventsList =
+        _events[effectiveQualifierName]?.cast<Event<EventTypeT>>();
 
     if (eventsList != null) {
       final eventsToRemove = <Event<EventTypeT>>[];

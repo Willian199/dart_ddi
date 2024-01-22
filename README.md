@@ -39,14 +39,17 @@ Summary
    3. [Interceptor](#interceptor)
    4. [RegisterIf](#registerif)
    5. [Destroyable](#destroyable)
-5. [Events](#events)
+5. [Mixins](#mixins)
+   1. [Post Construct](#post-construct-mixin)
+   2. [Pre Destroy](#pre-destroy-mixin)
+6. [Events](#events)
    1. [Creating and Managing Events](#creating-and-managing-events)
    2. [Subscribing an Event](#subscribing-an-event)
    3. [Unsubscribing an Event](#unsubscribing-an-event)
    4. [Firing an Event](#firing-an-event)
    5. [Events Considerations](#events-considerations)
    6. [Use Cases](#use-cases)
-6. [API Reference](#api-reference)
+7. [API Reference](#api-reference)
    1. [registerSingleton](#registersingleton)
    2. [registerApplication](#registerapplication)
    3. [registerDependent](#registerdependent)
@@ -384,32 +387,78 @@ Designed for flexibility and efficiency, this system empowers you to seamlessly 
 The Events follow a straightforward flow. Functions or methods `subscribe` to specific events using the subscribe method of the `DDIEvent` class. Events are fired using the `fire` method, triggering the execution of all subscribed callbacks. Subscribed callbacks are then executed, handling the event data and performing any specified tasks. Subscriptions can be removed using the `unsubscribe` function.
 
 ### Subscribing an Event
-To subscribe to an event, use the `subscribe` function:
+When subscribing to an event, you have the option to choose from three different types of subscriptions:  `subscribe`, `subscribeAsync` and `subscribeIsolate`.
+
+**subscribe**
+The common subscription type, subscribe, functions as a simple callback. It allows you to respond to events in a synchronous manner, making it suitable for most scenarios.
+
+- `DDIEvent.instance.subscribe` It's the common type, working as a simples callback.
+- `DDIEvent.instance.subscribeAsync` Runs as a Future. Perhaps it's not possible to await.
+- `DDIEvent.instance.subscribeIsolate` Runs as a Isolate.
+
+Parameters:
 
 - `event:` The callback function to be executed when the event is fired.
 - `qualifier:` Optional qualifier name to distinguish between different events of the same type.
 - `registerIf:` A bool function that if returns true, allows the subscription to proceed.
 - `allowUnsubscribe:` Indicates if the event can be unsubscribe.
 - `priority:` Priority of the subscription relative to other subscriptions (lower values indicate higher priority).
-- `isAsync:` If true, the callback function will be executed asynchronously.
 - `unsubscribeAfterFire:` If true, the subscription will be automatically removed after the first time the event is fired.
-- `runAsIsolate:` If true, the subscription callback will be executed in a separate isolate for concurrent event handling.
 
 ```dart
-
 void myEvent(String message) {
     print('Event received: $message');
-};
+}
 
 DDIEvent.instance.subscribe<String>(
   myEvent,
   qualifier: 'exampleEvent',
-  priority: 1,
-  isAsync: true,
+  registerIf: () => true,
+  allowUnsubscribe: true,
   unsubscribeAfterFire: false,
-  runAsIsolate: true,
+  runAsIsolate: false,
 );
 ```
+
+**subscribeAsync**
+The subscribeAsync type runs the callback as a Future, allowing for asynchronous event handling. Making it suitable for scenarios where asynchronous execution is needed without waiting for completion.
+Note that it not be possible to await this type of subscription.
+
+Parameters are the same as for `subscribe`.
+
+```dart
+void myEvent(String message) {
+    print('Event received: $message');
+}
+
+DDIEvent.instance.subscribeAsync<String>(
+  myEvent,
+  qualifier: 'exampleEvent',
+  registerIf: () => true,
+  allowUnsubscribe: true,
+  unsubscribeAfterFire: false,
+  runAsIsolate: false,
+);
+```
+
+**subscribeIsolate**
+The subscribeIsolate type runs the callback in a separate isolate, enabling concurrent event handling. This is particularly useful for scenarios where you want to execute the event in isolation, avoiding potential interference with the main application flow.
+
+Parameters are the same as for `subscribe`.
+
+```dart
+void myEvent(String message) {
+    print('Event received: $message');
+}
+
+DDIEvent.instance.subscribeIsolate<String>(
+  myEvent,
+  qualifier: 'exampleEvent',
+  registerIf: () => true,
+  allowUnsubscribe: true,
+  unsubscribeAfterFire: false,
+  runAsIsolate: false,
+);
 
 ### Unsubscribing an Event
 

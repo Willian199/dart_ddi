@@ -24,6 +24,7 @@ abstract class DDIEvent {
   /// - `priority`: Priority of the subscription relative to other subscriptions (lower values indicate higher priority).
   ///
   /// - `unsubscribeAfterFire`: If true, the subscription will be automatically removed after the first time the event is fired.
+  ///
   void subscribe<EventTypeT extends Object>(
     void Function(EventTypeT) event, {
     Object? qualifier,
@@ -33,7 +34,7 @@ abstract class DDIEvent {
     bool unsubscribeAfterFire = false,
   });
 
-    /// Subscribes a callback function to an event.
+  /// Subscribes an Async callback function to an event.
   ///
   /// - `event`: The callback function to be executed when the event is fired.
   ///
@@ -46,6 +47,7 @@ abstract class DDIEvent {
   /// - `priority`: Priority of the subscription relative to other subscriptions (lower values indicate higher priority).
   ///
   /// - `unsubscribeAfterFire`: If true, the subscription will be automatically removed after the first time the event is fired.
+  ///
   void subscribeAsync<EventTypeT extends Object>(
     void Function(EventTypeT) event, {
     Object? qualifier,
@@ -55,7 +57,7 @@ abstract class DDIEvent {
     bool unsubscribeAfterFire = false,
   });
 
-    /// Subscribes a callback function to an event.
+  /// Subscribes an Isolate callback function to an event.
   ///
   /// - `event`: The callback function to be executed when the event is fired.
   ///
@@ -68,6 +70,7 @@ abstract class DDIEvent {
   /// - `priority`: Priority of the subscription relative to other subscriptions (lower values indicate higher priority).
   ///
   /// - `unsubscribeAfterFire`: If true, the subscription will be automatically removed after the first time the event is fired.
+  ///
   void subscribeIsolate<EventTypeT extends Object>(
     void Function(EventTypeT) event, {
     Object? qualifier,

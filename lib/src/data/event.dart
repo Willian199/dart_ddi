@@ -33,6 +33,11 @@ class Event<EventTypeT> {
 
   @override
   int get hashCode {
-    return event.hashCode ^ type.hashCode ^ allowUnsubscribe.hashCode ^ priority.hashCode ^ mode.hashCode ^ unsubscribeAfterFire.hashCode;
+    return event.hashCode ^
+        type.hashCode ^
+        allowUnsubscribe.hashCode ^
+        priority.hashCode ^
+        mode.hashCode ^
+        unsubscribeAfterFire.hashCode;
   }
 }
