@@ -1,4 +1,5 @@
 import 'package:dart_ddi/dart_ddi.dart';
+import 'package:dart_ddi/src/exception/bean_not_found.dart';
 import 'package:test/test.dart';
 
 import '../clazz_samples/d.dart';
@@ -23,8 +24,7 @@ void interceptor() {
 
       DDI.instance.destroy<G>();
 
-      expect(() => DDI.instance.get<G>(),
-          throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance.get<G>(), throwsA(isA<BeanNotFound>()));
     });
 
     test('ADD Interceptor to a Application bean', () {
@@ -37,8 +37,7 @@ void interceptor() {
 
       DDI.instance.destroy<G>();
 
-      expect(() => DDI.instance.get<G>(),
-          throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance.get<G>(), throwsA(isA<BeanNotFound>()));
     });
 
     test('ADD Interceptor to a Application bean with qualifier', () {
@@ -53,7 +52,7 @@ void interceptor() {
       DDI.instance.destroy<G>(qualifier: 'qualifier');
 
       expect(() => DDI.instance.get<G>(qualifier: 'qualifier'),
-          throwsA(const TypeMatcher<AssertionError>()));
+          throwsA(isA<BeanNotFound>()));
     });
 
     test('ADD Interceptor to a Dependent bean', () {
@@ -66,8 +65,7 @@ void interceptor() {
 
       DDI.instance.destroy<G>();
 
-      expect(() => DDI.instance.get<G>(),
-          throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance.get<G>(), throwsA(isA<BeanNotFound>()));
     });
 
     test('ADD Interceptor to a Session bean', () {
@@ -80,8 +78,7 @@ void interceptor() {
 
       DDI.instance.destroy<G>();
 
-      expect(() => DDI.instance.get<G>(),
-          throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance.get<G>(), throwsA(isA<BeanNotFound>()));
     });
 
     test('ADD Interceptor after registered a Application bean', () {
@@ -105,8 +102,7 @@ void interceptor() {
 
       DDI.instance.destroy<G>();
 
-      expect(() => DDI.instance.get<G>(),
-          throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance.get<G>(), throwsA(isA<BeanNotFound>()));
     });
 
     test('ADD Decorators and Interceptor to a Singleton bean', () {

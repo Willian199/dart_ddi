@@ -1,5 +1,8 @@
 part of 'dart_ddi.dart';
 
+const _debug = !bool.fromEnvironment('dart.vm.product') &&
+    !bool.fromEnvironment('dart.vm.profile');
+
 class _DDIImpl implements DDI {
   final Map<Object, FactoryClazz> _beans = {};
   static const _resolutionKey = #_resolutionKey;
@@ -20,8 +23,16 @@ class _DDIImpl implements DDI {
     if (registerIf?.call() ?? true) {
       final Object effectiveQualifierName = qualifier ?? BeanT;
 
-      assert(_beans[effectiveQualifierName] == null,
-          'Is already registered a instance with Type ${effectiveQualifierName.toString()}');
+      if (_beans[effectiveQualifierName] != null) {
+        final cause =
+            'Is already registered a instance with Type ${effectiveQualifierName.toString()}';
+        if (!_debug) {
+          throw DuplicatedBean(cause);
+        }
+        // ignore: avoid_print
+        print(cause);
+        return;
+      }
 
       BeanT clazz = clazzRegister.call();
 
@@ -129,8 +140,16 @@ class _DDIImpl implements DDI {
   }) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    assert(_beans[effectiveQualifierName] == null,
-        'Is already registered a instance with Type ${effectiveQualifierName.toString()}');
+    if (_beans[effectiveQualifierName] != null) {
+      final cause =
+          'Is already registered a instance with Type ${effectiveQualifierName.toString()}';
+      if (!_debug) {
+        throw DuplicatedBean(cause);
+      }
+      // ignore: avoid_print
+      print(cause);
+      return;
+    }
 
     _beans[effectiveQualifierName] = FactoryClazz<BeanT>(
       clazzRegister: clazzRegister,
@@ -156,8 +175,16 @@ class _DDIImpl implements DDI {
     if (registerIf?.call() ?? true) {
       final Object effectiveQualifierName = qualifier ?? BeanT;
 
-      assert(_beans[effectiveQualifierName] == null,
-          'Is already registered a instance with Type ${effectiveQualifierName.toString()}');
+      if (_beans[effectiveQualifierName] != null) {
+        final cause =
+            'Is already registered a instance with Type ${effectiveQualifierName.toString()}';
+        if (!_debug) {
+          throw DuplicatedBean(cause);
+        }
+        // ignore: avoid_print
+        print(cause);
+        return;
+      }
 
       if (interceptors != null) {
         for (final interceptor in interceptors) {
@@ -271,12 +298,14 @@ class _DDIImpl implements DDI {
     final FactoryClazz<BeanT>? factoryClazz =
         _beans[effectiveQualifierName] as FactoryClazz<BeanT>?;
 
-    assert(factoryClazz != null,
-        'No Instance with Type ${effectiveQualifierName.toString()} is found');
+    if (factoryClazz == null) {
+      throw BeanNotFound(
+          'No Instance with Type ${effectiveQualifierName.toString()} is found.');
+    }
 
     return runZoned(
       () {
-        return _getScoped<BeanT>(factoryClazz!, effectiveQualifierName);
+        return _getScoped<BeanT>(factoryClazz, effectiveQualifierName);
       },
       zoneValues: {_resolutionKey: <Object, List<Object>>{}},
     );
@@ -284,8 +313,10 @@ class _DDIImpl implements DDI {
 
   BeanT _getScoped<BeanT extends Object>(
       FactoryClazz<BeanT> factoryClazz, Object effectiveQualifierName) {
-    assert(_resolutionMap[effectiveQualifierName]?.isEmpty ?? true,
-        'Circular Detection found for Instance Type ${effectiveQualifierName.toString()}!!!');
+    if (_resolutionMap[effectiveQualifierName]?.isNotEmpty ?? false) {
+      throw CircularDetection(
+          'Circular Detection found for Instance Type ${effectiveQualifierName.toString()}!!!');
+    }
 
     _resolutionMap[effectiveQualifierName] = [
       ..._resolutionMap[effectiveQualifierName] ?? [],
@@ -451,10 +482,12 @@ class _DDIImpl implements DDI {
     final FactoryClazz<BeanT>? factoryClazz =
         _beans[effectiveQualifierName] as FactoryClazz<BeanT>?;
 
-    assert(factoryClazz != null,
-        'No Instance with Type ${effectiveQualifierName.toString()} is found');
+    if (factoryClazz == null) {
+      throw BeanNotFound(
+          'No Instance with Type ${effectiveQualifierName.toString()} is found.');
+    }
 
-    switch (factoryClazz!.scopeType) {
+    switch (factoryClazz.scopeType) {
       //Singleton Scopes already have a instance
       case Scopes.singleton:
       case Scopes.object:
@@ -506,10 +539,12 @@ class _DDIImpl implements DDI {
     final FactoryClazz<BeanT>? factoryClazz =
         _beans[effectiveQualifierName] as FactoryClazz<BeanT>?;
 
-    assert(factoryClazz != null,
-        'No Instance with Type ${effectiveQualifierName.toString()} is found');
+    if (factoryClazz == null) {
+      throw BeanNotFound(
+          'No Instance with Type ${effectiveQualifierName.toString()} is found.');
+    }
 
-    if (factoryClazz!.interceptors == null) {
+    if (factoryClazz.interceptors == null) {
       factoryClazz.interceptors = interceptors;
     } else {
       factoryClazz.interceptors?.addAll(interceptors);
@@ -525,10 +560,12 @@ class _DDIImpl implements DDI {
     final FactoryClazz<BeanT>? factoryClazz =
         _beans[effectiveQualifierName] as FactoryClazz<BeanT>?;
 
-    assert(factoryClazz != null && factoryClazz.scopeType == Scopes.object,
-        'No Object registered with Type ${qualifier.toString()}');
+    if (factoryClazz == null) {
+      throw BeanNotFound(
+          'No registered with Type ${effectiveQualifierName.toString()} is found.');
+    }
 
-    if (factoryClazz!.interceptors != null) {
+    if (factoryClazz.interceptors != null) {
       for (final interceptor in factoryClazz.interceptors!) {
         register = interceptor.call().aroundConstruct(register);
       }

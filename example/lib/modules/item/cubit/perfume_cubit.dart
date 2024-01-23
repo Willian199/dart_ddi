@@ -16,10 +16,10 @@ class PerfumeCubit extends CubitSender<PerfumeState> {
     final DadosPerfume perfume =
         await compute(HtmlDecodePage.decode, retorno.data.toString());
 
-    emit(state.copyWith(dadosPerfume: perfume), suppresListener: true);
+    emit(state.copyWith(dadosPerfume: perfume));
   }
 
   void pageChange(int value) {
-    emit(state.copyWith(page: value));
+    fire(state.copyWith(page: value));
   }
 }

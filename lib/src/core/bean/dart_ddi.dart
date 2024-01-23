@@ -2,6 +2,9 @@ import 'dart:async';
 
 import 'package:dart_ddi/src/data/factory_clazz.dart';
 import 'package:dart_ddi/src/enum/scopes.dart';
+import 'package:dart_ddi/src/exception/bean_not_found.dart';
+import 'package:dart_ddi/src/exception/circular_detection.dart';
+import 'package:dart_ddi/src/exception/duplicated_bean.dart';
 import 'package:dart_ddi/src/features/ddi_interceptor.dart';
 import 'package:dart_ddi/src/features/post_construct.dart';
 import 'package:dart_ddi/src/features/pre_destroy.dart';

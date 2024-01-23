@@ -1,4 +1,5 @@
 import 'package:dart_ddi/dart_ddi.dart';
+import 'package:dart_ddi/src/exception/bean_not_found.dart';
 import 'package:test/test.dart';
 
 import '../clazz_samples/g.dart';
@@ -29,9 +30,9 @@ void runByType() {
       DDI.instance.destroyByType<G>();
 
       expect(() => DDI.instance.get(qualifier: keys2[0]),
-          throwsA(const TypeMatcher<AssertionError>()));
+          throwsA(isA<BeanNotFound>()));
       expect(() => DDI.instance.get(qualifier: keys2[1]),
-          throwsA(const TypeMatcher<AssertionError>()));
+          throwsA(isA<BeanNotFound>()));
     });
 
     test('Dependent Get bean by Type that have registered and dispose', () {
@@ -56,9 +57,9 @@ void runByType() {
       DDI.instance.destroyByType<G>();
 
       expect(() => DDI.instance.get(qualifier: keys2[0]),
-          throwsA(const TypeMatcher<AssertionError>()));
+          throwsA(isA<BeanNotFound>()));
       expect(() => DDI.instance.get(qualifier: keys2[1]),
-          throwsA(const TypeMatcher<AssertionError>()));
+          throwsA(isA<BeanNotFound>()));
     });
 
     test('Session Get bean by Type that have registered and dispose', () {
@@ -83,9 +84,9 @@ void runByType() {
       DDI.instance.destroyByType<G>();
 
       expect(() => DDI.instance.get(qualifier: keys2[0]),
-          throwsA(const TypeMatcher<AssertionError>()));
+          throwsA(isA<BeanNotFound>()));
       expect(() => DDI.instance.get(qualifier: keys2[1]),
-          throwsA(const TypeMatcher<AssertionError>()));
+          throwsA(isA<BeanNotFound>()));
     });
 
     test('Get bean by Type that have registered and dispose', () {
@@ -110,9 +111,9 @@ void runByType() {
       DDI.instance.destroyByType<G>();
 
       expect(() => DDI.instance.get(qualifier: keys2[0]),
-          throwsA(const TypeMatcher<AssertionError>()));
+          throwsA(isA<BeanNotFound>()));
       expect(() => DDI.instance.get(qualifier: keys2[1]),
-          throwsA(const TypeMatcher<AssertionError>()));
+          throwsA(isA<BeanNotFound>()));
     });
   });
 }

@@ -1,3 +1,4 @@
+import 'package:dart_ddi/src/exception/bean_not_found.dart';
 import 'package:test/test.dart';
 
 import 'package:dart_ddi/dart_ddi.dart';
@@ -21,12 +22,9 @@ void disposeDestroyAllSession() {
 
       DDI.instance.destroyAllSession();
 
-      expect(() => DDI.instance.get<A>(),
-          throwsA(const TypeMatcher<AssertionError>()));
-      expect(() => DDI.instance.get<B>(),
-          throwsA(const TypeMatcher<AssertionError>()));
-      expect(() => DDI.instance.get<C>(),
-          throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance.get<A>(), throwsA(isA<BeanNotFound>()));
+      expect(() => DDI.instance.get<B>(), throwsA(isA<BeanNotFound>()));
+      expect(() => DDI.instance.get<C>(), throwsA(isA<BeanNotFound>()));
     });
 
     test('Register, get, dispose and destroy Session bean', () {
@@ -51,12 +49,9 @@ void disposeDestroyAllSession() {
 
       DDI.instance.destroyAllSession();
 
-      expect(() => DDI.instance.get<A>(),
-          throwsA(const TypeMatcher<AssertionError>()));
-      expect(() => DDI.instance.get<B>(),
-          throwsA(const TypeMatcher<AssertionError>()));
-      expect(() => DDI.instance.get<C>(),
-          throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance.get<A>(), throwsA(isA<BeanNotFound>()));
+      expect(() => DDI.instance.get<B>(), throwsA(isA<BeanNotFound>()));
+      expect(() => DDI.instance.get<C>(), throwsA(isA<BeanNotFound>()));
     });
   });
 }
