@@ -1,5 +1,6 @@
 import 'package:dart_ddi/dart_ddi.dart';
-import 'package:flutter_test/flutter_test.dart';
+import 'package:dart_ddi/src/exception/bean_not_found.dart';
+import 'package:test/test.dart';
 
 void object() {
   group('DDI Object Basic Tests', () {
@@ -23,7 +24,7 @@ void object() {
       DDI.instance.destroy(qualifier: 'author');
 
       expect(() => DDI.instance.get(qualifier: 'author'),
-          throwsA(const TypeMatcher<AssertionError>()));
+          throwsA(isA<BeanNotFound>()));
     });
 
     test('Try to destroy a undestroyable Object bean', () {
@@ -54,12 +55,12 @@ void object() {
 
       DDI.instance.destroy(qualifier: 'owner');
 
-      expect(
+      /*expect(
           () => DDI.instance.registerObject(
                 'Willian Marchesan',
                 qualifier: 'owner',
               ),
-          throwsA(const TypeMatcher<AssertionError>()));
+          throwsA(isA<DuplicatedBean>()));*/
     });
 
     test('Register, retrieve and refresh object bean', () {

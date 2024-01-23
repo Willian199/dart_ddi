@@ -1,5 +1,6 @@
 import 'package:dart_ddi/dart_ddi.dart';
-import 'package:flutter_test/flutter_test.dart';
+import 'package:dart_ddi/src/exception/bean_not_found.dart';
+import 'package:test/test.dart';
 
 import '../clazz_samples/c.dart';
 
@@ -14,7 +15,7 @@ void registerIf() {
       DDI.instance.destroy(qualifier: 'typeC');
 
       expect(() => DDI.instance.get(qualifier: 'typeC'),
-          throwsA(const TypeMatcher<AssertionError>()));
+          throwsA(isA<BeanNotFound>()));
     });
 
     test('Regsiter a Singleton bean with registerIf false', () {
@@ -22,7 +23,7 @@ void registerIf() {
           registerIf: () => false, qualifier: 'typeC');
 
       expect(() => DDI.instance.get(qualifier: 'typeC'),
-          throwsA(const TypeMatcher<AssertionError>()));
+          throwsA(isA<BeanNotFound>()));
     });
 
     test('Regsiter a Application bean with registerIf true', () {
@@ -34,7 +35,7 @@ void registerIf() {
       DDI.instance.destroy(qualifier: 'typeC');
 
       expect(() => DDI.instance.get(qualifier: 'typeC'),
-          throwsA(const TypeMatcher<AssertionError>()));
+          throwsA(isA<BeanNotFound>()));
     });
 
     test('Regsiter a Application bean with registerIf false', () {
@@ -42,7 +43,7 @@ void registerIf() {
           registerIf: () => false, qualifier: 'typeC');
 
       expect(() => DDI.instance.get(qualifier: 'typeC'),
-          throwsA(const TypeMatcher<AssertionError>()));
+          throwsA(isA<BeanNotFound>()));
     });
 
     test('Regsiter a Session bean with registerIf true', () {
@@ -54,7 +55,7 @@ void registerIf() {
       DDI.instance.destroy(qualifier: 'typeC');
 
       expect(() => DDI.instance.get(qualifier: 'typeC'),
-          throwsA(const TypeMatcher<AssertionError>()));
+          throwsA(isA<BeanNotFound>()));
     });
 
     test('Regsiter a Session bean with registerIf false', () {
@@ -62,7 +63,7 @@ void registerIf() {
           registerIf: () => false, qualifier: 'typeC');
 
       expect(() => DDI.instance.get(qualifier: 'typeC'),
-          throwsA(const TypeMatcher<AssertionError>()));
+          throwsA(isA<BeanNotFound>()));
     });
 
     test('Regsiter a Dependent bean with registerIf true', () {
@@ -74,7 +75,7 @@ void registerIf() {
       DDI.instance.destroy(qualifier: 'typeC');
 
       expect(() => DDI.instance.get(qualifier: 'typeC'),
-          throwsA(const TypeMatcher<AssertionError>()));
+          throwsA(isA<BeanNotFound>()));
     });
 
     test('Regsiter a Dependent bean with registerIf false', () {
@@ -82,7 +83,7 @@ void registerIf() {
           registerIf: () => false, qualifier: 'typeC');
 
       expect(() => DDI.instance.get(qualifier: 'typeC'),
-          throwsA(const TypeMatcher<AssertionError>()));
+          throwsA(isA<BeanNotFound>()));
     });
   });
 }

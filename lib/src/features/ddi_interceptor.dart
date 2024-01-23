@@ -14,48 +14,48 @@
 /// **Example Usage:**
 ///
 /// ```dart
-/// class CustomInterceptor<T> extends DDIInterceptor<T> {
+/// class CustomInterceptor extends DDIInterceptor<BeanT> {
 ///   @override
-///   T aroundConstruct(T instance) {
+///   BeanT aroundConstruct(BeanT instance) {
 ///     // Logic to customize or replace instance creation.
 ///     return CustomizedInstance();
 ///   }
 ///
 ///   @override
-///   T aroundGet(T instance) {
+///   BeanT aroundGet(BeanT instance) {
 ///     // Logic to customize the behavior of the retrieved instance.
 ///     return ModifiedInstance(instance);
 ///   }
 ///
 ///   @override
-///   void aroundDestroy(T instance) {
+///   void aroundDestroy(BeanT instance) {
 ///     // Logic to perform cleanup during instance destruction.
 ///     // This method is optional and can be overridden as needed.
 ///   }
 ///
 ///   @override
-///   void aroundDispose(T instance) {
+///   void aroundDispose(BeanT instance) {
 ///     // Logic to release resources or perform custom cleanup during instance disposal.
 ///     // This method is optional and can be overridden as needed.
 ///   }
 /// }
 /// ```
 ///
-abstract class DDIInterceptor<T> {
+abstract class DDIInterceptor<BeanT> {
   /// Invoked during the instance creation process. Customize or replace the creation logic by returning a modified instance.
-  T aroundConstruct(T instance) {
+  BeanT aroundConstruct(BeanT instance) {
     return instance;
   }
 
   /// Invoked when retrieving an instance. Customize the behavior of the retrieved instance before it is returned.
   /// If you change some value, the next time you get this instance, it will apply again.
-  T aroundGet(T instance) {
+  BeanT aroundGet(BeanT instance) {
     return instance;
   }
 
   /// Invoked when an instance is being destroyed, allowing you to perform cleanup or additional logic.
-  void aroundDestroy(T instance) {}
+  void aroundDestroy(BeanT instance) {}
 
   /// Invoked during the disposal of an instance, providing an opportunity for you to release resources or add custom cleanup logic.
-  void aroundDispose(T instance) {}
+  void aroundDispose(BeanT instance) {}
 }

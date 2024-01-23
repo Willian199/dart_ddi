@@ -1,18 +1,45 @@
-import 'dart:async';
+import 'dart:io';
 
+import 'package:dio_cache_interceptor/dio_cache_interceptor.dart';
+import 'package:dio_cache_interceptor_objectbox_store/dio_cache_interceptor_objectbox_store.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart' as pp;
+import 'package:perfumei/common/constants/injection_constants.dart';
 import 'package:perfumei/config/services/injection.dart';
 import 'package:perfumei/config/theme/dark.dart';
 import 'package:perfumei/config/theme/light.dart';
+import 'package:perfumei/modules/home/cubit/home_cubit.dart';
 import 'package:perfumei/modules/home/view/home_page.dart';
-import 'package:wakelock_plus/wakelock_plus.dart';
+import 'package:perfumei/modules/item/cubit/imagem_cubit.dart';
+import 'package:perfumei/modules/item/cubit/item_cubit.dart';
+import 'package:perfumei/modules/item/cubit/perfume_cubit.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
-  unawaited(WakelockPlus.enable());
+  //unawaited(WakelockPlus.enable());
 
-  Injection.start();
+  //Injection.start();
+
+  ddi.registerObject<String>('https://fgvi612dfz-dsn.algolia.net',
+      qualifier: InjectionConstants.url);
+
+  ddi.registerSingleton<GlobalKey<NavigatorState>>(
+      () => GlobalKey<NavigatorState>());
+
+  ddi.registerObject<bool>(
+      WidgetsBinding.instance.platformDispatcher.platformBrightness ==
+          Brightness.dark,
+      qualifier: InjectionConstants.darkMode);
+
+  ddi.registerDependent<HomeCubit>(() => HomeCubit());
+  ddi.registerDependent<TabCubit>(() => TabCubit());
+  ddi.registerDependent<PerfumeCubit>(() => PerfumeCubit());
+  ddi.registerDependent<ImagemCubit>(() => ImagemCubit());
+
+  pp.getTemporaryDirectory().then((Directory dir) =>
+      ddi.registerSingleton<CacheStore>(
+          () => ObjectBoxCacheStore(storePath: dir.path)));
 
   runApp(const MyApp());
 }

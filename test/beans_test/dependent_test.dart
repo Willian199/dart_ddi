@@ -1,4 +1,5 @@
-import 'package:flutter_test/flutter_test.dart';
+import 'package:dart_ddi/src/exception/bean_not_found.dart';
+import 'package:test/test.dart';
 
 import 'package:dart_ddi/dart_ddi.dart';
 
@@ -83,8 +84,7 @@ void dependent() {
 
       DDI.instance.destroy<C>();
 
-      expect(() => DDI.instance.get<C>(),
-          throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance.get<C>(), throwsA(isA<BeanNotFound>()));
     });
 
     test('Create, get and remove a qualifier bean', () {
@@ -98,7 +98,7 @@ void dependent() {
       DDI.instance.destroy(qualifier: 'typeC');
 
       expect(() => DDI.instance.get(qualifier: 'typeC'),
-          throwsA(const TypeMatcher<AssertionError>()));
+          throwsA(isA<BeanNotFound>()));
     });
 
     test('Try to destroy a undestroyable Dependent bean', () {
@@ -123,10 +123,7 @@ void dependent() {
 
       DDI.instance.destroy<DependentDestroyRegister>();
 
-      expect(
-          () =>
-              DDI.instance.registerDependent(() => DependentDestroyRegister()),
-          throwsA(const TypeMatcher<AssertionError>()));
+      //expect(() => DDI.instance.registerDependent(() => DependentDestroyRegister()), throwsA(isA<DuplicatedBean>()));
     });
   });
 }

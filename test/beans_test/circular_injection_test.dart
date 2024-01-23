@@ -1,5 +1,7 @@
 import 'package:dart_ddi/dart_ddi.dart';
-import 'package:flutter_test/flutter_test.dart';
+import 'package:dart_ddi/src/exception/bean_not_found.dart';
+import 'package:dart_ddi/src/exception/circular_detection.dart';
+import 'package:test/test.dart';
 
 import '../clazz_samples/c.dart';
 import '../clazz_samples/father.dart';
@@ -12,7 +14,7 @@ void circularDetection() {
       expect(
           () => DDI.instance
               .registerSingleton(() => Father(mother: DDI.instance())),
-          throwsA(const TypeMatcher<AssertionError>()));
+          throwsA(isA<BeanNotFound>()));
     });
 
     test('Inject a Application bean depending from a bean that not exists yet',
@@ -28,8 +30,7 @@ void circularDetection() {
       DDI.instance.registerApplication(() => Father(mother: DDI.instance()));
       DDI.instance.registerApplication(() => Mother(father: DDI.instance()));
 
-      expect(() => DDI.instance<Mother>(),
-          throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance<Mother>(), throwsA(isA<CircularDetection>()));
 
       DDI.instance.destroy<Mother>();
       DDI.instance.destroy<Father>();
@@ -39,8 +40,7 @@ void circularDetection() {
       DDI.instance.registerDependent(() => Father(mother: DDI.instance()));
       DDI.instance.registerDependent(() => Mother(father: DDI.instance()));
 
-      expect(() => DDI.instance<Mother>(),
-          throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance<Mother>(), throwsA(isA<CircularDetection>()));
 
       DDI.instance.destroy<Mother>();
       DDI.instance.destroy<Father>();
@@ -50,8 +50,7 @@ void circularDetection() {
       DDI.instance.registerSession(() => Father(mother: DDI.instance()));
       DDI.instance.registerSession(() => Mother(father: DDI.instance()));
 
-      expect(() => DDI.instance<Mother>(),
-          throwsA(const TypeMatcher<AssertionError>()));
+      expect(() => DDI.instance<Mother>(), throwsA(isA<CircularDetection>()));
 
       DDI.instance.destroy<Mother>();
       DDI.instance.destroy<Father>();

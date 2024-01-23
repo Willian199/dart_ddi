@@ -5,12 +5,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 class CubitSender<State extends Object> extends Cubit<State> {
   CubitSender(super.initialState);
 
-  @override
-  void emit(State state, {bool suppresListener = false}) {
+  void fire(State state) {
     debugPrint('emitindo evento $this');
-    if (!suppresListener) {
-      DDIEvent.instance.fire<State>(state);
-    }
+
+    DDIEvent.instance.fire<State>(state);
+
     super.emit(state);
   }
 }

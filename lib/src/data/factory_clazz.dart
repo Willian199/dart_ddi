@@ -3,11 +3,11 @@
 import 'package:dart_ddi/src/enum/scopes.dart';
 import 'package:dart_ddi/src/features/ddi_interceptor.dart';
 
-class FactoryClazz<T> {
-  T? clazzInstance;
-  List<T Function(T i)>? decorators;
-  List<DDIInterceptor<T> Function()>? interceptors;
-  final T Function()? clazzRegister;
+class FactoryClazz<BeanT> {
+  BeanT? clazzInstance;
+  List<BeanT Function(BeanT i)>? decorators;
+  List<DDIInterceptor<BeanT> Function()>? interceptors;
+  final BeanT Function()? clazzRegister;
   final void Function()? postConstruct;
   final Scopes scopeType;
   final Type type;
@@ -24,17 +24,17 @@ class FactoryClazz<T> {
     this.interceptors,
   });
 
-  FactoryClazz<T> copyWith({
-    T? clazzInstance,
-    List<T Function(T i)>? decorators,
-    List<DDIInterceptor<T> Function()>? interceptors,
-    T Function()? clazzRegister,
+  FactoryClazz<BeanT> copyWith({
+    BeanT? clazzInstance,
+    List<BeanT Function(BeanT i)>? decorators,
+    List<DDIInterceptor<BeanT> Function()>? interceptors,
+    BeanT Function()? clazzRegister,
     void Function()? postConstruct,
     Scopes? scopeType,
     Type? type,
     bool? destroyable,
   }) {
-    return FactoryClazz<T>(
+    return FactoryClazz<BeanT>(
       clazzInstance: clazzInstance ?? this.clazzInstance,
       decorators: decorators ?? this.decorators,
       interceptors: interceptors ?? this.interceptors,
