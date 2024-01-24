@@ -156,6 +156,17 @@ abstract class DDI {
     bool destroyable = true,
   });
 
+  FutureOr<void> registerAsync<BeanT extends Object>(
+    FutureOr<BeanT> Function() clazzRegister, {
+    FutureOr<Object>? qualifier,
+    FutureOr<void> Function()? postConstruct,
+    FutureOr<List<BeanT Function(BeanT)>>? decorators,
+    FutureOr<List<DDIInterceptor<BeanT> Function()>>? interceptors,
+    FutureOr<bool> Function()? registerIf,
+    FutureOr<bool> destroyable = true,
+    Scopes scope = Scopes.application,
+  });
+
   /// Gets an instance of the registered class in [DDI].
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.

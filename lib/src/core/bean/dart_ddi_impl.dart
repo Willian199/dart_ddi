@@ -211,6 +211,72 @@ class _DDIImpl implements DDI {
   }
 
   @override
+  FutureOr<void> registerAsync<BeanT extends Object>(
+    FutureOr<BeanT> Function() clazzRegister, {
+    FutureOr<Object>? qualifier,
+    FutureOr<void> Function()? postConstruct,
+    FutureOr<List<BeanT Function(BeanT)>>? decorators,
+    FutureOr<List<DDIInterceptor<BeanT> Function()>>? interceptors,
+    FutureOr<bool> Function()? registerIf,
+    FutureOr<bool> destroyable = true,
+    Scopes scope = Scopes.application,
+  }) async {
+    if (registerIf != null && await registerIf()) {
+      late Object? effectiveQualifierName;
+
+      if (qualifier != null) {
+        effectiveQualifierName = await qualifier;
+      }
+
+      effectiveQualifierName ??= BeanT;
+
+      if (_beans[effectiveQualifierName] != null) {
+        final cause =
+            'Is already registered a instance with Type ${effectiveQualifierName.toString()}';
+        if (!_debug) {
+          throw DuplicatedBean(cause);
+        }
+        // ignore: avoid_print
+        print(cause);
+        return;
+      }
+
+      BeanT clazz = await clazzRegister.call();
+
+      List<DDIInterceptor<BeanT> Function()>? inter;
+
+      if (interceptors != null) {
+        inter = await interceptors;
+        for (final interceptor in inter) {
+          clazz = interceptor.call().aroundConstruct(clazz);
+        }
+      }
+
+      List<BeanT Function(BeanT)> dec;
+      if (decorators != null) {
+        dec = await decorators;
+        for (final decorator in dec) {
+          clazz = decorator(clazz);
+        }
+      }
+
+      postConstruct?.call();
+
+      if (clazz is PostConstruct) {
+        clazz.onPostConstruct();
+      }
+
+      _beans[effectiveQualifierName] = FactoryClazz<BeanT>(
+        clazzInstance: clazz,
+        type: BeanT,
+        scopeType: scope,
+        interceptors: inter,
+        destroyable: await destroyable,
+      );
+    }
+  }
+
+  @override
   BeanT call<BeanT extends Object>() {
     return get();
   }
