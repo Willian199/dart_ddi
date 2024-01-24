@@ -1,7 +1,5 @@
 import 'dart:async';
 
-import 'package:dart_ddi/src/data/stream_subscription.dart';
-
 class DDIStreamCore<StreamTypeT extends Object> {
   final StreamController<StreamTypeT> _streamController =
       StreamController<StreamTypeT>.broadcast();
@@ -13,32 +11,23 @@ class DDIStreamCore<StreamTypeT extends Object> {
     bool unsubscribeAfterFirst = false,
   }) {
     if (registerIf?.call() ?? true) {
-      final SubscriptionData<StreamTypeT> subscriptionData = SubscriptionData(
-        callback: callback,
-        unsubscribeAfterFirst: unsubscribeAfterFirst,
-      );
-
       void run(StreamTypeT value) {
-        subscriptionData.callback(value);
+        callback(value);
 
         if (unsubscribeAfterFirst && canUnsubscribe) {
-          _unsubscribe(subscriptionData);
+          close();
         }
       }
 
-      subscriptionData.subscription = _streamController.stream.listen(run);
+      _streamController.stream.listen(run);
     }
-  }
-
-  void _unsubscribe(SubscriptionData<StreamTypeT> subscriptionData) {
-    subscriptionData.subscription?.cancel();
   }
 
   void fire(StreamTypeT value) {
     _streamController.add(value);
   }
 
-  void dispose() {
+  void close() {
     _streamController.close();
   }
 }

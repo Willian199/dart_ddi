@@ -6,7 +6,7 @@ class _DDIStreamManager implements DDIStream {
   @override
   void disposeStream<StreamTypeT extends Object>({Object? qualifier}) {
     if (_streamMap.containsKey(qualifier)) {
-      _streamMap[qualifier]?.dispose();
+      _streamMap[qualifier]?.close();
 
       _streamMap.remove(qualifier);
     }
