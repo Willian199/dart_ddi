@@ -4,7 +4,7 @@ class _DDIStreamManager implements DDIStream {
   final Map<Object, DDIStreamCore<Object>> _streamMap = {};
 
   @override
-  void disposeStream<StreamTypeT extends Object>({Object? qualifier}) {
+  void close<StreamTypeT extends Object>({Object? qualifier}) {
     if (_streamMap.containsKey(qualifier)) {
       _streamMap[qualifier]?.close();
 
@@ -27,11 +27,10 @@ class _DDIStreamManager implements DDIStream {
 
   @override
   void subscribe<StreamTypeT extends Object>({
-    required void Function(StreamTypeT p1) callback,
+    required void Function(StreamTypeT) callback,
     Object? qualifier,
     bool Function()? registerIf,
-    bool canUnsubscribe = true,
-    bool unsubscribeAfterFirst = false,
+    bool unsubscribeAfterFire = false,
   }) {
     final Object effectiveQualifierName = qualifier ?? StreamTypeT;
 
@@ -43,8 +42,7 @@ class _DDIStreamManager implements DDIStream {
         .subscribe(
       callback,
       registerIf: registerIf,
-      canUnsubscribe: canUnsubscribe,
-      unsubscribeAfterFirst: unsubscribeAfterFirst,
+      unsubscribeAfterFire: unsubscribeAfterFire,
     );
   }
 }

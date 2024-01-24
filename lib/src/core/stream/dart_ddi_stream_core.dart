@@ -7,14 +7,13 @@ class DDIStreamCore<StreamTypeT extends Object> {
   void subscribe(
     void Function(StreamTypeT) callback, {
     bool Function()? registerIf,
-    bool canUnsubscribe = true,
-    bool unsubscribeAfterFirst = false,
+    bool unsubscribeAfterFire = false,
   }) {
     if (registerIf?.call() ?? true) {
       void run(StreamTypeT value) {
         callback(value);
 
-        if (unsubscribeAfterFirst && canUnsubscribe) {
+        if (unsubscribeAfterFire) {
           close();
         }
       }
