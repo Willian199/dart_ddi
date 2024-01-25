@@ -107,7 +107,7 @@ class _DDIEventImpl implements DDIEvent {
   }) {
     final effectiveQualifierName = qualifier ?? EventTypeT;
 
-    if (_events[effectiveQualifierName] case final eventsList?) {
+    if (_events[effectiveQualifierName] case final eventsList? when eventsList.isNotEmpty) {
       eventsList.cast<Event<EventTypeT>>().removeWhere(
           (e) => e.allowUnsubscribe && e.event.hashCode == event.hashCode);
     }
@@ -117,7 +117,7 @@ class _DDIEventImpl implements DDIEvent {
   void fire<EventTypeT extends Object>(EventTypeT value, {Object? qualifier}) {
     final effectiveQualifierName = qualifier ?? EventTypeT;
 
-    if (_events[effectiveQualifierName] case final eventsList?) {
+    if (_events[effectiveQualifierName] case final eventsList? when eventsList.isNotEmpty) {
       final eventsToRemove = <Event<EventTypeT>>[];
 
       for (final Event<EventTypeT> event
@@ -130,8 +130,10 @@ class _DDIEventImpl implements DDIEvent {
       }
 
       for (final Event<EventTypeT> event in eventsToRemove) {
-        eventsList.remove(event);
+        _events[effectiveQualifierName]?.remove(event);
       }
+    } else {
+      throw EventNotFound(effectiveQualifierName.toString());
     }
   }
 }

@@ -294,10 +294,10 @@ void streamTest() {
     });
 
     test('Subscribe and Fire with Different Types', () async {
-      final completer = Completer<dynamic>();
+      final completer = Completer<int>();
       const testValue = 42;
 
-      void callback(dynamic value) {
+      void callback(int value) {
         completer.complete(value);
       }
 
