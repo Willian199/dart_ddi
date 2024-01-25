@@ -10,15 +10,13 @@ class DDIStreamCore<StreamTypeT extends Object> {
     bool unsubscribeAfterFire = false,
   }) {
     if (registerIf?.call() ?? true) {
-      void run(StreamTypeT value) {
+      _streamController.stream.listen((StreamTypeT value) {
         callback(value);
 
         if (unsubscribeAfterFire) {
           close();
         }
-      }
-
-      _streamController.stream.listen(run);
+      });
     }
   }
 
@@ -28,5 +26,9 @@ class DDIStreamCore<StreamTypeT extends Object> {
 
   void close() {
     _streamController.close();
+  }
+
+  Stream<StreamTypeT> getStream() {
+    return _streamController.stream;
   }
 }

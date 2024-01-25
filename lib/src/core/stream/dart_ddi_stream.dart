@@ -3,7 +3,7 @@ import 'package:dart_ddi/src/exception/stream_not_found.dart';
 
 part 'dart_ddi_stream_manager.dart';
 
-abstract class DDIStream {
+abstract final class DDIStream {
   /// Creates the shared instance of the [DDIStream] class.
   static final DDIStream _instance = _DDIStreamManager();
 
@@ -21,4 +21,7 @@ abstract class DDIStream {
 
   void fire<StreamTypeT extends Object>(
       {required StreamTypeT value, Object? qualifier});
+
+  Stream<StreamTypeT> getStream<StreamTypeT extends Object>(
+      {Object? qualifier});
 }

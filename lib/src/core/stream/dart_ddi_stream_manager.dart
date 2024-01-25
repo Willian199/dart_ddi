@@ -1,6 +1,6 @@
 part of 'dart_ddi_stream.dart';
 
-class _DDIStreamManager implements DDIStream {
+final class _DDIStreamManager implements DDIStream {
   final Map<Object, DDIStreamCore<Object>> _streamMap = {};
 
   @override
@@ -15,14 +15,7 @@ class _DDIStreamManager implements DDIStream {
   @override
   void fire<StreamTypeT extends Object>(
       {required StreamTypeT value, Object? qualifier}) {
-    final Object effectiveQualifierName = qualifier ?? StreamTypeT;
-
-    final DDIStreamCore? stream = _streamMap[effectiveQualifierName];
-    if (stream == null) {
-      throw StreamNotFound(effectiveQualifierName.toString());
-    }
-
-    stream.fire(value);
+    _getStream<StreamTypeT>(qualifier: qualifier).fire(value);
   }
 
   @override
@@ -44,5 +37,23 @@ class _DDIStreamManager implements DDIStream {
       registerIf: registerIf,
       unsubscribeAfterFire: unsubscribeAfterFire,
     );
+  }
+
+  @override
+  Stream<StreamTypeT> getStream<StreamTypeT extends Object>(
+      {Object? qualifier}) {
+    return _getStream<StreamTypeT>(qualifier: qualifier).getStream();
+  }
+
+  DDIStreamCore<StreamTypeT> _getStream<StreamTypeT extends Object>(
+      {Object? qualifier}) {
+    final Object effectiveQualifierName = qualifier ?? StreamTypeT;
+
+    final DDIStreamCore? stream = _streamMap[effectiveQualifierName];
+    if (stream == null) {
+      throw StreamNotFound(effectiveQualifierName.toString());
+    }
+
+    return stream as DDIStreamCore<StreamTypeT>;
   }
 }
