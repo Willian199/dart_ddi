@@ -19,8 +19,10 @@ abstract final class DDIStream {
 
   void close<StreamTypeT extends Object>({Object? qualifier});
 
-  void fire<StreamTypeT extends Object>(
-      {required StreamTypeT value, Object? qualifier});
+  void fire<StreamTypeT extends Object>({
+    required StreamTypeT value,
+    Object? qualifier,
+  });
 
   Stream<StreamTypeT> getStream<StreamTypeT extends Object>(
       {Object? qualifier});

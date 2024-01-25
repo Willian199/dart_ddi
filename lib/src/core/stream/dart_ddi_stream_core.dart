@@ -8,19 +8,16 @@ class DDIStreamCore<StreamTypeT extends Object> {
 
   void subscribe(
     void Function(StreamTypeT) callback, {
-    bool Function()? registerIf,
     bool unsubscribeAfterFire = false,
     Object? qualifier,
   }) {
-    if (registerIf?.call() ?? true) {
-      _streamController.stream.listen((StreamTypeT value) {
-        callback(value);
+    _streamController.stream.listen((StreamTypeT value) {
+      callback(value);
 
-        if (unsubscribeAfterFire) {
-          DDIStream.instance.close<StreamTypeT>(qualifier: qualifier);
-        }
-      });
-    }
+      if (unsubscribeAfterFire) {
+        DDIStream.instance.close<StreamTypeT>(qualifier: qualifier);
+      }
+    });
   }
 
   void fire(StreamTypeT value) {

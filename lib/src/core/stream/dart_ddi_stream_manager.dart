@@ -33,17 +33,18 @@ final class _DDIStreamManager implements DDIStream {
   }) {
     final Object effectiveQualifierName = qualifier ?? StreamTypeT;
 
-    if (!_streamMap.containsKey(effectiveQualifierName)) {
-      _streamMap[effectiveQualifierName] = DDIStreamCore<StreamTypeT>();
-    }
+    if (registerIf?.call() ?? true) {
+      if (!_streamMap.containsKey(effectiveQualifierName)) {
+        _streamMap[effectiveQualifierName] = DDIStreamCore<StreamTypeT>();
+      }
 
-    (_streamMap[effectiveQualifierName] as DDIStreamCore<StreamTypeT>)
-        .subscribe(
-      callback,
-      registerIf: registerIf,
-      unsubscribeAfterFire: unsubscribeAfterFire,
-      qualifier: qualifier,
-    );
+      (_streamMap[effectiveQualifierName] as DDIStreamCore<StreamTypeT>)
+          .subscribe(
+        callback,
+        unsubscribeAfterFire: unsubscribeAfterFire,
+        qualifier: qualifier,
+      );
+    }
   }
 
   @override
