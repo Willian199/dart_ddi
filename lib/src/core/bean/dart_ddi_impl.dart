@@ -291,8 +291,8 @@ class _DDIImpl implements DDI {
   BeanT get<BeanT extends Object>({Object? qualifier}) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    if (_beans[effectiveQualifierName] case final factory?
-        when factory is FactoryClazz<BeanT>) {
+    if (_beans[effectiveQualifierName]
+        case final FactoryClazz<BeanT> factory?) {
       return runZoned(
         () {
           return _getScoped<BeanT>(factory, effectiveQualifierName);
@@ -407,8 +407,8 @@ class _DDIImpl implements DDI {
   void dispose<BeanT>({Object? qualifier}) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    if (_beans[effectiveQualifierName] case final factoryClazz?
-        when factoryClazz is FactoryClazz<BeanT>) {
+    if (_beans[effectiveQualifierName]
+        case final FactoryClazz<BeanT> factoryClazz?) {
       //Singleton e Object only can destroy
       //Dependent doesn't have instance
       switch (factoryClazz.scopeType) {
@@ -508,8 +508,8 @@ class _DDIImpl implements DDI {
   }) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    if (_beans[effectiveQualifierName] case final factoryClazz?
-        when factoryClazz is FactoryClazz<BeanT>) {
+    if (_beans[effectiveQualifierName]
+        case final FactoryClazz<BeanT> factoryClazz?) {
       factoryClazz.interceptors = [
         ...factoryClazz.interceptors ?? [],
         ...interceptors

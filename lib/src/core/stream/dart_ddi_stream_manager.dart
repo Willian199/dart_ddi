@@ -5,16 +5,22 @@ final class _DDIStreamManager implements DDIStream {
 
   @override
   void close<StreamTypeT extends Object>({Object? qualifier}) {
-    if (_streamMap.containsKey(qualifier)) {
-      _streamMap[qualifier]?.close();
+    final Object effectiveQualifierName = qualifier ?? StreamTypeT;
 
-      _streamMap.remove(qualifier);
+    if (_streamMap[effectiveQualifierName] case final str?) {
+      str.close();
+
+      _streamMap.remove(effectiveQualifierName);
+    } else {
+      throw StreamNotFound(effectiveQualifierName.toString());
     }
   }
 
   @override
-  void fire<StreamTypeT extends Object>(
-      {required StreamTypeT value, Object? qualifier}) {
+  void fire<StreamTypeT extends Object>({
+    required StreamTypeT value,
+    Object? qualifier,
+  }) {
     _getStream<StreamTypeT>(qualifier: qualifier).fire(value);
   }
 
@@ -36,17 +42,20 @@ final class _DDIStreamManager implements DDIStream {
       callback,
       registerIf: registerIf,
       unsubscribeAfterFire: unsubscribeAfterFire,
+      qualifier: qualifier,
     );
   }
 
   @override
-  Stream<StreamTypeT> getStream<StreamTypeT extends Object>(
-      {Object? qualifier}) {
+  Stream<StreamTypeT> getStream<StreamTypeT extends Object>({
+    Object? qualifier,
+  }) {
     return _getStream<StreamTypeT>(qualifier: qualifier).getStream();
   }
 
-  DDIStreamCore<StreamTypeT> _getStream<StreamTypeT extends Object>(
-      {Object? qualifier}) {
+  DDIStreamCore<StreamTypeT> _getStream<StreamTypeT extends Object>({
+    Object? qualifier,
+  }) {
     final Object effectiveQualifierName = qualifier ?? StreamTypeT;
 
     final DDIStreamCore? stream = _streamMap[effectiveQualifierName];

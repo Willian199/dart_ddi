@@ -107,12 +107,8 @@ class _DDIEventImpl implements DDIEvent {
   }) {
     final effectiveQualifierName = qualifier ?? EventTypeT;
 
-    //Without the cast, removeWhere fails beacause the type is Event<dynamic>
-    final eventsList =
-        _events[effectiveQualifierName]?.cast<Event<EventTypeT>>();
-
-    if (eventsList != null) {
-      eventsList.removeWhere(
+    if (_events[effectiveQualifierName] case final eventsList?) {
+      eventsList.cast<Event<EventTypeT>>().removeWhere(
           (e) => e.allowUnsubscribe && e.event.hashCode == event.hashCode);
     }
   }
@@ -121,13 +117,11 @@ class _DDIEventImpl implements DDIEvent {
   void fire<EventTypeT extends Object>(EventTypeT value, {Object? qualifier}) {
     final effectiveQualifierName = qualifier ?? EventTypeT;
 
-    final eventsList =
-        _events[effectiveQualifierName]?.cast<Event<EventTypeT>>();
-
-    if (eventsList != null) {
+    if (_events[effectiveQualifierName] case final eventsList?) {
       final eventsToRemove = <Event<EventTypeT>>[];
 
-      for (final Event<EventTypeT> event in eventsList) {
+      for (final Event<EventTypeT> event
+          in eventsList.cast<Event<EventTypeT>>()) {
         event.mode.execute<EventTypeT>(event.event, value);
 
         if (event.unsubscribeAfterFire) {
@@ -136,7 +130,7 @@ class _DDIEventImpl implements DDIEvent {
       }
 
       for (final Event<EventTypeT> event in eventsToRemove) {
-        _events[effectiveQualifierName]?.remove(event);
+        eventsList.remove(event);
       }
     }
   }
