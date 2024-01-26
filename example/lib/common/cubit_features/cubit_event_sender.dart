@@ -8,7 +8,8 @@ class CubitSender<State extends Object> extends Cubit<State> {
   void fire(State state) {
     debugPrint('emitindo evento $this');
 
-    DDIEvent.instance.fire<State>(state);
+    //DDIEvent.instance.fire<State>(state);
+    DDIStream.instance.fire<State>(value: state);
 
     super.emit(state);
   }
