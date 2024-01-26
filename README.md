@@ -13,6 +13,14 @@ and the Flutter guide for
 
 # Dart Dependency Injection (DDI) Library
 
+[![pub package](https://img.shields.io/pub/v/dart_ddi.svg?logo=dart&logoColor=00b9fc)](https://pub.dartlang.org/packages/dart_ddi)
+[![CI](https://img.shields.io/github/actions/workflow/status/Willian199/dart_ddi/dart.yml?branch=master&logo=github-actions&logoColor=white)](https://github.com/Willian199/dart_ddi/actions)
+[![Last Commits](https://img.shields.io/github/last-commit/Willian199/dart_ddi?logo=git&logoColor=white)](https://github.com/Willian199/dart_ddi/commits/master)
+[![Issues](https://img.shields.io/github/issues/Willian199/dart_ddi?logo=github&logoColor=white)](https://github.com/Willian199/dart_ddi/issues)
+[![Pull Requests](https://img.shields.io/github/issues-pr/Willian199/dart_ddi?logo=github&logoColor=white)](https://github.com/Willian199/dart_ddi/pulls)
+[![Code size](https://img.shields.io/github/languages/code-size/Willian199/dart_ddi?logo=github&logoColor=white)](https://github.com/Willian199/dart_ddi)
+[![License](https://img.shields.io/github/license/Willian199/dart_ddi?logo=open-source-initiative&logoColor=green)](https://github.com/Willian199/dart_ddi/blob/master/LICENSE)
+
 ## Overview
 
 The Dart Dependency Injection (DDI) library is a robust and flexible dependency injection mechanism inspired by the Contexts and Dependency Injection (CDI) framework in Java and by Get_It dart package. DDI facilitates the management of object instances and their lifecycles by introducing different scopes and customization options. This documentation aims to provide an in-depth understanding of DDI's core concepts, usage, and features.
@@ -49,12 +57,12 @@ Summary
    4. [Firing an Event](#firing-an-event)
    5. [Events Considerations](#events-considerations)
    6. [Use Cases](#use-cases)
-7.  [Stream](#stream)
+7. [Stream](#stream)
    1. [Subscription](#subscription)
    2. [Closing Stream](#closing-stream)
    3. [Firing Events](#firing-events)
    4. [Retrieving Stream](#retrieving-stream)
-8. [API Reference](#api-reference)
+9. [API Reference](#api-reference)
    1. [registerSingleton](#registersingleton)
    2. [registerApplication](#registerapplication)
    3. [registerDependent](#registerdependent)
@@ -464,6 +472,7 @@ DDIEvent.instance.subscribeIsolate<String>(
   unsubscribeAfterFire: false,
   runAsIsolate: false,
 );
+```
 
 ### Unsubscribing an Event
 
