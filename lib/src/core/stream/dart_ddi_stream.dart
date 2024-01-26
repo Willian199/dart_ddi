@@ -40,5 +40,6 @@ abstract final class DDIStream {
   /// Retrieves a stream of type [StreamTypeT].
   ///
   /// - `qualifier`: An optional qualifier to specify the desired stream.
-  Stream<StreamTypeT> getStream<StreamTypeT extends Object>({Object? qualifier});
+  Stream<StreamTypeT> getStream<StreamTypeT extends Object>(
+      {Object? qualifier});
 }
