@@ -6,7 +6,7 @@ import 'package:perfumei/modules/item/state/tab_state.dart';
 class TabCubit extends CubitListener<TabState, PerfumeState> {
   TabCubit()
       : super(
-          initialState: TabState(
+          TabState(
             page: NotasEnum.TOPO.posicao,
             tabSelecionada: {NotasEnum.TOPO},
           ),
