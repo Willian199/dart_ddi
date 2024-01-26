@@ -162,9 +162,9 @@ abstract class DDI {
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
   BeanT get<BeanT extends Object>({Object? qualifier});
 
-  /// Retrieves a list of keys associated with objects of a specific type `T`.
+  /// Retrieves a list of keys associated with objects of a specific type BeanT`.
   ///
-  /// This method allows you to obtain all keys (qualifier names) that have been used to register objects of the specified type `T`.
+  /// This method allows you to obtain all keys (qualifier names) that have been used to register objects of the specified type `BeanT`.
   List<Object> getByType<BeanT extends Object>();
 
   /// Gets an instance of the registered class in [DDI].
@@ -180,7 +180,7 @@ abstract class DDI {
   /// Removes all the instance registered as Session Scope.
   void destroyAllSession();
 
-  /// Removes all the instance registered as type `T`.
+  /// Removes all the instance registered as type `BeanT`.
   void destroyByType<BeanT extends Object>();
 
   /// Disposes of the instance of the registered class in [DDI].
@@ -191,7 +191,7 @@ abstract class DDI {
   /// Disposes all the instance registered as Session Scope.
   void disposeAllSession();
 
-  /// Disposes all the instance registered as type `T`.
+  /// Disposes all the instance registered as type `BeanT`.
   void disposeByType<BeanT extends Object>();
 
   /// Allows to dynamically add a Decorators.

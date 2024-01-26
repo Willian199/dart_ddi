@@ -263,27 +263,27 @@ The Interceptor is a powerful mechanism that provides fine-grained control over 
 #### Example Usage
 
  ```dart
- class CustomInterceptor<T> extends DDIInterceptor<T> {
+ class CustomInterceptor<BeanT> extends DDIInterceptor<BeanT> {
    @override
-   T aroundConstruct(T instance) {
+   BeanT aroundConstruct(BeanT instance) {
      // Logic to customize or replace instance creation.
      return CustomizedInstance();
    }
 
    @override
-   T aroundGet(T instance) {
+   BeanT aroundGet(BeanT instance) {
      // Logic to customize the behavior of the retrieved instance.
      return ModifiedInstance(instance);
    }
 
    @override
-   void aroundDestroy(T instance) {
+   void aroundDestroy(BeanT instance) {
      // Logic to perform cleanup during instance destruction.
      // This method is optional and can be overridden as needed.
    }
 
    @override
-   void aroundDispose(T instance) {
+   void aroundDispose(BeanT instance) {
      // Logic to release resources or perform custom cleanup during instance disposal.
      // This method is optional and can be overridden as needed.
    }
@@ -572,28 +572,28 @@ Stream<StreamTypeT> getStream<StreamTypeT extends Object>(
 Registers a singleton instance. The `clazzRegister` parameter is a factory function to create the instance. Optional parameters allow customization of the instance's behavior and lifecycle.
 
 ```dart
-void registerSingleton<T extends Object>(
-  T Function() clazzRegister, {
+void registerSingleton<BeanT extends Object>(
+  BeanT Function() clazzRegister, {
   Object? qualifier,
   void Function()? postConstruct,
-  List<T Function(T)>? decorators,
-  List<DDIInterceptor<T> Function()>? interceptors,
+  List<BeanT Function(BeanT)>? decorators,
+  List<DDIInterceptor<BeanT> Function()>? interceptors,
   bool Function()? registerIf,
   bool destroyable = true,
 });
 ```
 
-## registerApplication<T>
+## registerApplication<BeanT>
 
 Registers an application-scoped instance. The instance is created when first used and reused afterward.
 
 ```dart
-void registerApplication<T extends Object>(
-  T Function() clazzRegister, {
+void registerApplication<BeanT extends Object>(
+  BeanT Function() clazzRegister, {
   Object? qualifier,
   void Function()? postConstruct,
-  List<T Function(T)>? decorators,
-  List<DDIInterceptor<T> Function()>? interceptors,
+  List<BeanT Function(BeanT)>? decorators,
+  List<DDIInterceptor<BeanT> Function()>? interceptors,
   bool Function()? registerIf,
   bool destroyable = true,
 });
@@ -604,12 +604,12 @@ void registerApplication<T extends Object>(
 Registers a dependent instance. A new instance is created every time it is used.
 
 ```dart
-void registerDependent<T extends Object>(
-  T Function() clazzRegister, {
+void registerDependent<BeanT extends Object>(
+  BeanT Function() clazzRegister, {
   Object? qualifier,
   void Function()? postConstruct,
-  List<T Function(T)>? decorators,
-  List<DDIInterceptor<T> Function()>? interceptors,
+  List<BeanT Function(BeanT)>? decorators,
+  List<DDIInterceptor<BeanT> Function()>? interceptors,
   bool Function()? registerIf,
   bool destroyable = true,
 });
@@ -620,12 +620,12 @@ void registerDependent<T extends Object>(
 Registers a session-scoped instance. The instance is tied to a specific session.
 
 ```dart
-void registerSession<T extends Object>(
-  T Function() clazzRegister, {
+void registerSession<BeanT extends Object>(
+  BeanT Function() clazzRegister, {
   Object? qualifier,
   void Function()? postConstruct,
-  List<T Function(T)>? decorators,
-  List<DDIInterceptor<T> Function()>? interceptors,
+  List<BeanT Function(BeanT)>? decorators,
+  List<DDIInterceptor<BeanT> Function()>? interceptors,
   bool Function()? registerIf,
   bool destroyable = true,
 });
@@ -636,12 +636,12 @@ void registerSession<T extends Object>(
 Registers an Object values as instance. The `register` parameter is the value shared across de application.
 
 ```dart
-void registerObject<T extends Object>({
+void registerObject<BeanT extends Object>({
   required Object qualifier,
-  required T register,
+  required BeanT register,
   void Function()? postConstruct,
-  List<T Function(T)>? decorators,
-  List<DDIInterceptor<T> Function()>? interceptors,
+  List<BeanT Function(BeanT)>? decorators,
+  List<DDIInterceptor<BeanT> Function()>? interceptors,
   bool Function()? registerIf,
   bool destroyable = true,
 });
@@ -649,26 +649,26 @@ void registerObject<T extends Object>({
 
 ## get
 
-Retrieves an instance of type T from the appropriate scope. You can provide a `qualifier` to distinguish between instances of the same type.
+Retrieves an instance of type BeanT from the appropriate scope. You can provide a `qualifier` to distinguish between instances of the same type.
 
 ```dart
-T get<T extends Object>({Object? qualifier});
+BeanT get<BeanT extends Object>({Object? qualifier});
 ```
 
 ## getByType
 
-Retrieves all instance identifiers of type T from each scope.
+Retrieves all instance identifiers of type BeanT from each scope.
 
 ```dart
-List<Object> getByType<T extends Object>();
+List<Object> getByType<BeanT extends Object>();
 ```
 
 ## call
 
-A shorthand for get<T>(), allowing a more concise syntax for obtaining instances.
+A shorthand for get<BeanT>(), allowing a more concise syntax for obtaining instances.
 
 ```dart
-T call<T extends Object>();
+BeanT call<BeanT extends Object>();
 ```
 
 ## destroy
@@ -676,15 +676,15 @@ T call<T extends Object>();
 Destroy an instance from the container. Useful for manual cleanup.
 
 ```dart
-void destroy<T>({Object? qualifier});
+void destroy<BeanT>({Object? qualifier});
 ```
 
 ## destroyByType
 
-Destroy all instance with type `T`.
+Destroy all instance with type `BeanT`.
 
 ```dart
-void destroyByType<T extends Object>();
+void destroyByType<BeanT extends Object>();
 ```
 
 ## dispose
@@ -692,15 +692,15 @@ void destroyByType<T extends Object>();
 Disposes of an instance, invoking any cleanup logic. This is particularly useful for instances with resources that need to be released. Only applied to Application and Session Scopes
 
 ```dart
-void dispose<T>({Object? qualifier});
+void dispose<BeanT>({Object? qualifier});
 ```
 
 ## disposeByType
 
-Disposes all instance with type `T`. Only applied to Application and Session Scopes
+Disposes all instance with type `BeanT`. Only applied to Application and Session Scopes
 
 ```dart
-void disposeByType<T extends Object>();
+void disposeByType<BeanT extends Object>();
 ```
 
 ## addDecorator
@@ -709,21 +709,21 @@ This provides a dynamic way to enhance the behavior of registered instances by a
 When using the addDecorator method, keep in mind the order of execution, scope considerations, and the fact that instances already obtained remain unaffected. 
 
 ```dart
-void addDecorator<T extends Object>(List<T Function(T)> decorators, {Object? qualifier});
+void addDecorator<BeanT extends Object>(List<BeanT Function(BeanT)> decorators, {Object? qualifier});
 ```
 
 ## addInterceptor
 
 This feature allows you to dynamically influence the instantiation, retrieval, destruction, and disposal of instances by adding custom interceptors. The `addInterceptor` method enables you to associate specific interceptors with particular types.
 ```dart
-void addInterceptor<T extends Object>(List<DDIInterceptor<T> Function()> interceptors, {Object? qualifier});
+void addInterceptor<BeanT extends Object>(List<DDIInterceptor<BeanT> Function()> interceptors, {Object? qualifier});
 ```
 
 ## refreshObject
 
 Enables the dynamic refreshing of an object within the Object Scope. Use it to update the existing object without affecting instances already obtained.
 ```dart
-void refreshObject<T extends Object>({required Object qualifier, required T register,
+void refreshObject<BeanT extends Object>({required Object qualifier, required BeanT register,
 });
 ```
 
