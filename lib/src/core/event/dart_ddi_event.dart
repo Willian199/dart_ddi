@@ -1,5 +1,6 @@
 import 'package:dart_ddi/src/data/event.dart';
 import 'package:dart_ddi/src/enum/event_mode.dart';
+import 'package:dart_ddi/src/exception/event_not_found.dart';
 
 part 'dart_ddi_event_impl.dart';
 

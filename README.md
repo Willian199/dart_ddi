@@ -13,6 +13,14 @@ and the Flutter guide for
 
 # Dart Dependency Injection (DDI) Library
 
+[![pub package](https://img.shields.io/pub/v/dart_ddi.svg?logo=dart&logoColor=00b9fc)](https://pub.dartlang.org/packages/dart_ddi)
+[![CI](https://img.shields.io/github/actions/workflow/status/Willian199/dart_ddi/dart.yml?branch=master&logo=github-actions&logoColor=white)](https://github.com/Willian199/dart_ddi/actions)
+[![Last Commits](https://img.shields.io/github/last-commit/Willian199/dart_ddi?logo=git&logoColor=white)](https://github.com/Willian199/dart_ddi/commits/master)
+[![Issues](https://img.shields.io/github/issues/Willian199/dart_ddi?logo=github&logoColor=white)](https://github.com/Willian199/dart_ddi/issues)
+[![Pull Requests](https://img.shields.io/github/issues-pr/Willian199/dart_ddi?logo=github&logoColor=white)](https://github.com/Willian199/dart_ddi/pulls)
+[![Code size](https://img.shields.io/github/languages/code-size/Willian199/dart_ddi?logo=github&logoColor=white)](https://github.com/Willian199/dart_ddi)
+[![License](https://img.shields.io/github/license/Willian199/dart_ddi?logo=open-source-initiative&logoColor=green)](https://github.com/Willian199/dart_ddi/blob/master/LICENSE)
+
 ## Overview
 
 The Dart Dependency Injection (DDI) library is a robust and flexible dependency injection mechanism inspired by the Contexts and Dependency Injection (CDI) framework in Java and by Get_It dart package. DDI facilitates the management of object instances and their lifecycles by introducing different scopes and customization options. This documentation aims to provide an in-depth understanding of DDI's core concepts, usage, and features.
@@ -49,7 +57,12 @@ Summary
    4. [Firing an Event](#firing-an-event)
    5. [Events Considerations](#events-considerations)
    6. [Use Cases](#use-cases)
-7. [API Reference](#api-reference)
+7. [Stream](#stream)
+   1. [Subscription](#subscription)
+   2. [Closing Stream](#closing-stream)
+   3. [Firing Events](#firing-events)
+   4. [Retrieving Stream](#retrieving-stream)
+9. [API Reference](#api-reference)
    1. [registerSingleton](#registersingleton)
    2. [registerApplication](#registerapplication)
    3. [registerDependent](#registerdependent)
@@ -258,27 +271,27 @@ The Interceptor is a powerful mechanism that provides fine-grained control over 
 #### Example Usage
 
  ```dart
- class CustomInterceptor<T> extends DDIInterceptor<T> {
+ class CustomInterceptor<BeanT> extends DDIInterceptor<BeanT> {
    @override
-   T aroundConstruct(T instance) {
+   BeanT aroundConstruct(BeanT instance) {
      // Logic to customize or replace instance creation.
      return CustomizedInstance();
    }
 
    @override
-   T aroundGet(T instance) {
+   BeanT aroundGet(BeanT instance) {
      // Logic to customize the behavior of the retrieved instance.
      return ModifiedInstance(instance);
    }
 
    @override
-   void aroundDestroy(T instance) {
+   void aroundDestroy(BeanT instance) {
      // Logic to perform cleanup during instance destruction.
      // This method is optional and can be overridden as needed.
    }
 
    @override
-   void aroundDispose(T instance) {
+   void aroundDispose(BeanT instance) {
      // Logic to release resources or perform custom cleanup during instance disposal.
      // This method is optional and can be overridden as needed.
    }
@@ -389,7 +402,7 @@ The Events follow a straightforward flow. Functions or methods `subscribe` to sp
 ### Subscribing an Event
 When subscribing to an event, you have the option to choose from three different types of subscriptions:  `subscribe`, `subscribeAsync` and `subscribeIsolate`.
 
-**subscribe**
+#### subscribe
 The common subscription type, subscribe, functions as a simple callback. It allows you to respond to events in a synchronous manner, making it suitable for most scenarios.
 
 - `DDIEvent.instance.subscribe` It's the common type, working as a simples callback.
@@ -420,7 +433,7 @@ DDIEvent.instance.subscribe<String>(
 );
 ```
 
-**subscribeAsync**
+#### subscribeAsync
 The subscribeAsync type runs the callback as a Future, allowing for asynchronous event handling. Making it suitable for scenarios where asynchronous execution is needed without waiting for completion.
 Note that it not be possible to await this type of subscription.
 
@@ -441,7 +454,7 @@ DDIEvent.instance.subscribeAsync<String>(
 );
 ```
 
-**subscribeIsolate**
+#### subscribeIsolate
 The subscribeIsolate type runs the callback in a separate isolate, enabling concurrent event handling. This is particularly useful for scenarios where you want to execute the event in isolation, avoiding potential interference with the main application flow.
 
 Parameters are the same as for `subscribe`.
@@ -459,6 +472,7 @@ DDIEvent.instance.subscribeIsolate<String>(
   unsubscribeAfterFire: false,
   runAsIsolate: false,
 );
+```
 
 ### Unsubscribing an Event
 
@@ -497,6 +511,69 @@ See the considerations about [Qualifiers](#considerations).
 
 `Background Task`: Coordinate background tasks and events for efficient task execution.
 
+# Stream
+
+The `DDIStream` abstract class in serves as a foundation for managing streams efficiently within the application. This class provides methods for subscribing, closing, and firing events through streams. Below are the key features and usage guidelines for the DDIStream abstract class.
+
+## Subscription
+
+Use `subscribe` to register a callback function that will be invoked when the stream emits a value. This method supports optional qualifiers, conditional registration, and automatic unsubscription after the first invocation.
+
+Subscribes to a stream of type `StreamTypeT`.
+
+- `callback`: A function to be invoked when the stream emits a value.
+- `qualifier`: An optional qualifier to distinguish between different streams of the same type.
+- `registerIf`: An optional function to conditionally register the subscription.
+- `unsubscribeAfterFire`: If true, unsubscribes the callback after it is invoked once.
+
+```dart
+void subscribe<StreamTypeT extends Object>({
+  required void Function(StreamTypeT) callback,
+  Object? qualifier,
+  bool Function()? registerIf,
+  bool unsubscribeAfterFire = false,
+});
+```
+
+## Closing Stream
+
+Use `close` to end the subscription to a specific stream, allowing for efficient resource management.
+
+Closes the subscription to a stream of type `StreamTypeT`.
+- `qualifier`: An optional qualifier to distinguish between different streams of the same type.
+
+```dart
+void close<StreamTypeT extends Object>({Object? qualifier});
+```
+
+## Firing Events
+
+Use `fire` to sends a value into the stream, triggering the subscribed callbacks. You can specify the target stream using the optional qualifier.
+
+Fires a value into the stream of type `StreamTypeT`.
+- `value`: The value to be emitted into the stream.
+- `qualifier`: An optional qualifier to distinguish between different streams of the same type.
+
+```dart
+void fire<StreamTypeT extends Object>({
+  required StreamTypeT value,
+  Object? qualifier,
+});
+```
+
+## Retrieving Stream
+
+Use `getStream` to obtain a stream, providing access for further interactions. The optional qualifier allows you to retrieve a specific stream.
+
+Retrieves a stream of type `StreamTypeT`.
+- `qualifier`: An optional qualifier to distinguish between different streams of the same type.
+
+```dart
+Stream<StreamTypeT> getStream<StreamTypeT extends Object>(
+    {Object? qualifier});
+
+```
+
 # API Reference
 
 ## registerSingleton
@@ -504,28 +581,28 @@ See the considerations about [Qualifiers](#considerations).
 Registers a singleton instance. The `clazzRegister` parameter is a factory function to create the instance. Optional parameters allow customization of the instance's behavior and lifecycle.
 
 ```dart
-void registerSingleton<T extends Object>(
-  T Function() clazzRegister, {
+void registerSingleton<BeanT extends Object>(
+  BeanT Function() clazzRegister, {
   Object? qualifier,
   void Function()? postConstruct,
-  List<T Function(T)>? decorators,
-  List<DDIInterceptor<T> Function()>? interceptors,
+  List<BeanT Function(BeanT)>? decorators,
+  List<DDIInterceptor<BeanT> Function()>? interceptors,
   bool Function()? registerIf,
   bool destroyable = true,
 });
 ```
 
-## registerApplication<T>
+## registerApplication<BeanT>
 
 Registers an application-scoped instance. The instance is created when first used and reused afterward.
 
 ```dart
-void registerApplication<T extends Object>(
-  T Function() clazzRegister, {
+void registerApplication<BeanT extends Object>(
+  BeanT Function() clazzRegister, {
   Object? qualifier,
   void Function()? postConstruct,
-  List<T Function(T)>? decorators,
-  List<DDIInterceptor<T> Function()>? interceptors,
+  List<BeanT Function(BeanT)>? decorators,
+  List<DDIInterceptor<BeanT> Function()>? interceptors,
   bool Function()? registerIf,
   bool destroyable = true,
 });
@@ -536,12 +613,12 @@ void registerApplication<T extends Object>(
 Registers a dependent instance. A new instance is created every time it is used.
 
 ```dart
-void registerDependent<T extends Object>(
-  T Function() clazzRegister, {
+void registerDependent<BeanT extends Object>(
+  BeanT Function() clazzRegister, {
   Object? qualifier,
   void Function()? postConstruct,
-  List<T Function(T)>? decorators,
-  List<DDIInterceptor<T> Function()>? interceptors,
+  List<BeanT Function(BeanT)>? decorators,
+  List<DDIInterceptor<BeanT> Function()>? interceptors,
   bool Function()? registerIf,
   bool destroyable = true,
 });
@@ -552,12 +629,12 @@ void registerDependent<T extends Object>(
 Registers a session-scoped instance. The instance is tied to a specific session.
 
 ```dart
-void registerSession<T extends Object>(
-  T Function() clazzRegister, {
+void registerSession<BeanT extends Object>(
+  BeanT Function() clazzRegister, {
   Object? qualifier,
   void Function()? postConstruct,
-  List<T Function(T)>? decorators,
-  List<DDIInterceptor<T> Function()>? interceptors,
+  List<BeanT Function(BeanT)>? decorators,
+  List<DDIInterceptor<BeanT> Function()>? interceptors,
   bool Function()? registerIf,
   bool destroyable = true,
 });
@@ -568,12 +645,12 @@ void registerSession<T extends Object>(
 Registers an Object values as instance. The `register` parameter is the value shared across de application.
 
 ```dart
-void registerObject<T extends Object>({
+void registerObject<BeanT extends Object>({
   required Object qualifier,
-  required T register,
+  required BeanT register,
   void Function()? postConstruct,
-  List<T Function(T)>? decorators,
-  List<DDIInterceptor<T> Function()>? interceptors,
+  List<BeanT Function(BeanT)>? decorators,
+  List<DDIInterceptor<BeanT> Function()>? interceptors,
   bool Function()? registerIf,
   bool destroyable = true,
 });
@@ -581,26 +658,26 @@ void registerObject<T extends Object>({
 
 ## get
 
-Retrieves an instance of type T from the appropriate scope. You can provide a `qualifier` to distinguish between instances of the same type.
+Retrieves an instance of type BeanT from the appropriate scope. You can provide a `qualifier` to distinguish between instances of the same type.
 
 ```dart
-T get<T extends Object>({Object? qualifier});
+BeanT get<BeanT extends Object>({Object? qualifier});
 ```
 
 ## getByType
 
-Retrieves all instance identifiers of type T from each scope.
+Retrieves all instance identifiers of type BeanT from each scope.
 
 ```dart
-List<Object> getByType<T extends Object>();
+List<Object> getByType<BeanT extends Object>();
 ```
 
 ## call
 
-A shorthand for get<T>(), allowing a more concise syntax for obtaining instances.
+A shorthand for get<BeanT>(), allowing a more concise syntax for obtaining instances.
 
 ```dart
-T call<T extends Object>();
+BeanT call<BeanT extends Object>();
 ```
 
 ## destroy
@@ -608,15 +685,15 @@ T call<T extends Object>();
 Destroy an instance from the container. Useful for manual cleanup.
 
 ```dart
-void destroy<T>({Object? qualifier});
+void destroy<BeanT>({Object? qualifier});
 ```
 
 ## destroyByType
 
-Destroy all instance with type `T`.
+Destroy all instance with type `BeanT`.
 
 ```dart
-void destroyByType<T extends Object>();
+void destroyByType<BeanT extends Object>();
 ```
 
 ## dispose
@@ -624,15 +701,15 @@ void destroyByType<T extends Object>();
 Disposes of an instance, invoking any cleanup logic. This is particularly useful for instances with resources that need to be released. Only applied to Application and Session Scopes
 
 ```dart
-void dispose<T>({Object? qualifier});
+void dispose<BeanT>({Object? qualifier});
 ```
 
 ## disposeByType
 
-Disposes all instance with type `T`. Only applied to Application and Session Scopes
+Disposes all instance with type `BeanT`. Only applied to Application and Session Scopes
 
 ```dart
-void disposeByType<T extends Object>();
+void disposeByType<BeanT extends Object>();
 ```
 
 ## addDecorator
@@ -641,21 +718,21 @@ This provides a dynamic way to enhance the behavior of registered instances by a
 When using the addDecorator method, keep in mind the order of execution, scope considerations, and the fact that instances already obtained remain unaffected. 
 
 ```dart
-void addDecorator<T extends Object>(List<T Function(T)> decorators, {Object? qualifier});
+void addDecorator<BeanT extends Object>(List<BeanT Function(BeanT)> decorators, {Object? qualifier});
 ```
 
 ## addInterceptor
 
 This feature allows you to dynamically influence the instantiation, retrieval, destruction, and disposal of instances by adding custom interceptors. The `addInterceptor` method enables you to associate specific interceptors with particular types.
 ```dart
-void addInterceptor<T extends Object>(List<DDIInterceptor<T> Function()> interceptors, {Object? qualifier});
+void addInterceptor<BeanT extends Object>(List<DDIInterceptor<BeanT> Function()> interceptors, {Object? qualifier});
 ```
 
 ## refreshObject
 
 Enables the dynamic refreshing of an object within the Object Scope. Use it to update the existing object without affecting instances already obtained.
 ```dart
-void refreshObject<T extends Object>({required Object qualifier, required T register,
+void refreshObject<BeanT extends Object>({required Object qualifier, required BeanT register,
 });
 ```
 

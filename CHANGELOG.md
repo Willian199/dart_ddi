@@ -1,3 +1,11 @@
+## 0.3.0
+
+* Migrating from flutter_test and flutter_lints to test and lints.
+* Added support for Streams.
+* Refactor Events behavior.
+* Exceptions and code improvements.
+
+
 ## 0.2.0
 
 * Added Mixin PostConstruct with execution after class construction.
