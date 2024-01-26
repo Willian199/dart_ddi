@@ -497,6 +497,69 @@ See the considerations about [Qualifiers](#considerations).
 
 `Background Task`: Coordinate background tasks and events for efficient task execution.
 
+# Stream
+
+The `DDIStream` abstract class in serves as a foundation for managing streams efficiently within the application. This class provides methods for subscribing, closing, and firing events through streams. Below are the key features and usage guidelines for the DDIStream abstract class.
+
+## Subscription
+
+Use `subscribe` to register a callback function that will be invoked when the stream emits a value. This method supports optional qualifiers, conditional registration, and automatic unsubscription after the first invocation.
+
+Subscribes to a stream of type `StreamTypeT`.
+
+- `callback`: A function to be invoked when the stream emits a value.
+- `qualifier`: An optional qualifier to distinguish between different streams of the same type.
+- `registerIf`: An optional function to conditionally register the subscription.
+- `unsubscribeAfterFire`: If true, unsubscribes the callback after it is invoked once.
+
+```dart
+void subscribe<StreamTypeT extends Object>({
+  required void Function(StreamTypeT) callback,
+  Object? qualifier,
+  bool Function()? registerIf,
+  bool unsubscribeAfterFire = false,
+});
+```
+
+## Closing Stream
+
+Use `close` to end the subscription to a specific stream, allowing for efficient resource management.
+
+Closes the subscription to a stream of type `StreamTypeT`.
+- `qualifier`: An optional qualifier to distinguish between different streams of the same type.
+
+```dart
+void close<StreamTypeT extends Object>({Object? qualifier});
+```
+
+## Firing Events
+
+Use `fire` to sends a value into the stream, triggering the subscribed callbacks. You can specify the target stream using the optional qualifier.
+
+Fires a value into the stream of type `StreamTypeT`.
+- `value`: The value to be emitted into the stream.
+- `qualifier`: An optional qualifier to distinguish between different streams of the same type.
+
+```dart
+void fire<StreamTypeT extends Object>({
+  required StreamTypeT value,
+  Object? qualifier,
+});
+```
+
+## Retrieving Stream
+
+Use `getStream` to obtain a stream, providing access for further interactions. The optional qualifier allows you to retrieve a specific stream.
+
+Retrieves a stream of type `StreamTypeT`.
+- `qualifier`: An optional qualifier to distinguish between different streams of the same type.
+
+```dart
+Stream<StreamTypeT> getStream<StreamTypeT extends Object>(
+    {Object? qualifier});
+
+```
+
 # API Reference
 
 ## registerSingleton
