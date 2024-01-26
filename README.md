@@ -49,6 +49,11 @@ Summary
    4. [Firing an Event](#firing-an-event)
    5. [Events Considerations](#events-considerations)
    6. [Use Cases](#use-cases)
+7  [Stream](#stream)
+   1. [Subscription](#subscription)
+   2. [Closing Stream](#closing-stream)
+   3. [Firing Events](#firing-events)
+   4. [Retrieving Stream](#retrieving-stream)
 7. [API Reference](#api-reference)
    1. [registerSingleton](#registersingleton)
    2. [registerApplication](#registerapplication)
@@ -389,7 +394,7 @@ The Events follow a straightforward flow. Functions or methods `subscribe` to sp
 ### Subscribing an Event
 When subscribing to an event, you have the option to choose from three different types of subscriptions:  `subscribe`, `subscribeAsync` and `subscribeIsolate`.
 
-**subscribe**
+#### subscribe
 The common subscription type, subscribe, functions as a simple callback. It allows you to respond to events in a synchronous manner, making it suitable for most scenarios.
 
 - `DDIEvent.instance.subscribe` It's the common type, working as a simples callback.
@@ -420,7 +425,7 @@ DDIEvent.instance.subscribe<String>(
 );
 ```
 
-**subscribeAsync**
+#### subscribeAsync
 The subscribeAsync type runs the callback as a Future, allowing for asynchronous event handling. Making it suitable for scenarios where asynchronous execution is needed without waiting for completion.
 Note that it not be possible to await this type of subscription.
 
@@ -441,7 +446,7 @@ DDIEvent.instance.subscribeAsync<String>(
 );
 ```
 
-**subscribeIsolate**
+#### subscribeIsolate
 The subscribeIsolate type runs the callback in a separate isolate, enabling concurrent event handling. This is particularly useful for scenarios where you want to execute the event in isolation, avoiding potential interference with the main application flow.
 
 Parameters are the same as for `subscribe`.
