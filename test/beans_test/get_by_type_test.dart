@@ -9,7 +9,6 @@ import '../clazz_samples/i.dart';
 void runByType() {
   group('DDI Process By Type', () {
     test('Application Get bean by Type that have registered and dispose', () {
-      ///Where is Singleton, should the register in the correct order
       DDI.instance.registerApplication<G>(() => H(), qualifier: 'firtsClass');
 
       final List<Object> keys1 = DDI.instance.getByType<G>();
@@ -36,7 +35,6 @@ void runByType() {
     });
 
     test('Dependent Get bean by Type that have registered and dispose', () {
-      ///Where is Singleton, should the register in the correct order
       DDI.instance.registerDependent<G>(() => H(), qualifier: 'firtsClass');
 
       final List<Object> keys1 = DDI.instance.getByType<G>();
@@ -63,7 +61,6 @@ void runByType() {
     });
 
     test('Session Get bean by Type that have registered and dispose', () {
-      ///Where is Singleton, should the register in the correct order
       DDI.instance.registerSession<G>(() => H(), qualifier: 'firtsClass');
 
       final List<Object> keys1 = DDI.instance.getByType<G>();

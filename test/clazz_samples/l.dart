@@ -6,7 +6,7 @@ class L with PostConstruct, PreDestroy {
 
   @override
   void onPostConstruct() {
-    print("Do you know how to test");
+    value = 'abcd';
   }
 
   @override

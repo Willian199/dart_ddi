@@ -8,7 +8,9 @@ void postConstructPreDestroyTest() {
     test('Regsiter a Singleton bean with PostConstruct  and PreDestroy', () {
       DDI.instance.registerSingleton(() => L());
 
-      DDI.instance.get<L>();
+      final L instance = DDI.instance.get();
+
+      expect('abcd', instance.value);
 
       DDI.instance.destroy<L>();
     });
@@ -16,7 +18,9 @@ void postConstructPreDestroyTest() {
     test('Regsiter a Applcation bean with PostConstruct  and PreDestroy', () {
       DDI.instance.registerApplication(() => L());
 
-      DDI.instance.get<L>();
+      final L instance = DDI.instance.get();
+
+      expect('abcd', instance.value);
 
       DDI.instance.destroy<L>();
     });
@@ -24,7 +28,9 @@ void postConstructPreDestroyTest() {
     test('Regsiter a Session bean with PostConstruct  and PreDestroy', () {
       DDI.instance.registerSession(() => L());
 
-      DDI.instance.get<L>();
+      final L instance = DDI.instance.get();
+
+      expect('abcd', instance.value);
 
       DDI.instance.destroy<L>();
     });
@@ -32,7 +38,9 @@ void postConstructPreDestroyTest() {
     test('Regsiter a Dependent bean with PostConstruct  and PreDestroy', () {
       DDI.instance.registerDependent(() => L());
 
-      DDI.instance.get<L>();
+      final L instance = DDI.instance.get();
+
+      expect('abcd', instance.value);
 
       DDI.instance.destroy<L>();
     });
@@ -40,7 +48,9 @@ void postConstructPreDestroyTest() {
     test('Regsiter a Object bean with PostConstruct  and PreDestroy', () {
       DDI.instance.registerObject(L());
 
-      DDI.instance.get<L>();
+      final L instance = DDI.instance.get();
+
+      expect('abcd', instance.value);
 
       DDI.instance.destroy<L>();
     });
