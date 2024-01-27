@@ -472,7 +472,7 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  void addDecorator<BeanT extends Object>(
+  FutureOr<void> addDecorator<BeanT extends Object>(
     List<BeanT Function(BeanT)> decorators, {
     Object? qualifier,
   }) {
@@ -512,7 +512,7 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  void addInterceptor<BeanT extends Object>(
+  FutureOr<void> addInterceptor<BeanT extends Object>(
     List<DDIInterceptor<BeanT> Function()> interceptors, {
     Object? qualifier,
   }) {
@@ -530,7 +530,7 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  void refreshObject<BeanT extends Object>(
+  FutureOr<void> refreshObject<BeanT extends Object>(
     BeanT register, {
     Object? qualifier,
   }) {

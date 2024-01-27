@@ -200,7 +200,7 @@ abstract class DDI {
   ///
   /// - **Order of Execution:** Decorators are applied in the order they are provided.
   /// - **Instaces Already Gets:** No changes any Instances that have been get.
-  void addDecorator<BeanT extends Object>(
+  FutureOr<void> addDecorator<BeanT extends Object>(
       List<BeanT Function(BeanT)> decorators,
       {Object? qualifier});
 
@@ -212,7 +212,7 @@ abstract class DDI {
   /// - **Around Constructor:** Will not work with Singletons Scope.
   /// - **Order of Execution:** Interceptor are applied in the order they are provided.
   /// - **Instaces Already Gets:** No changes any Instances that have been get.
-  void addInterceptor<BeanT extends Object>(
+  FutureOr<void> addInterceptor<BeanT extends Object>(
       List<DDIInterceptor<BeanT> Function()> interceptors,
       {Object? qualifier});
 
@@ -221,7 +221,7 @@ abstract class DDI {
   /// When using this method, consider the following:
   ///
   /// - **Instaces Already Gets:** No changes any Instances that have been get.
-  void refreshObject<BeanT extends Object>(
+  FutureOr<void> refreshObject<BeanT extends Object>(
     BeanT register, {
     Object? qualifier,
   });
