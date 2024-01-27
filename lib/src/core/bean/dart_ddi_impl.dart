@@ -43,6 +43,8 @@ class _DDIImpl implements DDI {
 
       if (clazz is PostConstruct) {
         clazz.onPostConstruct();
+      } else if (clazz is Future<PostConstruct>) {
+        _runFutureOrPostConstruct(clazz);
       }
 
       _beans[effectiveQualifierName] = FactoryClazz<BeanT>(
@@ -191,6 +193,8 @@ class _DDIImpl implements DDI {
 
       if (register is PostConstruct) {
         register.onPostConstruct();
+      } else if (register is Future<PostConstruct>) {
+        _runFutureOrPostConstruct(register);
       }
 
       _beans[effectiveQualifierName] = FactoryClazz<BeanT>(
@@ -244,6 +248,8 @@ class _DDIImpl implements DDI {
 
       if (applicationClazz is PostConstruct) {
         applicationClazz.onPostConstruct();
+      } else if (applicationClazz is Future<PostConstruct>) {
+        _runFutureOrPostConstruct(applicationClazz);
       }
 
       factoryClazz.clazzInstance = applicationClazz;
@@ -276,6 +282,8 @@ class _DDIImpl implements DDI {
 
     if (dependentClazz is PostConstruct) {
       dependentClazz.onPostConstruct();
+    } else if (dependentClazz is Future<PostConstruct>) {
+      _runFutureOrPostConstruct(dependentClazz);
     }
 
     if (factoryClazz.interceptors case final inter?) {
@@ -360,7 +368,7 @@ class _DDIImpl implements DDI {
     _destroy<BeanT>(effectiveQualifierName);
   }
 
-  void _destroy<BeanT>(effectiveQualifierName) {
+  void _destroy<BeanT>(Object effectiveQualifierName) {
     if (_beans[effectiveQualifierName] case final factoryClazz?
         when factoryClazz.destroyable) {
       //Only destroy if destroyable was registered with true
@@ -371,8 +379,10 @@ class _DDIImpl implements DDI {
           }
         }
 
-        if (clazz is PreDestroy) {
-          clazz.onPreDestroy();
+        if (clazz is FutureOr<PreDestroy>) {
+          _runFutureOrPreDestroy(clazz, effectiveQualifierName);
+          //Should return because the _runFutureOrPreDestroy apply the remove
+          return;
         }
       }
 
@@ -540,5 +550,20 @@ class _DDIImpl implements DDI {
 
     factoryClazz.clazzInstance =
         _executarDecorators(register, factoryClazz.decorators);
+  }
+
+  void _runFutureOrPostConstruct(Future<PostConstruct> register) async {
+    final PostConstruct clazz = await register;
+
+    clazz.onPostConstruct();
+  }
+
+  Future<void> _runFutureOrPreDestroy(
+      FutureOr<PreDestroy> register, Object effectiveQualifierName) async {
+    final PreDestroy clazz = await register;
+
+    clazz.onPreDestroy();
+
+    _beans.remove(effectiveQualifierName);
   }
 }

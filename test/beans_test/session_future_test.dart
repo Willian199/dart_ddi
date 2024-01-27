@@ -13,7 +13,8 @@ void sessionFuture() {
   group('DDI Session Future Basic Tests', () {
     void registerSessionBeans() {
       DDI.instance.registerSession(() async => A(await DDI.instance()));
-      DDI.instance.registerSession<FutureOr<B>>(() => Future.value(B(DDI.instance())));
+      DDI.instance
+          .registerSession<FutureOr<B>>(() => Future.value(B(DDI.instance())));
       DDI.instance.registerSession(C.new);
     }
 
@@ -52,7 +53,8 @@ void sessionFuture() {
       removeSessionBeans();
     });
 
-    test('Retrieve Session bean after a second "child" bean is diposed', () async {
+    test('Retrieve Session bean after a second "child" bean is diposed',
+        () async {
       registerSessionBeans();
 
       final instance = await DDI.instance.get<Future<A>>();
@@ -68,7 +70,8 @@ void sessionFuture() {
       removeSessionBeans();
     });
 
-    test('Retrieve Session bean after the last "child" bean is diposed', () async {
+    test('Retrieve Session bean after the last "child" bean is diposed',
+        () async {
       registerSessionBeans();
 
       final instance1 = await DDI.instance.get<Future<A>>();
@@ -151,11 +154,13 @@ void sessionFuture() {
 
       DDI.instance.destroy(qualifier: 'typeC');
 
-      expect(() => DDI.instance.get(qualifier: 'typeC'), throwsA(isA<BeanNotFound>()));
+      expect(() => DDI.instance.get(qualifier: 'typeC'),
+          throwsA(isA<BeanNotFound>()));
     });
 
     test('Try to destroy a undestroyable Session bean', () {
-      DDI.instance.registerSession(() => Future.value(SessionDestroyGet()), destroyable: false);
+      DDI.instance.registerSession(() => Future.value(SessionDestroyGet()),
+          destroyable: false);
 
       final instance1 = DDI.instance.get<Future<SessionDestroyGet>>();
 
@@ -209,7 +214,8 @@ void sessionFuture() {
       DDI.instance.destroy<FutureOr<B>>();
       DDI.instance.destroy<C>();
     });
-    test('Retrieve Session bean after a "child" bean is disposed using Future', () async {
+    test('Retrieve Session bean after a "child" bean is disposed using Future',
+        () async {
       DDI.instance.registerSession(() async => A(await DDI.instance()));
       DDI.instance.registerSession<FutureOr<B>>(() async => B(DDI.instance()));
       DDI.instance.registerSession(C.new);

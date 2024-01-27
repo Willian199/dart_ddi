@@ -13,7 +13,8 @@ void singletonFuture() {
   group('DDI Singleton Future Basic Tests', () {
     void registerSingletonBeans() {
       DDI.instance.registerApplication(C.new);
-      DDI.instance.registerApplication<FutureOr<B>>(() => Future.value(B(DDI.instance())));
+      DDI.instance.registerApplication<FutureOr<B>>(
+          () => Future.value(B(DDI.instance())));
       DDI.instance.registerApplication(() async => A(await DDI.instance()));
     }
 
@@ -53,7 +54,8 @@ void singletonFuture() {
       removeSingletonBeans();
     });
 
-    test('Retrieve singleton bean after a second "child" bean is diposed', () async {
+    test('Retrieve singleton bean after a second "child" bean is diposed',
+        () async {
       registerSingletonBeans();
 
       final instance = await DDI.instance.get<Future<A>>();
@@ -79,17 +81,20 @@ void singletonFuture() {
     });
 
     test('Create, get and remove a qualifier bean', () {
-      DDI.instance.registerSingleton(() => Future.value(C()), qualifier: 'typeC');
+      DDI.instance
+          .registerSingleton(() => Future.value(C()), qualifier: 'typeC');
 
       DDI.instance.get(qualifier: 'typeC');
 
       DDI.instance.destroy(qualifier: 'typeC');
 
-      expect(() => DDI.instance.get(qualifier: 'typeC'), throwsA(isA<BeanNotFound>()));
+      expect(() => DDI.instance.get(qualifier: 'typeC'),
+          throwsA(isA<BeanNotFound>()));
     });
 
     test('Try to destroy a undestroyable Singleton bean', () {
-      DDI.instance.registerSingleton(() => Future.value(SingletonDestroyGet()), destroyable: false);
+      DDI.instance.registerSingleton(() => Future.value(SingletonDestroyGet()),
+          destroyable: false);
 
       final instance1 = DDI.instance.get<Future<SingletonDestroyGet>>();
 
@@ -128,7 +133,8 @@ void singletonFuture() {
 
     test('Register and retrieve Singleton bean using FutureOr', () async {
       DDI.instance.registerSingleton(C.new);
-      DDI.instance.registerSingleton<FutureOr<B>>(() async => B(DDI.instance()));
+      DDI.instance
+          .registerSingleton<FutureOr<B>>(() async => B(DDI.instance()));
       DDI.instance.registerSingleton(() async => A(await DDI.instance()));
 
       final instance1 = await DDI.instance.get<Future<A>>();
@@ -143,9 +149,12 @@ void singletonFuture() {
       DDI.instance.destroy<FutureOr<B>>();
       DDI.instance.destroy<C>();
     });
-    test('Retrieve Singleton bean after a "child" bean is disposed using Future', () async {
+    test(
+        'Retrieve Singleton bean after a "child" bean is disposed using Future',
+        () async {
       DDI.instance.registerSingleton(C.new);
-      DDI.instance.registerSingleton<FutureOr<B>>(() async => B(DDI.instance()));
+      DDI.instance
+          .registerSingleton<FutureOr<B>>(() async => B(DDI.instance()));
       DDI.instance.registerSingleton(() async => A(await DDI.instance()));
 
       final instance1 = await DDI.instance.get<Future<A>>();

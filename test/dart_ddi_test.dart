@@ -5,6 +5,8 @@ import 'beans_test/circular_injection_test.dart';
 import 'beans_test/dependent_future_test.dart';
 import 'beans_test/dependent_test.dart';
 import 'beans_test/dispose_destroy_all_session_test.dart';
+import 'beans_test/future_post_construct_pre_destroy_test.dart';
+import 'beans_test/get_by_future_type_test.dart';
 import 'beans_test/get_by_type_test.dart';
 import 'beans_test/interceptor_test.dart';
 import 'beans_test/object_future_test.dart';
@@ -37,6 +39,9 @@ void main() {
   sessionFuture();
   dependentFuture();
   objectFuture();
+
+  runByFutureType();
+  futurePostConstructPreDestroyTest();
 
   //Decorators
   addDecorator();
