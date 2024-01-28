@@ -1,7 +1,6 @@
 part of 'dart_ddi.dart';
 
-const _debug = !bool.fromEnvironment('dart.vm.product') &&
-    !bool.fromEnvironment('dart.vm.profile');
+const _debug = false;
 
 class _DDIImpl implements DDI {
   final Map<Object, FactoryClazz> _beans = {};
@@ -11,16 +10,26 @@ class _DDIImpl implements DDI {
       Zone.current[_resolutionKey] as Map<Object, List<Object>>? ?? {};
 
   @override
-  void registerSingleton<BeanT extends Object>(
+  FutureOr<void> registerSingleton<BeanT extends Object>(
     BeanT Function() clazzRegister, {
     Object? qualifier,
     void Function()? postConstruct,
     List<BeanT Function(BeanT)>? decorators,
     List<DDIInterceptor<BeanT> Function()>? interceptors,
-    bool Function()? registerIf,
+    FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
-  }) {
-    if (registerIf?.call() ?? true) {
+  }) async {
+    bool shouldRegister = true;
+
+    if (registerIf != null) {
+      if (registerIf is bool Function()) {
+        shouldRegister = registerIf();
+      } else {
+        shouldRegister = await registerIf();
+      }
+    }
+
+    if (shouldRegister) {
       final Object effectiveQualifierName = qualifier ?? BeanT;
 
       if (_beans[effectiveQualifierName] != null) {
@@ -58,13 +67,13 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  void registerApplication<BeanT extends Object>(
+  FutureOr<void> registerApplication<BeanT extends Object>(
     BeanT Function() clazzRegister, {
     Object? qualifier,
     void Function()? postConstruct,
     List<BeanT Function(BeanT)>? decorators,
     List<DDIInterceptor<BeanT> Function()>? interceptors,
-    bool Function()? registerIf,
+    FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
   }) {
     _register<BeanT>(
@@ -80,13 +89,13 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  void registerSession<BeanT extends Object>(
+  FutureOr<void> registerSession<BeanT extends Object>(
     BeanT Function() clazzRegister, {
     Object? qualifier,
     void Function()? postConstruct,
     List<BeanT Function(BeanT)>? decorators,
     List<DDIInterceptor<BeanT> Function()>? interceptors,
-    bool Function()? registerIf,
+    FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
   }) {
     _register<BeanT>(
@@ -102,13 +111,13 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  void registerDependent<BeanT extends Object>(
+  FutureOr<void> registerDependent<BeanT extends Object>(
     BeanT Function() clazzRegister, {
     Object? qualifier,
     void Function()? postConstruct,
     List<BeanT Function(BeanT)>? decorators,
     List<DDIInterceptor<BeanT> Function()>? interceptors,
-    bool Function()? registerIf,
+    FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
   }) {
     _register<BeanT>(
@@ -123,7 +132,7 @@ class _DDIImpl implements DDI {
     );
   }
 
-  void _register<BeanT extends Object>({
+  FutureOr<void> _register<BeanT extends Object>({
     required BeanT Function() clazzRegister,
     required Scopes scopeType,
     required bool destroyable,
@@ -131,9 +140,19 @@ class _DDIImpl implements DDI {
     void Function()? postConstruct,
     List<BeanT Function(BeanT)>? decorators,
     List<DDIInterceptor<BeanT> Function()>? interceptors,
-    bool Function()? registerIf,
-  }) {
-    if (registerIf?.call() ?? true) {
+    FutureOr<bool> Function()? registerIf,
+  }) async {
+    bool shouldRegister = true;
+
+    if (registerIf != null) {
+      if (registerIf is bool Function()) {
+        shouldRegister = registerIf();
+      } else {
+        shouldRegister = await registerIf();
+      }
+    }
+
+    if (shouldRegister) {
       final Object effectiveQualifierName = qualifier ?? BeanT;
 
       if (_beans[effectiveQualifierName] != null) {
@@ -170,10 +189,20 @@ class _DDIImpl implements DDI {
     void Function()? postConstruct,
     List<BeanT Function(BeanT)>? decorators,
     List<DDIInterceptor<BeanT> Function()>? interceptors,
-    bool Function()? registerIf,
+    FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
-  }) {
-    if (registerIf?.call() ?? true) {
+  }) async {
+    bool shouldRegister = true;
+
+    if (registerIf != null) {
+      if (registerIf is bool Function()) {
+        shouldRegister = registerIf();
+      } else {
+        shouldRegister = await registerIf();
+      }
+    }
+
+    if (shouldRegister) {
       final Object effectiveQualifierName = qualifier ?? BeanT;
 
       if (_beans[effectiveQualifierName] != null) {

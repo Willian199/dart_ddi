@@ -71,6 +71,8 @@ void singletonFuture() {
     });
 
     test('Try to retrieve singleton bean after removed', () {
+      DDI.instance.destroy<Future<C>>();
+
       DDI.instance.registerSingleton(() => Future.value(C()));
 
       DDI.instance.get<Future<C>>();

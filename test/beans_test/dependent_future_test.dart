@@ -70,6 +70,8 @@ void dependentFuture() {
     });
 
     test('Try to retrieve Dependent bean after disposed', () {
+      DDI.instance.destroy<Future<C>>();
+
       DDI.instance.registerDependent(() => Future.value(C()));
 
       final instance1 = DDI.instance.get<Future<C>>();

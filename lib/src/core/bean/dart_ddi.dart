@@ -36,13 +36,13 @@ abstract class DDI {
   ///  **Use Case:**
   /// - Suitable for objects that are stateless or have shared state across the entire application.
   /// - Examples include utility classes, configuration objects, or services that maintain global state.
-  void registerSingleton<BeanT extends Object>(
+  FutureOr<void> registerSingleton<BeanT extends Object>(
     BeanT Function() clazzRegister, {
     Object? qualifier,
     void Function()? postConstruct,
     List<BeanT Function(BeanT)>? decorators,
     List<DDIInterceptor<BeanT> Function()>? interceptors,
-    bool Function()? registerIf,
+    FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
   });
 
@@ -64,13 +64,13 @@ abstract class DDI {
   ///  **Use Case:**
   /// - Appropriate for objects that need to persist during the entire application's lifecycle, but may have a more dynamic nature than Singleton instances.
   /// - Examples include managers, controllers, or services that should persist but might be recreated under certain circumstances.
-  void registerApplication<BeanT extends Object>(
+  FutureOr<void> registerApplication<BeanT extends Object>(
     BeanT Function() clazzRegister, {
     Object? qualifier,
     void Function()? postConstruct,
     List<BeanT Function(BeanT)>? decorators,
     List<DDIInterceptor<BeanT> Function()>? interceptors,
-    bool Function()? registerIf,
+    FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
   });
 
@@ -92,13 +92,13 @@ abstract class DDI {
   ///  **Use Case:**
   /// - Appropriate for objects that need to persist during the entire application's lifecycle, but may have a more dynamic nature than Singleton instances.
   /// - Examples include managing user authentication state or caching user-specific preferences.
-  void registerSession<BeanT extends Object>(
+  FutureOr<void> registerSession<BeanT extends Object>(
     BeanT Function() clazzRegister, {
     Object? qualifier,
     void Function()? postConstruct,
     List<BeanT Function(BeanT)>? decorators,
     List<DDIInterceptor<BeanT> Function()>? interceptors,
-    bool Function()? registerIf,
+    FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
   });
 
@@ -119,13 +119,13 @@ abstract class DDI {
   ///  **Use Case:**
   /// - Suitable for objects with a short lifecycle or those that need to be recreated frequently, ensuring isolation between different parts of the application.
   /// - Examples include transient objects, temporary data holders, or components with a short lifespan.
-  void registerDependent<BeanT extends Object>(
+  FutureOr<void> registerDependent<BeanT extends Object>(
     BeanT Function() clazzRegister, {
     Object? qualifier,
     void Function()? postConstruct,
     List<BeanT Function(BeanT)>? decorators,
     List<DDIInterceptor<BeanT> Function()>? interceptors,
-    bool Function()? registerIf,
+    FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
   });
 
@@ -147,13 +147,13 @@ abstract class DDI {
   ///  **Use Case:**
   /// - Suitable for objects that are stateless or have shared state across the entire application.
   /// - Examples include application or device properties, like platform or dark mode.
-  void registerObject<BeanT extends Object>(
+  FutureOr<void> registerObject<BeanT extends Object>(
     BeanT register, {
     Object? qualifier,
     void Function()? postConstruct,
     List<BeanT Function(BeanT)>? decorators,
     List<DDIInterceptor<BeanT> Function()>? interceptors,
-    bool Function()? registerIf,
+    FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
   });
 

@@ -71,6 +71,8 @@ void futureCircularDetection() {
     });
 
     test('Get the same Singleton bean 10 times', () async {
+      DDI.instance.destroy<Future<C>>();
+
       DDI.instance.registerSingleton(() => Future.value(C()));
 
       int count = 0;
@@ -85,6 +87,8 @@ void futureCircularDetection() {
     });
 
     test('Get the same Application bean 10 times', () async {
+      DDI.instance.destroy<Future<C>>();
+
       DDI.instance.registerApplication(() => Future.value(C()));
 
       int count = 0;
