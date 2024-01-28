@@ -1,3 +1,8 @@
+## 0.3.1
+
+* Fixed Documentation links.
+* Some Futures instances behaviors fix.
+
 ## 0.3.0
 
 * Migrating from flutter_test and flutter_lints to test and lints.

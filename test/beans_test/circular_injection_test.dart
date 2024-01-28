@@ -19,6 +19,7 @@ void circularDetection() {
 
     test('Inject a Application bean depending from a bean that not exists yet',
         () {
+      //Work because just Register
       DDI.instance.registerApplication(() => Father(mother: DDI.instance()));
       DDI.instance.registerApplication(() => Mother(father: DDI.instance()));
 
@@ -59,9 +60,12 @@ void circularDetection() {
     test('Get the same Singleton bean 100 times', () {
       DDI.instance.registerSingleton(() => C());
 
+      int count = 0;
       for (int i = 0; i < 100; i++) {
-        DDI.instance<C>();
+        count += DDI.instance<C>().value;
       }
+
+      expectLater(count, 100);
 
       DDI.instance.destroy<C>();
     });
@@ -69,9 +73,12 @@ void circularDetection() {
     test('Get the same Application bean 100 times', () {
       DDI.instance.registerApplication(() => C());
 
+      int count = 0;
       for (int i = 0; i < 100; i++) {
-        DDI.instance<C>();
+        count += DDI.instance<C>().value;
       }
+
+      expectLater(count, 100);
 
       DDI.instance.destroy<C>();
     });
@@ -79,9 +86,12 @@ void circularDetection() {
     test('Get the same Session bean 100 times', () {
       DDI.instance.registerSession(() => C());
 
+      int count = 0;
       for (int i = 0; i < 100; i++) {
-        DDI.instance<C>();
+        count += DDI.instance<C>().value;
       }
+
+      expectLater(count, 100);
 
       DDI.instance.destroy<C>();
     });
@@ -89,9 +99,12 @@ void circularDetection() {
     test('Get the same Dependent bean 100 times', () {
       DDI.instance.registerDependent(() => C());
 
+      int count = 0;
       for (int i = 0; i < 100; i++) {
-        DDI.instance<C>();
+        count += DDI.instance<C>().value;
       }
+
+      expectLater(count, 100);
 
       DDI.instance.destroy<C>();
     });

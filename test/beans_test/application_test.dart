@@ -14,7 +14,7 @@ void application() {
     void registerApplicationBeans() {
       DDI.instance.registerApplication(() => A(DDI.instance()));
       DDI.instance.registerApplication(() => B(DDI.instance()));
-      DDI.instance.registerApplication(() => C());
+      DDI.instance.registerApplication(C.new);
     }
 
     void removeApplicationBeans() {
@@ -121,7 +121,7 @@ void application() {
     });
 
     test('Try to retrieve Application bean after disposed', () {
-      DDI.instance.registerApplication(() => C());
+      DDI.instance.registerApplication(C.new);
 
       final instance1 = DDI.instance.get<C>();
 
@@ -130,9 +130,13 @@ void application() {
       final instance2 = DDI.instance.get<C>();
 
       expect(false, identical(instance1, instance2));
+
+      DDI.instance.destroy<C>();
     });
 
     test('Try to retrieve Application bean after removed', () {
+      DDI.instance.registerApplication(C.new);
+
       DDI.instance.get<C>();
 
       DDI.instance.destroy<C>();
@@ -141,7 +145,7 @@ void application() {
     });
 
     test('Create, get and remove a qualifier bean', () {
-      DDI.instance.registerApplication(() => C(), qualifier: 'typeC');
+      DDI.instance.registerApplication(C.new, qualifier: 'typeC');
 
       DDI.instance.get(qualifier: 'typeC');
 
@@ -152,8 +156,8 @@ void application() {
     });
 
     test('Try to destroy a undestroyable Application bean', () {
-      DDI.instance.registerApplication(() => ApplicationDestroyGet(),
-          destroyable: false);
+      DDI.instance
+          .registerApplication(ApplicationDestroyGet.new, destroyable: false);
 
       final instance1 = DDI.instance.get<ApplicationDestroyGet>();
 
@@ -165,7 +169,7 @@ void application() {
     });
 
     test('Try to register again a undestroyable Application bean', () {
-      DDI.instance.registerApplication(() => ApplicationDestroyRegister(),
+      DDI.instance.registerApplication(ApplicationDestroyRegister.new,
           destroyable: false);
 
       DDI.instance.get<ApplicationDestroyRegister>();

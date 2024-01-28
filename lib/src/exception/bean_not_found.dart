@@ -4,6 +4,6 @@ class BeanNotFound implements Exception {
 
   @override
   String toString() {
-    return 'No Instance with Type $cause is found.';
+    return 'No Instance found with Type $cause.';
   }
 }
