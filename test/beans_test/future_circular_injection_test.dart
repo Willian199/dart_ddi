@@ -20,86 +20,82 @@ void futureCircularDetection() {
     test('Inject a Application bean depending from a bean that not exists yet',
         () {
       //Work because just Register
-      DDI.instance.registerApplication<Future<Father>>(() async =>
-          Future.value(Father(mother: await DDI.instance<Future<Mother>>())));
-      DDI.instance.registerApplication<Future<Mother>>(() async =>
-          Future.value(Mother(father: await DDI.instance<Future<Father>>())));
+      DDI.instance.registerApplication<Father>(() async =>
+          Future.value(Father(mother: await DDI.instance.getAsync<Mother>())));
+      DDI.instance.registerApplication<Mother>(() async =>
+          Future.value(Mother(father: await DDI.instance.getAsync<Father>())));
 
-      DDI.instance.destroy<Future<Mother>>();
-      DDI.instance.destroy<Future<Father>>();
+      DDI.instance.destroy<Mother>();
+      DDI.instance.destroy<Father>();
     });
 
     test('Inject a Application bean with circular dependency', () {
-      DDI.instance.registerApplication<Future<Father>>(() async =>
-          Future.value(Father(mother: await DDI.instance<Future<Mother>>())));
-      DDI.instance.registerApplication<Future<Mother>>(() async =>
-          Future.value(Mother(father: await DDI.instance<Future<Father>>())));
+      DDI.instance.registerApplication<Father>(() async =>
+          Future.value(Father(mother: await DDI.instance.getAsync<Mother>())));
+      DDI.instance.registerApplication<Mother>(() async =>
+          Future.value(Mother(father: await DDI.instance.getAsync<Father>())));
 
-      expectLater(() => DDI.instance<Future<Mother>>(),
+      expectLater(() async => DDI.instance.getAsync<Mother>(),
           throwsA(isA<CircularDetection>()));
 
-      DDI.instance.destroy<Future<Mother>>();
-      DDI.instance.destroy<Future<Father>>();
+      DDI.instance.destroy<Mother>();
+      DDI.instance.destroy<Father>();
     });
 
     test('Inject a Dependent bean with circular dependency', () {
-      DDI.instance.registerDependent<Future<Father>>(() async =>
-          Future.value(Father(mother: await DDI.instance<Future<Mother>>())));
+      DDI.instance.registerDependent<Father>(() async =>
+          Future.value(Father(mother: await DDI.instance.getAsync<Mother>())));
 
-      DDI.instance.registerDependent<Future<Mother>>(() async =>
-          Future.value(Mother(father: await DDI.instance<Future<Father>>())));
+      DDI.instance.registerDependent<Mother>(() async =>
+          Future.value(Mother(father: await DDI.instance.getAsync<Father>())));
 
-      expectLater(() => DDI.instance<Future<Mother>>(),
+      expectLater(() async => DDI.instance.getAsync<Mother>(),
           throwsA(isA<CircularDetection>()));
 
-      DDI.instance.destroy<Future<Mother>>();
-      DDI.instance.destroy<Future<Father>>();
+      DDI.instance.destroy<Mother>();
+      DDI.instance.destroy<Father>();
     });
 
     test('Inject a Session bean with circular dependency', () {
-      DDI.instance.registerSession<Future<Father>>(() async =>
-          Future.value(Father(mother: await DDI.instance<Future<Mother>>())));
+      DDI.instance.registerSession<Father>(() async =>
+          Future.value(Father(mother: await DDI.instance.getAsync<Mother>())));
 
-      DDI.instance.registerSession<Future<Mother>>(() async =>
-          Future.value(Mother(father: await DDI.instance<Future<Father>>())));
+      DDI.instance.registerSession<Mother>(() async =>
+          Future.value(Mother(father: await DDI.instance.getAsync<Father>())));
 
-      expectLater(() => DDI.instance<Future<Mother>>(),
+      expectLater(() => DDI.instance.getAsync<Mother>(),
           throwsA(isA<CircularDetection>()));
 
-      DDI.instance.destroy<Future<Mother>>();
-      DDI.instance.destroy<Future<Father>>();
+      DDI.instance.destroy<Mother>();
+      DDI.instance.destroy<Father>();
     });
 
     test('Get the same Singleton bean 10 times', () async {
-      DDI.instance.destroy<Future<C>>();
-
-      DDI.instance.registerSingleton(() => Future.value(C()));
+      await DDI.instance.registerSingleton(() => Future.value(C()));
 
       int count = 0;
       for (int i = 0; i < 10; i++) {
-        final C val = await DDI.instance<Future<C>>();
+        final C val = await DDI.instance.getAsync<C>();
         count += val.value;
       }
 
       expectLater(count, 10);
 
-      DDI.instance.destroy<Future<C>>();
+      DDI.instance.destroy<C>();
     });
 
     test('Get the same Application bean 10 times', () async {
-      DDI.instance.destroy<Future<C>>();
-
       DDI.instance.registerApplication(() => Future.value(C()));
 
       int count = 0;
       for (int i = 0; i < 10; i++) {
-        final C val = await DDI.instance<Future<C>>();
+        final C val = await DDI.instance.getAsync<C>();
         count += val.value;
       }
 
       expectLater(count, 10);
 
-      DDI.instance.destroy<Future<C>>();
+      DDI.instance.destroy<C>();
     });
 
     test('Get the same Session bean 10 times', () async {
@@ -110,13 +106,13 @@ void futureCircularDetection() {
 
       int count = 0;
       for (int i = 0; i < 10; i++) {
-        final C val = await DDI.instance<Future<C>>();
+        final C val = await DDI.instance.getAsync<C>();
         count += val.value;
       }
 
       expectLater(count, 10);
 
-      DDI.instance.destroy<Future<C>>();
+      DDI.instance.destroy<C>();
     });
 
     test('Get the same Dependent bean 10 times', () async {
@@ -124,13 +120,13 @@ void futureCircularDetection() {
 
       int count = 0;
       for (int i = 0; i < 10; i++) {
-        final C val = await DDI.instance<Future<C>>();
+        final C val = await DDI.instance.getAsync<C>();
         count += val.value;
       }
 
       expectLater(count, 10);
 
-      DDI.instance.destroy<Future<C>>();
+      DDI.instance.destroy<C>();
     });
   });
 }

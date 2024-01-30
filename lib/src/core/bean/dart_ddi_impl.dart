@@ -1,6 +1,7 @@
 part of 'dart_ddi.dart';
 
-const _debug = false;
+const _debug = !bool.fromEnvironment('dart.vm.product') &&
+    !bool.fromEnvironment('dart.vm.profile');
 
 class _DDIImpl implements DDI {
   final Map<Object, FactoryClazz> _beans = {};
@@ -11,7 +12,7 @@ class _DDIImpl implements DDI {
 
   @override
   FutureOr<void> registerSingleton<BeanT extends Object>(
-    BeanT Function() clazzRegister, {
+    FutureOr<BeanT> Function() clazzRegister, {
     Object? qualifier,
     void Function()? postConstruct,
     List<BeanT Function(BeanT)>? decorators,
@@ -38,7 +39,13 @@ class _DDIImpl implements DDI {
         return;
       }
 
-      BeanT clazz = clazzRegister.call();
+      late BeanT clazz;
+
+      if (clazzRegister is BeanT Function()) {
+        clazz = clazzRegister.call();
+      } else {
+        clazz = await clazzRegister.call();
+      }
 
       if (interceptors != null) {
         for (final interceptor in interceptors) {
@@ -68,7 +75,7 @@ class _DDIImpl implements DDI {
 
   @override
   FutureOr<void> registerApplication<BeanT extends Object>(
-    BeanT Function() clazzRegister, {
+    FutureOr<BeanT> Function() clazzRegister, {
     Object? qualifier,
     void Function()? postConstruct,
     List<BeanT Function(BeanT)>? decorators,
@@ -90,7 +97,7 @@ class _DDIImpl implements DDI {
 
   @override
   FutureOr<void> registerSession<BeanT extends Object>(
-    BeanT Function() clazzRegister, {
+    FutureOr<BeanT> Function() clazzRegister, {
     Object? qualifier,
     void Function()? postConstruct,
     List<BeanT Function(BeanT)>? decorators,
@@ -112,7 +119,7 @@ class _DDIImpl implements DDI {
 
   @override
   FutureOr<void> registerDependent<BeanT extends Object>(
-    BeanT Function() clazzRegister, {
+    FutureOr<BeanT> Function() clazzRegister, {
     Object? qualifier,
     void Function()? postConstruct,
     List<BeanT Function(BeanT)>? decorators,
@@ -133,7 +140,7 @@ class _DDIImpl implements DDI {
   }
 
   FutureOr<void> _register<BeanT extends Object>({
-    required BeanT Function() clazzRegister,
+    required FutureOr<BeanT> Function() clazzRegister,
     required Scopes scopeType,
     required bool destroyable,
     Object? qualifier,
@@ -237,72 +244,6 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  FutureOr<void> registerAsync<BeanT extends Object>(
-    FutureOr<BeanT> Function() clazzRegister, {
-    FutureOr<Object>? qualifier,
-    FutureOr<void> Function()? postConstruct,
-    FutureOr<List<BeanT Function(BeanT)>>? decorators,
-    FutureOr<List<DDIInterceptor<BeanT> Function()>>? interceptors,
-    FutureOr<bool> Function()? registerIf,
-    FutureOr<bool> destroyable = true,
-    Scopes scope = Scopes.application,
-  }) async {
-    if (registerIf != null && await registerIf()) {
-      late Object? effectiveQualifierName;
-
-      if (qualifier != null) {
-        effectiveQualifierName = await qualifier;
-      }
-
-      effectiveQualifierName ??= BeanT;
-
-      if (_beans[effectiveQualifierName] != null) {
-        final cause =
-            'Is already registered a instance with Type ${effectiveQualifierName.toString()}';
-        if (!_debug) {
-          throw DuplicatedBean(cause);
-        }
-        // ignore: avoid_print
-        print(cause);
-        return;
-      }
-
-      BeanT clazz = await clazzRegister.call();
-
-      List<DDIInterceptor<BeanT> Function()>? inter;
-
-      if (interceptors != null) {
-        inter = await interceptors;
-        for (final interceptor in inter) {
-          clazz = interceptor.call().aroundConstruct(clazz);
-        }
-      }
-
-      List<BeanT Function(BeanT)> dec;
-      if (decorators != null) {
-        dec = await decorators;
-        for (final decorator in dec) {
-          clazz = decorator(clazz);
-        }
-      }
-
-      postConstruct?.call();
-
-      if (clazz is PostConstruct) {
-        clazz.onPostConstruct();
-      }
-
-      _beans[effectiveQualifierName] = FactoryClazz<BeanT>(
-        clazzInstance: clazz,
-        type: BeanT,
-        scopeType: scope,
-        interceptors: inter,
-        destroyable: await destroyable,
-      );
-    }
-  }
-
-  @override
   BeanT call<BeanT extends Object>() {
     return get();
   }
@@ -327,27 +268,8 @@ class _DDIImpl implements DDI {
     late BeanT applicationClazz;
 
     if (factoryClazz.clazzInstance == null) {
-      applicationClazz = factoryClazz.clazzRegister!.call();
-
-      if (factoryClazz.interceptors case final inter?) {
-        for (final interceptor in inter) {
-          applicationClazz =
-              interceptor.call().aroundConstruct(applicationClazz);
-        }
-      }
-
-      applicationClazz =
-          _executarDecorators<BeanT>(applicationClazz, factoryClazz.decorators);
-
-      factoryClazz.postConstruct?.call();
-
-      if (applicationClazz is PostConstruct) {
-        applicationClazz.onPostConstruct();
-      } else if (applicationClazz is Future<PostConstruct>) {
-        _runFutureOrPostConstruct(applicationClazz);
-      }
-
-      factoryClazz.clazzInstance = applicationClazz;
+      applicationClazz = _applyApplication<BeanT>(factoryClazz,
+          (factoryClazz.clazzRegister as BeanT Function()).call());
     } else {
       applicationClazz = factoryClazz.clazzInstance!;
     }
@@ -361,9 +283,67 @@ class _DDIImpl implements DDI {
     return applicationClazz;
   }
 
-  BeanT _getDependent<BeanT extends Object>(FactoryClazz<BeanT> factoryClazz) {
-    BeanT dependentClazz = factoryClazz.clazzRegister!.call();
+  Future<BeanT> _getAplicationAsync<BeanT extends Object>(
+      FactoryClazz<BeanT> factoryClazz, Object effectiveQualifierName) async {
+    late BeanT applicationClazz;
 
+    if (factoryClazz.clazzInstance == null) {
+      applicationClazz = _applyApplication<BeanT>(
+          factoryClazz, await factoryClazz.clazzRegister!.call());
+    } else {
+      applicationClazz = factoryClazz.clazzInstance!;
+    }
+
+    if (factoryClazz.interceptors case final inter?) {
+      for (final interceptor in inter) {
+        applicationClazz = interceptor.call().aroundGet(applicationClazz);
+      }
+    }
+
+    return applicationClazz;
+  }
+
+  BeanT _applyApplication<BeanT extends Object>(
+    FactoryClazz<BeanT> factoryClazz,
+    BeanT applicationClazz,
+  ) {
+    if (factoryClazz.interceptors case final inter?) {
+      for (final interceptor in inter) {
+        applicationClazz = interceptor.call().aroundConstruct(applicationClazz);
+      }
+    }
+
+    applicationClazz =
+        _executarDecorators<BeanT>(applicationClazz, factoryClazz.decorators);
+
+    factoryClazz.postConstruct?.call();
+
+    if (applicationClazz is PostConstruct) {
+      applicationClazz.onPostConstruct();
+    } else if (applicationClazz is Future<PostConstruct>) {
+      _runFutureOrPostConstruct(applicationClazz);
+    }
+
+    factoryClazz.clazzInstance = applicationClazz;
+
+    return applicationClazz;
+  }
+
+  BeanT _getDependent<BeanT extends Object>(FactoryClazz<BeanT> factoryClazz) {
+    return _applyDependent<BeanT>(
+        factoryClazz, (factoryClazz.clazzRegister as BeanT Function()).call());
+  }
+
+  Future<BeanT> _getDependentAsync<BeanT extends Object>(
+      FactoryClazz<BeanT> factoryClazz) async {
+    return _applyDependent<BeanT>(
+        factoryClazz, await factoryClazz.clazzRegister!.call());
+  }
+
+  BeanT _applyDependent<BeanT extends Object>(
+    FactoryClazz<BeanT> factoryClazz,
+    BeanT dependentClazz,
+  ) {
     if (factoryClazz.interceptors case final inter?) {
       for (final interceptor in inter) {
         dependentClazz = interceptor.call().aroundConstruct(dependentClazz);
@@ -396,9 +376,34 @@ class _DDIImpl implements DDI {
 
     if (_beans[effectiveQualifierName]
         case final FactoryClazz<BeanT> factory?) {
+      if (factory is FutureOr<BeanT> Function() && BeanT is! Future) {
+        throw const FutureNotAccept();
+      }
+
       return runZoned(
         () {
           return _getScoped<BeanT>(factory, effectiveQualifierName);
+        },
+        zoneValues: {_resolutionKey: <Object, List<Object>>{}},
+      );
+    }
+
+    throw BeanNotFound(effectiveQualifierName.toString());
+  }
+
+  @override
+  Future<BeanT> getAsync<BeanT extends Object>({Object? qualifier}) {
+    final Object effectiveQualifierName = qualifier ?? BeanT;
+
+    if (_beans[effectiveQualifierName]
+        case final FactoryClazz<BeanT> factory?) {
+      if (factory is FutureOr<BeanT> Function() && BeanT is! Future) {
+        throw const FutureNotAccept();
+      }
+
+      return runZoned(
+        () {
+          return _getScopedAsync<BeanT>(factory, effectiveQualifierName);
         },
         zoneValues: {_resolutionKey: <Object, List<Object>>{}},
       );
@@ -427,6 +432,31 @@ class _DDIImpl implements DDI {
         Scopes.application ||
         Scopes.session =>
           _getAplication<BeanT>(factoryClazz, effectiveQualifierName)
+      };
+    } finally {
+      _resolutionMap[effectiveQualifierName]?.removeLast();
+    }
+  }
+
+  Future<BeanT> _getScopedAsync<BeanT extends Object>(
+      FactoryClazz<BeanT> factoryClazz, Object effectiveQualifierName) {
+    if (_resolutionMap[effectiveQualifierName]?.isNotEmpty ?? false) {
+      throw CircularDetection(effectiveQualifierName.toString());
+    }
+
+    _resolutionMap[effectiveQualifierName] = [
+      ..._resolutionMap[effectiveQualifierName] ?? [],
+      effectiveQualifierName
+    ];
+
+    try {
+      return switch (factoryClazz.scopeType) {
+        Scopes.singleton || Scopes.object => Future.value(
+            _getSingleton<BeanT>(factoryClazz, effectiveQualifierName)),
+        Scopes.dependent => _getDependentAsync<BeanT>(factoryClazz),
+        Scopes.application ||
+        Scopes.session =>
+          _getAplicationAsync<BeanT>(factoryClazz, effectiveQualifierName)
       };
     } finally {
       _resolutionMap[effectiveQualifierName]?.removeLast();
@@ -607,7 +637,7 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  FutureOr<void> addInterceptor<BeanT extends Object>(
+  void addInterceptor<BeanT extends Object>(
     List<DDIInterceptor<BeanT> Function()> interceptors, {
     Object? qualifier,
   }) {
@@ -625,7 +655,7 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  FutureOr<void> refreshObject<BeanT extends Object>(
+  void refreshObject<BeanT extends Object>(
     BeanT register, {
     Object? qualifier,
   }) {
