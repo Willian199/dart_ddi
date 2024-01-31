@@ -20,7 +20,7 @@ class TabCubit extends Cubit<TabState> with PostConstruct {
   @override
   void onPostConstruct() {
     DDIStream.instance.subscribe<int>(
-      qualifier: 'teste',
+      qualifier: 'page_view',
       callback: (int newPAge) {
         debugPrint('pageChange');
         final NotasEnum? notaEnum = NotasEnum.forIndex(newPAge);

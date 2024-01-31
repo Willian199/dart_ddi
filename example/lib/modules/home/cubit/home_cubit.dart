@@ -66,7 +66,7 @@ class HomeCubit extends Cubit<HomeState> with PostConstruct {
 
     const String applicationId = 'FGVI612DFZ';
     const String applicatinoKey =
-        'MzM1YmRkM2RhNjllNzU5YmEyMmFjNjA0MGZmOWMwNzk1MzYwNWYwOTg4ZThkNDM1NDM0MWM2ODk4OTQxMjZkYnZhbGlkVW50aWw9MTcwNjY0MjAwNg==';
+        'YTcyYWM1OGFmOGIxMmQ5OGQzN2Y2NzFhZmU3N2EyYTM0YTIxZWVkYTQyNWFhOTUzMzQxMzhkZTZmNDM4ZDY5OXZhbGlkVW50aWw9MTcwNzUyMTUyOA==';
 
     final retorno = await RequestService.post(
         url:

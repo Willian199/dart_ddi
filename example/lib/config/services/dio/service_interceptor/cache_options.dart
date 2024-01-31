@@ -32,7 +32,7 @@ class DioCacheOptions {
 
     final CacheOptions options = CacheOptions(
       // A default store is required for interceptor.
-      store: ddi(),
+      store: await ddi.getAsync<CacheStore>(),
       // Returns a cached response on error but for statuses 401 & 403.
       // Also allows to return a cached response on network errors (e.g. offline usage).
       // Defaults to [null].

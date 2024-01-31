@@ -14,7 +14,7 @@ import 'package:perfumei/modules/item/cubit/imagem_cubit.dart';
 import 'package:perfumei/modules/item/cubit/item_cubit.dart';
 import 'package:perfumei/modules/item/cubit/perfume_cubit.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   //unawaited(WakelockPlus.enable());
@@ -32,14 +32,15 @@ void main() {
           Brightness.dark,
       qualifier: InjectionConstants.darkMode);
 
-  ddi.registerDependent<HomeCubit>(() => HomeCubit());
-  ddi.registerDependent<TabCubit>(() => TabCubit());
-  ddi.registerDependent<PerfumeCubit>(() => PerfumeCubit());
-  ddi.registerDependent<ImagemCubit>(() => ImagemCubit());
+  ddi.registerDependent<HomeCubit>(HomeCubit.new);
+  ddi.registerDependent<TabCubit>(TabCubit.new);
+  ddi.registerDependent<PerfumeCubit>(PerfumeCubit.new);
+  ddi.registerDependent<ImagemCubit>(ImagemCubit.new);
 
-  pp.getTemporaryDirectory().then((Directory dir) =>
-      ddi.registerSingleton<CacheStore>(
-          () => ObjectBoxCacheStore(storePath: dir.path)));
+  await ddi.registerSingleton<CacheStore>(() async {
+    final Directory dir = await pp.getTemporaryDirectory();
+    return ObjectBoxCacheStore(storePath: dir.path);
+  });
 
   runApp(const MyApp());
 }

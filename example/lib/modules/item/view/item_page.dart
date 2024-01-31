@@ -162,7 +162,7 @@ class _ItemPageState extends State<ItemPage> {
                           controller: pageController,
                           onPageChanged: (int page) {
                             DDIStream.instance
-                                .fire<int>(value: page, qualifier: 'teste');
+                                .fire<int>(value: page, qualifier: 'page_view');
                           },
                           children: [
                             ItemNota(lista: state.dadosPerfume?.notasTopo),

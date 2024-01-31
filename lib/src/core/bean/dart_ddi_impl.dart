@@ -190,7 +190,7 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  void registerObject<BeanT extends Object>(
+  FutureOr<void> registerObject<BeanT extends Object>(
     BeanT register, {
     Object? qualifier,
     void Function()? postConstruct,
