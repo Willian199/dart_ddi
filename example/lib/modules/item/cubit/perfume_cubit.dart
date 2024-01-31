@@ -12,7 +12,8 @@ class PerfumeCubit extends Cubit<PerfumeState> {
     final retorno = await RequestService.getHtml(url: link);
 
     //Cria uma Thread para evitar lag no app
-    final DadosPerfume perfume = await compute(HtmlDecodePage.decode, retorno.data.toString());
+    final DadosPerfume perfume =
+        await compute(HtmlDecodePage.decode, retorno.data.toString());
 
     emit(state.copyWith(dadosPerfume: perfume));
   }
