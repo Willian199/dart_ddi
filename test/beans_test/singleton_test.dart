@@ -12,7 +12,7 @@ import '../clazz_samples/undestroyable/singleton_destroy_register.dart';
 void singleton() {
   group('DDI Singleton Basic Tests', () {
     void registerSingletonBeans() {
-      DDI.instance.registerSingleton(() => C());
+      DDI.instance.registerSingleton(C.new);
       DDI.instance.registerSingleton(() => B(DDI.instance()));
       DDI.instance.registerSingleton(() => A(DDI.instance()));
     }
@@ -38,7 +38,7 @@ void singleton() {
       removeSingletonBeans();
     });
 
-    test('Retrieve singleton bean after a "child" bean is diposed', () {
+    test('Retrieve singleton bean after a "child" bean is destroyed', () {
       registerSingletonBeans();
 
       final instance = DDI.instance.get<A>();
@@ -50,22 +50,25 @@ void singleton() {
       expect(instance.b.c, same(instance1.b.c));
       expect(instance.b.c.value, same(instance1.b.c.value));
 
-      removeSingletonBeans();
+      DDI.instance.destroy<A>();
+      DDI.instance.destroy<B>();
     });
 
-    test('Retrieve singleton bean after a second "child" bean is diposed', () {
+    test('Retrieve singleton bean after a second "child" bean is destroyed',
+        () {
       registerSingletonBeans();
 
       final instance = DDI.instance.get<A>();
 
       DDI.instance.destroy<B>();
+      DDI.instance.destroy<C>();
       final instance1 = DDI.instance.get<A>();
       expect(instance1, same(instance));
       expect(instance1.b, same(instance.b));
       expect(instance.b.c, same(instance1.b.c));
       expect(instance.b.c.value, same(instance1.b.c.value));
 
-      removeSingletonBeans();
+      DDI.instance.destroy<A>();
     });
 
     test('Try to retrieve singleton bean after removed', () {

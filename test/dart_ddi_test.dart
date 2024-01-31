@@ -43,6 +43,7 @@ void main() {
   objectFuture();
 
   runByFutureType();
+  registerIf();
   futurePostConstructPreDestroyTest();
 
   //Decorators

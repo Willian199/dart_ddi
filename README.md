@@ -69,15 +69,16 @@ Summary
    4. [registerSession](#registersession)
    5. [registerObject](#registerobject)
    6. [get](#get)
-   7. [getByType](#getbytype)
-   8. [call](#call)
-   9. [destroy](#destroy)
-   10. [destroyByType](#destroybytype)
-   11. [dispose](#dispose)
-   12. [disposeByType](#disposebytype)
-   13. [addDecorator](#adddecorator)
-   14. [addInterceptor](#addinterceptor)
-   15. [refreshObject](#refreshobject)
+   7. [getAsync](#getasync)
+   8. [getByType](#getbytype)
+   9. [call](#call)
+   10. [destroy](#destroy)
+   11. [destroyByType](#destroybytype)
+   12. [dispose](#dispose)
+   13. [disposeByType](#disposebytype)
+   14. [addDecorator](#adddecorator)
+   15. [addInterceptor](#addinterceptor)
+   16. [refreshObject](#refreshobject)
 
 ## Getting Started
 
@@ -88,13 +89,13 @@ To incorporate DDI into your Dart project, you must implement the `DDI` abstract
 DDI ddi = DDI.instance;
 
 // Register a singleton instance
-ddi.registerSingleton<MyService>(() => MyService());
+ddi.registerSingleton<MyService>(MyService.new);
 
 // Retrieve the singleton instance
 MyService myService = ddi.get<MyService>();
 
 // Register an application-scoped instance
-ddi.registerApplication<MyAppService>(() => MyAppService());
+ddi.registerApplication<MyAppService>(MyAppService.new);
 
 // Retrieve the application-scoped instance
 MyAppService appService = ddi.get<MyAppService>();
@@ -162,7 +163,7 @@ When registering an instance, can provide a qualifier as part of the registratio
 #### Example Registration with Qualifier
 
 ```dart
-ddi.registerSingleton<MyService>(() => MyService(), qualifier: "specialInstance");
+ddi.registerSingleton<MyService>(MyService.new, qualifier: "specialInstance");
 ```
 
 ## Retrieval with Qualifiers
@@ -196,8 +197,8 @@ ddi.registerSingleton<FeatureService>(() => FeatureService(enabled: false), qual
 In scenarios where platform-specific implementations are required, such as different services for Android and iOS, qualifiers can be employed to distinguish between the platform-specific instances.
 
 ```dart
-ddi.registerSingleton<PlatformService>(() => AndroidService(), qualifier: "android");
-ddi.registerSingleton<PlatformService>(() => iOSService(), qualifier: "ios");
+ddi.registerSingleton<PlatformService>(AndroidService.new, qualifier: "android");
+ddi.registerSingleton<PlatformService>(iOSService.new, qualifier: "ios");
 ```
 
 ## Considerations
@@ -217,7 +218,7 @@ The postConstruct callback allows to perform additional setup or initialization 
 #### Example Usage:
 ```dart
 ddi.registerSingleton<MyService>(
-  () => MyService(),
+  MyService.new,
   postConstruct: () {
     // Additional setup logic after MyService instance creation.
     print("MyService instance is ready!");
@@ -238,7 +239,7 @@ class ModifiedMyService extends MyService {
 }
 
 ddi.registerSingleton<MyService>(
-  () => MyService(),
+  MyService.new,
   decorators: [
     (existingInstance) => ModifiedMyService(existingInstance),
     // Additional decorators can be added as needed.
@@ -304,19 +305,19 @@ The registerIf parameter is a boolean function that determines whether an instan
 #### Example Usage:
 ```dart
 ddi.registerSingleton<MyService>(
-  () => MyServiceAndroid(),
+  MyServiceAndroid.new,
   registerIf: () {
     return Platform.isAndroid && MyUserService.isAdmin();
   },
 );
 ddi.registerSingleton<MyService>(
-  () => MyServiceIos(),
+  MyServiceIos.new,
   registerIf: () {
     return Platform.isIOS && MyUserService.isAdmin();
   },
 );
 ddi.registerSingleton<MyService>(
-  () => MyServiceDefault(),
+  MyServiceDefault.new,
   registerIf: () {
     return !MyUserService.isAdmin();
   },
@@ -330,7 +331,7 @@ The destroyable parameter, introduced in various registration methods, is option
 ```dart
 // Register an Application instance that is indestructible
 ddi.registerApplication<MyService>(
-  () => MyService(),
+  MyService.new,
   destroyable: false,
 );
 ```
@@ -581,13 +582,13 @@ Stream<StreamTypeT> getStream<StreamTypeT extends Object>(
 Registers a singleton instance. The `clazzRegister` parameter is a factory function to create the instance. Optional parameters allow customization of the instance's behavior and lifecycle.
 
 ```dart
-void registerSingleton<BeanT extends Object>(
-  BeanT Function() clazzRegister, {
+FutureOr<void> registerSingleton<BeanT extends Object>(
+  FutureOr<BeanT> Function() clazzRegister, {
   Object? qualifier,
   void Function()? postConstruct,
   List<BeanT Function(BeanT)>? decorators,
   List<DDIInterceptor<BeanT> Function()>? interceptors,
-  bool Function()? registerIf,
+  FutureOr<bool> Function()? registerIf,
   bool destroyable = true,
 });
 ```
@@ -597,13 +598,13 @@ void registerSingleton<BeanT extends Object>(
 Registers an application-scoped instance. The instance is created when first used and reused afterward.
 
 ```dart
-void registerApplication<BeanT extends Object>(
-  BeanT Function() clazzRegister, {
+FutureOr<void> registerApplication<BeanT extends Object>(
+  FutureOr<BeanT> Function() clazzRegister, {
   Object? qualifier,
   void Function()? postConstruct,
   List<BeanT Function(BeanT)>? decorators,
   List<DDIInterceptor<BeanT> Function()>? interceptors,
-  bool Function()? registerIf,
+  FutureOr<bool> Function()? registerIf,
   bool destroyable = true,
 });
 ```
@@ -613,13 +614,13 @@ void registerApplication<BeanT extends Object>(
 Registers a dependent instance. A new instance is created every time it is used.
 
 ```dart
-void registerDependent<BeanT extends Object>(
-  BeanT Function() clazzRegister, {
+FutureOr<void> registerDependent<BeanT extends Object>(
+  FutureOr<BeanT> Function() clazzRegister, {
   Object? qualifier,
   void Function()? postConstruct,
   List<BeanT Function(BeanT)>? decorators,
   List<DDIInterceptor<BeanT> Function()>? interceptors,
-  bool Function()? registerIf,
+  FutureOr<bool> Function()? registerIf,
   bool destroyable = true,
 });
 ```
@@ -629,13 +630,13 @@ void registerDependent<BeanT extends Object>(
 Registers a session-scoped instance. The instance is tied to a specific session.
 
 ```dart
-void registerSession<BeanT extends Object>(
+FutureOr<void> registerSession<BeanT extends Object>(
   BeanT Function() clazzRegister, {
   Object? qualifier,
   void Function()? postConstruct,
   List<BeanT Function(BeanT)>? decorators,
   List<DDIInterceptor<BeanT> Function()>? interceptors,
-  bool Function()? registerIf,
+  FutureOr<bool> Function()? registerIf,
   bool destroyable = true,
 });
 ```
@@ -645,28 +646,36 @@ void registerSession<BeanT extends Object>(
 Registers an Object values as instance. The `register` parameter is the value shared across de application.
 
 ```dart
-void registerObject<BeanT extends Object>({
+FutureOr<void> registerObject<BeanT extends Object>(
+  BeanT register, {
   required Object qualifier,
-  required BeanT register,
   void Function()? postConstruct,
   List<BeanT Function(BeanT)>? decorators,
   List<DDIInterceptor<BeanT> Function()>? interceptors,
-  bool Function()? registerIf,
+  FutureOr<bool> Function()? registerIf,
   bool destroyable = true,
 });
 ```
 
 ## get
 
-Retrieves an instance of type BeanT from the appropriate scope. You can provide a `qualifier` to distinguish between instances of the same type.
+Retrieves an instance of type `BeanT` from the appropriate scope. You can provide a `qualifier` to distinguish between instances of the same type.
 
 ```dart
 BeanT get<BeanT extends Object>({Object? qualifier});
 ```
 
+## getAsync
+
+Retrieves a Future instance of type `BeanT`, making possible to await to get the instances. 
+
+```dart
+Future<BeanT> getAsync<BeanT extends Object>({Object? qualifier});
+```
+
 ## getByType
 
-Retrieves all instance identifiers of type BeanT from each scope.
+Retrieves all instance identifiers of type `BeanT`.
 
 ```dart
 List<Object> getByType<BeanT extends Object>();
@@ -674,7 +683,7 @@ List<Object> getByType<BeanT extends Object>();
 
 ## call
 
-A shorthand for get<BeanT>(), allowing a more concise syntax for obtaining instances.
+A shorthand for `get<BeanT>()`, allowing a more concise syntax for obtaining instances.
 
 ```dart
 BeanT call<BeanT extends Object>();

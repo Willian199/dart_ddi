@@ -1,3 +1,4 @@
+import 'package:dart_ddi/dart_ddi.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -159,7 +160,10 @@ class _ItemPageState extends State<ItemPage> {
                       builder: (_, PerfumeState state) {
                         return PageView(
                           controller: pageController,
-                          onPageChanged: _perfumeCubit.pageChange,
+                          onPageChanged: (int page) {
+                            DDIStream.instance
+                                .fire<int>(value: page, qualifier: 'page_view');
+                          },
                           children: [
                             ItemNota(lista: state.dadosPerfume?.notasTopo),
                             ItemNota(lista: state.dadosPerfume?.notasCoracao),

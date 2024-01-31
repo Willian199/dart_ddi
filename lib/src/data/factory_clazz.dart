@@ -1,5 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 
+import 'dart:async';
+
 import 'package:dart_ddi/src/enum/scopes.dart';
 import 'package:dart_ddi/src/features/ddi_interceptor.dart';
 
@@ -7,7 +9,7 @@ class FactoryClazz<BeanT> {
   BeanT? clazzInstance;
   List<BeanT Function(BeanT i)>? decorators;
   List<DDIInterceptor<BeanT> Function()>? interceptors;
-  final BeanT Function()? clazzRegister;
+  final FutureOr<BeanT> Function()? clazzRegister;
   final void Function()? postConstruct;
   final Scopes scopeType;
   final Type type;
@@ -28,7 +30,7 @@ class FactoryClazz<BeanT> {
     BeanT? clazzInstance,
     List<BeanT Function(BeanT i)>? decorators,
     List<DDIInterceptor<BeanT> Function()>? interceptors,
-    BeanT Function()? clazzRegister,
+    FutureOr<BeanT> Function()? clazzRegister,
     void Function()? postConstruct,
     Scopes? scopeType,
     Type? type,

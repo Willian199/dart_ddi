@@ -1,7 +1,22 @@
 name: dart_ddi
 description: "A Dependency Injection package, with Qualifier, Decorators, Interceptors, Events and more. Inspired by Java CDI and get_it."
-version: 0.3.1
+version: 0.4.0
 homepage: https://github.com/Willian199/dart_ddi
+issue_tracker: https://github.com/Willian199/dart_ddi/issues
+tags:
+  - dependency
+  - package
+  - version
+  - injection
+  - management
+  - java
+
+topics:
+  - dependency-injection
+  - di
+  - injection
+  - java
+  - cdi
 
 environment:
   sdk: ">=3.0.0 <4.0.0"

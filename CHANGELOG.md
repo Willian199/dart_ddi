@@ -1,3 +1,7 @@
+## 0.4.0
+
+* Added proper support for register and get Future instances.
+
 ## 0.3.1
 
 * Fixed Documentation links.

@@ -7,28 +7,31 @@ import 'package:test/test.dart';
 import '../clazz_samples/a.dart';
 import '../clazz_samples/b.dart';
 import '../clazz_samples/c.dart';
-import '../clazz_samples/undestroyable/application_destroy_get.dart';
+import '../clazz_samples/undestroyable/future_application_destroy_get.dart';
 
 void applicationFuture() {
   group('DDI Application Future Basic Tests', () {
     void registerApplicationBeans() {
-      DDI.instance.registerApplication(() async => A(await DDI.instance()));
-      DDI.instance.registerApplication<FutureOr<B>>(
-          () => Future.value(B(DDI.instance())));
+      DDI.instance.registerApplication<A>(
+          () async => A(await DDI.instance.getAsync<B>()));
+      DDI.instance.registerApplication<B>(() async {
+        await Future.delayed(const Duration(milliseconds: 200));
+        return B(DDI.instance());
+      });
       DDI.instance.registerApplication(C.new);
     }
 
     void removeApplicationBeans() {
-      DDI.instance.destroy<Future<A>>();
-      DDI.instance.destroy<FutureOr<B>>();
+      DDI.instance.destroy<A>();
+      DDI.instance.destroy<B>();
       DDI.instance.destroy<C>();
     }
 
     test('Register and retrieve Application bean', () async {
       registerApplicationBeans();
 
-      final instance1 = await DDI.instance.get<Future<A>>();
-      final instance2 = await DDI.instance.get<Future<A>>();
+      final instance1 = await DDI.instance.getAsync<A>();
+      final instance2 = await DDI.instance.getAsync<A>();
 
       expect(instance1, same(instance2));
       expect(instance1.b, same(instance2.b));
@@ -41,10 +44,10 @@ void applicationFuture() {
     test('Retrieve Application bean after a "child" bean is diposed', () async {
       registerApplicationBeans();
 
-      final instance = await DDI.instance.get<Future<A>>();
+      final instance = await DDI.instance.getAsync<A>();
 
       DDI.instance.dispose<C>();
-      final instance1 = await DDI.instance.get<Future<A>>();
+      final instance1 = await DDI.instance.getAsync<A>();
       expect(instance1, same(instance));
       expect(instance1.b, same(instance.b));
       expect(instance.b.c, same(instance1.b.c));
@@ -57,10 +60,10 @@ void applicationFuture() {
         () async {
       registerApplicationBeans();
 
-      final instance = await DDI.instance.get<Future<A>>();
+      final instance = await DDI.instance.getAsync<A>();
 
-      DDI.instance.dispose<FutureOr<B>>();
-      final instance1 = await DDI.instance.get<Future<A>>();
+      DDI.instance.dispose<B>();
+      final instance1 = await DDI.instance.getAsync<A>();
       expect(instance1, same(instance));
       expect(instance1.b, same(instance.b));
       expect(instance.b.c, same(instance1.b.c));
@@ -73,10 +76,10 @@ void applicationFuture() {
         () async {
       registerApplicationBeans();
 
-      final instance1 = await DDI.instance.get<Future<A>>();
+      final instance1 = await DDI.instance.getAsync<A>();
 
-      DDI.instance.dispose<Future<A>>();
-      final instance2 = await DDI.instance.get<Future<A>>();
+      DDI.instance.dispose<A>();
+      final instance2 = await DDI.instance.getAsync<A>();
 
       expect(false, identical(instance1, instance2));
       expect(true, identical(instance1.b, instance2.b));
@@ -89,11 +92,11 @@ void applicationFuture() {
     test('Retrieve Application bean after 2 "child" bean is diposed', () async {
       registerApplicationBeans();
 
-      final instance1 = await DDI.instance.get<Future<A>>();
+      final instance1 = await DDI.instance.getAsync<A>();
 
-      DDI.instance.dispose<FutureOr<B>>();
-      DDI.instance.dispose<Future<A>>();
-      final instance2 = await DDI.instance.get<Future<A>>();
+      DDI.instance.dispose<B>();
+      DDI.instance.dispose<A>();
+      final instance2 = await DDI.instance.getAsync<A>();
 
       expect(false, identical(instance1, instance2));
       expect(false, identical(instance1.b, instance2.b));
@@ -106,12 +109,12 @@ void applicationFuture() {
     test('Retrieve Application bean after 3 "child" bean is diposed', () async {
       registerApplicationBeans();
 
-      final instance1 = await DDI.instance.get<Future<A>>();
+      final instance1 = await DDI.instance.getAsync<A>();
 
       DDI.instance.dispose<C>();
-      DDI.instance.dispose<FutureOr<B>>();
-      DDI.instance.dispose<Future<A>>();
-      final instance2 = await DDI.instance.get<Future<A>>();
+      DDI.instance.dispose<B>();
+      DDI.instance.dispose<A>();
+      final instance2 = await DDI.instance.getAsync<A>();
 
       expect(false, identical(instance1, instance2));
       expect(false, identical(instance1.b, instance2.b));
@@ -124,80 +127,82 @@ void applicationFuture() {
     test('Try to retrieve Application bean after disposed', () {
       DDI.instance.registerApplication(() => Future.value(C()));
 
-      final instance1 = DDI.instance.get<Future<C>>();
+      final instance1 = DDI.instance.getAsync<C>();
 
-      DDI.instance.dispose<Future<C>>();
+      DDI.instance.dispose<C>();
 
-      final instance2 = DDI.instance.get<Future<C>>();
+      final instance2 = DDI.instance.getAsync<C>();
 
       expect(false, identical(instance1, instance2));
 
-      DDI.instance.destroy<Future<C>>();
+      DDI.instance.destroy<C>();
     });
 
     test('Try to retrieve Application bean after removed', () {
       DDI.instance.registerApplication(() => Future.value(C()));
 
-      DDI.instance.get<Future<C>>();
+      DDI.instance.getAsync<C>();
 
-      DDI.instance.destroy<Future<C>>();
+      DDI.instance.destroy<C>();
 
-      expect(() => DDI.instance.get<Future<C>>(), throwsA(isA<BeanNotFound>()));
+      expect(() => DDI.instance.getAsync<C>(), throwsA(isA<BeanNotFound>()));
     });
 
     test('Create, get and remove a qualifier bean', () {
       DDI.instance
           .registerApplication(() => Future.value(C()), qualifier: 'typeC');
 
-      DDI.instance.get(qualifier: 'typeC');
+      DDI.instance.getAsync(qualifier: 'typeC');
 
       DDI.instance.destroy(qualifier: 'typeC');
 
-      expect(() => DDI.instance.get(qualifier: 'typeC'),
+      expect(() => DDI.instance.getAsync(qualifier: 'typeC'),
           throwsA(isA<BeanNotFound>()));
     });
 
-    test('Try to destroy a undestroyable Application bean', () {
+    test('Try to destroy a undestroyable Application bean', () async {
       DDI.instance.registerApplication(
-          () => Future.value(ApplicationDestroyGet()),
+          () => Future.value(FutureApplicationDestroyGet()),
           destroyable: false);
 
-      final instance1 = DDI.instance.get<Future<ApplicationDestroyGet>>();
+      final instance1 =
+          await DDI.instance.getAsync<FutureApplicationDestroyGet>();
 
-      DDI.instance.destroy<Future<ApplicationDestroyGet>>();
+      DDI.instance.destroy<FutureApplicationDestroyGet>();
 
-      final instance2 = DDI.instance.get<Future<ApplicationDestroyGet>>();
+      final instance2 =
+          await DDI.instance.getAsync<FutureApplicationDestroyGet>();
 
       expect(instance1, same(instance2));
     });
     test('Register and retrieve Future Application', () async {
       DDI.instance
-          .registerApplication(() async => A(await DDI.instance<Future<B>>()));
+          .registerApplication(() async => A(await DDI.instance.getAsync<B>()));
       DDI.instance.registerApplication(() async => B(DDI.instance()));
       DDI.instance.registerApplication(C.new);
 
-      final instance1 = await DDI.instance.get<Future<A>>();
-      final instance2 = await DDI.instance.get<Future<A>>();
+      final instance1 = await DDI.instance.getAsync<A>();
+      final instance2 = await DDI.instance.getAsync<A>();
 
       expect(instance1, same(instance2));
       expect(instance1.b, same(instance2.b));
       expect(instance1.b.c, same(instance2.b.c));
       expect(instance1.b.c.value, same(instance2.b.c.value));
 
-      DDI.instance.destroy<Future<A>>();
-      DDI.instance.destroy<Future<B>>();
+      DDI.instance.destroy<A>();
+      DDI.instance.destroy<B>();
       DDI.instance.destroy<C>();
     });
 
     test('Register and retrieve Future delayed Application bean', () async {
-      DDI.instance.registerApplication(() async {
+      DDI.instance.registerApplication<C>(() async {
         final C value = await Future.delayed(const Duration(seconds: 2), C.new);
         return value;
       });
 
-      final C intance = await DDI.instance.get<Future<C>>();
+      final C intance = await DDI.instance.getAsync<C>();
 
-      DDI.instance.destroy<Future<C>>(qualifier: 'typeC');
+      DDI.instance.destroy<C>();
 
       await expectLater(intance.value, 1);
     });
@@ -208,51 +213,51 @@ void applicationFuture() {
       DDI.instance.registerApplication(C.new);
 
       //This happens because A(await DDI.instance()) transform to A(await DDI.instance<FutureOr<B>>())
-      expect(() => DDI.instance.get<Future<A>>(), throwsA(isA<BeanNotFound>()));
+      expect(() => DDI.instance.getAsync<A>(), throwsA(isA<BeanNotFound>()));
 
-      DDI.instance.destroy<Future<A>>();
-      DDI.instance.destroy<Future<B>>();
+      DDI.instance.destroy<A>();
+      DDI.instance.destroy<B>();
       DDI.instance.destroy<C>();
     });
 
     test('Register and retrieve Application bean using FutureOr', () async {
-      DDI.instance.registerApplication(() async => A(await DDI.instance()));
       DDI.instance
-          .registerApplication<FutureOr<B>>(() async => B(DDI.instance()));
+          .registerApplication(() async => A(await DDI.instance.getAsync()));
+      DDI.instance.registerApplication<B>(() async => B(DDI.instance()));
       DDI.instance.registerApplication(C.new);
 
-      final instance1 = await DDI.instance.get<Future<A>>();
-      final instance2 = await DDI.instance.get<Future<A>>();
+      final instance1 = await DDI.instance.getAsync<A>();
+      final instance2 = await DDI.instance.getAsync<A>();
 
       expect(instance1, same(instance2));
       expect(instance1.b, same(instance2.b));
       expect(instance1.b.c, same(instance2.b.c));
       expect(instance1.b.c.value, same(instance2.b.c.value));
 
-      DDI.instance.destroy<Future<A>>();
-      DDI.instance.destroy<FutureOr<B>>();
+      DDI.instance.destroy<A>();
+      DDI.instance.destroy<B>();
       DDI.instance.destroy<C>();
     });
     test(
         'Retrieve Application bean after a "child" bean is disposed using Future',
         () async {
-      DDI.instance.registerApplication(() async => A(await DDI.instance()));
       DDI.instance
-          .registerApplication<FutureOr<B>>(() async => B(DDI.instance()));
+          .registerApplication(() async => A(await DDI.instance.getAsync<B>()));
+      DDI.instance.registerApplication<B>(() async => B(DDI.instance()));
       DDI.instance.registerApplication(C.new);
 
-      final instance1 = await DDI.instance.get<Future<A>>();
+      final instance1 = await DDI.instance.getAsync<A>();
 
       DDI.instance.dispose<C>();
-      final instance2 = await DDI.instance.get<Future<A>>();
+      final instance2 = await DDI.instance.getAsync<A>();
 
       expect(instance1, same(instance2));
       expect(instance1.b, same(instance2.b));
       expect(instance1.b.c, same(instance2.b.c));
       expect(instance1.b.c.value, same(instance2.b.c.value));
 
-      DDI.instance.destroy<Future<A>>();
-      DDI.instance.destroy<FutureOr<B>>();
+      DDI.instance.destroy<A>();
+      DDI.instance.destroy<B>();
       DDI.instance.destroy<C>();
     });
 
