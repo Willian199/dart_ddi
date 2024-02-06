@@ -66,4 +66,21 @@ final class _DDIStreamManager implements DDIStream {
 
     return stream as DDIStreamCore<StreamTypeT>;
   }
+
+  @override
+  bool isRegistered<StreamTypeT extends Object>({Object? qualifier}) {
+    final Object effectiveQualifierName = qualifier ?? StreamTypeT;
+
+    return _streamMap[effectiveQualifierName] != null;
+  }
+
+  @override
+  Stream<StreamTypeT> getOrCreateStream<StreamTypeT extends Object>(
+      {Object? qualifier}) {
+    final Object effectiveQualifierName = qualifier ?? StreamTypeT;
+
+    return _streamMap
+        .putIfAbsent(effectiveQualifierName, () => DDIStreamCore<StreamTypeT>())
+        .getStream() as Stream<StreamTypeT>;
+  }
 }

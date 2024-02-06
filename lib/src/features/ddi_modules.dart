@@ -1,42 +1,12 @@
 import 'dart:async';
 
-import 'package:dart_ddi/src/data/factory_clazz.dart';
-import 'package:dart_ddi/src/enum/scopes.dart';
-import 'package:dart_ddi/src/exception/bean_destroyed.dart';
-import 'package:dart_ddi/src/exception/bean_not_found.dart';
-import 'package:dart_ddi/src/exception/circular_detection.dart';
-import 'package:dart_ddi/src/exception/duplicated_bean.dart';
-import 'package:dart_ddi/src/exception/future_not_accept.dart';
-import 'package:dart_ddi/src/features/ddi_interceptor.dart';
-import 'package:dart_ddi/src/features/post_construct.dart';
-import 'package:dart_ddi/src/features/pre_destroy.dart';
+import 'package:dart_ddi/dart_ddi.dart';
 
-part 'dart_ddi_impl.dart';
+mixin DDIModules  on PostConstruct {
+  Object get moduleQualifier => runtimeType;
 
-/// [DDI] is an abstract class representing a Dependency Injection system.
-abstract class DDI {
-  /// Creates the shared instance of the [DDI] class.
-  static final DDI _instance = _DDIImpl();
+  DDI get inject => DDI.instance;
 
-  /// Gets the shared instance of the [DDI] class.
-  static DDI get instance => _instance;
-
-  /// Registers an instance of a class as a Singleton.
-  ///
-  /// - `clazzRegister`: Factory function to create the instance.
-  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
-  /// - `postConstruct`: Optional function to be executed after the instance is constructed.
-  /// - `decorators`: List of decoration functions to apply to the instance.
-  /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
-  /// - `registerIf`: Optional function to conditionally register the instance.
-  ///
-  /// **Singleton Scope:**
-  /// - Ensures that only one instance of the registered class is created and shared throughout the entire application.
-  /// - Created once when registered.
-  ///
-  ///  **Use Case:**
-  /// - Suitable for objects that are stateless or have shared state across the entire application.
-  /// - Examples include utility classes, configuration objects, or services that maintain global state.
   Future<void> registerSingleton<BeanT extends Object>(
     FutureOr<BeanT> Function() clazzRegister, {
     Object? qualifier,
@@ -45,7 +15,19 @@ abstract class DDI {
     List<DDIInterceptor<BeanT> Function()>? interceptors,
     FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
-  });
+  }) {
+    DDI.instance.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
+
+    return DDI.instance.registerSingleton<BeanT>(
+      clazzRegister,
+      qualifier: qualifier,
+      postConstruct: postConstruct,
+      decorators: decorators,
+      interceptors: interceptors,
+      destroyable: destroyable,
+      registerIf: registerIf,
+    );
+  }
 
   /// Registers an instance of a class as a Application.
   ///
@@ -73,7 +55,19 @@ abstract class DDI {
     List<DDIInterceptor<BeanT> Function()>? interceptors,
     FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
-  });
+  }) {
+    DDI.instance.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
+
+    return DDI.instance.registerApplication<BeanT>(
+      clazzRegister,
+      qualifier: qualifier,
+      postConstruct: postConstruct,
+      decorators: decorators,
+      interceptors: interceptors,
+      destroyable: destroyable,
+      registerIf: registerIf,
+    );
+  }
 
   /// Registers an instance of a class as a Session.
   ///
@@ -101,7 +95,19 @@ abstract class DDI {
     List<DDIInterceptor<BeanT> Function()>? interceptors,
     FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
-  });
+  }) {
+    DDI.instance.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
+
+    return DDI.instance.registerSession<BeanT>(
+      clazzRegister,
+      qualifier: qualifier,
+      postConstruct: postConstruct,
+      decorators: decorators,
+      interceptors: interceptors,
+      destroyable: destroyable,
+      registerIf: registerIf,
+    );
+  }
 
   /// Registers an instance of a class as a Dependent.
   ///
@@ -128,7 +134,19 @@ abstract class DDI {
     List<DDIInterceptor<BeanT> Function()>? interceptors,
     FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
-  });
+  }) {
+    DDI.instance.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
+
+    return DDI.instance.registerDependent<BeanT>(
+      clazzRegister,
+      qualifier: qualifier,
+      postConstruct: postConstruct,
+      decorators: decorators,
+      interceptors: interceptors,
+      destroyable: destroyable,
+      registerIf: registerIf,
+    );
+  }
 
   /// Registers an Object.
   ///
@@ -156,90 +174,17 @@ abstract class DDI {
     List<DDIInterceptor<BeanT> Function()>? interceptors,
     FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
-  });
+  }) {
+    DDI.instance.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
 
-  /// Verify if an instance is already registered in [DDI].
-  ///
-  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
-  bool isRegistered<BeanT extends Object>({Object? qualifier});
-
-  /// Gets an instance of the registered class in [DDI].
-  ///
-  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
-  BeanT get<BeanT extends Object>({Object? qualifier});
-
-  /// Gets an instance of the registered class in [DDI].
-  ///
-  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
-  Future<BeanT> getAsync<BeanT extends Object>({Object? qualifier});
-
-  /// Retrieves a list of keys associated with objects of a specific type BeanT`.
-  ///
-  /// This method allows you to obtain all keys (qualifier names) that have been used to register objects of the specified type `BeanT`.
-  List<Object> getByType<BeanT extends Object>();
-
-  /// Gets an instance of the registered class in [DDI].
-  ///
-  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
-  BeanT call<BeanT extends Object>();
-
-  /// Removes the instance of the registered class in [DDI].
-  ///
-  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
-  void destroy<BeanT extends Object>({Object? qualifier});
-
-  /// Removes all the instance registered as Session Scope.
-  void destroyAllSession();
-
-  /// Removes all the instance registered as type `BeanT`.
-  void destroyByType<BeanT extends Object>();
-
-  /// Disposes of the instance of the registered class in [DDI].
-  ///
-  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
-  void dispose<BeanT extends Object>({Object? qualifier});
-
-  /// Disposes all the instance registered as Session Scope.
-  void disposeAllSession();
-
-  /// Disposes all the instance registered as type `BeanT`.
-  void disposeByType<BeanT extends Object>();
-
-  /// Allows to dynamically add a Decorators.
-  ///
-  /// When using this method, consider the following:
-  ///
-  /// - **Order of Execution:** Decorators are applied in the order they are provided.
-  /// - **Instaces Already Gets:** No changes any Instances that have been get.
-  FutureOr<void> addDecorator<BeanT extends Object>(
-      List<BeanT Function(BeanT)> decorators,
-      {Object? qualifier});
-
-  /// Allows to dynamically add a Interceptor.
-  ///
-  /// When using this method, consider the following:
-  ///
-  /// - **Scope:** Different scopes may have varying behaviors when adding interceptors.
-  /// - **Around Constructor:** Will not work with Singletons Scope.
-  /// - **Order of Execution:** Interceptor are applied in the order they are provided.
-  /// - **Instaces Already Gets:** No changes any Instances that have been get.
-  void addInterceptor<BeanT extends Object>(
-      List<DDIInterceptor<BeanT> Function()> interceptors,
-      {Object? qualifier});
-
-  /// Allows to dynamically refresh the Object.
-  ///
-  /// When using this method, consider the following:
-  ///
-  /// - **Instaces Already Gets:** No changes any Instances that have been get.
-  void refreshObject<BeanT extends Object>(
-    BeanT register, {
-    Object? qualifier,
-  });
-
-  void addChildrenModules<BeanT extends Object>(
-      {required List<Object> child, Object? qualifier});
-
-  void addChildModules<BeanT extends Object>(
-      {required Object child, Object? qualifier});
+    return DDI.instance.registerObject<BeanT>(
+      register,
+      qualifier: qualifier,
+      postConstruct: postConstruct,
+      decorators: decorators,
+      interceptors: interceptors,
+      destroyable: destroyable,
+      registerIf: registerIf,
+    );
+  }
 }

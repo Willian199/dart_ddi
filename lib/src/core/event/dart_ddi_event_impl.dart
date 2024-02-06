@@ -138,4 +138,11 @@ class _DDIEventImpl implements DDIEvent {
       throw EventNotFound(effectiveQualifierName.toString());
     }
   }
+
+  @override
+  bool isRegistered<EventTypeT extends Object>({Object? qualifier}) {
+    final Object effectiveQualifierName = qualifier ?? EventTypeT;
+
+    return _events[effectiveQualifierName] != null;
+  }
 }
