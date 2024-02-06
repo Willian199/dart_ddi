@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
 
-mixin DDIModules  on PostConstruct {
+mixin DDIModule implements PostConstruct {
   Object get moduleQualifier => runtimeType;
 
   DDI get inject => DDI.instance;

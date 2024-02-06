@@ -1,5 +1,4 @@
-import 'package:dart_ddi/src/features/post_construct.dart';
-import 'package:dart_ddi/src/features/pre_destroy.dart';
+import 'package:dart_ddi/dart_ddi.dart';
 
 class L with PostConstruct, PreDestroy {
   String value = 'abc';
