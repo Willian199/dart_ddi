@@ -6,8 +6,8 @@ import '../clazz_samples/a.dart';
 import '../clazz_samples/c.dart';
 import '../clazz_samples/module_singleton.dart';
 
-void addModule() {
-  group('DDI Modules Basic Tests', () {
+void moduleSingletonTest() {
+  group('DDI Modules Singleton Basic Tests', () {
     test('Register a Singleton Module', () {
       DDI.instance.registerSingleton(ModuleSingleton.new);
 

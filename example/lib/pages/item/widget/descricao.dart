@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:perfumei/modules/item/cubit/perfume_cubit.dart';
-import 'package:perfumei/modules/item/state/perfume_state.dart';
+import 'package:perfumei/pages/item/cubit/perfume_cubit.dart';
+import 'package:perfumei/pages/item/state/perfume_state.dart';
 
 class Descricao extends StatelessWidget {
   const Descricao({super.key});

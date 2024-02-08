@@ -1,3 +1,5 @@
+import 'dart:async';
+
 mixin PostConstruct {
-  void onPostConstruct();
+  FutureOr<void> onPostConstruct();
 }

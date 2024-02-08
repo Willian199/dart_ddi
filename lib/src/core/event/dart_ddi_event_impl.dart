@@ -141,8 +141,6 @@ class _DDIEventImpl implements DDIEvent {
 
   @override
   bool isRegistered<EventTypeT extends Object>({Object? qualifier}) {
-    final Object effectiveQualifierName = qualifier ?? EventTypeT;
-
-    return _events[effectiveQualifierName] != null;
+    return _events.containsKey(qualifier ?? EventTypeT);
   }
 }

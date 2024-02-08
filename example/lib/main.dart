@@ -8,11 +8,8 @@ import 'package:perfumei/common/constants/injection_constants.dart';
 import 'package:perfumei/config/services/injection.dart';
 import 'package:perfumei/config/theme/dark.dart';
 import 'package:perfumei/config/theme/light.dart';
-import 'package:perfumei/modules/home/cubit/home_cubit.dart';
-import 'package:perfumei/modules/home/view/home_page.dart';
-import 'package:perfumei/modules/item/cubit/imagem_cubit.dart';
-import 'package:perfumei/modules/item/cubit/item_cubit.dart';
-import 'package:perfumei/modules/item/cubit/perfume_cubit.dart';
+import 'package:perfumei/pages/home/cubit/home_cubit.dart';
+import 'package:perfumei/pages/home/view/home_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,9 +30,6 @@ void main() async {
       qualifier: InjectionConstants.darkMode);
 
   ddi.registerDependent<HomeCubit>(HomeCubit.new);
-  ddi.registerDependent<TabCubit>(TabCubit.new);
-  ddi.registerDependent<PerfumeCubit>(PerfumeCubit.new);
-  ddi.registerDependent<ImagemCubit>(ImagemCubit.new);
 
   await ddi.registerSingleton<CacheStore>(() async {
     final Directory dir = await pp.getTemporaryDirectory();

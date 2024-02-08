@@ -1,3 +1,5 @@
+import 'dart:async';
+
 mixin PreDestroy {
-  void onPreDestroy();
+  FutureOr<void> onPreDestroy();
 }

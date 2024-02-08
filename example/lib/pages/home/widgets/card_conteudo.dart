@@ -3,7 +3,7 @@ import 'package:perfumei/common/components/widgets/degrade.dart';
 import 'package:perfumei/common/model/grid_model.dart';
 import 'package:perfumei/common/model/layout.dart';
 import 'package:perfumei/config/services/injection.dart';
-import 'package:perfumei/modules/home/widgets/row_value.dart';
+import 'package:perfumei/pages/home/widgets/row_value.dart';
 
 class CardConteudo extends StatelessWidget {
   const CardConteudo({required this.grid, super.key});

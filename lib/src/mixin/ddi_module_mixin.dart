@@ -16,7 +16,8 @@ mixin DDIModule implements PostConstruct {
     FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
   }) {
-    DDI.instance.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
+    DDI.instance
+        .addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
 
     return DDI.instance.registerSingleton<BeanT>(
       clazzRegister,
@@ -56,7 +57,8 @@ mixin DDIModule implements PostConstruct {
     FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
   }) {
-    DDI.instance.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
+    DDI.instance
+        .addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
 
     return DDI.instance.registerApplication<BeanT>(
       clazzRegister,
@@ -96,7 +98,8 @@ mixin DDIModule implements PostConstruct {
     FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
   }) {
-    DDI.instance.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
+    DDI.instance
+        .addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
 
     return DDI.instance.registerSession<BeanT>(
       clazzRegister,
@@ -135,7 +138,8 @@ mixin DDIModule implements PostConstruct {
     FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
   }) {
-    DDI.instance.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
+    DDI.instance
+        .addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
 
     return DDI.instance.registerDependent<BeanT>(
       clazzRegister,
@@ -175,7 +179,8 @@ mixin DDIModule implements PostConstruct {
     FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
   }) {
-    DDI.instance.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
+    DDI.instance
+        .addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
 
     return DDI.instance.registerObject<BeanT>(
       register,

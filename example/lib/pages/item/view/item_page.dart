@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -7,15 +9,30 @@ import 'package:perfumei/common/enum/notas_enum.dart';
 import 'package:perfumei/common/model/grid_model.dart';
 import 'package:perfumei/common/model/layout.dart';
 import 'package:perfumei/config/services/injection.dart';
-import 'package:perfumei/modules/item/cubit/item_cubit.dart';
-import 'package:perfumei/modules/item/cubit/perfume_cubit.dart';
-import 'package:perfumei/modules/item/state/perfume_state.dart';
-import 'package:perfumei/modules/item/state/tab_state.dart';
-import 'package:perfumei/modules/item/widget/item_nota.dart';
-import 'package:perfumei/modules/item/widget/item_topo.dart';
+import 'package:perfumei/pages/item/cubit/tab_cubit.dart';
+import 'package:perfumei/pages/item/cubit/perfume_cubit.dart';
+import 'package:perfumei/pages/item/item_module.dart';
+import 'package:perfumei/pages/item/state/perfume_state.dart';
+import 'package:perfumei/pages/item/state/tab_state.dart';
+import 'package:perfumei/pages/item/widget/item_nota.dart';
+import 'package:perfumei/pages/item/widget/item_topo.dart';
 
-class ItemPage extends StatefulWidget {
-  const ItemPage({required this.item, this.bytes, super.key});
+abstract class LoadModule<BeanT extends Object> extends StatefulWidget {
+  LoadModule({
+    required FutureOr<BeanT> Function() clazzRegister,
+    super.key,
+  }) {
+    DDI.instance.registerSingleton<BeanT>(clazzRegister);
+  }
+
+  void destroy() {
+    DDI.instance.destroy<BeanT>();
+  }
+}
+
+class ItemPage extends LoadModule<ItemModule> {
+  ItemPage({required this.item, this.bytes, super.key})
+      : super(clazzRegister: ItemModule.new);
   final GridModel item;
   final Uint8List? bytes;
 
@@ -26,8 +43,13 @@ class ItemPage extends StatefulWidget {
 class _ItemPageState extends State<ItemPage> {
   final PerfumeCubit _perfumeCubit = ddi();
   final TabCubit _tabCubit = ddi();
-
   final Layout layout = ddi.get<Layout>();
+
+  @override
+  void dispose() {
+    widget.destroy();
+    super.dispose();
+  }
 
   @override
   void initState() {

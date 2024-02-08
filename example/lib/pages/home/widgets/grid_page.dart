@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:perfumei/common/model/grid_model.dart';
-import 'package:perfumei/modules/home/widgets/grid_row.dart';
+import 'package:perfumei/pages/home/widgets/grid_row.dart';
 
 class GridPage extends StatefulWidget {
   const GridPage({

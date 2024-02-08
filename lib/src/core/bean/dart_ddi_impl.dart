@@ -64,7 +64,7 @@ class _DDIImpl implements DDI {
         interceptors: interceptors,
         destroyable: destroyable,
       );
-      
+
       if (clazz is PostConstruct) {
         clazz.onPostConstruct();
       } else if (clazz is Future<PostConstruct>) {
@@ -227,12 +227,6 @@ class _DDIImpl implements DDI {
 
       postConstruct?.call();
 
-      if (register is PostConstruct) {
-        register.onPostConstruct();
-      } else if (register is Future<PostConstruct>) {
-        _runFutureOrPostConstruct(register);
-      }
-
       _beans[effectiveQualifierName] = FactoryClazz<BeanT>(
         clazzInstance: register,
         type: BeanT,
@@ -240,14 +234,18 @@ class _DDIImpl implements DDI {
         interceptors: interceptors,
         destroyable: destroyable,
       );
+
+      if (register is PostConstruct) {
+        register.onPostConstruct();
+      } else if (register is Future<PostConstruct>) {
+        _runFutureOrPostConstruct(register);
+      }
     }
   }
 
   @override
   bool isRegistered<BeanT extends Object>({Object? qualifier}) {
-    final Object effectiveQualifierName = qualifier ?? BeanT;
-
-    return _beans[effectiveQualifierName] != null;
+    return _beans.containsKey(qualifier ?? BeanT);
   }
 
   @override
@@ -500,16 +498,18 @@ class _DDIImpl implements DDI {
     _destroy<BeanT>(effectiveQualifierName);
   }
 
+  void _destroyChildren(FactoryClazz factoryClazz) {
+    if (factoryClazz.children case final List<Object> children?
+        when children.isNotEmpty) {
+      for (final Object child in children) {
+        _destroy(child);
+      }
+    }
+  }
+
   void _destroy<BeanT>(Object effectiveQualifierName) {
     if (_beans[effectiveQualifierName] case final factoryClazz?
         when factoryClazz.destroyable) {
-      if (factoryClazz.children case final List<Object> children?
-          when children.isNotEmpty) {
-        for (final Object child in children) {
-          _destroy(child);
-        }
-      }
-
       //Only destroy if destroyable was registered with true
       if (factoryClazz.clazzInstance case final clazz?) {
         if (factoryClazz.interceptors case final inter?) {
@@ -519,12 +519,13 @@ class _DDIImpl implements DDI {
         }
 
         if (clazz is FutureOr<PreDestroy>) {
-          _runFutureOrPreDestroy(clazz, effectiveQualifierName);
+          _runFutureOrPreDestroy(factoryClazz, clazz, effectiveQualifierName);
           //Should return because the _runFutureOrPreDestroy apply the remove
           return;
         }
       }
 
+      _destroyChildren(factoryClazz);
       _beans.remove(effectiveQualifierName);
     }
   }
@@ -584,17 +585,22 @@ class _DDIImpl implements DDI {
       }
     }
 
+    if (factoryClazz.children case final List<Object> children?
+        when children.isNotEmpty) {
+      for (final Object child in children) {
+        dispose(qualifier: child);
+      }
+    }
+
     factoryClazz.clazzInstance = null;
   }
 
   @override
   void disposeAllSession() {
     for (final MapEntry(:key, :value) in _beans.entries) {
-      if (value.scopeType != Scopes.session) {
-        continue;
+      if (value.scopeType == Scopes.session) {
+        _disposeBean(value, key);
       }
-
-      _disposeBean(value, key);
     }
   }
 
@@ -605,8 +611,8 @@ class _DDIImpl implements DDI {
     final clazz =
         _beans.entries.where((element) => element.value.type == type).toList();
 
-    for (final c in clazz) {
-      _disposeBean(c.value, c.key);
+    for (final MapEntry(:key, :value) in clazz) {
+      _disposeBean(value, key);
     }
   }
 
@@ -697,11 +703,13 @@ class _DDIImpl implements DDI {
     clazz.onPostConstruct();
   }
 
-  Future<void> _runFutureOrPreDestroy(
+  Future<void> _runFutureOrPreDestroy(FactoryClazz factoryClazz,
       FutureOr<PreDestroy> register, Object effectiveQualifierName) async {
     final PreDestroy clazz = await register;
 
     clazz.onPreDestroy();
+
+    _destroyChildren(factoryClazz);
 
     _beans.remove(effectiveQualifierName);
   }
