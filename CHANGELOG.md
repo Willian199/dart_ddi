@@ -1,3 +1,11 @@
+## 0.5.0
+
+* Added support for Modules.
+* Added Mixin DDIModule to help to use Modules behavior.
+* Added Mixin PreDispose with execution before the class is disposed.
+* Added methods isRegistered to Stream, Events and Beans instances.
+* Future improvements.
+
 ## 0.4.0
 
 * Added proper support for register and get Future instances.

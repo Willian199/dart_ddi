@@ -256,7 +256,7 @@ class _DDIImpl implements DDI {
   BeanT _getSingleton<BeanT extends Object>(
       FactoryClazz<BeanT> factoryClazz, Object effectiveQualifierName) {
     if (factoryClazz.clazzInstance case var clazz?) {
-      if (factoryClazz.interceptors case final inter?) {
+      if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
         for (final interceptor in inter) {
           clazz = interceptor.call().aroundGet(clazz);
         }
@@ -279,7 +279,7 @@ class _DDIImpl implements DDI {
       applicationClazz = factoryClazz.clazzInstance!;
     }
 
-    if (factoryClazz.interceptors case final inter?) {
+    if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
         applicationClazz = interceptor.call().aroundGet(applicationClazz);
       }
@@ -299,7 +299,7 @@ class _DDIImpl implements DDI {
       applicationClazz = factoryClazz.clazzInstance!;
     }
 
-    if (factoryClazz.interceptors case final inter?) {
+    if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
         applicationClazz = interceptor.call().aroundGet(applicationClazz);
       }
@@ -312,7 +312,7 @@ class _DDIImpl implements DDI {
     FactoryClazz<BeanT> factoryClazz,
     BeanT applicationClazz,
   ) {
-    if (factoryClazz.interceptors case final inter?) {
+    if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
         applicationClazz = interceptor.call().aroundConstruct(applicationClazz);
       }
@@ -349,7 +349,7 @@ class _DDIImpl implements DDI {
     FactoryClazz<BeanT> factoryClazz,
     BeanT dependentClazz,
   ) {
-    if (factoryClazz.interceptors case final inter?) {
+    if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
         dependentClazz = interceptor.call().aroundConstruct(dependentClazz);
       }
@@ -366,7 +366,7 @@ class _DDIImpl implements DDI {
       _runFutureOrPostConstruct(dependentClazz);
     }
 
-    if (factoryClazz.interceptors case final inter?) {
+    if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
         dependentClazz = interceptor.call().aroundGet(dependentClazz);
       }
@@ -512,7 +512,7 @@ class _DDIImpl implements DDI {
         when factoryClazz.destroyable) {
       //Only destroy if destroyable was registered with true
       if (factoryClazz.clazzInstance case final clazz?) {
-        if (factoryClazz.interceptors case final inter?) {
+        if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
           for (final interceptor in inter) {
             interceptor.call().aroundDestroy(clazz);
           }
@@ -578,7 +578,7 @@ class _DDIImpl implements DDI {
     Object effectiveQualifierName,
   ) {
     if (factoryClazz.clazzInstance case final clazz?) {
-      if (factoryClazz.interceptors case final inter?) {
+      if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
         //Call aroundDispose before reset the clazzInstance
         for (final interceptor in inter) {
           interceptor().aroundDispose(clazz);
