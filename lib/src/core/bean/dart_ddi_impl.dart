@@ -518,7 +518,7 @@ class _DDIImpl implements DDI {
           }
         }
 
-        if (clazz is FutureOr<PreDestroy>) {
+        if (clazz is PreDestroy) {
           _runFutureOrPreDestroy(factoryClazz, clazz, effectiveQualifierName);
           //Should return because the _runFutureOrPreDestroy apply the remove
           return;
@@ -577,22 +577,22 @@ class _DDIImpl implements DDI {
     FactoryClazz<BeanT> factoryClazz,
     Object effectiveQualifierName,
   ) {
-    if (factoryClazz.clazzInstance != null &&
-        factoryClazz.interceptors != null) {
-      //Call aroundDispose before reset the clazzInstance
-      for (final interceptor in factoryClazz.interceptors!) {
-        interceptor().aroundDispose(factoryClazz.clazzInstance as BeanT);
+    if (factoryClazz.clazzInstance case final clazz?) {
+      if (factoryClazz.interceptors case final inter?) {
+        //Call aroundDispose before reset the clazzInstance
+        for (final interceptor in inter) {
+          interceptor().aroundDispose(clazz);
+        }
+      }
+
+      if (clazz is PreDispose) {
+        _runFutureOrPreDispose(factoryClazz, clazz, effectiveQualifierName);
+        //Should return because the _runFutureOrPreDestroy apply the remove
+        return;
       }
     }
 
-    if (factoryClazz.children case final List<Object> children?
-        when children.isNotEmpty) {
-      for (final Object child in children) {
-        dispose(qualifier: child);
-      }
-    }
-
-    factoryClazz.clazzInstance = null;
+    _disposeChildren(factoryClazz);
   }
 
   @override
@@ -704,14 +704,30 @@ class _DDIImpl implements DDI {
   }
 
   Future<void> _runFutureOrPreDestroy(FactoryClazz factoryClazz,
-      FutureOr<PreDestroy> register, Object effectiveQualifierName) async {
-    final PreDestroy clazz = await register;
-
-    clazz.onPreDestroy();
+      PreDestroy clazz, Object effectiveQualifierName) async {
+    await clazz.onPreDestroy();
 
     _destroyChildren(factoryClazz);
 
     _beans.remove(effectiveQualifierName);
+  }
+
+  Future<void> _runFutureOrPreDispose(FactoryClazz factoryClazz,
+      PreDispose clazz, Object effectiveQualifierName) async {
+    await clazz.onPreDispose();
+
+    _disposeChildren(factoryClazz);
+  }
+
+  void _disposeChildren(FactoryClazz factoryClazz) {
+    if (factoryClazz.children case final List<Object> children?
+        when children.isNotEmpty) {
+      for (final Object child in children) {
+        dispose(qualifier: child);
+      }
+    }
+
+    factoryClazz.clazzInstance = null;
   }
 
   @override

@@ -53,7 +53,8 @@ Summary
 6. [Mixins](#mixins)
    1. [Post Construct](#post-construct-mixin)
    2. [Pre Destroy](#pre-destroy-mixin)
-   3. [DDIModule Mixin](#ddimodule-mixin)
+   3. [Pre Dispose](#pre-dispose-mixin)
+   4. [DDIModule Mixin](#ddimodule-mixin)
 7. [Events](#events)
    1. [Creating and Managing Events](#creating-and-managing-events)
    2. [Subscribing an Event](#subscribing-an-event)
@@ -348,7 +349,7 @@ When you execute `dispose` or `destroy` for a module, they will be executed for 
 
 ### Adding a Class
 
-To add a single class to a module to your dependency injection container, you can use the `addChildModules` method. This method is useful when you want to add a single module with a possible specific qualifier.
+To add a single class to a module to your dependency injection container, you can use the `addChildModules` method.
 
 - `child`: This refers to the type or qualifier of the subclasses that will be part of the module. Note that these are not instances, but rather types or qualifiers.
 - `qualifier` (optional): This parameter refers to the main class type of the module. It is optional and is used as a qualifier if needed.
@@ -362,7 +363,7 @@ ddi.addChildModules<MyModule>(
 ```
 
 ### Adding Multiple Class
-To add multiple class to a module at once, you can utilize the `addChildrenModules` method. This is convenient when you need to add a list of modules all at once.
+To add multiple class to a module at once, you can utilize the `addChildrenModules` method.
 
 ```dart
 // Adding multiple modules at once.
@@ -429,6 +430,26 @@ void main() {
   // Output:
   // Instance of MyClass is about to be destroyed.
   // Performing cleanup for Willian
+}
+```
+
+### Pre Dipose Mixin
+
+The `PreDispose` mixin extends the lifecycle management capabilities, allowing custom logic to be executed before an instance is disposed.
+
+#### Example Usage:
+```dart
+class MyClass with PreDispose {
+  final String name;
+
+  MyClass(this.name);
+
+  @override
+  void onPreDispose() {
+    // Custom cleanup logic to be executed before disposal.
+    print('Instance of MyClass is about to be disposed.');
+    print('Performing cleanup for $name');
+  }
 }
 ```
 

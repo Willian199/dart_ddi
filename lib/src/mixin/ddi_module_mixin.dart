@@ -24,7 +24,8 @@ mixin DDIModule implements PostConstruct {
     FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
   }) {
-    inject.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
+    inject.addChildModules(
+        child: qualifier ?? BeanT, qualifier: moduleQualifier);
 
     return inject.registerSingleton<BeanT>(
       clazzRegister,
@@ -55,7 +56,8 @@ mixin DDIModule implements PostConstruct {
     FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
   }) {
-    inject.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
+    inject.addChildModules(
+        child: qualifier ?? BeanT, qualifier: moduleQualifier);
 
     return inject.registerApplication<BeanT>(
       clazzRegister,
@@ -86,7 +88,8 @@ mixin DDIModule implements PostConstruct {
     FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
   }) {
-    inject.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
+    inject.addChildModules(
+        child: qualifier ?? BeanT, qualifier: moduleQualifier);
 
     return inject.registerSession<BeanT>(
       clazzRegister,
@@ -117,7 +120,8 @@ mixin DDIModule implements PostConstruct {
     FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
   }) {
-    inject.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
+    inject.addChildModules(
+        child: qualifier ?? BeanT, qualifier: moduleQualifier);
 
     return inject.registerDependent<BeanT>(
       clazzRegister,
@@ -148,7 +152,8 @@ mixin DDIModule implements PostConstruct {
     FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
   }) {
-    inject.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
+    inject.addChildModules(
+        child: qualifier ?? BeanT, qualifier: moduleQualifier);
 
     return inject.registerObject<BeanT>(
       register,
