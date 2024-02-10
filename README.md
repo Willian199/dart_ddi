@@ -336,6 +336,40 @@ ddi.registerApplication<MyService>(
 );
 ```
 
+## Modules
+
+Modules offer a convenient way to modularize and organize dependency injection configuration in your application. Through the use of the `addChildModules` and `addChildrenModules` methods, you can add and configure specific modules, grouping related dependencies and facilitating management of your dependency injection container.
+
+When you execute `dispose` or `destroy` for a module, they will be executed for all its children.
+
+### Adding an Individual Module
+
+To add a single module to your dependency injection container, you can use the `addChildModules` method. This method is useful when you want to add a single module with a possible specific qualifier.
+
+- `child`: This refers to the type or qualifier of the subclasses that will be part of the module. Note that these are not instances, but rather types or qualifiers.
+- `qualifier` (optional): This parameter refers to the main class type of the module. It is optional and is used as a qualifier if needed.
+
+```dart
+// Adding a single module with a possible specific qualifier.
+ddi.addChildModules<MyModule>(
+  child: MySubmoduleType, 
+  qualifier: 'MyModule',
+);
+```
+
+### Adding Multiple Modules at Once
+To add multiple modules at once, you can utilize the `addChildrenModules` method. This is convenient when you need to add a list of modules all at once.
+
+```dart
+// Adding multiple modules at once.
+ddi.addChildrenModules<MyModule>(
+  child: [MySubmoduleType1, MySubmoduleType2], 
+  qualifier: 'MyModule',
+);
+```
+With these methods, you can modularize your dependency injection configuration, which can be especially useful in larger applications with complex instance management requirements.
+
+
 ## Mixins
 
 ### Post Construct Mixin
@@ -391,6 +425,27 @@ void main() {
   // Output:
   // Instance of MyClass is about to be destroyed.
   // Performing cleanup for Willian
+}
+```
+
+## DDIModule Mixin
+
+The `DDIModule` mixin provides a convenient way to organize and manage your dependency injection configuration within your Dart application. By implementing this mixin in your module classes, you can easily register instances with different scopes and dependencies using the provided methods.
+
+## Example Usage:
+
+```dart
+// Define a module using the DDIModule mixin
+
+class AppModule with DDIModule {
+  @override
+  void onPostConstruct() {
+    // Registering instances with different scopes
+    registerSingleton(() => Database('main_database'), qualifier: 'mainDatabase');
+    registerApplication(() => Logger(), qualifier: 'appLogger');
+    registerObject('https://api.example.com', qualifier: 'apiUrl');
+    registerDependent(() => ApiService(inject.get(qualifier: 'apiUrl')), qualifier: 'dependentApiService');
+  }
 }
 ```
 
