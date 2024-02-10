@@ -1,4 +1,9 @@
 import 'beans_test/add_decoratos_test.dart';
+import 'beans_test/module_application_test.dart';
+import 'beans_test/module_dependent_test.dart';
+import 'beans_test/module_object_test.dart';
+import 'beans_test/module_session_test.dart';
+import 'beans_test/module_singleton_test.dart';
 import 'beans_test/application_future_test.dart';
 import 'beans_test/application_test.dart';
 import 'beans_test/circular_injection_test.dart';
@@ -56,6 +61,13 @@ void main() {
   //CircularDetection
   circularDetection();
   futureCircularDetection();
+
+  //Modules
+  moduleSingletonTest();
+  moduleApplicationTest();
+  moduleDependentTest();
+  moduleObjectTest();
+  moduleSessionTest();
 
   //Events
   eventTest();

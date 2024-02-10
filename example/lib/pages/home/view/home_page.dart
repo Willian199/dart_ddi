@@ -11,10 +11,10 @@ import 'package:perfumei/common/enum/genero_enum.dart';
 import 'package:perfumei/common/extensions/image_provider_extension.dart';
 import 'package:perfumei/common/model/grid_model.dart';
 import 'package:perfumei/config/services/injection.dart';
-import 'package:perfumei/modules/home/cubit/home_cubit.dart';
-import 'package:perfumei/modules/home/state/home_state.dart';
-import 'package:perfumei/modules/home/widgets/grid_page.dart';
-import 'package:perfumei/modules/item/view/item_page.dart';
+import 'package:perfumei/pages/home/cubit/home_cubit.dart';
+import 'package:perfumei/pages/home/state/home_state.dart';
+import 'package:perfumei/pages/home/widgets/grid_page.dart';
+import 'package:perfumei/pages/item/view/item_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});

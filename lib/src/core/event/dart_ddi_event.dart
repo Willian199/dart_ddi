@@ -95,4 +95,9 @@ abstract class DDIEvent {
   ///
   /// - `qualifier`: Optional qualifier name used to distinguish between different events of the same type.
   void fire<EventTypeT extends Object>(EventTypeT value, {Object? qualifier});
+
+  /// Verify if an event is already registered.
+  ///
+  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
+  bool isRegistered<EventTypeT extends Object>({Object? qualifier});
 }

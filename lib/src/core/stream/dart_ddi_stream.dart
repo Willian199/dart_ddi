@@ -42,4 +42,15 @@ abstract final class DDIStream {
   /// - `qualifier`: An optional qualifier to specify the desired stream.
   Stream<StreamTypeT> getStream<StreamTypeT extends Object>(
       {Object? qualifier});
+
+  /// Verify if a stream is already registered.
+  ///
+  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
+  bool isRegistered<StreamTypeT extends Object>({Object? qualifier});
+
+  /// Create a default stream with type.
+  ///
+  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
+  Stream<StreamTypeT> getOrCreateStream<StreamTypeT extends Object>(
+      {Object? qualifier});
 }

@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:perfumei/common/model/grid_model.dart';
-import 'package:perfumei/modules/item/widget/descricao.dart';
-import 'package:perfumei/modules/item/widget/imagem_perfume.dart';
+import 'package:perfumei/pages/item/widget/descricao.dart';
+import 'package:perfumei/pages/item/widget/imagem_perfume.dart';
 
 class ItemTopo extends StatelessWidget {
   const ItemTopo({required this.item, this.bytes, super.key});

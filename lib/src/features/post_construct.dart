@@ -1,3 +1,0 @@
-mixin PostConstruct {
-  void onPostConstruct();
-}

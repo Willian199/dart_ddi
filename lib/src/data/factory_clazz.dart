@@ -14,6 +14,7 @@ class FactoryClazz<BeanT> {
   final Scopes scopeType;
   final Type type;
   final bool destroyable;
+  List<Object>? children;
 
   FactoryClazz({
     required this.scopeType,
@@ -24,6 +25,7 @@ class FactoryClazz<BeanT> {
     this.decorators,
     this.postConstruct,
     this.interceptors,
+    this.children,
   });
 
   FactoryClazz<BeanT> copyWith({
@@ -35,6 +37,7 @@ class FactoryClazz<BeanT> {
     Scopes? scopeType,
     Type? type,
     bool? destroyable,
+    List<Object>? children,
   }) {
     return FactoryClazz<BeanT>(
       clazzInstance: clazzInstance ?? this.clazzInstance,
@@ -45,6 +48,7 @@ class FactoryClazz<BeanT> {
       scopeType: scopeType ?? this.scopeType,
       type: type ?? this.type,
       destroyable: destroyable ?? this.destroyable,
+      children: children ?? this.children,
     );
   }
 }

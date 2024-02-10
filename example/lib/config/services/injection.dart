@@ -7,10 +7,7 @@ import 'package:dio_cache_interceptor_objectbox_store/dio_cache_interceptor_obje
 import 'package:flutter/widgets.dart';
 import 'package:path_provider/path_provider.dart' as pp;
 import 'package:perfumei/common/constants/injection_constants.dart';
-import 'package:perfumei/modules/home/cubit/home_cubit.dart';
-import 'package:perfumei/modules/item/cubit/imagem_cubit.dart';
-import 'package:perfumei/modules/item/cubit/item_cubit.dart';
-import 'package:perfumei/modules/item/cubit/perfume_cubit.dart';
+import 'package:perfumei/pages/home/cubit/home_cubit.dart';
 
 final DDI ddi = DDI.instance;
 
@@ -28,9 +25,6 @@ class Injection {
         qualifier: InjectionConstants.darkMode);
 
     ddi.registerDependent<HomeCubit>(() => HomeCubit());
-    ddi.registerDependent<TabCubit>(() => TabCubit());
-    ddi.registerDependent<PerfumeCubit>(() => PerfumeCubit());
-    ddi.registerDependent<ImagemCubit>(() => ImagemCubit());
 
     final Directory dir = await pp.getTemporaryDirectory();
     ddi.registerSingleton<CacheStore>(

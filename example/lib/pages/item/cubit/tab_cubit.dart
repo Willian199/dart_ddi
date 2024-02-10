@@ -2,7 +2,7 @@ import 'package:dart_ddi/dart_ddi.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:perfumei/common/enum/notas_enum.dart';
-import 'package:perfumei/modules/item/state/tab_state.dart';
+import 'package:perfumei/pages/item/state/tab_state.dart';
 
 class TabCubit extends Cubit<TabState> with PostConstruct {
   TabCubit()
@@ -34,8 +34,8 @@ class TabCubit extends Cubit<TabState> with PostConstruct {
 
   @override
   Future<void> close() async {
-    debugPrint('Destruindo a stream teste');
-    DDIStream.instance.close(qualifier: 'teste');
+    debugPrint('Destruindo a stream page_view');
+    DDIStream.instance.close(qualifier: 'page_view');
     super.close();
   }
 }

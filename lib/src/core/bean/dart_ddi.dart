@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/data/factory_clazz.dart';
 import 'package:dart_ddi/src/enum/scopes.dart';
 import 'package:dart_ddi/src/exception/bean_destroyed.dart';
@@ -7,9 +8,6 @@ import 'package:dart_ddi/src/exception/bean_not_found.dart';
 import 'package:dart_ddi/src/exception/circular_detection.dart';
 import 'package:dart_ddi/src/exception/duplicated_bean.dart';
 import 'package:dart_ddi/src/exception/future_not_accept.dart';
-import 'package:dart_ddi/src/features/ddi_interceptor.dart';
-import 'package:dart_ddi/src/features/post_construct.dart';
-import 'package:dart_ddi/src/features/pre_destroy.dart';
 
 part 'dart_ddi_impl.dart';
 
@@ -37,7 +35,7 @@ abstract class DDI {
   ///  **Use Case:**
   /// - Suitable for objects that are stateless or have shared state across the entire application.
   /// - Examples include utility classes, configuration objects, or services that maintain global state.
-  FutureOr<void> registerSingleton<BeanT extends Object>(
+  Future<void> registerSingleton<BeanT extends Object>(
     FutureOr<BeanT> Function() clazzRegister, {
     Object? qualifier,
     void Function()? postConstruct,
@@ -65,7 +63,7 @@ abstract class DDI {
   ///  **Use Case:**
   /// - Appropriate for objects that need to persist during the entire application's lifecycle, but may have a more dynamic nature than Singleton instances.
   /// - Examples include managers, controllers, or services that should persist but might be recreated under certain circumstances.
-  FutureOr<void> registerApplication<BeanT extends Object>(
+  Future<void> registerApplication<BeanT extends Object>(
     FutureOr<BeanT> Function() clazzRegister, {
     Object? qualifier,
     void Function()? postConstruct,
@@ -93,7 +91,7 @@ abstract class DDI {
   ///  **Use Case:**
   /// - Appropriate for objects that need to persist during the entire application's lifecycle, but may have a more dynamic nature than Singleton instances.
   /// - Examples include managing user authentication state or caching user-specific preferences.
-  FutureOr<void> registerSession<BeanT extends Object>(
+  Future<void> registerSession<BeanT extends Object>(
     FutureOr<BeanT> Function() clazzRegister, {
     Object? qualifier,
     void Function()? postConstruct,
@@ -120,7 +118,7 @@ abstract class DDI {
   ///  **Use Case:**
   /// - Suitable for objects with a short lifecycle or those that need to be recreated frequently, ensuring isolation between different parts of the application.
   /// - Examples include transient objects, temporary data holders, or components with a short lifespan.
-  FutureOr<void> registerDependent<BeanT extends Object>(
+  Future<void> registerDependent<BeanT extends Object>(
     FutureOr<BeanT> Function() clazzRegister, {
     Object? qualifier,
     void Function()? postConstruct,
@@ -148,7 +146,7 @@ abstract class DDI {
   ///  **Use Case:**
   /// - Suitable for objects that are stateless or have shared state across the entire application.
   /// - Examples include application or device properties, like platform or dark mode.
-  FutureOr<void> registerObject<BeanT extends Object>(
+  Future<void> registerObject<BeanT extends Object>(
     BeanT register, {
     Object? qualifier,
     void Function()? postConstruct,
@@ -157,6 +155,11 @@ abstract class DDI {
     FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
   });
+
+  /// Verify if an instance is already registered in [DDI].
+  ///
+  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
+  bool isRegistered<BeanT extends Object>({Object? qualifier});
 
   /// Gets an instance of the registered class in [DDI].
   ///
@@ -192,7 +195,7 @@ abstract class DDI {
   /// Disposes of the instance of the registered class in [DDI].
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
-  void dispose<BeanT>({Object? qualifier});
+  void dispose<BeanT extends Object>({Object? qualifier});
 
   /// Disposes all the instance registered as Session Scope.
   void disposeAllSession();
@@ -231,4 +234,10 @@ abstract class DDI {
     BeanT register, {
     Object? qualifier,
   });
+
+  void addChildrenModules<BeanT extends Object>(
+      {required List<Object> child, Object? qualifier});
+
+  void addChildModules<BeanT extends Object>(
+      {required Object child, Object? qualifier});
 }

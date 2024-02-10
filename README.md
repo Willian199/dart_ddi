@@ -47,17 +47,22 @@ Summary
    3. [Interceptor](#interceptor)
    4. [RegisterIf](#registerif)
    5. [Destroyable](#destroyable)
-5. [Mixins](#mixins)
+5. [Modules](#modules)
+   1. [Adding a Class](#adding-a-class)
+   2. [Adding Multiple Class](#adding-multiple-class)
+6. [Mixins](#mixins)
    1. [Post Construct](#post-construct-mixin)
    2. [Pre Destroy](#pre-destroy-mixin)
-6. [Events](#events)
+   3. [Pre Dispose](#pre-dispose-mixin)
+   4. [DDIModule Mixin](#ddimodule-mixin)
+7. [Events](#events)
    1. [Creating and Managing Events](#creating-and-managing-events)
    2. [Subscribing an Event](#subscribing-an-event)
    3. [Unsubscribing an Event](#unsubscribing-an-event)
    4. [Firing an Event](#firing-an-event)
    5. [Events Considerations](#events-considerations)
    6. [Use Cases](#use-cases)
-7. [Stream](#stream)
+8. [Stream](#stream)
    1. [Subscription](#subscription)
    2. [Closing Stream](#closing-stream)
    3. [Firing Events](#firing-events)
@@ -213,7 +218,7 @@ ddi.registerSingleton<PlatformService>(iOSService.new, qualifier: "ios");
 The DDI Library provides features for customizing the lifecycle of registered instances. These features include `postConstruct`, `decorators`, `interceptor`, `registerIf` and `destroyable`.
 
 ## PostConstruct
-The postConstruct callback allows to perform additional setup or initialization after an instance is created. This is particularly useful for executing logic that should run once the instance is ready for use.
+The `postConstruct` callback allows to perform additional setup or initialization after an instance is created. This is particularly useful for executing logic that should run once the instance is ready for use.
 
 #### Example Usage:
 ```dart
@@ -336,13 +341,47 @@ ddi.registerApplication<MyService>(
 );
 ```
 
+## Modules
+
+Modules offer a convenient way to modularize and organize dependency injection configuration in your application. Through the use of the `addChildModules` and `addChildrenModules` methods, you can add and configure specific modules, grouping related dependencies and facilitating management of your dependency injection container.
+
+When you execute `dispose` or `destroy` for a module, they will be executed for all its children.
+
+### Adding a Class
+
+To add a single class to a module to your dependency injection container, you can use the `addChildModules` method.
+
+- `child`: This refers to the type or qualifier of the subclasses that will be part of the module. Note that these are not instances, but rather types or qualifiers.
+- `qualifier` (optional): This parameter refers to the main class type of the module. It is optional and is used as a qualifier if needed.
+
+```dart
+// Adding a single module with a possible specific qualifier.
+ddi.addChildModules<MyModule>(
+  child: MySubmoduleType, 
+  qualifier: 'MyModule',
+);
+```
+
+### Adding Multiple Class
+To add multiple class to a module at once, you can utilize the `addChildrenModules` method.
+
+```dart
+// Adding multiple modules at once.
+ddi.addChildrenModules<MyModule>(
+  child: [MySubmoduleType1, MySubmoduleType2], 
+  qualifier: 'MyModule',
+);
+```
+With these methods, you can modularize your dependency injection configuration, which can be especially useful in larger applications with complex instance management requirements.
+
+
 ## Mixins
 
 ### Post Construct Mixin
 
-The PostConstruct mixin has been added to provide the ability to execute specific rules after the construction of an instance of the class using it. Its primary purpose is to offer an extension point for additional logic that needs to be executed immediately after an object is created.
+The `PostConstruct` mixin has been added to provide the ability to execute specific rules after the construction of an instance of the class using it. Its primary purpose is to offer an extension point for additional logic that needs to be executed immediately after an object is created.
 
-By including the PostConstruct mixin in a class and implementing the onPostConstruct() method, you can ensure that this custom logic is automatically executed right after the instantiation of the class.
+By including the PostConstruct mixin in a class and implementing the `onPostConstruct()` method, you can ensure that this custom logic is automatically executed right after the instantiation of the class.
 
 #### Example Usage:
 ```dart
@@ -362,7 +401,7 @@ class MyClass with PostConstruct {
 
 ### Pre Destroy Mixin
 
-The PreDestroy mixin has been created to provide a mechanism for executing specific actions just before an object is destroyed. This mixin serves as a counterpart to the PostConstruct mixin, allowing to define custom cleanup logic that needs to be performed before an object's lifecycle ends.
+The `PreDestroy` mixin has been created to provide a mechanism for executing specific actions just before an object is destroyed. This mixin serves as a counterpart to the PostConstruct mixin, allowing to define custom cleanup logic that needs to be performed before an object's lifecycle ends.
 
 #### Example Usage:
 ```dart
@@ -391,6 +430,47 @@ void main() {
   // Output:
   // Instance of MyClass is about to be destroyed.
   // Performing cleanup for Willian
+}
+```
+
+### Pre Dipose Mixin
+
+The `PreDispose` mixin extends the lifecycle management capabilities, allowing custom logic to be executed before an instance is disposed.
+
+#### Example Usage:
+```dart
+class MyClass with PreDispose {
+  final String name;
+
+  MyClass(this.name);
+
+  @override
+  void onPreDispose() {
+    // Custom cleanup logic to be executed before disposal.
+    print('Instance of MyClass is about to be disposed.');
+    print('Performing cleanup for $name');
+  }
+}
+```
+
+## DDIModule Mixin
+
+The `DDIModule` mixin provides a convenient way to organize and manage your dependency injection configuration within your Dart application. By implementing this mixin in your module classes, you can easily register instances with different scopes and dependencies using the provided methods.
+
+## Example Usage:
+
+```dart
+// Define a module using the DDIModule mixin
+
+class AppModule with DDIModule {
+  @override
+  void onPostConstruct() {
+    // Registering instances with different scopes
+    registerSingleton(() => Database('main_database'), qualifier: 'mainDatabase');
+    registerApplication(() => Logger(), qualifier: 'appLogger');
+    registerObject('https://api.example.com', qualifier: 'apiUrl');
+    registerDependent(() => ApiService(inject.get(qualifier: 'apiUrl')), qualifier: 'dependentApiService');
+  }
 }
 ```
 

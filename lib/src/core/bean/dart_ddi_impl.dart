@@ -11,7 +11,7 @@ class _DDIImpl implements DDI {
       Zone.current[_resolutionKey] as Map<Object, List<Object>>? ?? {};
 
   @override
-  FutureOr<void> registerSingleton<BeanT extends Object>(
+  Future<void> registerSingleton<BeanT extends Object>(
     FutureOr<BeanT> Function() clazzRegister, {
     Object? qualifier,
     void Function()? postConstruct,
@@ -57,12 +57,6 @@ class _DDIImpl implements DDI {
 
       postConstruct?.call();
 
-      if (clazz is PostConstruct) {
-        clazz.onPostConstruct();
-      } else if (clazz is Future<PostConstruct>) {
-        _runFutureOrPostConstruct(clazz);
-      }
-
       _beans[effectiveQualifierName] = FactoryClazz<BeanT>(
         clazzInstance: clazz,
         type: BeanT,
@@ -70,11 +64,17 @@ class _DDIImpl implements DDI {
         interceptors: interceptors,
         destroyable: destroyable,
       );
+
+      if (clazz is PostConstruct) {
+        clazz.onPostConstruct();
+      } else if (clazz is Future<PostConstruct>) {
+        _runFutureOrPostConstruct(clazz);
+      }
     }
   }
 
   @override
-  FutureOr<void> registerApplication<BeanT extends Object>(
+  Future<void> registerApplication<BeanT extends Object>(
     FutureOr<BeanT> Function() clazzRegister, {
     Object? qualifier,
     void Function()? postConstruct,
@@ -83,7 +83,7 @@ class _DDIImpl implements DDI {
     FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
   }) {
-    _register<BeanT>(
+    return _register<BeanT>(
       clazzRegister: clazzRegister,
       scopeType: Scopes.application,
       qualifier: qualifier,
@@ -96,7 +96,7 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  FutureOr<void> registerSession<BeanT extends Object>(
+  Future<void> registerSession<BeanT extends Object>(
     FutureOr<BeanT> Function() clazzRegister, {
     Object? qualifier,
     void Function()? postConstruct,
@@ -105,7 +105,7 @@ class _DDIImpl implements DDI {
     FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
   }) {
-    _register<BeanT>(
+    return _register<BeanT>(
       clazzRegister: clazzRegister,
       scopeType: Scopes.session,
       qualifier: qualifier,
@@ -118,7 +118,7 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  FutureOr<void> registerDependent<BeanT extends Object>(
+  Future<void> registerDependent<BeanT extends Object>(
     FutureOr<BeanT> Function() clazzRegister, {
     Object? qualifier,
     void Function()? postConstruct,
@@ -127,7 +127,7 @@ class _DDIImpl implements DDI {
     FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
   }) {
-    _register<BeanT>(
+    return _register<BeanT>(
       clazzRegister: clazzRegister,
       scopeType: Scopes.dependent,
       qualifier: qualifier,
@@ -139,7 +139,7 @@ class _DDIImpl implements DDI {
     );
   }
 
-  FutureOr<void> _register<BeanT extends Object>({
+  Future<void> _register<BeanT extends Object>({
     required FutureOr<BeanT> Function() clazzRegister,
     required Scopes scopeType,
     required bool destroyable,
@@ -190,7 +190,7 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  FutureOr<void> registerObject<BeanT extends Object>(
+  Future<void> registerObject<BeanT extends Object>(
     BeanT register, {
     Object? qualifier,
     void Function()? postConstruct,
@@ -227,12 +227,6 @@ class _DDIImpl implements DDI {
 
       postConstruct?.call();
 
-      if (register is PostConstruct) {
-        register.onPostConstruct();
-      } else if (register is Future<PostConstruct>) {
-        _runFutureOrPostConstruct(register);
-      }
-
       _beans[effectiveQualifierName] = FactoryClazz<BeanT>(
         clazzInstance: register,
         type: BeanT,
@@ -240,7 +234,18 @@ class _DDIImpl implements DDI {
         interceptors: interceptors,
         destroyable: destroyable,
       );
+
+      if (register is PostConstruct) {
+        register.onPostConstruct();
+      } else if (register is Future<PostConstruct>) {
+        _runFutureOrPostConstruct(register);
+      }
     }
+  }
+
+  @override
+  bool isRegistered<BeanT extends Object>({Object? qualifier}) {
+    return _beans.containsKey(qualifier ?? BeanT);
   }
 
   @override
@@ -251,7 +256,7 @@ class _DDIImpl implements DDI {
   BeanT _getSingleton<BeanT extends Object>(
       FactoryClazz<BeanT> factoryClazz, Object effectiveQualifierName) {
     if (factoryClazz.clazzInstance case var clazz?) {
-      if (factoryClazz.interceptors case final inter?) {
+      if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
         for (final interceptor in inter) {
           clazz = interceptor.call().aroundGet(clazz);
         }
@@ -274,7 +279,7 @@ class _DDIImpl implements DDI {
       applicationClazz = factoryClazz.clazzInstance!;
     }
 
-    if (factoryClazz.interceptors case final inter?) {
+    if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
         applicationClazz = interceptor.call().aroundGet(applicationClazz);
       }
@@ -294,7 +299,7 @@ class _DDIImpl implements DDI {
       applicationClazz = factoryClazz.clazzInstance!;
     }
 
-    if (factoryClazz.interceptors case final inter?) {
+    if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
         applicationClazz = interceptor.call().aroundGet(applicationClazz);
       }
@@ -307,7 +312,7 @@ class _DDIImpl implements DDI {
     FactoryClazz<BeanT> factoryClazz,
     BeanT applicationClazz,
   ) {
-    if (factoryClazz.interceptors case final inter?) {
+    if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
         applicationClazz = interceptor.call().aroundConstruct(applicationClazz);
       }
@@ -344,7 +349,7 @@ class _DDIImpl implements DDI {
     FactoryClazz<BeanT> factoryClazz,
     BeanT dependentClazz,
   ) {
-    if (factoryClazz.interceptors case final inter?) {
+    if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
         dependentClazz = interceptor.call().aroundConstruct(dependentClazz);
       }
@@ -361,7 +366,7 @@ class _DDIImpl implements DDI {
       _runFutureOrPostConstruct(dependentClazz);
     }
 
-    if (factoryClazz.interceptors case final inter?) {
+    if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
         dependentClazz = interceptor.call().aroundGet(dependentClazz);
       }
@@ -493,24 +498,34 @@ class _DDIImpl implements DDI {
     _destroy<BeanT>(effectiveQualifierName);
   }
 
+  void _destroyChildren(FactoryClazz factoryClazz) {
+    if (factoryClazz.children case final List<Object> children?
+        when children.isNotEmpty) {
+      for (final Object child in children) {
+        _destroy(child);
+      }
+    }
+  }
+
   void _destroy<BeanT>(Object effectiveQualifierName) {
     if (_beans[effectiveQualifierName] case final factoryClazz?
         when factoryClazz.destroyable) {
       //Only destroy if destroyable was registered with true
       if (factoryClazz.clazzInstance case final clazz?) {
-        if (factoryClazz.interceptors case final inter?) {
+        if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
           for (final interceptor in inter) {
             interceptor.call().aroundDestroy(clazz);
           }
         }
 
-        if (clazz is FutureOr<PreDestroy>) {
-          _runFutureOrPreDestroy(clazz, effectiveQualifierName);
+        if (clazz is PreDestroy) {
+          _runFutureOrPreDestroy(factoryClazz, clazz, effectiveQualifierName);
           //Should return because the _runFutureOrPreDestroy apply the remove
           return;
         }
       }
 
+      _destroyChildren(factoryClazz);
       _beans.remove(effectiveQualifierName);
     }
   }
@@ -539,7 +554,7 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  void dispose<BeanT>({Object? qualifier}) {
+  void dispose<BeanT extends Object>({Object? qualifier}) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
     if (_beans[effectiveQualifierName]
@@ -562,25 +577,30 @@ class _DDIImpl implements DDI {
     FactoryClazz<BeanT> factoryClazz,
     Object effectiveQualifierName,
   ) {
-    if (factoryClazz.clazzInstance != null &&
-        factoryClazz.interceptors != null) {
-      //Call aroundDispose before reset the clazzInstance
-      for (final interceptor in factoryClazz.interceptors!) {
-        interceptor().aroundDispose(factoryClazz.clazzInstance as BeanT);
+    if (factoryClazz.clazzInstance case final clazz?) {
+      if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
+        //Call aroundDispose before reset the clazzInstance
+        for (final interceptor in inter) {
+          interceptor().aroundDispose(clazz);
+        }
+      }
+
+      if (clazz is PreDispose) {
+        _runFutureOrPreDispose(factoryClazz, clazz, effectiveQualifierName);
+        //Should return because the _runFutureOrPreDestroy apply the remove
+        return;
       }
     }
 
-    factoryClazz.clazzInstance = null;
+    _disposeChildren(factoryClazz);
   }
 
   @override
   void disposeAllSession() {
     for (final MapEntry(:key, :value) in _beans.entries) {
-      if (value.scopeType != Scopes.session) {
-        continue;
+      if (value.scopeType == Scopes.session) {
+        _disposeBean(value, key);
       }
-
-      _disposeBean(value, key);
     }
   }
 
@@ -591,8 +611,8 @@ class _DDIImpl implements DDI {
     final clazz =
         _beans.entries.where((element) => element.value.type == type).toList();
 
-    for (final c in clazz) {
-      _disposeBean(c.value, c.key);
+    for (final MapEntry(:key, :value) in clazz) {
+      _disposeBean(value, key);
     }
   }
 
@@ -683,12 +703,49 @@ class _DDIImpl implements DDI {
     clazz.onPostConstruct();
   }
 
-  Future<void> _runFutureOrPreDestroy(
-      FutureOr<PreDestroy> register, Object effectiveQualifierName) async {
-    final PreDestroy clazz = await register;
+  Future<void> _runFutureOrPreDestroy(FactoryClazz factoryClazz,
+      PreDestroy clazz, Object effectiveQualifierName) async {
+    await clazz.onPreDestroy();
 
-    clazz.onPreDestroy();
+    _destroyChildren(factoryClazz);
 
     _beans.remove(effectiveQualifierName);
+  }
+
+  Future<void> _runFutureOrPreDispose(FactoryClazz factoryClazz,
+      PreDispose clazz, Object effectiveQualifierName) async {
+    await clazz.onPreDispose();
+
+    _disposeChildren(factoryClazz);
+  }
+
+  void _disposeChildren(FactoryClazz factoryClazz) {
+    if (factoryClazz.children case final List<Object> children?
+        when children.isNotEmpty) {
+      for (final Object child in children) {
+        dispose(qualifier: child);
+      }
+    }
+
+    factoryClazz.clazzInstance = null;
+  }
+
+  @override
+  void addChildModules<BeanT extends Object>(
+      {required Object child, Object? qualifier}) {
+    addChildrenModules<BeanT>(child: [child], qualifier: qualifier);
+  }
+
+  @override
+  void addChildrenModules<BeanT extends Object>(
+      {required List<Object> child, Object? qualifier}) {
+    final Object effectiveQualifierName = qualifier ?? BeanT;
+
+    if (_beans[effectiveQualifierName]
+        case final FactoryClazz<BeanT> factoryClazz?) {
+      factoryClazz.children = [...factoryClazz.children ?? [], ...child];
+    } else {
+      throw BeanNotFound(effectiveQualifierName.toString());
+    }
   }
 }
