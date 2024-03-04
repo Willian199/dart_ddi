@@ -27,6 +27,7 @@ abstract class DDI {
   /// - `decorators`: List of decoration functions to apply to the instance.
   /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
   /// - `registerIf`: Optional function to conditionally register the instance.
+  /// - `destroyable`: Optional parameter to make the instance indestructible.
   ///
   /// **Singleton Scope:**
   /// - Ensures that only one instance of the registered class is created and shared throughout the entire application.
@@ -240,4 +241,6 @@ abstract class DDI {
 
   void addChildModules<BeanT extends Object>(
       {required Object child, Object? qualifier});
+
+  void setDebug(bool debug);
 }

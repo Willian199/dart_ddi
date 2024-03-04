@@ -15,6 +15,7 @@ mixin DDIModule implements PostConstruct {
   /// - `decorators`: List of decoration functions to apply to the instance.
   /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
   /// - `registerIf`: Optional function to conditionally register the instance.
+  /// - `destroyable`: Optional parameter to make the instance indestructible.
   Future<void> registerSingleton<BeanT extends Object>(
     FutureOr<BeanT> Function() clazzRegister, {
     Object? qualifier,

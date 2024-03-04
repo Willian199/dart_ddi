@@ -1,7 +1,7 @@
 part of 'dart_ddi.dart';
 
-const _debug = !bool.fromEnvironment('dart.vm.product') &&
-    !bool.fromEnvironment('dart.vm.profile');
+bool _debug = !const bool.fromEnvironment('dart.vm.product') &&
+    !const bool.fromEnvironment('dart.vm.profile');
 
 class _DDIImpl implements DDI {
   final Map<Object, FactoryClazz> _beans = {};
@@ -747,5 +747,10 @@ class _DDIImpl implements DDI {
     } else {
       throw BeanNotFound(effectiveQualifierName.toString());
     }
+  }
+  
+  @override
+  void setDebug(bool debug) {
+    _debug = debug;
   }
 }

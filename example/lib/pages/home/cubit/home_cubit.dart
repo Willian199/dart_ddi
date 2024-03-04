@@ -30,7 +30,7 @@ class HomeCubit extends Cubit<HomeState> with PostConstruct {
     pesquisaFocus.unfocus();
   }
 
-  void carregarDados() async {
+  Future<void> carregarDados() async {
     pesquisaFocus.unfocus();
     NotificacaoPadrao.carregando();
 
