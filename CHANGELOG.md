@@ -4,6 +4,7 @@
 
 * Introduced a shorthand variable `ddi` for ease of use, replacing the need to use `DDI.instance`. 
 * Added the capability to register children instances within module registrations, enhancing modularization and organization of dependencies.
+*-* Added ability to enable or disable debugMode behavior.
 * Included the `DDIController` mixin, providing a simplified approach to dependency injection usage.
 
 

@@ -248,11 +248,17 @@ abstract class DDI {
     Object? qualifier,
   });
 
+  // This function adds multiple child modules to a parent module.
+  // It takes a list of 'child' objects and an optional 'qualifier' for the parent module.
   void addChildrenModules<BeanT extends Object>(
       {required List<Object> child, Object? qualifier});
 
+  // This function adds a single child module to a parent module.
+  // It takes a 'child' object and an optional 'qualifier' for the parent module.
   void addChildModules<BeanT extends Object>(
       {required Object child, Object? qualifier});
 
+  // This function sets the debug mode.
+  // It takes a boolean 'debug' parameter to enable or disable debug mode.
   void setDebugMode(bool debug);
 }
