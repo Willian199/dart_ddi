@@ -1,8 +1,8 @@
+import 'package:dart_ddi/dart_ddi.dart';
 import 'package:flutter/material.dart';
 import 'package:perfumei/common/components/widgets/degrade.dart';
 import 'package:perfumei/common/model/grid_model.dart';
 import 'package:perfumei/common/model/layout.dart';
-import 'package:perfumei/config/services/injection.dart';
 import 'package:perfumei/pages/home/widgets/row_value.dart';
 
 class CardConteudo extends StatelessWidget {

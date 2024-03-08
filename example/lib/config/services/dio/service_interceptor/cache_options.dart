@@ -1,8 +1,8 @@
 import 'dart:convert';
 
+import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dio/dio.dart';
 import 'package:dio_cache_interceptor/dio_cache_interceptor.dart';
-import 'package:perfumei/config/services/injection.dart';
 import 'package:uuid/uuid.dart';
 
 class DioCacheOptions {

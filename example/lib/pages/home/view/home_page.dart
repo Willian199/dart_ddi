@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dart_ddi/dart_ddi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -10,7 +11,6 @@ import 'package:perfumei/common/components/widgets/degrade.dart';
 import 'package:perfumei/common/enum/genero_enum.dart';
 import 'package:perfumei/common/extensions/image_provider_extension.dart';
 import 'package:perfumei/common/model/grid_model.dart';
-import 'package:perfumei/config/services/injection.dart';
 import 'package:perfumei/pages/home/cubit/home_cubit.dart';
 import 'package:perfumei/pages/home/state/home_state.dart';
 import 'package:perfumei/pages/home/widgets/grid_page.dart';

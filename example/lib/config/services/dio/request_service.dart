@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dio/dio.dart';
 import 'package:dio_cache_interceptor/dio_cache_interceptor.dart';
 import 'package:perfumei/common/constants/injection_constants.dart';
@@ -7,7 +8,6 @@ import 'package:perfumei/common/extensions/map_extension.dart';
 import 'package:perfumei/config/services/dio/service_interceptor/cache_options.dart';
 import 'package:perfumei/config/services/dio/service_interceptor/error_interceptor.dart';
 import 'package:perfumei/config/services/dio/service_interceptor/time_log_interceptor.dart';
-import 'package:perfumei/config/services/injection.dart';
 
 class RequestService {
   static Future<dynamic> get({

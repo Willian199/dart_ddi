@@ -19,6 +19,7 @@ class _DDIImpl implements DDI {
     List<DDIInterceptor<BeanT> Function()>? interceptors,
     FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
+    List<Object>? children,
   }) async {
     bool shouldRegister = true;
 
@@ -63,6 +64,7 @@ class _DDIImpl implements DDI {
         scopeType: Scopes.singleton,
         interceptors: interceptors,
         destroyable: destroyable,
+        children: children,
       );
 
       if (clazz is PostConstruct) {
@@ -82,6 +84,7 @@ class _DDIImpl implements DDI {
     List<DDIInterceptor<BeanT> Function()>? interceptors,
     FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
+    List<Object>? children,
   }) {
     return _register<BeanT>(
       clazzRegister: clazzRegister,
@@ -104,6 +107,7 @@ class _DDIImpl implements DDI {
     List<DDIInterceptor<BeanT> Function()>? interceptors,
     FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
+    List<Object>? children,
   }) {
     return _register<BeanT>(
       clazzRegister: clazzRegister,
@@ -114,6 +118,7 @@ class _DDIImpl implements DDI {
       interceptors: interceptors,
       destroyable: destroyable,
       registerIf: registerIf,
+      children: children,
     );
   }
 
@@ -126,6 +131,7 @@ class _DDIImpl implements DDI {
     List<DDIInterceptor<BeanT> Function()>? interceptors,
     FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
+    List<Object>? children,
   }) {
     return _register<BeanT>(
       clazzRegister: clazzRegister,
@@ -136,6 +142,7 @@ class _DDIImpl implements DDI {
       interceptors: interceptors,
       destroyable: destroyable,
       registerIf: registerIf,
+      children: children,
     );
   }
 
@@ -148,6 +155,7 @@ class _DDIImpl implements DDI {
     List<BeanT Function(BeanT)>? decorators,
     List<DDIInterceptor<BeanT> Function()>? interceptors,
     FutureOr<bool> Function()? registerIf,
+    List<Object>? children,
   }) async {
     bool shouldRegister = true;
 
@@ -175,6 +183,7 @@ class _DDIImpl implements DDI {
         interceptors: interceptors,
         scopeType: scopeType,
         destroyable: destroyable,
+        children: children,
       );
     }
   }
@@ -198,6 +207,7 @@ class _DDIImpl implements DDI {
     List<DDIInterceptor<BeanT> Function()>? interceptors,
     FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
+    List<Object>? children,
   }) async {
     bool shouldRegister = true;
 
@@ -233,6 +243,7 @@ class _DDIImpl implements DDI {
         scopeType: Scopes.object,
         interceptors: interceptors,
         destroyable: destroyable,
+        children: children,
       );
 
       if (register is PostConstruct) {
@@ -748,9 +759,9 @@ class _DDIImpl implements DDI {
       throw BeanNotFound(effectiveQualifierName.toString());
     }
   }
-  
+
   @override
-  void setDebug(bool debug) {
+  void setDebugMode(bool debug) {
     _debug = debug;
   }
 }

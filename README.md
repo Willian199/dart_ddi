@@ -374,6 +374,22 @@ ddi.addChildrenModules<MyModule>(
 ```
 With these methods, you can modularize your dependency injection configuration, which can be especially useful in larger applications with complex instance management requirements.
 
+### Regsiter With Children Parameter
+
+The `children` parameter is designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module, enhancing the organization and management of your dependency injection configuration.
+
+```dart
+// Adding multiple modules at once.
+ddi.registerApplication<ParentModule>(
+  () => ParentModule(),
+  children: [
+    ChildModule,
+    OtherModule,
+    'ChildModuleQualifier',
+    'OtherModuleQualifier'
+  ],
+);
+```
 
 ## Mixins
 

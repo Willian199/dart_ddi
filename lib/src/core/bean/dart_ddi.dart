@@ -11,6 +11,8 @@ import 'package:dart_ddi/src/exception/future_not_accept.dart';
 
 part 'dart_ddi_impl.dart';
 
+DDI ddi = DDI.instance;
+
 /// [DDI] is an abstract class representing a Dependency Injection system.
 abstract class DDI {
   /// Creates the shared instance of the [DDI] class.
@@ -28,6 +30,7 @@ abstract class DDI {
   /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
   /// - `registerIf`: Optional function to conditionally register the instance.
   /// - `destroyable`: Optional parameter to make the instance indestructible.
+  /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module
   ///
   /// **Singleton Scope:**
   /// - Ensures that only one instance of the registered class is created and shared throughout the entire application.
@@ -44,6 +47,7 @@ abstract class DDI {
     List<DDIInterceptor<BeanT> Function()>? interceptors,
     FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
+    List<Object>? children,
   });
 
   /// Registers an instance of a class as a Application.
@@ -55,6 +59,7 @@ abstract class DDI {
   /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
   /// - `registerIf`: Optional function to conditionally register the instance.
   /// - `destroyable`: Optional parameter to make the instance indestructible.
+  /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module
   ///
   /// **Application Scope:**
   /// - Ensures that only one instance of the registered class is created and shared throughout the entire application.
@@ -72,6 +77,7 @@ abstract class DDI {
     List<DDIInterceptor<BeanT> Function()>? interceptors,
     FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
+    List<Object>? children,
   });
 
   /// Registers an instance of a class as a Session.
@@ -83,6 +89,7 @@ abstract class DDI {
   /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
   /// - `registerIf`: Optional function to conditionally register the instance.
   /// - `destroyable`: Optional parameter to make the instance indestructible.
+  /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module
   ///
   /// **Session Scope:**
   /// - Ensures that only one instance of the registered class is created and shared throughout the entire application.
@@ -100,6 +107,7 @@ abstract class DDI {
     List<DDIInterceptor<BeanT> Function()>? interceptors,
     FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
+    List<Object>? children,
   });
 
   /// Registers an instance of a class as a Dependent.
@@ -111,6 +119,7 @@ abstract class DDI {
   /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
   /// - `registerIf`: Optional function to conditionally register the instance.
   /// - `destroyable`: Optional parameter to make the instance indestructible.
+  /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module
   ///
   /// **Dependent Scope:**
   /// - Creates a new instance every time it is requested.
@@ -127,6 +136,7 @@ abstract class DDI {
     List<DDIInterceptor<BeanT> Function()>? interceptors,
     FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
+    List<Object>? children,
   });
 
   /// Registers an Object.
@@ -138,6 +148,7 @@ abstract class DDI {
   /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
   /// - `registerIf`: Optional function to conditionally register the instance.
   /// - `destroyable`: Optional parameter to make the instance indestructible.
+  /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module
   ///
   /// **Object Scope:**
   /// - Ensures that the registered Object is created and shared throughout the entire application.
@@ -155,6 +166,7 @@ abstract class DDI {
     List<DDIInterceptor<BeanT> Function()>? interceptors,
     FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
+    List<Object>? children,
   });
 
   /// Verify if an instance is already registered in [DDI].
@@ -242,5 +254,5 @@ abstract class DDI {
   void addChildModules<BeanT extends Object>(
       {required Object child, Object? qualifier});
 
-  void setDebug(bool debug);
+  void setDebugMode(bool debug);
 }

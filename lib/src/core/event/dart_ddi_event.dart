@@ -4,6 +4,8 @@ import 'package:dart_ddi/src/exception/event_not_found.dart';
 
 part 'dart_ddi_event_impl.dart';
 
+DDIEvent ddiEvent = DDIEvent.instance;
+
 /// The abstract class for managing event emission.
 abstract class DDIEvent {
   /// Creates the shared instance of the [DDIEvent] class.

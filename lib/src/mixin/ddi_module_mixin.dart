@@ -5,8 +5,6 @@ import 'package:dart_ddi/dart_ddi.dart';
 mixin DDIModule implements PostConstruct {
   Object get moduleQualifier => runtimeType;
 
-  DDI get inject => DDI.instance;
-
   /// Registers an instance of a class as a Singleton.
   ///
   /// - `clazzRegister`: Factory function to create the instance.
@@ -24,11 +22,11 @@ mixin DDIModule implements PostConstruct {
     List<DDIInterceptor<BeanT> Function()>? interceptors,
     FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
+    List<Object>? children,
   }) {
-    inject.addChildModules(
-        child: qualifier ?? BeanT, qualifier: moduleQualifier);
+    ddi.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
 
-    return inject.registerSingleton<BeanT>(
+    return ddi.registerSingleton<BeanT>(
       clazzRegister,
       qualifier: qualifier,
       postConstruct: postConstruct,
@@ -36,6 +34,7 @@ mixin DDIModule implements PostConstruct {
       interceptors: interceptors,
       destroyable: destroyable,
       registerIf: registerIf,
+      children: children,
     );
   }
 
@@ -48,6 +47,7 @@ mixin DDIModule implements PostConstruct {
   /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
   /// - `registerIf`: Optional function to conditionally register the instance.
   /// - `destroyable`: Optional parameter to make the instance indestructible.
+  /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module.
   Future<void> registerApplication<BeanT extends Object>(
     FutureOr<BeanT> Function() clazzRegister, {
     Object? qualifier,
@@ -56,11 +56,11 @@ mixin DDIModule implements PostConstruct {
     List<DDIInterceptor<BeanT> Function()>? interceptors,
     FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
+    List<Object>? children,
   }) {
-    inject.addChildModules(
-        child: qualifier ?? BeanT, qualifier: moduleQualifier);
+    ddi.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
 
-    return inject.registerApplication<BeanT>(
+    return ddi.registerApplication<BeanT>(
       clazzRegister,
       qualifier: qualifier,
       postConstruct: postConstruct,
@@ -68,6 +68,7 @@ mixin DDIModule implements PostConstruct {
       interceptors: interceptors,
       destroyable: destroyable,
       registerIf: registerIf,
+      children: children,
     );
   }
 
@@ -80,6 +81,7 @@ mixin DDIModule implements PostConstruct {
   /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
   /// - `registerIf`: Optional function to conditionally register the instance.
   /// - `destroyable`: Optional parameter to make the instance indestructible.
+  /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module.
   Future<void> registerSession<BeanT extends Object>(
     FutureOr<BeanT> Function() clazzRegister, {
     Object? qualifier,
@@ -88,11 +90,11 @@ mixin DDIModule implements PostConstruct {
     List<DDIInterceptor<BeanT> Function()>? interceptors,
     FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
+    List<Object>? children,
   }) {
-    inject.addChildModules(
-        child: qualifier ?? BeanT, qualifier: moduleQualifier);
+    ddi.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
 
-    return inject.registerSession<BeanT>(
+    return ddi.registerSession<BeanT>(
       clazzRegister,
       qualifier: qualifier,
       postConstruct: postConstruct,
@@ -100,6 +102,7 @@ mixin DDIModule implements PostConstruct {
       interceptors: interceptors,
       destroyable: destroyable,
       registerIf: registerIf,
+      children: children,
     );
   }
 
@@ -112,6 +115,7 @@ mixin DDIModule implements PostConstruct {
   /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
   /// - `registerIf`: Optional function to conditionally register the instance.
   /// - `destroyable`: Optional parameter to make the instance indestructible.
+  /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module.
   Future<void> registerDependent<BeanT extends Object>(
     FutureOr<BeanT> Function() clazzRegister, {
     Object? qualifier,
@@ -120,11 +124,11 @@ mixin DDIModule implements PostConstruct {
     List<DDIInterceptor<BeanT> Function()>? interceptors,
     FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
+    List<Object>? children,
   }) {
-    inject.addChildModules(
-        child: qualifier ?? BeanT, qualifier: moduleQualifier);
+    ddi.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
 
-    return inject.registerDependent<BeanT>(
+    return ddi.registerDependent<BeanT>(
       clazzRegister,
       qualifier: qualifier,
       postConstruct: postConstruct,
@@ -132,6 +136,7 @@ mixin DDIModule implements PostConstruct {
       interceptors: interceptors,
       destroyable: destroyable,
       registerIf: registerIf,
+      children: children,
     );
   }
 
@@ -144,6 +149,7 @@ mixin DDIModule implements PostConstruct {
   /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
   /// - `registerIf`: Optional function to conditionally register the instance.
   /// - `destroyable`: Optional parameter to make the instance indestructible.
+  /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module.
   Future<void> registerObject<BeanT extends Object>(
     BeanT register, {
     Object? qualifier,
@@ -152,11 +158,11 @@ mixin DDIModule implements PostConstruct {
     List<DDIInterceptor<BeanT> Function()>? interceptors,
     FutureOr<bool> Function()? registerIf,
     bool destroyable = true,
+    List<Object>? children,
   }) {
-    inject.addChildModules(
-        child: qualifier ?? BeanT, qualifier: moduleQualifier);
+    ddi.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
 
-    return inject.registerObject<BeanT>(
+    return ddi.registerObject<BeanT>(
       register,
       qualifier: qualifier,
       postConstruct: postConstruct,
@@ -164,6 +170,7 @@ mixin DDIModule implements PostConstruct {
       interceptors: interceptors,
       destroyable: destroyable,
       registerIf: registerIf,
+      children: children,
     );
   }
 }

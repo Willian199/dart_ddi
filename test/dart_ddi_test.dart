@@ -1,3 +1,5 @@
+import 'package:dart_ddi/dart_ddi.dart';
+
 import 'beans_test/add_decoratos_test.dart';
 import 'beans_test/module_application_test.dart';
 import 'beans_test/module_dependent_test.dart';
@@ -28,6 +30,7 @@ import 'event_test/event_test.dart';
 import 'stream_test/stream_test.dart';
 
 void main() {
+  ddi.setDebugMode(false);
   //Basic Tests, with consists in register, get, dispose, remove
   singleton();
   application();
