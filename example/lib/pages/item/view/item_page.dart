@@ -8,9 +8,8 @@ import 'package:perfumei/common/components/notification/notificacao_padrao.dart'
 import 'package:perfumei/common/enum/notas_enum.dart';
 import 'package:perfumei/common/model/grid_model.dart';
 import 'package:perfumei/common/model/layout.dart';
-import 'package:perfumei/config/services/injection.dart';
-import 'package:perfumei/pages/item/cubit/tab_cubit.dart';
 import 'package:perfumei/pages/item/cubit/perfume_cubit.dart';
+import 'package:perfumei/pages/item/cubit/tab_cubit.dart';
 import 'package:perfumei/pages/item/item_module.dart';
 import 'package:perfumei/pages/item/state/perfume_state.dart';
 import 'package:perfumei/pages/item/state/tab_state.dart';

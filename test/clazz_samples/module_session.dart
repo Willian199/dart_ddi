@@ -1,4 +1,4 @@
-import 'package:dart_ddi/src/mixin/ddi_module_mixin.dart';
+import 'package:dart_ddi/dart_ddi.dart';
 
 import 'a.dart';
 import 'b.dart';
@@ -8,7 +8,7 @@ class ModuleSession with DDIModule {
   @override
   void onPostConstruct() {
     registerSession(C.new);
-    registerSession(() => B(inject()));
-    registerSession(() => A(inject()));
+    registerSession(() => B(ddi()));
+    registerSession(() => A(ddi()));
   }
 }

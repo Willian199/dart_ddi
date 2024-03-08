@@ -1,11 +1,11 @@
 import 'dart:io';
 
+import 'package:dart_ddi/dart_ddi.dart';
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:perfumei/common/constants/injection_constants.dart';
 import 'package:perfumei/common/model/layout.dart';
-import 'package:perfumei/config/services/injection.dart';
 
 class DarkTheme {
   static final ThemeData _default = FlexThemeData.dark(

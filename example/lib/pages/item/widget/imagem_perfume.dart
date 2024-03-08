@@ -1,8 +1,8 @@
+import 'package:dart_ddi/dart_ddi.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:perfumei/common/components/widgets/slide_animation.dart';
-import 'package:perfumei/config/services/injection.dart';
 import 'package:perfumei/pages/item/cubit/imagem_cubit.dart';
 
 class ImagemPerfume extends StatefulWidget {

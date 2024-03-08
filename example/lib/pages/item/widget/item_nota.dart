@@ -1,8 +1,8 @@
+import 'package:dart_ddi/dart_ddi.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:perfumei/common/components/widgets/cache_image.dart';
 import 'package:perfumei/common/model/layout.dart';
-import 'package:perfumei/config/services/injection.dart';
 
 class ItemNota extends StatelessWidget {
   const ItemNota({required this.lista, super.key});

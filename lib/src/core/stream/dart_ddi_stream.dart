@@ -3,6 +3,8 @@ import 'package:dart_ddi/src/exception/stream_not_found.dart';
 
 part 'dart_ddi_stream_manager.dart';
 
+DDIStream ddiStream = DDIStream.instance;
+
 abstract final class DDIStream {
   /// Creates the shared instance of the [DDIStream] class.
   static final DDIStream _instance = _DDIStreamManager();

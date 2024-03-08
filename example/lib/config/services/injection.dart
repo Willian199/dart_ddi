@@ -9,8 +9,6 @@ import 'package:path_provider/path_provider.dart' as pp;
 import 'package:perfumei/common/constants/injection_constants.dart';
 import 'package:perfumei/pages/home/cubit/home_cubit.dart';
 
-final DDI ddi = DDI.instance;
-
 class Injection {
   static Future<void> start() async {
     ddi.registerObject<String>('https://fgvi612dfz-dsn.algolia.net',

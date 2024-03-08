@@ -1,10 +1,10 @@
+import 'package:dart_ddi/dart_ddi.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:perfumei/common/components/button_navigation/button_neomorphism.dart';
 import 'package:perfumei/common/components/notification/notificacao.dart';
 import 'package:perfumei/common/constants/injection_constants.dart';
 import 'package:perfumei/common/constants/mensagens.dart';
-import 'package:perfumei/config/services/injection.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 
 class NotificacaoPadrao {

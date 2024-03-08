@@ -1,11 +1,11 @@
 import 'dart:io';
 
+import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dio_cache_interceptor/dio_cache_interceptor.dart';
 import 'package:dio_cache_interceptor_objectbox_store/dio_cache_interceptor_objectbox_store.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart' as pp;
 import 'package:perfumei/common/constants/injection_constants.dart';
-import 'package:perfumei/config/services/injection.dart';
 import 'package:perfumei/config/theme/dark.dart';
 import 'package:perfumei/config/theme/light.dart';
 import 'package:perfumei/pages/home/cubit/home_cubit.dart';
