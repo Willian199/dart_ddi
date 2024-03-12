@@ -11,6 +11,7 @@ class _DDIEventImpl implements DDIEvent {
     bool allowUnsubscribe = true,
     int priority = 0,
     bool unsubscribeAfterFire = false,
+    bool lock = false,
   }) {
     _subscribe(
       event: event,
@@ -20,6 +21,7 @@ class _DDIEventImpl implements DDIEvent {
       priority: priority,
       unsubscribeAfterFire: unsubscribeAfterFire,
       mode: EventMode.normal,
+      lock: lock,
     );
   }
 
@@ -31,6 +33,7 @@ class _DDIEventImpl implements DDIEvent {
     bool allowUnsubscribe = true,
     int priority = 0,
     bool unsubscribeAfterFire = false,
+    bool lock = false,
   }) {
     _subscribe(
       event: event,
@@ -40,6 +43,7 @@ class _DDIEventImpl implements DDIEvent {
       priority: priority,
       unsubscribeAfterFire: unsubscribeAfterFire,
       mode: EventMode.asynchronous,
+      lock: lock,
     );
   }
 
@@ -51,6 +55,7 @@ class _DDIEventImpl implements DDIEvent {
     bool allowUnsubscribe = true,
     int priority = 0,
     bool unsubscribeAfterFire = false,
+    bool lock = false,
   }) {
     _subscribe(
       event: event,
@@ -60,6 +65,7 @@ class _DDIEventImpl implements DDIEvent {
       priority: priority,
       unsubscribeAfterFire: unsubscribeAfterFire,
       mode: EventMode.runAsIsolate,
+      lock: lock,
     );
   }
 
@@ -71,6 +77,7 @@ class _DDIEventImpl implements DDIEvent {
     bool allowUnsubscribe = true,
     int priority = 0,
     bool unsubscribeAfterFire = false,
+    bool lock = false,
   }) {
     if (registerIf?.call() ?? true) {
       final Object effectiveQualifierName = qualifier ?? EventTypeT;
@@ -93,6 +100,7 @@ class _DDIEventImpl implements DDIEvent {
           priority: priority,
           mode: mode,
           unsubscribeAfterFire: unsubscribeAfterFire,
+          lock: lock ? EventLock() : null,
         ));
 
         existingEvents.sort((a, b) => a.priority.compareTo(b.priority));
@@ -124,7 +132,12 @@ class _DDIEventImpl implements DDIEvent {
 
       for (final Event<EventTypeT> event
           in eventsList.cast<Event<EventTypeT>>()) {
-        event.mode.execute<EventTypeT>(event.event, value);
+        if (event.lock case final EventLock eventLock?) {
+          eventLock.lock(() async =>
+              await event.mode.execute<EventTypeT>(event.event, value));
+        } else {
+          event.mode.execute<EventTypeT>(event.event, value);
+        }
 
         if (event.unsubscribeAfterFire) {
           eventsToRemove.add(event);

@@ -1,6 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 
 import 'package:dart_ddi/src/enum/event_mode.dart';
+import 'package:dart_ddi/src/features/event_lock.dart';
 
 class Event<EventTypeT> {
   final void Function(EventTypeT) event;
@@ -9,6 +10,7 @@ class Event<EventTypeT> {
   final int priority;
   final EventMode mode;
   final bool unsubscribeAfterFire;
+  final EventLock? lock;
 
   Event({
     required this.event,
@@ -17,6 +19,7 @@ class Event<EventTypeT> {
     required this.priority,
     required this.mode,
     this.unsubscribeAfterFire = false,
+    this.lock,
   });
 
   @override
@@ -28,7 +31,8 @@ class Event<EventTypeT> {
         other.allowUnsubscribe == allowUnsubscribe &&
         other.priority == priority &&
         other.mode == mode &&
-        other.unsubscribeAfterFire == unsubscribeAfterFire;
+        other.unsubscribeAfterFire == unsubscribeAfterFire &&
+        other.lock == lock;
   }
 
   @override
@@ -38,6 +42,7 @@ class Event<EventTypeT> {
         allowUnsubscribe.hashCode ^
         priority.hashCode ^
         mode.hashCode ^
-        unsubscribeAfterFire.hashCode;
+        unsubscribeAfterFire.hashCode ^
+        lock.hashCode;
   }
 }

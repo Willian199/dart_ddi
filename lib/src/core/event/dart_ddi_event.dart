@@ -1,6 +1,7 @@
 import 'package:dart_ddi/src/data/event.dart';
 import 'package:dart_ddi/src/enum/event_mode.dart';
 import 'package:dart_ddi/src/exception/event_not_found.dart';
+import 'package:dart_ddi/src/features/event_lock.dart';
 
 part 'dart_ddi_event_impl.dart';
 
@@ -35,6 +36,7 @@ abstract class DDIEvent {
     bool allowUnsubscribe = true,
     int priority = 0,
     bool unsubscribeAfterFire = false,
+    bool lock = false,
   });
 
   /// Subscribes an Async callback function to an event.
@@ -58,6 +60,7 @@ abstract class DDIEvent {
     bool allowUnsubscribe = true,
     int priority = 0,
     bool unsubscribeAfterFire = false,
+    bool lock = false,
   });
 
   /// Subscribes an Isolate callback function to an event.
@@ -81,6 +84,7 @@ abstract class DDIEvent {
     bool allowUnsubscribe = true,
     int priority = 0,
     bool unsubscribeAfterFire = false,
+    bool lock = false,
   });
 
   /// Unsubscribes a callback function from an event.

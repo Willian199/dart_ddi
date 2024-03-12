@@ -188,7 +188,6 @@ void eventTest() {
     test('subscribe a isolate event', () async {
       int localValue = 0;
       void eventFunction(int value) {
-        print('Isolate event');
         localValue += value;
       }
 
@@ -317,6 +316,84 @@ void eventTest() {
 
       DDIEvent.instance.unsubscribe<bool>(callback1);
       DDIEvent.instance.unsubscribe<bool>(callback2);
+    });
+
+    test('Running event without lock', () async {
+      final List<int> eventOrder = [];
+
+      void callback(int value) async {
+        await Future.delayed(Duration(milliseconds: (1000 / value).round()));
+        print('callback $value');
+        eventOrder.add(value);
+      }
+
+      ddiEvent.subscribeAsync(callback, qualifier: 'concurrent_event');
+
+      expect(ddiEvent.isRegistered(qualifier: 'concurrent_event'), isTrue);
+
+      for (int i = 1; i <= 5; i++) {
+        ddiEvent.fire(i, qualifier: 'concurrent_event');
+      }
+
+      await Future.delayed(const Duration(milliseconds: 3000));
+
+      expect(eventOrder[4], 1);
+      expect(eventOrder[0], 5);
+
+      ddiEvent.unsubscribe(callback, qualifier: 'concurrent_event');
+    });
+
+    test('Running event with lock', () async {
+      final List<int> eventOrder = [];
+
+      void callback(int value) async {
+        await Future.delayed(Duration(milliseconds: (2000 / value).round()));
+        print('callback $value');
+        eventOrder.add(value);
+      }
+
+      ddiEvent.subscribeAsync(callback,
+          qualifier: 'concurrent_lock_event', lock: true);
+
+      expect(ddiEvent.isRegistered(qualifier: 'concurrent_lock_event'), isTrue);
+
+      for (int i = 1; i <= 5; i++) {
+        ddiEvent.fire(i, qualifier: 'concurrent_lock_event');
+      }
+
+      await Future.delayed(const Duration(milliseconds: 5000));
+
+      expect(eventOrder[4], 5);
+      expect(eventOrder[0], 1);
+
+      ddiEvent.unsubscribe(callback, qualifier: 'concurrent_lock_event');
+    });
+
+    test('Running Isolated event with lock', () async {
+      final List<int> eventOrder = [];
+
+      void callback(int value) async {
+        await Future.delayed(Duration(milliseconds: (2000 / value).round()));
+        print('callback $value');
+        eventOrder.add(value);
+      }
+
+      ddiEvent.subscribeAsync(callback,
+          qualifier: 'concurrent_lock_isolate', lock: true);
+
+      expect(
+          ddiEvent.isRegistered(qualifier: 'concurrent_lock_isolate'), isTrue);
+
+      for (int i = 1; i <= 5; i++) {
+        ddiEvent.fire(i, qualifier: 'concurrent_lock_isolate');
+      }
+
+      await Future.delayed(const Duration(milliseconds: 5000));
+
+      expect(eventOrder[4], 5);
+      expect(eventOrder[0], 1);
+
+      ddiEvent.unsubscribe(callback, qualifier: 'concurrent_lock_isolate');
     });
   });
 }
