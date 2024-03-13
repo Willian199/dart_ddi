@@ -36,3 +36,10 @@ jobs:
       # want to change this to 'flutter test'.
       - name: Run tests
         run: flutter test test/dart_ddi_test.dart
+
+      # Adding security check using 'snyk'
+      - name: Install snyk
+        run: npm install -g snyk
+
+      - name: Check for vulnerabilities
+        run: snyk test
