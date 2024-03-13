@@ -3,7 +3,7 @@ import 'dart:async';
 class EventLock {
   Future<void>? _lastEvent;
 
-  Future<void> lock(FutureOr<void> Function() event) async {
+  Future<void> lock(Future<void> Function() event) async {
     final aux = _lastEvent;
     final completer = Completer<void>();
 
@@ -14,11 +14,7 @@ class EventLock {
     }
 
     try {
-      if (event is Future<void> Function()) {
-        await event();
-      } else {
-        event();
-      }
+      await event();
     } finally {
       _lastEvent = null;
       completer.complete();

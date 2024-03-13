@@ -1,15 +1,50 @@
 import 'dart:async';
 import 'dart:isolate';
 
+import 'package:dart_ddi/src/data/event.dart';
+
 enum EventMode { runAsIsolate, asynchronous, normal }
 
 extension EventModeExecution on EventMode {
   FutureOr<void> execute<EventTypeT extends Object>(
-      void Function(EventTypeT) event, EventTypeT value) {
+      Event<EventTypeT> clazz, EventTypeT value) {
     return switch (this) {
-      EventMode.runAsIsolate => Isolate.run(() => event(value)),
-      EventMode.asynchronous => Future.sync(() => event(value)),
-      EventMode.normal => event(value) as FutureOr<void>
+      EventMode.runAsIsolate => _runIsolate(clazz, value),
+      EventMode.asynchronous => _runAsynchronous<EventTypeT>(clazz, value),
+      EventMode.normal => _runNormal(clazz, value)
     };
+  }
+
+  Future<void> _runAsynchronous<EventTypeT>(
+      Event<EventTypeT> clazz, EventTypeT value) async {
+    if (clazz.event case final Future<void> Function(EventTypeT) event) {
+      return event(value)
+          .onError((error, stackTrace) => clazz.onError?.call())
+          .whenComplete(() => clazz.onComplete?.call());
+    }
+
+    return Future.sync(() => clazz.event(value))
+        .onError((error, stackTrace) => clazz.onError?.call())
+        .whenComplete(() => clazz.onComplete?.call());
+  }
+
+  FutureOr<void> _runNormal<EventTypeT>(
+      Event<EventTypeT> clazz, EventTypeT value) {
+    try {
+      return clazz.event(value);
+    } catch (_) {
+      clazz.onError?.call();
+    } finally {
+      clazz.onComplete?.call();
+    }
+  }
+
+  FutureOr<void> _runIsolate<EventTypeT>(
+      Event<EventTypeT> clazz, EventTypeT value) {
+    final Future<void> run = Isolate.run(() => clazz.event(value));
+
+    return run
+        .onError((error, stackTrace) => clazz.onError?.call())
+        .whenComplete(() => clazz.onComplete?.call());
   }
 }

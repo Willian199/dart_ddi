@@ -5,13 +5,15 @@ class _DDIEventImpl implements DDIEvent {
 
   @override
   void subscribe<EventTypeT extends Object>(
-    void Function(EventTypeT) event, {
+    FutureOr<void> Function(EventTypeT) event, {
     Object? qualifier,
     bool Function()? registerIf,
     bool allowUnsubscribe = true,
     int priority = 0,
     bool unsubscribeAfterFire = false,
     bool lock = false,
+    FutureOr<void> Function()? onError,
+    FutureOr<void> Function()? onComplete,
   }) {
     _subscribe(
       event: event,
@@ -22,18 +24,22 @@ class _DDIEventImpl implements DDIEvent {
       unsubscribeAfterFire: unsubscribeAfterFire,
       mode: EventMode.normal,
       lock: lock,
+      onComplete: onComplete,
+      onError: onError,
     );
   }
 
   @override
   void subscribeAsync<EventTypeT extends Object>(
-    void Function(EventTypeT) event, {
+    FutureOr<void> Function(EventTypeT) event, {
     Object? qualifier,
     bool Function()? registerIf,
     bool allowUnsubscribe = true,
     int priority = 0,
     bool unsubscribeAfterFire = false,
     bool lock = false,
+    FutureOr<void> Function()? onError,
+    FutureOr<void> Function()? onComplete,
   }) {
     _subscribe(
       event: event,
@@ -44,18 +50,22 @@ class _DDIEventImpl implements DDIEvent {
       unsubscribeAfterFire: unsubscribeAfterFire,
       mode: EventMode.asynchronous,
       lock: lock,
+      onComplete: onComplete,
+      onError: onError,
     );
   }
 
   @override
   void subscribeIsolate<EventTypeT extends Object>(
-    void Function(EventTypeT) event, {
+    FutureOr<void> Function(EventTypeT) event, {
     Object? qualifier,
     bool Function()? registerIf,
     bool allowUnsubscribe = true,
     int priority = 0,
     bool unsubscribeAfterFire = false,
     bool lock = false,
+    FutureOr<void> Function()? onError,
+    FutureOr<void> Function()? onComplete,
   }) {
     _subscribe(
       event: event,
@@ -70,7 +80,7 @@ class _DDIEventImpl implements DDIEvent {
   }
 
   void _subscribe<EventTypeT extends Object>({
-    required void Function(EventTypeT) event,
+    required FutureOr<void> Function(EventTypeT) event,
     required EventMode mode,
     Object? qualifier,
     bool Function()? registerIf,
@@ -78,6 +88,8 @@ class _DDIEventImpl implements DDIEvent {
     int priority = 0,
     bool unsubscribeAfterFire = false,
     bool lock = false,
+    FutureOr<void> Function()? onError,
+    FutureOr<void> Function()? onComplete,
   }) {
     if (registerIf?.call() ?? true) {
       final Object effectiveQualifierName = qualifier ?? EventTypeT;
@@ -93,15 +105,19 @@ class _DDIEventImpl implements DDIEvent {
           (existingEvent) => existingEvent.event.hashCode == event.hashCode);
 
       if (!isDuplicate) {
-        existingEvents.add(Event<EventTypeT>(
-          event: event,
-          type: EventTypeT,
-          allowUnsubscribe: allowUnsubscribe,
-          priority: priority,
-          mode: mode,
-          unsubscribeAfterFire: unsubscribeAfterFire,
-          lock: lock ? EventLock() : null,
-        ));
+        existingEvents.add(
+          Event<EventTypeT>(
+            event: event,
+            type: EventTypeT,
+            allowUnsubscribe: allowUnsubscribe,
+            priority: priority,
+            mode: mode,
+            unsubscribeAfterFire: unsubscribeAfterFire,
+            lock: lock ? EventLock() : null,
+            onComplete: onComplete,
+            onError: onError,
+          ),
+        );
 
         existingEvents.sort((a, b) => a.priority.compareTo(b.priority));
       }
@@ -133,10 +149,11 @@ class _DDIEventImpl implements DDIEvent {
       for (final Event<EventTypeT> event
           in eventsList.cast<Event<EventTypeT>>()) {
         if (event.lock case final EventLock eventLock?) {
-          eventLock.lock(() async =>
-              await event.mode.execute<EventTypeT>(event.event, value));
+          eventLock.lock(
+            () async => event.mode.execute<EventTypeT>(event, value),
+          );
         } else {
-          event.mode.execute<EventTypeT>(event.event, value);
+          event.mode.execute<EventTypeT>(event, value);
         }
 
         if (event.unsubscribeAfterFire) {

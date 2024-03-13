@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dart_ddi/src/data/event.dart';
 import 'package:dart_ddi/src/enum/event_mode.dart';
 import 'package:dart_ddi/src/exception/event_not_found.dart';
@@ -29,14 +31,22 @@ abstract class DDIEvent {
   ///
   /// - `unsubscribeAfterFire`: If true, the subscription will be automatically removed after the first time the event is fired.
   ///
+  /// - `lock`: Indicates if the event should be locked.
+  ///
+  /// - `onError`: The callback function to be executed when an error occurs.
+  ///
+  /// - `onComplete`: The callback function to be executed when the event is completed.
+  ///
   void subscribe<EventTypeT extends Object>(
-    void Function(EventTypeT) event, {
+    FutureOr<void> Function(EventTypeT) event, {
     Object? qualifier,
     bool Function()? registerIf,
     bool allowUnsubscribe = true,
     int priority = 0,
     bool unsubscribeAfterFire = false,
     bool lock = false,
+    FutureOr<void> Function()? onError,
+    FutureOr<void> Function()? onComplete,
   });
 
   /// Subscribes an Async callback function to an event.
@@ -53,14 +63,22 @@ abstract class DDIEvent {
   ///
   /// - `unsubscribeAfterFire`: If true, the subscription will be automatically removed after the first time the event is fired.
   ///
+  /// - `lock`: Indicates if the event should be locked.
+  ///
+  /// - `onError`: The callback function to be executed when an error occurs.
+  ///
+  /// - `onComplete`: The callback function to be executed when the event is completed.
+  ///
   void subscribeAsync<EventTypeT extends Object>(
-    void Function(EventTypeT) event, {
+    FutureOr<void> Function(EventTypeT) event, {
     Object? qualifier,
     bool Function()? registerIf,
     bool allowUnsubscribe = true,
     int priority = 0,
     bool unsubscribeAfterFire = false,
     bool lock = false,
+    FutureOr<void> Function()? onError,
+    FutureOr<void> Function()? onComplete,
   });
 
   /// Subscribes an Isolate callback function to an event.
@@ -77,14 +95,22 @@ abstract class DDIEvent {
   ///
   /// - `unsubscribeAfterFire`: If true, the subscription will be automatically removed after the first time the event is fired.
   ///
+  /// - `lock`: Indicates if the event should be locked.
+  ///
+  /// - `onError`: The callback function to be executed when an error occurs.
+  ///
+  /// - `onComplete`: The callback function to be executed when the event is completed.
+  ///
   void subscribeIsolate<EventTypeT extends Object>(
-    void Function(EventTypeT) event, {
+    FutureOr<void> Function(EventTypeT) event, {
     Object? qualifier,
     bool Function()? registerIf,
     bool allowUnsubscribe = true,
     int priority = 0,
     bool unsubscribeAfterFire = false,
     bool lock = false,
+    FutureOr<void> Function()? onError,
+    FutureOr<void> Function()? onComplete,
   });
 
   /// Unsubscribes a callback function from an event.
@@ -92,8 +118,7 @@ abstract class DDIEvent {
   /// - `event`: The callback function to be unsubscribed.
   ///
   /// - `qualifier`: Optional qualifier name used to distinguish between different events of the same type.
-  void unsubscribe<EventTypeT extends Object>(void Function(EventTypeT) event,
-      {Object? qualifier});
+  void unsubscribe<EventTypeT extends Object>(void Function(EventTypeT) event, {Object? qualifier});
 
   /// Fires an event with the specified value.
   ///
@@ -105,5 +130,7 @@ abstract class DDIEvent {
   /// Verify if an event is already registered.
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
+  ///
+  /// Returns `true` if the event is already registered.
   bool isRegistered<EventTypeT extends Object>({Object? qualifier});
 }
