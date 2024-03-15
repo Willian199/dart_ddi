@@ -55,6 +55,8 @@ Summary
    2. [Pre Destroy](#pre-destroy-mixin)
    3. [Pre Dispose](#pre-dispose-mixin)
    4. [DDIModule Mixin](#ddimodule-mixin)
+   5. [DDIInject and DDIInjectAsync Mixins](#ddiinject-and-ddiinjectasync-mixins)
+   6. [DDIEventSender and DDIStreamSender Mixins](#ddieventsender-and-ddistreamsender-mixins)
 7. [Events](#events)
    1. [Creating and Managing Events](#creating-and-managing-events)
    2. [Subscribing an Event](#subscribing-an-event)
@@ -469,11 +471,11 @@ class MyClass with PreDispose {
 }
 ```
 
-## DDIModule Mixin
+### DDIModule Mixin
 
 The `DDIModule` mixin provides a convenient way to organize and manage your dependency injection configuration within your Dart application. By implementing this mixin in your module classes, you can easily register instances with different scopes and dependencies using the provided methods.
 
-## Example Usage:
+#### Example Usage:
 
 ```dart
 // Define a module using the DDIModule mixin
@@ -490,13 +492,13 @@ class AppModule with DDIModule {
 }
 ```
 
-### Mixins `DDIInject` and `DDIInjectAsync`
+### `DDIInject` and `DDIInjectAsync` Mixins
 
 The `DDIInject` and `DDIInjectAsync` mixins are designed to facilitate dependency injection of an instance into your classes. They provide a convenient method to obtain an instance of a specific type from the dependency injection container.
 
 The `DDIInject` mixin allows for synchronous injection of an instance and `DDIInjectAsync` mixin allows for asynchronous injection. Both defines a `instance` property that will be initialized with the `InjectType` instance obtained.
 
-**Usage Example:**
+#### Example Usage:
 ```dart
 class MyController with DDIInject<MyService> {
   void businessLogic() {
@@ -512,13 +514,13 @@ class MyAsyncController with DDIInjectAsync<MyService> {
 }
 ```	
 
-### Mixins `DDIEventSender ` and `DDIStreamSender`
+### `DDIEventSender ` and `DDIStreamSender` Mixins
 
 The `DDIEventSender` and `DDIStreamSender` mixins are designed to simplify the process of sending events and stream values to listeners. They provide a convenient method fire to send the specified value to an event or stream.
 
 The `DDIEventSender` mixin is used to send events to all registered listeners and the `DDIStreamSender` mixin is to send stream values. Both defines a fire method that takes the value as a parameter and sends it to all registered listeners.
 
-**Usage Example:**
+#### Example Usage:
 ```dart
 class MyEvent with DDIEventSender<String> {
   void businessLogic() {
