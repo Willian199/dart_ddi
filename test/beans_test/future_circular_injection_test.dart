@@ -14,7 +14,7 @@ void futureCircularDetection() {
       expectLater(
           () => DDI.instance.registerSingleton(
               () => Future.value(Father(mother: DDI.instance()))),
-          throwsA(isA<BeanNotFound>()));
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Inject a Application bean depending from a bean that not exists yet',
@@ -36,7 +36,7 @@ void futureCircularDetection() {
           Future.value(Mother(father: await DDI.instance.getAsync<Father>())));
 
       expectLater(() async => DDI.instance.getAsync<Mother>(),
-          throwsA(isA<CircularDetection>()));
+          throwsA(isA<CircularDetectionException>()));
 
       DDI.instance.destroy<Mother>();
       DDI.instance.destroy<Father>();
@@ -50,7 +50,7 @@ void futureCircularDetection() {
           Future.value(Mother(father: await DDI.instance.getAsync<Father>())));
 
       expectLater(() async => DDI.instance.getAsync<Mother>(),
-          throwsA(isA<CircularDetection>()));
+          throwsA(isA<CircularDetectionException>()));
 
       DDI.instance.destroy<Mother>();
       DDI.instance.destroy<Father>();
@@ -64,7 +64,7 @@ void futureCircularDetection() {
           Future.value(Mother(father: await DDI.instance.getAsync<Father>())));
 
       expectLater(() => DDI.instance.getAsync<Mother>(),
-          throwsA(isA<CircularDetection>()));
+          throwsA(isA<CircularDetectionException>()));
 
       DDI.instance.destroy<Mother>();
       DDI.instance.destroy<Father>();

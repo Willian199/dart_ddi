@@ -494,7 +494,7 @@ class AppModule with DDIModule {
 Designed for flexibility and efficiency, this system empowers you to seamlessly manage, subscribe to, and respond to events, making it a crucial asset for building reactive and scalable Dart applications.
 
 ## Creating and Managing Events
-The Events follow a straightforward flow. Functions or methods `subscribe` to specific events using the subscribe method of the `DDIEvent` class. Events are fired using the `fire` method, triggering the execution of all subscribed callbacks. Subscribed callbacks are then executed, handling the event data and performing any specified tasks. Subscriptions can be removed using the `unsubscribe` function.
+The Events follow a straightforward flow. Functions or methods `subscribe` to specific events using the subscribe method of the `DDIEvent` class. Events are fired using the `fire` or `fireWait` methods, triggering the execution of all subscribed callbacks. Subscribed callbacks are then executed, handling the event data and performing any specified tasks. Subscriptions can be removed using the `unsubscribe` function.
 
 ### Subscribing an Event
 When subscribing to an event, you have the option to choose from three different types of subscriptions:  `subscribe`, `subscribeAsync` and `subscribeIsolate`.
@@ -503,17 +503,20 @@ When subscribing to an event, you have the option to choose from three different
 The common subscription type, subscribe, functions as a simple callback. It allows you to respond to events in a synchronous manner, making it suitable for most scenarios.
 
 - `DDIEvent.instance.subscribe` It's the common type, working as a simples callback.
-- `DDIEvent.instance.subscribeAsync` Runs as a Future. Perhaps it's not possible to await.
+- `DDIEvent.instance.subscribeAsync` Runs the callback as a Future.
 - `DDIEvent.instance.subscribeIsolate` Runs as a Isolate.
 
 Parameters:
 
 - `event:` The callback function to be executed when the event is fired.
 - `qualifier:` Optional qualifier name to distinguish between different events of the same type.
-- `registerIf:` A bool function that if returns true, allows the subscription to proceed.
+- `registerIf:` A FutureOr<bool> function that if returns true, allows the subscription to proceed.
 - `allowUnsubscribe:` Indicates if the event can be unsubscribe.
 - `priority:` Priority of the subscription relative to other subscriptions (lower values indicate higher priority).
 - `unsubscribeAfterFire:` If true, the subscription will be automatically removed after the first time the event is fired.
+- `lock`: Indicates if the event should be locked. Running only one event simultaneously.
+- `onError`: The callback function to be executed when an error occurs.
+- `onComplete`: The callback function to be executed when the event is completed. It's called even if an error occurs.
 
 ```dart
 void myEvent(String message) {
@@ -526,7 +529,9 @@ DDIEvent.instance.subscribe<String>(
   registerIf: () => true,
   allowUnsubscribe: true,
   unsubscribeAfterFire: false,
-  runAsIsolate: false,
+  lock: false,
+  onError: (Object? error, StackTrace stacktrace, String valor){},
+  onComplete: (){}
 );
 ```
 
@@ -547,7 +552,9 @@ DDIEvent.instance.subscribeAsync<String>(
   registerIf: () => true,
   allowUnsubscribe: true,
   unsubscribeAfterFire: false,
-  runAsIsolate: false,
+  lock: false,
+  onError: (Object? error, StackTrace stacktrace, String valor){},
+  onComplete: (){}
 );
 ```
 
@@ -567,7 +574,9 @@ DDIEvent.instance.subscribeIsolate<String>(
   registerIf: () => true,
   allowUnsubscribe: true,
   unsubscribeAfterFire: false,
-  runAsIsolate: false,
+  lock: false,
+  onError: (Object? error, StackTrace stacktrace, String valor){},
+  onComplete: (){}
 );
 ```
 
@@ -584,29 +593,43 @@ DDIEvent.instance.unsubscribe<String>(
 
 ### Firing an Event
 
-To fire an event, use the `fire` function:
+To fire an event, use the `fire` or `fireWait` function. Using `fireWait` makes it possible to wait for all events to complete.
 
 ```dart
 DDIEvent.instance.fire('Hello, Dart DDI!', qualifier: 'exampleEvent');
+
+await DDIEvent.instance.fireWait('Hello, Dart DDI!', qualifier: 'exampleEvent');
 ```
 
 ## Events Considerations
 
 When using the Event System, consider the following:
 
-`Async Event Handling:` You will not abble to await an Async event run.
+`Event Granularity`: Design events with appropriate granularity to ensure they represent meaningful actions or states in the application.
 
-`Possible Problems:` Be cautious of potential issues such as race conditions and excessive use of isolate-based event handling, which may impact performance.
+`Modularity`: Keep events and their handlers modular and self-contained.
+
+`Single Responsibility`: Ensure each event and its handler have a single responsibility.
+
+`Possible Problems`: Be cautious of potential issues such as race conditions and excessive use of isolate-based event handling, which may impact performance.
+
+`Unnecessary Locking`: Applying locks to events unnecessarily may hinder the application's responsiveness. Use locking only when essential to prevent conflicting event executions.
+
+`Event Looping`: Carefully manage scenarios where events trigger further events, as this can lead to infinite loops or excessive event cascades.
 
 See the considerations about [Qualifiers](#considerations).
 
 ## Use Cases
 
-`Cross-State Communication:` Facilitate communication between differents Cubits/Bloc or other State Management in a Flutter application.
+`Application Lifecycle`: Manage events related to the application's lifecycle.
 
-`Network Request Handling`: Manage events related to network requests and responses for streamlined communication.
+`Data Synchronization`: Handle data synchronization events between local and remote data sources.
 
 `Background Task`: Coordinate background tasks and events for efficient task execution.
+
+`Custom Event Bus`: Build a custom event bus for inter-component communication, allowing different parts of the application to communicate without tight coupling.
+
+`Notifications`: Implement notifications for updates in various parts of the application, such as new messages, alerts, or data changes.
 
 # Stream
 

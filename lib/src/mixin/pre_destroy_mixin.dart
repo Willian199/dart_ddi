@@ -1,6 +1,18 @@
 import 'dart:async';
 
-/// Executes before the instance is destroyed.
+/// Mixin to help to execute some code before the instance is destroyed
+///
+/// Example:
+/// ```dart
+/// class MyEvent with PreDestroy {
+///
+///   @override
+///   FutureOr<void> onPreDestroy(){
+///     print('do something before destroy');
+///   }
+/// }
+/// ```
 mixin PreDestroy {
+  /// Executes before the instance is destroyed
   FutureOr<void> onPreDestroy();
 }

@@ -190,7 +190,7 @@ class _DDIImpl implements DDI {
 
   void _validateDuplicated(Object effectiveQualifierName) {
     if (!_debug) {
-      throw DuplicatedBean(effectiveQualifierName.toString());
+      throw DuplicatedBeanException(effectiveQualifierName.toString());
     } else {
       // ignore: avoid_print
       print(
@@ -276,7 +276,7 @@ class _DDIImpl implements DDI {
       return clazz;
     }
 
-    throw BeanDestroyed(effectiveQualifierName.toString());
+    throw BeanDestroyedException(effectiveQualifierName.toString());
   }
 
   BeanT _getAplication<BeanT extends Object>(
@@ -393,7 +393,7 @@ class _DDIImpl implements DDI {
     if (_beans[effectiveQualifierName]
         case final FactoryClazz<BeanT> factory?) {
       if (factory is FutureOr<BeanT> Function() && BeanT is! Future) {
-        throw const FutureNotAccept();
+        throw const FutureNotAcceptException();
       }
 
       return runZoned(
@@ -404,7 +404,7 @@ class _DDIImpl implements DDI {
       );
     }
 
-    throw BeanNotFound(effectiveQualifierName.toString());
+    throw BeanNotFoundException(effectiveQualifierName.toString());
   }
 
   @override
@@ -414,7 +414,7 @@ class _DDIImpl implements DDI {
     if (_beans[effectiveQualifierName]
         case final FactoryClazz<BeanT> factory?) {
       if (factory is FutureOr<BeanT> Function() && BeanT is! Future) {
-        throw const FutureNotAccept();
+        throw const FutureNotAcceptException();
       }
 
       return runZoned(
@@ -425,13 +425,13 @@ class _DDIImpl implements DDI {
       );
     }
 
-    throw BeanNotFound(effectiveQualifierName.toString());
+    throw BeanNotFoundException(effectiveQualifierName.toString());
   }
 
   BeanT _getScoped<BeanT extends Object>(
       FactoryClazz<BeanT> factoryClazz, Object effectiveQualifierName) {
     if (_resolutionMap[effectiveQualifierName]?.isNotEmpty ?? false) {
-      throw CircularDetection(effectiveQualifierName.toString());
+      throw CircularDetectionException(effectiveQualifierName.toString());
     }
 
     _resolutionMap[effectiveQualifierName] = [
@@ -457,7 +457,7 @@ class _DDIImpl implements DDI {
   Future<BeanT> _getScopedAsync<BeanT extends Object>(
       FactoryClazz<BeanT> factoryClazz, Object effectiveQualifierName) {
     if (_resolutionMap[effectiveQualifierName]?.isNotEmpty ?? false) {
-      throw CircularDetection(effectiveQualifierName.toString());
+      throw CircularDetectionException(effectiveQualifierName.toString());
     }
 
     _resolutionMap[effectiveQualifierName] = [
@@ -638,7 +638,7 @@ class _DDIImpl implements DDI {
         _beans[effectiveQualifierName] as FactoryClazz<BeanT>?;
 
     if (factoryClazz == null) {
-      throw BeanNotFound(effectiveQualifierName.toString());
+      throw BeanNotFoundException(effectiveQualifierName.toString());
     }
 
     switch (factoryClazz.scopeType) {
@@ -681,7 +681,7 @@ class _DDIImpl implements DDI {
         ...interceptors
       ];
     } else {
-      throw BeanNotFound(effectiveQualifierName.toString());
+      throw BeanNotFoundException(effectiveQualifierName.toString());
     }
   }
 
@@ -695,7 +695,7 @@ class _DDIImpl implements DDI {
         _beans[effectiveQualifierName] as FactoryClazz<BeanT>?;
 
     if (factoryClazz == null) {
-      throw BeanNotFound(effectiveQualifierName.toString());
+      throw BeanNotFoundException(effectiveQualifierName.toString());
     }
 
     if (factoryClazz.interceptors != null) {
@@ -756,7 +756,7 @@ class _DDIImpl implements DDI {
         case final FactoryClazz<BeanT> factoryClazz?) {
       factoryClazz.children = [...factoryClazz.children ?? [], ...child];
     } else {
-      throw BeanNotFound(effectiveQualifierName.toString());
+      throw BeanNotFoundException(effectiveQualifierName.toString());
     }
   }
 

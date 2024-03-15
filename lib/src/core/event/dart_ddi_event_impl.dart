@@ -155,7 +155,7 @@ class _DDIEventImpl implements DDIEvent {
         _events.remove(effectiveQualifierName);
       }
     } else {
-      throw EventNotFound(effectiveQualifierName.toString());
+      throw EventNotFoundException(effectiveQualifierName.toString());
     }
   }
 
@@ -192,7 +192,45 @@ class _DDIEventImpl implements DDIEvent {
         }
       }
     } else {
-      throw EventNotFound(effectiveQualifierName.toString());
+      throw EventNotFoundException(effectiveQualifierName.toString());
+    }
+  }
+
+  @override
+  Future<void> fireWait<EventTypeT extends Object>(EventTypeT value,
+      {Object? qualifier}) async {
+    final effectiveQualifierName = qualifier ?? EventTypeT;
+
+    if (_events[effectiveQualifierName] case final eventsList?
+        when eventsList.isNotEmpty) {
+      final eventsToRemove = <Event<EventTypeT>>[];
+
+      for (final Event<EventTypeT> event
+          in eventsList.cast<Event<EventTypeT>>()) {
+        if (event.lock case final EventLock eventLock?) {
+          await eventLock.lock(
+            () async => await event.mode.execute<EventTypeT>(event, value),
+          );
+        } else {
+          await event.mode.execute<EventTypeT>(event, value);
+        }
+
+        if (event.unsubscribeAfterFire) {
+          eventsToRemove.add(event);
+        }
+      }
+
+      if (eventsToRemove.isNotEmpty) {
+        for (final Event<EventTypeT> event in eventsToRemove) {
+          _events[effectiveQualifierName]?.remove(event);
+        }
+
+        if (eventsList.isEmpty) {
+          _events.remove(effectiveQualifierName);
+        }
+      }
+    } else {
+      throw EventNotFoundException(effectiveQualifierName.toString());
     }
   }
 

@@ -21,7 +21,7 @@ void eventTest() {
       DDIEvent.instance.unsubscribe(eventFunction, qualifier: 'testQualifier');
 
       expect(() => DDIEvent.instance.fire(1, qualifier: 'testQualifier'),
-          throwsA(isA<EventNotFound>()));
+          throwsA(isA<EventNotFoundException>()));
 
       expect(ddiEvent.isRegistered(qualifier: 'testQualifier'), isFalse);
     });
@@ -40,7 +40,8 @@ void eventTest() {
 
       DDIEvent.instance.unsubscribe(eventFunction);
 
-      expect(() => DDIEvent.instance.fire(1), throwsA(isA<EventNotFound>()));
+      expect(() => DDIEvent.instance.fire(1),
+          throwsA(isA<EventNotFoundException>()));
 
       expect(ddiEvent.isRegistered<int>(), isFalse);
     });
@@ -58,7 +59,8 @@ void eventTest() {
 
       expect(localValue, 1);
 
-      expect(() => DDIEvent.instance.fire(1), throwsA(isA<EventNotFound>()));
+      expect(() => DDIEvent.instance.fire(1),
+          throwsA(isA<EventNotFoundException>()));
 
       expect(ddiEvent.isRegistered<int>(), isFalse);
     });
@@ -151,7 +153,8 @@ void eventTest() {
       expect(ddiEvent.isRegistered<int>(), isFalse);
       expect(localValue, 0);
 
-      expect(() => DDIEvent.instance.fire(1), throwsA(isA<EventNotFound>()));
+      expect(() => DDIEvent.instance.fire(1),
+          throwsA(isA<EventNotFoundException>()));
 
       expect(localValue, 0);
     });
@@ -259,7 +262,7 @@ void eventTest() {
       DDIEvent.instance.unsubscribe<bool>(callback);
 
       expect(() => DDIEvent.instance.fire<bool>(true),
-          throwsA(isA<EventNotFound>()));
+          throwsA(isA<EventNotFoundException>()));
 
       await expectLater(completer.future, doesNotComplete);
 
@@ -325,7 +328,7 @@ void eventTest() {
       await expectLater(asyncFunctionCompleter.future, completion(isTrue));
 
       await expectLater(() => DDIEvent.instance.fire<bool>(true),
-          throwsA(isA<EventNotFound>()));
+          throwsA(isA<EventNotFoundException>()));
 
       expect(ddiEvent.isRegistered<bool>(), isFalse);
     });

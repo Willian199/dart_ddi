@@ -1,6 +1,18 @@
 import 'dart:async';
 
-/// Executes after the instance is constructed.
+/// Mixin to help to execute some code after the instance is constructed
+///
+/// Example:
+/// ```dart
+/// class MyEvent with PostConstruct {
+///
+///   @override
+///   FutureOr<void> onPostConstruct(){
+///     print('do something after construct');
+///   }
+/// }
+/// ```
 mixin PostConstruct {
+  /// Is executed after the instance is constructed.
   FutureOr<void> onPostConstruct();
 }

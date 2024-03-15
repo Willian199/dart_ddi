@@ -1,5 +1,6 @@
-class EventNotFound implements Exception {
-  const EventNotFound(this.cause);
+/// [EventNotFoundException] is an exception that is thrown when tried to access an event that doesn't exist.
+class EventNotFoundException implements Exception {
+  const EventNotFoundException(this.cause);
   final String cause;
 
   @override

@@ -29,9 +29,9 @@ void runByType() {
       DDI.instance.destroyByType<G>();
 
       expect(() => DDI.instance.get(qualifier: keys2[0]),
-          throwsA(isA<BeanNotFound>()));
+          throwsA(isA<BeanNotFoundException>()));
       expect(() => DDI.instance.get(qualifier: keys2[1]),
-          throwsA(isA<BeanNotFound>()));
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Dependent Get bean by Type that have registered and dispose', () {
@@ -55,9 +55,9 @@ void runByType() {
       DDI.instance.destroyByType<G>();
 
       expect(() => DDI.instance.get(qualifier: keys2[0]),
-          throwsA(isA<BeanNotFound>()));
+          throwsA(isA<BeanNotFoundException>()));
       expect(() => DDI.instance.get(qualifier: keys2[1]),
-          throwsA(isA<BeanNotFound>()));
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Session Get bean by Type that have registered and dispose', () {
@@ -81,9 +81,9 @@ void runByType() {
       DDI.instance.destroyByType<G>();
 
       expect(() => DDI.instance.get(qualifier: keys2[0]),
-          throwsA(isA<BeanNotFound>()));
+          throwsA(isA<BeanNotFoundException>()));
       expect(() => DDI.instance.get(qualifier: keys2[1]),
-          throwsA(isA<BeanNotFound>()));
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Get bean by Type that have registered and dispose', () {
@@ -108,9 +108,9 @@ void runByType() {
       DDI.instance.destroyByType<G>();
 
       expect(() => DDI.instance.get(qualifier: keys2[0]),
-          throwsA(isA<BeanNotFound>()));
+          throwsA(isA<BeanNotFoundException>()));
       expect(() => DDI.instance.get(qualifier: keys2[1]),
-          throwsA(isA<BeanNotFound>()));
+          throwsA(isA<BeanNotFoundException>()));
     });
   });
 }

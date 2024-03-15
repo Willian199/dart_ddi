@@ -12,7 +12,7 @@ final class _DDIStreamManager implements DDIStream {
 
       _streamMap.remove(effectiveQualifierName);
     } else {
-      throw StreamNotFound(effectiveQualifierName.toString());
+      throw StreamNotFoundException(effectiveQualifierName.toString());
     }
   }
 
@@ -61,7 +61,7 @@ final class _DDIStreamManager implements DDIStream {
 
     final DDIStreamCore? stream = _streamMap[effectiveQualifierName];
     if (stream == null) {
-      throw StreamNotFound(effectiveQualifierName.toString());
+      throw StreamNotFoundException(effectiveQualifierName.toString());
     }
 
     return stream as DDIStreamCore<StreamTypeT>;

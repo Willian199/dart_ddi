@@ -7,9 +7,13 @@ import 'package:dart_ddi/src/features/event_lock.dart';
 
 part 'dart_ddi_event_impl.dart';
 
+/// Shortcut for getting the shared instance of the [DDIEvent] class.
+/// The [DDIEvent] class provides methods for subscribing and unsubscribing
 DDIEvent ddiEvent = DDIEvent.instance;
 
-/// The abstract class for managing event emission.
+/// This class provides methods for subscribing and unsubscribing to events
+/// and for dispatching events with optional qualifiers.
+///
 abstract class DDIEvent {
   /// Creates the shared instance of the [DDIEvent] class.
   static final DDIEvent _instance = _DDIEventImpl();
@@ -127,6 +131,14 @@ abstract class DDIEvent {
   ///
   /// - `qualifier`: Optional qualifier name used to distinguish between different events of the same type.
   void fire<EventTypeT extends Object>(EventTypeT value, {Object? qualifier});
+
+  /// Fires an event with the specified value with the ability to await conclusion.
+  ///
+  /// - `value`: The value to be passed to the subscribed callback functions.
+  ///
+  /// - `qualifier`: Optional qualifier name used to distinguish between different events of the same type.
+  Future<void> fireWait<EventTypeT extends Object>(EventTypeT value,
+      {Object? qualifier});
 
   /// Verify if an event is already registered.
   ///

@@ -71,7 +71,7 @@ void streamTest() {
           () => ddiStream.fire<String>(
                 value: 'AnotherValue',
               ),
-          throwsA(isA<StreamNotFound>()));
+          throwsA(isA<StreamNotFoundException>()));
     });
     test('Subscribe with Qualifier', () async {
       final completer = Completer<String>();
@@ -136,7 +136,7 @@ void streamTest() {
           () => ddiStream.fire<String>(
                 value: 'AnotherValue',
               ),
-          throwsA(isA<StreamNotFound>()));
+          throwsA(isA<StreamNotFoundException>()));
       await expectLater(completer.future, doesNotComplete);
     });
 

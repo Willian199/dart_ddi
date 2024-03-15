@@ -3,8 +3,10 @@ import 'dart:isolate';
 
 import 'package:dart_ddi/src/data/event.dart';
 
+/// [EventMode] is an enum that represents the event execution mode
 enum EventMode { runAsIsolate, asynchronous, normal }
 
+/// Defines an extension method for [EventMode] that executes the event in the specified mode
 extension EventModeExecution on EventMode {
   FutureOr<void> execute<EventTypeT extends Object>(
       Event<EventTypeT> clazz, EventTypeT value) {

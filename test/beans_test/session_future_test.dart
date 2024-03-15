@@ -142,8 +142,8 @@ void sessionFuture() {
 
       DDI.instance.destroy<C>();
 
-      expect(
-          () async => DDI.instance.getAsync<C>(), throwsA(isA<BeanNotFound>()));
+      expect(() async => DDI.instance.getAsync<C>(),
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Create, get and remove a qualifier bean', () {
@@ -154,7 +154,7 @@ void sessionFuture() {
       DDI.instance.destroy(qualifier: 'typeC');
 
       expect(() async => DDI.instance.getAsync(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFound>()));
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Try to destroy a undestroyable Session bean', () async {

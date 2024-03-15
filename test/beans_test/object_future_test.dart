@@ -28,7 +28,7 @@ void objectFuture() {
       DDI.instance.destroy(qualifier: 'futureAuthor');
 
       expect(() => DDI.instance.get(qualifier: 'futureAuthor'),
-          throwsA(isA<BeanNotFound>()));
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Try to destroy a undestroyable Object bean', () async {

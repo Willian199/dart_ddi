@@ -1,7 +1,6 @@
+import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/exception/bean_not_found.dart';
 import 'package:test/test.dart';
-
-import 'package:dart_ddi/dart_ddi.dart';
 
 import '../clazz_samples/a.dart';
 import '../clazz_samples/b.dart';
@@ -136,7 +135,8 @@ void session() {
 
       DDI.instance.destroy<C>();
 
-      expect(() => DDI.instance.get<C>(), throwsA(isA<BeanNotFound>()));
+      expect(
+          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Create, get and remove a qualifier bean', () {
@@ -147,7 +147,7 @@ void session() {
       DDI.instance.destroy(qualifier: 'typeC');
 
       expect(() => DDI.instance.get(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFound>()));
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Try to destroy a undestroyable Session bean', () {

@@ -24,7 +24,7 @@ void object() {
       DDI.instance.destroy(qualifier: 'author');
 
       expect(() => DDI.instance.get(qualifier: 'author'),
-          throwsA(isA<BeanNotFound>()));
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Try to destroy a undestroyable Object bean', () {

@@ -145,7 +145,8 @@ void applicationFuture() {
 
       DDI.instance.destroy<C>();
 
-      expect(() => DDI.instance.getAsync<C>(), throwsA(isA<BeanNotFound>()));
+      expect(() => DDI.instance.getAsync<C>(),
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Create, get and remove a qualifier bean', () {
@@ -157,7 +158,7 @@ void applicationFuture() {
       DDI.instance.destroy(qualifier: 'typeC');
 
       expect(() => DDI.instance.getAsync(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFound>()));
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Try to destroy a undestroyable Application bean', () async {
@@ -213,7 +214,8 @@ void applicationFuture() {
       DDI.instance.registerApplication(C.new);
 
       //This happens because A(await DDI.instance()) transform to A(await DDI.instance<FutureOr<B>>())
-      expect(() => DDI.instance.getAsync<A>(), throwsA(isA<BeanNotFound>()));
+      expect(() => DDI.instance.getAsync<A>(),
+          throwsA(isA<BeanNotFoundException>()));
 
       DDI.instance.destroy<A>();
       DDI.instance.destroy<B>();
