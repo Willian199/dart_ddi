@@ -490,6 +490,49 @@ class AppModule with DDIModule {
 }
 ```
 
+### Mixins `DDIInject` and `DDIInjectAsync`
+
+The `DDIInject` and `DDIInjectAsync` mixins are designed to facilitate dependency injection of an instance into your classes. They provide a convenient method to obtain an instance of a specific type from the dependency injection container.
+
+The `DDIInject` mixin allows for synchronous injection of an instance and `DDIInjectAsync` mixin allows for asynchronous injection. Both defines a `instance` property that will be initialized with the `InjectType` instance obtained.
+
+**Usage Example:**
+```dart
+class MyController with DDIInject<MyService> {
+  void businessLogic() {
+    instance.runSomething();
+  }
+}
+
+class MyAsyncController with DDIInjectAsync<MyService> {
+  Future<void> businessLogic() async {
+    final myInstance = await instance;
+    myInstance.runSomething();
+  }
+}
+```	
+
+### Mixins `DDIEventSender ` and `DDIStreamSender`
+
+The `DDIEventSender` and `DDIStreamSender` mixins are designed to simplify the process of sending events and stream values to listeners. They provide a convenient method fire to send the specified value to an event or stream.
+
+The `DDIEventSender` mixin is used to send events to all registered listeners and the `DDIStreamSender` mixin is to send stream values. Both defines a fire method that takes the value as a parameter and sends it to all registered listeners.
+
+**Usage Example:**
+```dart
+class MyEvent with DDIEventSender<String> {
+  void businessLogic() {
+    fire('Hello World');
+  }
+}
+
+class MyStreamEvent with DDIStreamSender<int> {
+  void businessLogic() {
+    fire(42);
+  }
+}
+```
+
 # Events
 Designed for flexibility and efficiency, this system empowers you to seamlessly manage, subscribe to, and respond to events, making it a crucial asset for building reactive and scalable Dart applications.
 

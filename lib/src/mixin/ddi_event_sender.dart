@@ -3,8 +3,6 @@ import 'package:dart_ddi/dart_ddi.dart';
 /// Mixin used to send events.
 /// [EventStateType] The type of the event.
 ///
-///
-///
 /// Example:
 /// ```dart
 /// class MyEvent with DDIEventSender<String> {

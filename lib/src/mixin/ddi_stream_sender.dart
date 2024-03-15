@@ -2,6 +2,7 @@ import 'package:dart_ddi/dart_ddi.dart';
 
 /// Mixin used to send stream events.
 /// [StreamStateType] The type of the stream.
+/// 
 /// Example:
 /// ```dart
 /// class MyEvent with DDIStreamSender<String> {
