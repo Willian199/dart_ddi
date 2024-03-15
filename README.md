@@ -514,7 +514,7 @@ class MyAsyncController with DDIInjectAsync<MyService> {
 }
 ```	
 
-### `DDIEventSender ` and `DDIStreamSender` Mixins
+### `DDIEventSender` and `DDIStreamSender` Mixins
 
 The `DDIEventSender` and `DDIStreamSender` mixins are designed to simplify the process of sending events and stream values to listeners. They provide a convenient method fire to send the specified value to an event or stream.
 
