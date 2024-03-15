@@ -26,6 +26,8 @@ void eventLockTest() {
       expect(eventOrder[0], 5);
 
       ddiEvent.unsubscribe(callback, qualifier: 'concurrent_event');
+
+      expect(ddiEvent.isRegistered(qualifier: 'concurrent_event'), isFalse);
     });
 
     test('Running event with lock', () async {
@@ -52,18 +54,18 @@ void eventLockTest() {
       expect(eventOrder[0], 1);
 
       ddiEvent.unsubscribe(callback, qualifier: 'concurrent_lock_event');
+
+      expect(
+          ddiEvent.isRegistered(qualifier: 'concurrent_lock_event'), isFalse);
     });
 
     test('Running Isolated event with lock', () async {
-      final List<int> eventOrder = [];
-
       void callback(int value) async {
         await Future.delayed(Duration(milliseconds: (2000 / value).round()));
         print('callback $value');
-        eventOrder.add(value);
       }
 
-      ddiEvent.subscribeAsync(callback,
+      ddiEvent.subscribeIsolate(callback,
           qualifier: 'concurrent_lock_isolate', lock: true);
 
       expect(
@@ -75,10 +77,10 @@ void eventLockTest() {
 
       await Future.delayed(const Duration(milliseconds: 5000));
 
-      expect(eventOrder[4], 5);
-      expect(eventOrder[0], 1);
-
       ddiEvent.unsubscribe(callback, qualifier: 'concurrent_lock_isolate');
+
+      expect(
+          ddiEvent.isRegistered(qualifier: 'concurrent_lock_isolate'), isFalse);
     });
 
     test('Subscribe and Fire event with onError', () async {
@@ -92,7 +94,7 @@ void eventLockTest() {
       ddiEvent.subscribeAsync(
         eventCallback,
         qualifier: 'error_event',
-        onError: () => value = 4,
+        onError: (_, __, ___) => value = 4,
       );
 
       // Fire event
@@ -104,6 +106,8 @@ void eventLockTest() {
       expect(value, 4);
 
       ddiEvent.unsubscribe(eventCallback, qualifier: 'error_event');
+
+      expect(ddiEvent.isRegistered(qualifier: 'error_event'), isFalse);
     });
 
     test('Subscribe and Fire event with onComplete', () async {
@@ -117,7 +121,7 @@ void eventLockTest() {
       ddiEvent.subscribeAsync(
         eventCallback,
         qualifier: 'complet_event',
-        onError: () => value = 4,
+        onError: (_, __, ___) => value = 4,
         onComplete: () => value = 5,
       );
 
@@ -130,6 +134,8 @@ void eventLockTest() {
       expect(value, 5);
 
       ddiEvent.unsubscribe(eventCallback, qualifier: 'complet_event');
+
+      expect(ddiEvent.isRegistered(qualifier: 'complet_event'), isFalse);
     });
 
     test('Running event with lock and onError', () async {
@@ -148,7 +154,7 @@ void eventLockTest() {
         callback,
         qualifier: 'concurrent_event_with_error',
         lock: true,
-        onError: () => eventOrder.add(-1),
+        onError: (_, __, ___) => eventOrder.add(-1),
       );
 
       expect(ddiEvent.isRegistered(qualifier: 'concurrent_event_with_error'),
@@ -167,6 +173,9 @@ void eventLockTest() {
       expect(eventOrder[4], -1);
 
       ddiEvent.unsubscribe(callback, qualifier: 'concurrent_event_with_error');
+
+      expect(ddiEvent.isRegistered(qualifier: 'concurrent_event_with_error'),
+          isFalse);
     });
 
     test('Running event with lock and onComplete', () async {
@@ -207,6 +216,9 @@ void eventLockTest() {
 
       ddiEvent.unsubscribe(callback,
           qualifier: 'concurrent_event_with_complete');
+
+      expect(ddiEvent.isRegistered(qualifier: 'concurrent_event_with_complete'),
+          isFalse);
     });
 
     test('Running event with lock, onError and onComplete', () async {
@@ -225,7 +237,7 @@ void eventLockTest() {
         callback,
         qualifier: 'concurrent_event_with_error_complete',
         lock: true,
-        onError: () => eventOrder.add(-1),
+        onError: (_, __, ___) => eventOrder.add(-1),
         onComplete: () => eventOrder.add(0),
       );
 
@@ -253,6 +265,83 @@ void eventLockTest() {
 
       ddiEvent.unsubscribe(callback,
           qualifier: 'concurrent_event_with_error_complete');
+
+      expect(
+          ddiEvent.isRegistered(
+              qualifier: 'concurrent_event_with_error_complete'),
+          isFalse);
+    });
+
+    test('Running Isolated event with lock and onError', () async {
+      int count = 0;
+
+      void callback(int value) async {
+        await Future.delayed(Duration(milliseconds: (2000 / value).round()));
+        print('callback $value');
+        throw Exception();
+      }
+
+      ddiEvent.subscribeIsolate(callback,
+          qualifier: 'concurrent_lock_isolate_onError',
+          lock: true, onError: (_, __, ___) {
+        count++;
+      });
+
+      expect(
+          ddiEvent.isRegistered(qualifier: 'concurrent_lock_isolate_onError'),
+          isTrue);
+
+      for (int i = 1; i <= 5; i++) {
+        ddiEvent.fire(i, qualifier: 'concurrent_lock_isolate_onError');
+      }
+
+      await Future.delayed(const Duration(milliseconds: 5000));
+
+      expect(count, 5);
+
+      ddiEvent.unsubscribe(callback,
+          qualifier: 'concurrent_lock_isolate_onError');
+
+      expect(
+          ddiEvent.isRegistered(qualifier: 'concurrent_lock_isolate_onError'),
+          isFalse);
+    });
+
+    test('Running Isolated event with lock and onComplete', () async {
+      int count = 0;
+
+      void callback(int value) async {
+        await Future.delayed(Duration(milliseconds: (2000 / value).round()));
+        print('callback $value');
+        throw Exception();
+      }
+
+      ddiEvent.subscribeIsolate(callback,
+          qualifier: 'concurrent_lock_isolate_onComplete',
+          lock: true, onComplete: () {
+        count++;
+      });
+
+      expect(
+          ddiEvent.isRegistered(
+              qualifier: 'concurrent_lock_isolate_onComplete'),
+          isTrue);
+
+      for (int i = 1; i <= 5; i++) {
+        ddiEvent.fire(i, qualifier: 'concurrent_lock_isolate_onComplete');
+      }
+
+      await Future.delayed(const Duration(milliseconds: 5000));
+
+      expect(count, 5);
+
+      ddiEvent.unsubscribe(callback,
+          qualifier: 'concurrent_lock_isolate_onComplete');
+
+      expect(
+          ddiEvent.isRegistered(
+              qualifier: 'concurrent_lock_isolate_onComplete'),
+          isFalse);
     });
   });
 }

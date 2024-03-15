@@ -13,7 +13,7 @@ class Event<EventTypeT> {
   final EventMode mode;
   final bool unsubscribeAfterFire;
   final EventLock? lock;
-  final FutureOr<void> Function()? onError;
+  final FutureOr<void> Function(Object?, StackTrace, EventTypeT)? onError;
   final FutureOr<void> Function()? onComplete;
 
   Event({

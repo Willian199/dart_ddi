@@ -22,6 +22,8 @@ void eventTest() {
 
       expect(() => DDIEvent.instance.fire(1, qualifier: 'testQualifier'),
           throwsA(isA<EventNotFound>()));
+
+      expect(ddiEvent.isRegistered(qualifier: 'testQualifier'), isFalse);
     });
 
     test('subscribe adds event to the correct type', () {
@@ -39,6 +41,8 @@ void eventTest() {
       DDIEvent.instance.unsubscribe(eventFunction);
 
       expect(() => DDIEvent.instance.fire(1), throwsA(isA<EventNotFound>()));
+
+      expect(ddiEvent.isRegistered<int>(), isFalse);
     });
 
     test('subscribe adds event and remove after fire', () {
@@ -55,9 +59,13 @@ void eventTest() {
       expect(localValue, 1);
 
       expect(() => DDIEvent.instance.fire(1), throwsA(isA<EventNotFound>()));
+
+      expect(ddiEvent.isRegistered<int>(), isFalse);
     });
 
     test('subscribe adds two event with priority', () {
+      expect(ddiEvent.isRegistered<int>(), isFalse);
+
       int localValue = 0;
       void eventFunction(int value) => localValue += value;
       void negateFunction(_) => localValue = localValue * -1;
@@ -75,11 +83,15 @@ void eventTest() {
 
       expect(localValue, 6);
 
-      DDIEvent.instance.unsubscribe(eventFunction);
-      DDIEvent.instance.unsubscribe(negateFunction);
+      DDIEvent.instance.unsubscribe<int>(eventFunction);
+      DDIEvent.instance.unsubscribe<int>(negateFunction);
+
+      expect(ddiEvent.isRegistered<int>(), isFalse);
     });
 
     test('subscribe adds two event with priority and wrong order', () {
+      expect(ddiEvent.isRegistered<int>(), isFalse);
+
       int localValue = 0;
       void eventFunction(int value) => localValue += value;
       void negateFunction(_) => localValue = localValue * -1;
@@ -97,11 +109,14 @@ void eventTest() {
 
       expect(localValue, 6);
 
-      DDIEvent.instance.unsubscribe(eventFunction);
-      DDIEvent.instance.unsubscribe(negateFunction);
+      DDIEvent.instance.unsubscribe<int>(eventFunction);
+      DDIEvent.instance.unsubscribe<int>(negateFunction);
+
+      expect(ddiEvent.isRegistered<int>(), isFalse);
     });
 
     test('subscribe adds the same event two times', () {
+      expect(ddiEvent.isRegistered<int>(), isFalse);
       int localValue = 0;
       void eventFunction(int value) => localValue += value;
 
@@ -118,10 +133,13 @@ void eventTest() {
 
       expect(localValue, 2);
 
-      DDIEvent.instance.unsubscribe(eventFunction);
+      DDIEvent.instance.unsubscribe<int>(eventFunction);
+
+      expect(ddiEvent.isRegistered<int>(), isFalse);
     });
 
     test('subscribe with registerIf', () {
+      expect(ddiEvent.isRegistered<int>(), isFalse);
       int localValue = 0;
       void eventFunction(int value) => localValue += value;
 
@@ -130,9 +148,10 @@ void eventTest() {
         registerIf: () => false,
       );
 
+      expect(ddiEvent.isRegistered<int>(), isFalse);
       expect(localValue, 0);
 
-      DDIEvent.instance.fire(1);
+      expect(() => DDIEvent.instance.fire(1), throwsA(isA<EventNotFound>()));
 
       expect(localValue, 0);
     });
@@ -168,6 +187,8 @@ void eventTest() {
       DDIEvent.instance.fire(1, qualifier: 'testQualifier');
 
       expect(localValue, 2);
+
+      expect(ddiEvent.isRegistered(qualifier: 'testQualifier'), isTrue);
     });
 
     test('subscribe with allowUnsubscribe event, with unsubscribeAfterFire',
@@ -186,21 +207,26 @@ void eventTest() {
     });
 
     test('subscribe a isolate event', () async {
+      expect(ddiEvent.isRegistered(qualifier: 'isolate_Qualifier'), isFalse);
+
       int localValue = 0;
       void eventFunction(int value) {
         localValue += value;
       }
 
       DDIEvent.instance
-          .subscribeIsolate(eventFunction, qualifier: 'testQualifier');
+          .subscribeIsolate(eventFunction, qualifier: 'isolate_Qualifier');
 
       expect(localValue, 0);
 
-      DDIEvent.instance.fire(1, qualifier: 'testQualifier');
+      DDIEvent.instance.fire(1, qualifier: 'isolate_Qualifier');
 
       expect(localValue, 0);
 
-      DDIEvent.instance.unsubscribe(eventFunction, qualifier: 'testQualifier');
+      DDIEvent.instance
+          .unsubscribe(eventFunction, qualifier: 'isolate_Qualifier');
+
+      expect(ddiEvent.isRegistered(qualifier: 'isolate_Qualifier'), isFalse);
     });
 
     test('subscribeAsync and fire event asynchronously', () async {
@@ -217,6 +243,8 @@ void eventTest() {
       await expectLater(asyncFunctionCompleter.future, completion(isTrue));
 
       DDIEvent.instance.unsubscribe<bool>(callback);
+
+      expect(ddiEvent.isRegistered<bool>(), isFalse);
     });
 
     test('unsubscribeAsync', () async {
@@ -234,6 +262,8 @@ void eventTest() {
           throwsA(isA<EventNotFound>()));
 
       await expectLater(completer.future, doesNotComplete);
+
+      expect(ddiEvent.isRegistered<bool>(), isFalse);
     });
 
     test(
@@ -254,6 +284,8 @@ void eventTest() {
 
       DDIEvent.instance
           .unsubscribe<bool>(callback, qualifier: 'test_qualifier');
+
+      expect(ddiEvent.isRegistered<bool>(qualifier: 'test_qualifier'), isFalse);
     });
 
     test('subscribeAsync with registerIf and fire event based on registerIf',
@@ -274,6 +306,8 @@ void eventTest() {
       await expectLater(asyncFunctionCompleter.future, completion(isTrue));
 
       DDIEvent.instance.unsubscribe<bool>(callback);
+
+      expect(ddiEvent.isRegistered<bool>(), isFalse);
     });
 
     test('subscribeAsync and fire event with unsubscribeAfterFire', () async {
@@ -292,6 +326,8 @@ void eventTest() {
 
       await expectLater(() => DDIEvent.instance.fire<bool>(true),
           throwsA(isA<EventNotFound>()));
+
+      expect(ddiEvent.isRegistered<bool>(), isFalse);
     });
 
     test('subscribeAsync with multiple subscribers and fire event', () async {
@@ -316,6 +352,8 @@ void eventTest() {
 
       DDIEvent.instance.unsubscribe<bool>(callback1);
       DDIEvent.instance.unsubscribe<bool>(callback2);
+
+      expect(ddiEvent.isRegistered<bool>(), isFalse);
     });
   });
 }

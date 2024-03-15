@@ -19,12 +19,14 @@ extension EventModeExecution on EventMode {
       Event<EventTypeT> clazz, EventTypeT value) async {
     if (clazz.event case final Future<void> Function(EventTypeT) event) {
       return event(value)
-          .onError((error, stackTrace) => clazz.onError?.call())
+          .onError((error, stackTrace) =>
+              clazz.onError?.call(error, stackTrace, value))
           .whenComplete(() => clazz.onComplete?.call());
     }
 
     return Future.sync(() => clazz.event(value))
-        .onError((error, stackTrace) => clazz.onError?.call())
+        .onError((error, stackTrace) =>
+            clazz.onError?.call(error, stackTrace, value))
         .whenComplete(() => clazz.onComplete?.call());
   }
 
@@ -32,8 +34,8 @@ extension EventModeExecution on EventMode {
       Event<EventTypeT> clazz, EventTypeT value) {
     try {
       return clazz.event(value);
-    } catch (_) {
-      clazz.onError?.call();
+    } catch (error, stackTrace) {
+      clazz.onError?.call(error, stackTrace, value);
     } finally {
       clazz.onComplete?.call();
     }
@@ -44,7 +46,8 @@ extension EventModeExecution on EventMode {
     final Future<void> run = Isolate.run(() => clazz.event(value));
 
     return run
-        .onError((error, stackTrace) => clazz.onError?.call())
+        .onError((error, stackTrace) =>
+            clazz.onError?.call(error, stackTrace, value))
         .whenComplete(() => clazz.onComplete?.call());
   }
 }

@@ -4,18 +4,18 @@ class _DDIEventImpl implements DDIEvent {
   final Map<Object, List<Event>> _events = {};
 
   @override
-  void subscribe<EventTypeT extends Object>(
+  Future<void> subscribe<EventTypeT extends Object>(
     FutureOr<void> Function(EventTypeT) event, {
     Object? qualifier,
-    bool Function()? registerIf,
+    FutureOr<bool> Function()? registerIf,
     bool allowUnsubscribe = true,
     int priority = 0,
     bool unsubscribeAfterFire = false,
     bool lock = false,
-    FutureOr<void> Function()? onError,
+    FutureOr<void> Function(Object?, StackTrace, EventTypeT)? onError,
     FutureOr<void> Function()? onComplete,
   }) {
-    _subscribe(
+    return _subscribe(
       event: event,
       qualifier: qualifier,
       registerIf: registerIf,
@@ -30,18 +30,18 @@ class _DDIEventImpl implements DDIEvent {
   }
 
   @override
-  void subscribeAsync<EventTypeT extends Object>(
+  Future<void> subscribeAsync<EventTypeT extends Object>(
     FutureOr<void> Function(EventTypeT) event, {
     Object? qualifier,
-    bool Function()? registerIf,
+    FutureOr<bool> Function()? registerIf,
     bool allowUnsubscribe = true,
     int priority = 0,
     bool unsubscribeAfterFire = false,
     bool lock = false,
-    FutureOr<void> Function()? onError,
+    FutureOr<void> Function(Object?, StackTrace, EventTypeT)? onError,
     FutureOr<void> Function()? onComplete,
   }) {
-    _subscribe(
+    return _subscribe(
       event: event,
       qualifier: qualifier,
       registerIf: registerIf,
@@ -56,18 +56,18 @@ class _DDIEventImpl implements DDIEvent {
   }
 
   @override
-  void subscribeIsolate<EventTypeT extends Object>(
+  Future<void> subscribeIsolate<EventTypeT extends Object>(
     FutureOr<void> Function(EventTypeT) event, {
     Object? qualifier,
-    bool Function()? registerIf,
+    FutureOr<bool> Function()? registerIf,
     bool allowUnsubscribe = true,
     int priority = 0,
     bool unsubscribeAfterFire = false,
     bool lock = false,
-    FutureOr<void> Function()? onError,
+    FutureOr<void> Function(Object?, StackTrace, EventTypeT)? onError,
     FutureOr<void> Function()? onComplete,
   }) {
-    _subscribe(
+    return _subscribe(
       event: event,
       qualifier: qualifier,
       registerIf: registerIf,
@@ -76,22 +76,34 @@ class _DDIEventImpl implements DDIEvent {
       unsubscribeAfterFire: unsubscribeAfterFire,
       mode: EventMode.runAsIsolate,
       lock: lock,
+      onComplete: onComplete,
+      onError: onError,
     );
   }
 
-  void _subscribe<EventTypeT extends Object>({
+  Future<void> _subscribe<EventTypeT extends Object>({
     required FutureOr<void> Function(EventTypeT) event,
     required EventMode mode,
     Object? qualifier,
-    bool Function()? registerIf,
+    FutureOr<bool> Function()? registerIf,
     bool allowUnsubscribe = true,
     int priority = 0,
     bool unsubscribeAfterFire = false,
     bool lock = false,
-    FutureOr<void> Function()? onError,
+    FutureOr<void> Function(Object?, StackTrace, EventTypeT)? onError,
     FutureOr<void> Function()? onComplete,
-  }) {
-    if (registerIf?.call() ?? true) {
+  }) async {
+    bool shouldRegister = true;
+
+    if (registerIf != null) {
+      if (registerIf is bool Function()) {
+        shouldRegister = registerIf();
+      } else {
+        shouldRegister = await registerIf();
+      }
+    }
+
+    if (shouldRegister) {
       final Object effectiveQualifierName = qualifier ?? EventTypeT;
 
       assert(allowUnsubscribe || (!allowUnsubscribe && !unsubscribeAfterFire),
@@ -122,6 +134,8 @@ class _DDIEventImpl implements DDIEvent {
         existingEvents.sort((a, b) => a.priority.compareTo(b.priority));
       }
     }
+
+    return;
   }
 
   @override
@@ -131,10 +145,17 @@ class _DDIEventImpl implements DDIEvent {
   }) {
     final effectiveQualifierName = qualifier ?? EventTypeT;
 
-    if (_events[effectiveQualifierName] case final eventsList?
-        when eventsList.isNotEmpty) {
-      eventsList.cast<Event<EventTypeT>>().removeWhere(
-          (e) => e.allowUnsubscribe && e.event.hashCode == event.hashCode);
+    if (_events[effectiveQualifierName] case final eventsList?) {
+      if (eventsList.isNotEmpty) {
+        eventsList.cast<Event<EventTypeT>>().removeWhere(
+            (e) => e.allowUnsubscribe && e.event.hashCode == event.hashCode);
+      }
+
+      if (eventsList.isEmpty) {
+        _events.remove(effectiveQualifierName);
+      }
+    } else {
+      throw EventNotFound(effectiveQualifierName.toString());
     }
   }
 
@@ -161,8 +182,14 @@ class _DDIEventImpl implements DDIEvent {
         }
       }
 
-      for (final Event<EventTypeT> event in eventsToRemove) {
-        _events[effectiveQualifierName]?.remove(event);
+      if (eventsToRemove.isNotEmpty) {
+        for (final Event<EventTypeT> event in eventsToRemove) {
+          _events[effectiveQualifierName]?.remove(event);
+        }
+
+        if (eventsList.isEmpty) {
+          _events.remove(effectiveQualifierName);
+        }
       }
     } else {
       throw EventNotFound(effectiveQualifierName.toString());

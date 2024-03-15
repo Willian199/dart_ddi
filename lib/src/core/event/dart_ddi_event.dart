@@ -37,15 +37,15 @@ abstract class DDIEvent {
   ///
   /// - `onComplete`: The callback function to be executed when the event is completed.
   ///
-  void subscribe<EventTypeT extends Object>(
+  Future<void> subscribe<EventTypeT extends Object>(
     FutureOr<void> Function(EventTypeT) event, {
     Object? qualifier,
-    bool Function()? registerIf,
+    FutureOr<bool> Function()? registerIf,
     bool allowUnsubscribe = true,
     int priority = 0,
     bool unsubscribeAfterFire = false,
     bool lock = false,
-    FutureOr<void> Function()? onError,
+    FutureOr<void> Function(Object?, StackTrace, EventTypeT)? onError,
     FutureOr<void> Function()? onComplete,
   });
 
@@ -69,15 +69,15 @@ abstract class DDIEvent {
   ///
   /// - `onComplete`: The callback function to be executed when the event is completed.
   ///
-  void subscribeAsync<EventTypeT extends Object>(
+  Future<void> subscribeAsync<EventTypeT extends Object>(
     FutureOr<void> Function(EventTypeT) event, {
     Object? qualifier,
-    bool Function()? registerIf,
+    FutureOr<bool> Function()? registerIf,
     bool allowUnsubscribe = true,
     int priority = 0,
     bool unsubscribeAfterFire = false,
     bool lock = false,
-    FutureOr<void> Function()? onError,
+    FutureOr<void> Function(Object?, StackTrace, EventTypeT)? onError,
     FutureOr<void> Function()? onComplete,
   });
 
@@ -101,15 +101,15 @@ abstract class DDIEvent {
   ///
   /// - `onComplete`: The callback function to be executed when the event is completed.
   ///
-  void subscribeIsolate<EventTypeT extends Object>(
+  Future<void> subscribeIsolate<EventTypeT extends Object>(
     FutureOr<void> Function(EventTypeT) event, {
     Object? qualifier,
-    bool Function()? registerIf,
+    FutureOr<bool> Function()? registerIf,
     bool allowUnsubscribe = true,
     int priority = 0,
     bool unsubscribeAfterFire = false,
     bool lock = false,
-    FutureOr<void> Function()? onError,
+    FutureOr<void> Function(Object?, StackTrace, EventTypeT)? onError,
     FutureOr<void> Function()? onComplete,
   });
 
@@ -118,7 +118,8 @@ abstract class DDIEvent {
   /// - `event`: The callback function to be unsubscribed.
   ///
   /// - `qualifier`: Optional qualifier name used to distinguish between different events of the same type.
-  void unsubscribe<EventTypeT extends Object>(void Function(EventTypeT) event, {Object? qualifier});
+  void unsubscribe<EventTypeT extends Object>(void Function(EventTypeT) event,
+      {Object? qualifier});
 
   /// Fires an event with the specified value.
   ///
