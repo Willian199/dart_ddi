@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:dart_ddi/src/data/event.dart';
 import 'package:dart_ddi/src/enum/event_mode.dart';
+import 'package:dart_ddi/src/exception/event_not_allowed.dart';
 import 'package:dart_ddi/src/exception/event_not_found.dart';
 import 'package:dart_ddi/src/features/event_lock.dart';
 
@@ -29,17 +30,35 @@ abstract class DDIEvent {
   ///
   /// - `registerIf`: A bool function that if returns true, allows the subscription to proceed.
   ///
-  /// - `allowUnsubscribe`: Indicates if the event can be unsubscribe.
+  /// - `allowUnsubscribe:` Indicates if the event can be unsubscribe. Ignored if `recurrenceDuration` is used.
   ///
-  /// - `priority`: Priority of the subscription relative to other subscriptions (lower values indicate higher priority).
+  /// - `priority:` Priority of the subscription relative to other subscriptions (lower values indicate higher priority). Ignored if `recurrenceDuration` is used.
   ///
-  /// - `unsubscribeAfterFire`: If true, the subscription will be automatically removed after the first time the event is fired.
+  /// - `unsubscribeAfterFire:` If true, the subscription will be automatically removed after the first time the event is fired. Ignored if `recurrenceDuration` is used.
   ///
-  /// - `lock`: Indicates if the event should be locked.
+  /// - `lock`: Indicates if the event should be locked. Running only one event simultaneously. Cannot be used in combination with `recurrenceDuration`.
   ///
   /// - `onError`: The callback function to be executed when an error occurs.
   ///
   /// - `onComplete`: The callback function to be executed when the event is completed.
+  ///
+  /// - `expirationDuration`: The duration after which the subscription will be automatically removed.
+  ///
+  /// - `recurrenceDuration`: Adds the ability to automatically run the event multiple times. It is not recommended to fire the event manually.
+  ///   * Only one event is allowed.
+  ///   * `allowUnsubscribe` is ignored.
+  ///   * `unsubscribeAfterFire` is ignored.
+  ///   * `priority` is ignored.
+  ///   * Cannot be used in combination with `lock`.
+  ///   * Requires the `defaultValue` parameter.
+  ///   * If maxRetry is 0, will run forever.
+  ///
+  /// - `defaultValue`: The default value to be used when the event is fired. Required if `recurrenceDuration` is used.
+  ///
+  /// - `maxRetry`: The maximum number of times the subscription will be automatically fired if `recurrenceDuration` is used.
+  ///   * If maxRetry is 0, will run forever.
+  ///   * If maxRetry is greater than 0, the subscription will be removed when the maximum number of retries is reached.
+  ///   * If `expirationDuration` is used, the subscription will be removed when the first rule is met, either when the expiration duration is reached or when the maximum number of retries is reached.
   ///
   Future<void> subscribe<EventTypeT extends Object>(
     FutureOr<void> Function(EventTypeT) event, {
@@ -51,6 +70,10 @@ abstract class DDIEvent {
     bool lock = false,
     FutureOr<void> Function(Object?, StackTrace, EventTypeT)? onError,
     FutureOr<void> Function()? onComplete,
+    Duration? expirationDuration,
+    Duration? recurrenceDuration,
+    EventTypeT? defaultValue,
+    int maxRetry = 0,
   });
 
   /// Subscribes an Async callback function to an event.
@@ -61,17 +84,35 @@ abstract class DDIEvent {
   ///
   /// - `registerIf`: A bool function that if returns true, allows the subscription to proceed.
   ///
-  /// - `allowUnsubscribe`: Indicates if the event can be unsubscribe.
+  /// - `allowUnsubscribe:` Indicates if the event can be unsubscribe. Ignored if `recurrenceDuration` is used.
   ///
-  /// - `priority`: Priority of the subscription relative to other subscriptions (lower values indicate higher priority).
+  /// - `priority:` Priority of the subscription relative to other subscriptions (lower values indicate higher priority). Ignored if `recurrenceDuration` is used.
   ///
-  /// - `unsubscribeAfterFire`: If true, the subscription will be automatically removed after the first time the event is fired.
+  /// - `unsubscribeAfterFire:` If true, the subscription will be automatically removed after the first time the event is fired. Ignored if `recurrenceDuration` is used.
   ///
-  /// - `lock`: Indicates if the event should be locked.
+  /// - `lock`: Indicates if the event should be locked. Running only one event simultaneously. Cannot be used in combination with `recurrenceDuration`.
   ///
   /// - `onError`: The callback function to be executed when an error occurs.
   ///
   /// - `onComplete`: The callback function to be executed when the event is completed.
+  ///
+  /// - `expirationDuration`: The duration after which the subscription will be automatically removed.
+  ///
+  /// - `recurrenceDuration`: Adds the ability to automatically run the event multiple times. It is not recommended to fire the event manually.
+  ///   * Only one event is allowed.
+  ///   * `allowUnsubscribe` is ignored.
+  ///   * `unsubscribeAfterFire` is ignored.
+  ///   * `priority` is ignored.
+  ///   * Cannot be used in combination with `lock`.
+  ///   * Requires the `defaultValue` parameter.
+  ///   * If maxRetry is 0, will run forever.
+  ///
+  /// - `defaultValue`: The default value to be used when the event is fired. Required if `recurrenceDuration` is used.
+  ///
+  /// - `maxRetry`: The maximum number of times the subscription will be automatically fired if `recurrenceDuration` is used.
+  ///   * If maxRetry is 0, will run forever.
+  ///   * If maxRetry is greater than 0, the subscription will be removed when the maximum number of retries is reached.
+  ///   * If `expirationDuration` is used, the subscription will be removed when the first rule is met, either when the expiration duration is reached or when the maximum number of retries is reached.
   ///
   Future<void> subscribeAsync<EventTypeT extends Object>(
     FutureOr<void> Function(EventTypeT) event, {
@@ -83,6 +124,10 @@ abstract class DDIEvent {
     bool lock = false,
     FutureOr<void> Function(Object?, StackTrace, EventTypeT)? onError,
     FutureOr<void> Function()? onComplete,
+    Duration? expirationDuration,
+    Duration? recurrenceDuration,
+    EventTypeT? defaultValue,
+    int maxRetry = 0,
   });
 
   /// Subscribes an Isolate callback function to an event.
@@ -93,17 +138,35 @@ abstract class DDIEvent {
   ///
   /// - `registerIf`: A bool function that if returns true, allows the subscription to proceed.
   ///
-  /// - `allowUnsubscribe`: Indicates if the event can be unsubscribe.
+  /// - `allowUnsubscribe:` Indicates if the event can be unsubscribe. Ignored if `recurrenceDuration` is used.
   ///
-  /// - `priority`: Priority of the subscription relative to other subscriptions (lower values indicate higher priority).
+  /// - `priority:` Priority of the subscription relative to other subscriptions (lower values indicate higher priority). Ignored if `recurrenceDuration` is used.
   ///
-  /// - `unsubscribeAfterFire`: If true, the subscription will be automatically removed after the first time the event is fired.
+  /// - `unsubscribeAfterFire:` If true, the subscription will be automatically removed after the first time the event is fired. Ignored if `recurrenceDuration` is used.
   ///
-  /// - `lock`: Indicates if the event should be locked.
+  /// - `lock`: Indicates if the event should be locked. Running only one event simultaneously. Cannot be used in combination with `recurrenceDuration`.
   ///
   /// - `onError`: The callback function to be executed when an error occurs.
   ///
   /// - `onComplete`: The callback function to be executed when the event is completed.
+  ///
+  /// - `expirationDuration`: The duration after which the subscription will be automatically removed.
+  ///
+  /// - `recurrenceDuration`: Adds the ability to automatically run the event multiple times. It is not recommended to fire the event manually.
+  ///   * Only one event is allowed.
+  ///   * `allowUnsubscribe` is ignored.
+  ///   * `unsubscribeAfterFire` is ignored.
+  ///   * `priority` is ignored.
+  ///   * Cannot be used in combination with `lock`.
+  ///   * Requires the `defaultValue` parameter.
+  ///   * If maxRetry is 0, will run forever.
+  ///
+  /// - `defaultValue`: The default value to be used when the event is fired. Required if `recurrenceDuration` is used.
+  ///
+  /// - `maxRetry`: The maximum number of times the subscription will be automatically fired if `recurrenceDuration` is used.
+  ///   * If maxRetry is 0, will run forever.
+  ///   * If maxRetry is greater than 0, the subscription will be removed when the maximum number of retries is reached.
+  ///   * If `expirationDuration` is used, the subscription will be removed when the first rule is met, either when the expiration duration is reached or when the maximum number of retries is reached.
   ///
   Future<void> subscribeIsolate<EventTypeT extends Object>(
     FutureOr<void> Function(EventTypeT) event, {
@@ -115,6 +178,10 @@ abstract class DDIEvent {
     bool lock = false,
     FutureOr<void> Function(Object?, StackTrace, EventTypeT)? onError,
     FutureOr<void> Function()? onComplete,
+    Duration? expirationDuration,
+    Duration? recurrenceDuration,
+    EventTypeT? defaultValue,
+    int maxRetry = 0,
   });
 
   /// Unsubscribes a callback function from an event.
@@ -122,8 +189,7 @@ abstract class DDIEvent {
   /// - `event`: The callback function to be unsubscribed.
   ///
   /// - `qualifier`: Optional qualifier name used to distinguish between different events of the same type.
-  void unsubscribe<EventTypeT extends Object>(void Function(EventTypeT) event,
-      {Object? qualifier});
+  void unsubscribe<EventTypeT extends Object>(void Function(EventTypeT) event, {Object? qualifier});
 
   /// Fires an event with the specified value.
   ///
@@ -137,8 +203,7 @@ abstract class DDIEvent {
   /// - `value`: The value to be passed to the subscribed callback functions.
   ///
   /// - `qualifier`: Optional qualifier name used to distinguish between different events of the same type.
-  Future<void> fireWait<EventTypeT extends Object>(EventTypeT value,
-      {Object? qualifier});
+  Future<void> fireWait<EventTypeT extends Object>(EventTypeT value, {Object? qualifier});
 
   /// Verify if an event is already registered.
   ///

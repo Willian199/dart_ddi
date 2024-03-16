@@ -28,6 +28,7 @@ import 'beans_test/singleton_future_test.dart';
 import 'beans_test/singleton_test.dart';
 import 'event_test/event_lock_test.dart';
 import 'event_test/event_test.dart';
+import 'event_test/timer_events_test.dart';
 import 'stream_test/stream_test.dart';
 
 void main() {
@@ -76,6 +77,7 @@ void main() {
   //Events
   eventTest();
   eventLockTest();
+  eventDurationTests();
 
   //Streams
   streamTest();
