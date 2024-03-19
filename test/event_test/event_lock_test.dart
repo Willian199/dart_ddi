@@ -380,7 +380,7 @@ void eventLockTest() {
 
       await Future.delayed(const Duration(milliseconds: 5000));
 
-      // No keeps the proper order
+      // Does not maintain proper order
       expect(eventOrder[0], 11);
       expect(eventOrder[1], 12);
       expect(eventOrder[2], 13);
@@ -435,7 +435,6 @@ void eventLockTest() {
 
       await Future.delayed(const Duration(milliseconds: 5000));
 
-      // No keeps the proper order
       expect(eventOrder[0], 1);
       expect(eventOrder[1], 11);
       expect(eventOrder[2], 2);

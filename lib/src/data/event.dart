@@ -34,6 +34,12 @@ class Event<EventTypeT> {
   /// The completion handler for the event
   final FutureOr<void> Function()? onComplete;
 
+  /// The retry interval for the event
+  final Duration? retryInterval;
+
+  /// Maximum number of retries for the event
+  final int maxRetry;
+
   Event({
     required this.event,
     required this.type,
@@ -44,6 +50,8 @@ class Event<EventTypeT> {
     this.lock,
     this.onError,
     this.onComplete,
+    this.retryInterval,
+    this.maxRetry = 0,
   });
 
   @override
@@ -58,7 +66,9 @@ class Event<EventTypeT> {
         other.unsubscribeAfterFire == unsubscribeAfterFire &&
         other.lock == lock &&
         other.onError == onError &&
-        other.onComplete == onComplete;
+        other.onComplete == onComplete &&
+        other.retryInterval == retryInterval &&
+        other.maxRetry == maxRetry;
   }
 
   @override
@@ -71,6 +81,8 @@ class Event<EventTypeT> {
         unsubscribeAfterFire.hashCode ^
         lock.hashCode ^
         onError.hashCode ^
-        onComplete.hashCode;
+        onComplete.hashCode ^
+        retryInterval.hashCode ^
+        maxRetry.hashCode;
   }
 }

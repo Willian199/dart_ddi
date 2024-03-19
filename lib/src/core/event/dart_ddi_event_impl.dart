@@ -15,7 +15,8 @@ class _DDIEventImpl implements DDIEvent {
     FutureOr<void> Function(Object?, StackTrace, EventTypeT)? onError,
     FutureOr<void> Function()? onComplete,
     Duration? expirationDuration,
-    Duration? recurrenceDuration,
+    bool autoRun = false,
+    Duration? retryInterval,
     EventTypeT? defaultValue,
     int maxRetry = 0,
   }) {
@@ -31,9 +32,10 @@ class _DDIEventImpl implements DDIEvent {
       onComplete: onComplete,
       onError: onError,
       expirationDuration: expirationDuration,
-      recurrenceDuration: recurrenceDuration,
+      retryInterval: retryInterval,
       defaultValue: defaultValue,
       maxRetry: maxRetry,
+      autoRun: autoRun,
     );
   }
 
@@ -49,7 +51,8 @@ class _DDIEventImpl implements DDIEvent {
     FutureOr<void> Function(Object?, StackTrace, EventTypeT)? onError,
     FutureOr<void> Function()? onComplete,
     Duration? expirationDuration,
-    Duration? recurrenceDuration,
+    bool autoRun = false,
+    Duration? retryInterval,
     EventTypeT? defaultValue,
     int maxRetry = 0,
   }) {
@@ -65,9 +68,10 @@ class _DDIEventImpl implements DDIEvent {
       onComplete: onComplete,
       onError: onError,
       expirationDuration: expirationDuration,
-      recurrenceDuration: recurrenceDuration,
+      retryInterval: retryInterval,
       defaultValue: defaultValue,
       maxRetry: maxRetry,
+      autoRun: autoRun,
     );
   }
 
@@ -83,7 +87,8 @@ class _DDIEventImpl implements DDIEvent {
     FutureOr<void> Function(Object?, StackTrace, EventTypeT)? onError,
     FutureOr<void> Function()? onComplete,
     Duration? expirationDuration,
-    Duration? recurrenceDuration,
+    bool autoRun = false,
+    Duration? retryInterval,
     EventTypeT? defaultValue,
     int maxRetry = 0,
   }) {
@@ -99,9 +104,10 @@ class _DDIEventImpl implements DDIEvent {
       onComplete: onComplete,
       onError: onError,
       expirationDuration: expirationDuration,
-      recurrenceDuration: recurrenceDuration,
+      retryInterval: retryInterval,
       defaultValue: defaultValue,
       maxRetry: maxRetry,
+      autoRun: autoRun,
     );
   }
 
@@ -117,18 +123,18 @@ class _DDIEventImpl implements DDIEvent {
     FutureOr<void> Function(Object?, StackTrace, EventTypeT)? onError,
     FutureOr<void> Function()? onComplete,
     Duration? expirationDuration,
-    Duration? recurrenceDuration,
+    bool autoRun = false,
+    Duration? retryInterval,
     EventTypeT? defaultValue,
     int maxRetry = 0,
   }) async {
-    assert(
-        (recurrenceDuration == null && defaultValue == null) ||
-            (recurrenceDuration != null && recurrenceDuration > Duration.zero && defaultValue != null),
-        'You should provide either recurrenceDuration and defaultValue');
+    assert((!autoRun && defaultValue == null) || (autoRun && defaultValue != null), 'You should provide a default value when using autoRun');
 
     assert(maxRetry >= 0, 'maxRetry should be greater or equal to 0');
 
-    assert((lock && recurrenceDuration == null) || (!lock), 'Not able to use lock and recurrenceDuration at the same time');
+    assert(retryInterval == null || retryInterval > Duration.zero, 'retryInterval should be greater than Duration.zero');
+
+    assert((lock && !autoRun) || (!lock), 'Not able to use lock and autoRun at the same time');
 
     bool shouldRegister = true;
 
@@ -150,9 +156,8 @@ class _DDIEventImpl implements DDIEvent {
 
       final existingEvents = _events[effectiveQualifierName]!.cast<Event<EventTypeT>>();
 
-      if (existingEvents.isNotEmpty && recurrenceDuration != null) {
-        throw EventNotAllowedException(
-            'Not allowed to register multiple events with the same $effectiveQualifierName where using recurrenceDuration');
+      if (existingEvents.isNotEmpty && retryInterval != null) {
+        throw EventNotAllowedException('Not allowed to register multiple events with the same $effectiveQualifierName where using retryInterval');
       }
 
       final isDuplicate = existingEvents.any((existingEvent) => existingEvent.event.hashCode == event.hashCode);
@@ -169,6 +174,8 @@ class _DDIEventImpl implements DDIEvent {
             lock: lock ? EventLock() : null,
             onComplete: onComplete,
             onError: onError,
+            retryInterval: autoRun ? null : retryInterval,
+            maxRetry: autoRun ? 0 : maxRetry,
           ),
         );
 
@@ -180,22 +187,26 @@ class _DDIEventImpl implements DDIEvent {
           });
         }
 
-        if (recurrenceDuration != null && recurrenceDuration > Duration.zero && defaultValue != null) {
-          Timer.periodic(recurrenceDuration, (timer) async {
-            if (!isRegistered<EventTypeT>(qualifier: effectiveQualifierName)) {
-              timer.cancel();
-              return;
-            }
+        if (autoRun && defaultValue != null) {
+          if (retryInterval != null && retryInterval > Duration.zero) {
+            Timer.periodic(retryInterval, (timer) async {
+              if (!isRegistered<EventTypeT>(qualifier: effectiveQualifierName)) {
+                timer.cancel();
+                return;
+              }
 
+              await fireWait<EventTypeT>(defaultValue, qualifier: effectiveQualifierName);
+
+              if (maxRetry <= 1) {
+                timer.cancel();
+                _removeEvents<EventTypeT>(event, effectiveQualifierName);
+              } else {
+                maxRetry--;
+              }
+            });
+          } else {
             await fireWait<EventTypeT>(defaultValue, qualifier: effectiveQualifierName);
-
-            if (maxRetry <= 1) {
-              timer.cancel();
-              _removeEvents<EventTypeT>(event, effectiveQualifierName);
-            } else {
-              maxRetry--;
-            }
-          });
+          }
         }
       }
     }

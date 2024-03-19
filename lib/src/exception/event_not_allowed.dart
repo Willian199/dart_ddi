@@ -5,6 +5,6 @@ class EventNotAllowedException implements Exception {
 
   @override
   String toString() {
-    return 'No Event found with Type $cause.';
+    return '$cause ';
   }
 }

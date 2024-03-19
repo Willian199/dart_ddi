@@ -7,20 +7,21 @@ void eventDurationTests() {
     test('Subscribe periodic event and receive values', () async {
       int finalValue = 0;
       void mockEvent(int value) => finalValue += value;
-      const recurrenceDuration = Duration(milliseconds: 100);
+      const retryInterval = Duration(milliseconds: 100);
       const defaultValue = 42;
       const maxExecutions = 5;
 
       ddiEvent.subscribe<int>(
         mockEvent,
-        recurrenceDuration: recurrenceDuration,
+        autoRun: true,
+        retryInterval: retryInterval,
         defaultValue: defaultValue,
         maxRetry: maxExecutions,
         qualifier: 'duration_test',
       );
 
       // Wait a bit more than the interval to ensure events are called
-      await Future.delayed(recurrenceDuration * (maxExecutions + 2));
+      await Future.delayed(retryInterval * (maxExecutions + 2));
 
       expect(finalValue, defaultValue * maxExecutions);
       // After the maxExecutions, the event should be removed
@@ -31,20 +32,21 @@ void eventDurationTests() {
       int finalValue = 0;
       void mockEvent(int value) => finalValue += value;
 
-      const recurrenceDuration = Duration(milliseconds: 100);
+      const retryInterval = Duration(milliseconds: 100);
       const defaultValue = 42;
       const maxExecutions = 5;
 
       ddiEvent.subscribe<int>(
         mockEvent,
-        recurrenceDuration: recurrenceDuration,
+        autoRun: true,
+        retryInterval: retryInterval,
         defaultValue: defaultValue,
         maxRetry: maxExecutions,
         qualifier: 'duration_test',
       );
 
       // Wait a bit less than the interval to ensure events are not called
-      await Future.delayed(recurrenceDuration * (maxExecutions - 1), () {});
+      await Future.delayed(retryInterval * (maxExecutions - 1), () {});
 
       ddiEvent.unsubscribe<int>(
         mockEvent,
@@ -52,7 +54,7 @@ void eventDurationTests() {
       );
 
       // Wait another interval to ensure events are not called after unsubscribing
-      await Future.delayed(recurrenceDuration, () {});
+      await Future.delayed(retryInterval, () {});
 
       expect(finalValue < defaultValue * maxExecutions, isTrue);
 
@@ -70,36 +72,38 @@ void eventDurationTests() {
         throw Exception('Mock event error');
       }
 
-      const recurrenceDuration = Duration(milliseconds: 100);
+      const retryInterval = Duration(milliseconds: 100);
       const defaultValue = 42;
       const maxExecutions = 5;
 
       ddiEvent.subscribe<int>(
         mockEvent,
-        recurrenceDuration: recurrenceDuration,
+        autoRun: true,
+        retryInterval: retryInterval,
         defaultValue: defaultValue,
         maxRetry: maxExecutions,
         qualifier: 'throw error',
       );
 
       // Wait a bit more than the interval to ensure events are called
-      await Future.delayed(recurrenceDuration * (maxExecutions + 1));
+      await Future.delayed(retryInterval * (maxExecutions + 1));
 
       // After the maxExecutions, the event should be removed
       expect(ddiEvent.isRegistered<int>(qualifier: 'throw error'), isFalse);
       expect(count, maxExecutions);
     });
 
-    test('Subscribe periodic event with invalid recurrenceDuration', () async {
+    test('Subscribe periodic event with invalid retryInterval', () async {
       void mockEvent(int value) => {};
       const defaultValue = 42;
       const maxExecutions = 5;
-      const invalidRecurrenceDuration = Duration(seconds: -1);
+      const invalidretryInterval = Duration(seconds: -1);
 
       expect(
         () => ddiEvent.subscribe<int>(
           mockEvent,
-          recurrenceDuration: invalidRecurrenceDuration,
+          autoRun: true,
+          retryInterval: invalidretryInterval,
           defaultValue: defaultValue,
           maxRetry: maxExecutions,
           qualifier: 'duration_test',
@@ -118,12 +122,13 @@ void eventDurationTests() {
     test('Subscribe periodic event without defaultValue', () async {
       void mockEvent(int value) => {};
       const maxExecutions = 5;
-      const invalidRecurrenceDuration = Duration(seconds: 1);
+      const invalidretryInterval = Duration(seconds: 1);
 
       expect(
         () => ddiEvent.subscribe<int>(
           mockEvent,
-          recurrenceDuration: invalidRecurrenceDuration,
+          autoRun: true,
+          retryInterval: invalidretryInterval,
           maxRetry: maxExecutions,
           qualifier: 'duration_test',
         ),
@@ -136,14 +141,15 @@ void eventDurationTests() {
 
     test('Subscribe periodic event with negative maxRetry', () async {
       void mockEvent(int value) => {};
-      const recurrenceDuration = Duration(milliseconds: 100);
+      const retryInterval = Duration(milliseconds: 100);
       const defaultValue = 42;
       const invalidMaxExecutions = -1;
 
       expect(
         () => ddiEvent.subscribe<int>(
           mockEvent,
-          recurrenceDuration: recurrenceDuration,
+          autoRun: true,
+          retryInterval: retryInterval,
           defaultValue: defaultValue,
           maxRetry: invalidMaxExecutions,
           qualifier: 'duration_test',
@@ -158,20 +164,21 @@ void eventDurationTests() {
     test('Subscribe periodic event and cancel invalid event', () async {
       int finalValue = 0;
       void mockEvent(int value) => finalValue += value;
-      const recurrenceDuration = Duration(milliseconds: 100);
+      const retryInterval = Duration(milliseconds: 100);
       const defaultValue = 42;
       const maxExecutions = 5;
 
       ddiEvent.subscribe<int>(
         mockEvent,
-        recurrenceDuration: recurrenceDuration,
+        autoRun: true,
+        retryInterval: retryInterval,
         defaultValue: defaultValue,
         maxRetry: maxExecutions,
         qualifier: 'duration_test',
       );
 
       // Wait a bit less than the interval to ensure events are not called
-      await Future.delayed(recurrenceDuration * (maxExecutions - 1));
+      await Future.delayed(retryInterval * (maxExecutions - 1));
 
       // Try to cancel a different event
       void anotherEvent(int value) {}
@@ -188,14 +195,15 @@ void eventDurationTests() {
 
     test('Subscribe a event with lock', () async {
       void mockEvent(int value) => {};
-      const recurrenceDuration = Duration(milliseconds: 100);
+      const retryInterval = Duration(milliseconds: 100);
       const defaultValue = 42;
       const maxExecutions = 5;
 
       expect(
         () => ddiEvent.subscribe<int>(
           mockEvent,
-          recurrenceDuration: recurrenceDuration,
+          autoRun: true,
+          retryInterval: retryInterval,
           defaultValue: defaultValue,
           maxRetry: maxExecutions,
           lock: true,
@@ -208,7 +216,7 @@ void eventDurationTests() {
       expect(ddiEvent.isRegistered<int>(qualifier: 'duration_test'), isFalse);
     });
 
-    test('Subscribe event without recurrenceDuration', () async {
+    test('Subscribe event without autoRun', () async {
       void mockEvent(int value) => {};
       const defaultValue = 42;
 
@@ -301,13 +309,14 @@ void eventDurationTests() {
     test('Subscribe periodic event, receive values and cancel after expirationDuration', () async {
       int finalValue = 0;
       void mockEvent(int value) => finalValue += value;
-      const recurrenceDuration = Duration(milliseconds: 100);
+      const retryInterval = Duration(milliseconds: 100);
       const defaultValue = 42;
       const maxExecutions = 5;
 
       ddiEvent.subscribe<int>(
         mockEvent,
-        recurrenceDuration: recurrenceDuration,
+        autoRun: true,
+        retryInterval: retryInterval,
         defaultValue: defaultValue,
         maxRetry: maxExecutions,
         expirationDuration: const Duration(milliseconds: 250),
@@ -315,11 +324,124 @@ void eventDurationTests() {
       );
 
       // Wait a bit more than the interval to ensure events are called
-      await Future.delayed(recurrenceDuration * (maxExecutions + 2));
+      await Future.delayed(retryInterval * (maxExecutions + 2));
 
       expect(finalValue, defaultValue * 2);
       // After the maxExecutions, the event should be removed
       expect(ddiEvent.isRegistered<int>(qualifier: 'duration_test'), isFalse);
+    });
+
+    test('Subscribe periodic event and throw error', () async {
+      int finalValue = 0;
+      int count = 0;
+      void mockEvent(int value) {
+        count++;
+        throw Exception('Mock event error');
+      }
+
+      const retryInterval = Duration(milliseconds: 100);
+      const defaultValue = 42;
+      const maxExecutions = 5;
+
+      ddiEvent.subscribe<int>(
+        mockEvent,
+        retryInterval: retryInterval,
+        maxRetry: maxExecutions,
+        qualifier: 'error_test',
+        onError: (error, stackTrace, value) {
+          finalValue += value;
+        },
+      );
+
+      expect(ddiEvent.isRegistered<int>(qualifier: 'error_test'), isTrue);
+
+      ddiEvent.fire(defaultValue, qualifier: 'error_test');
+
+      // Wait a bit more than the interval to ensure events are called
+      await Future.delayed(retryInterval * (maxExecutions + 2));
+
+      expect(finalValue, defaultValue);
+
+      expect(count, maxExecutions);
+
+      ddiEvent.unsubscribe<int>(mockEvent, qualifier: 'error_test');
+
+      // After the maxExecutions, the event should be removed
+      expect(ddiEvent.isRegistered<int>(qualifier: 'error_test'), isFalse);
+    });
+
+    test('Subscribe periodic event and throw error without retry', () async {
+      int finalValue = 0;
+      int count = 0;
+      void mockEvent(int value) {
+        count++;
+        throw Exception('Mock event error');
+      }
+
+      const retryInterval = Duration(milliseconds: 100);
+      const defaultValue = 42;
+
+      ddiEvent.subscribe<int>(
+        mockEvent,
+        retryInterval: retryInterval,
+        qualifier: 'error_test',
+        onError: (error, stackTrace, value) {
+          finalValue += value;
+        },
+      );
+
+      expect(ddiEvent.isRegistered<int>(qualifier: 'error_test'), isTrue);
+
+      ddiEvent.fire(defaultValue, qualifier: 'error_test');
+
+      // Wait a bit more than the interval to ensure events are called
+      await Future.delayed(retryInterval);
+
+      expect(finalValue, defaultValue);
+
+      expect(count, 1);
+
+      ddiEvent.unsubscribe<int>(mockEvent, qualifier: 'error_test');
+
+      // After the maxExecutions, the event should be removed
+      expect(ddiEvent.isRegistered<int>(qualifier: 'error_test'), isFalse);
+    });
+
+    test('Subscribe periodic event and throw error with retryInterval', () async {
+      int finalValue = 0;
+      int count = 0;
+      void mockEvent(int value) {
+        count++;
+        throw Exception('Mock event error');
+      }
+
+      const defaultValue = 42;
+      const maxExecutions = 5;
+
+      ddiEvent.subscribe<int>(
+        mockEvent,
+        maxRetry: maxExecutions,
+        qualifier: 'error_test',
+        onError: (error, stackTrace, value) {
+          finalValue += value;
+        },
+      );
+
+      expect(ddiEvent.isRegistered<int>(qualifier: 'error_test'), isTrue);
+
+      ddiEvent.fire(defaultValue, qualifier: 'error_test');
+
+      // Wait a bit more than the interval to ensure events are called
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      expect(finalValue, defaultValue);
+
+      expect(count, maxExecutions);
+
+      ddiEvent.unsubscribe<int>(mockEvent, qualifier: 'error_test');
+
+      // After the maxExecutions, the event should be removed
+      expect(ddiEvent.isRegistered<int>(qualifier: 'error_test'), isFalse);
     });
   });
 }

@@ -556,26 +556,29 @@ Parameters:
 - `event:` The callback function to be executed when the event is fired.
 - `qualifier:` Optional qualifier name to distinguish between different events of the same type.
 - `registerIf:` A FutureOr<bool> function that if returns true, allows the subscription to proceed.
-- `allowUnsubscribe:` Indicates if the event can be unsubscribe. Ignored if `recurrenceDuration` is used.
-- `priority:` Priority of the subscription relative to other subscriptions (lower values indicate higher priority). Ignored if `recurrenceDuration` is used.
-- `unsubscribeAfterFire:` If true, the subscription will be automatically removed after the first time the event is fired. Ignored if `recurrenceDuration` is used.
-- `lock`: Indicates if the event should be locked. Running only one event simultaneously. Cannot be used in combination with `recurrenceDuration`.
+- `allowUnsubscribe:` Indicates if the event can be unsubscribe. Ignored if `autoRun` is used.
+- `priority:` Priority of the subscription relative to other subscriptions (lower values indicate higher priority). Ignored if `autoRun` is used.
+- `unsubscribeAfterFire:` If true, the subscription will be automatically removed after the first time the event is fired. Ignored if `autoRun` is used.
+- `lock`: Indicates if the event should be locked. Running only one event simultaneously. Cannot be used in combination with `autoRun`.
 - `onError`: The callback function to be executed when an error occurs.
 - `onComplete`: The callback function to be executed when the event is completed. It's called even if an error occurs.
 - `expirationDuration`: The duration after which the subscription will be automatically removed.
-- `recurrenceDuration`: Adds the ability to automatically run the event multiple times. It is not recommended to fire the event manually.
+- `retryInterval`: Adds the ability to automatically retry the event after the interval specified.
+- `defaultValue`: The default value to be used when the event is fired. Required if `retryInterval` is used.
+- `maxRetry`: The maximum number of times the subscription will be automatically fired if `retryInterval` is used.
+     * Can be used in combination with `autoRun` and `onError`.
+     * If `maxRetry` is 0 and `autoRun` is true, will run forever.
+     * If `maxRetry` is greater than 0 and `autoRun` is true, the subscription will be removed when the maximum number of retries is reached.
+     * If `maxRetry` is greater than 0, `autoRun` is false and `onError` is used, the subscription will stop retrying when the maximum number is reached.
+     * If `expirationDuration` is used, the subscription will be removed when the first rule is met, either when the expiration duration is reached or when the maximum number of retries is reached.
+- `autoRun`: If true, the event will be automatically run when the subscription is created.
      * Only one event is allowed.
      * `allowUnsubscribe` is ignored.
      * `unsubscribeAfterFire` is ignored.
      * `priority` is ignored.
      * Cannot be used in combination with `lock`.
      * Requires the `defaultValue` parameter.
-     * If maxRetry is 0, will run forever.
-- `defaultValue`: The default value to be used when the event is fired. Required if `recurrenceDuration` is used.
-- `maxRetry`: The maximum number of times the subscription will be automatically fired if `recurrenceDuration` is used.
-     * If maxRetry is 0, will run forever.
-     * If maxRetry is greater than 0, the subscription will be removed when the maximum number of retries is reached.
-     * If `expirationDuration` is used, the subscription will be removed when the first rule is met, either when the expiration duration is reached or when the maximum number of retries is reached.
+     * If `maxRetry` is 0, will run forever.
 
 ```dart
 void myEvent(String message) {
@@ -593,7 +596,7 @@ DDIEvent.instance.subscribe<String>(
   onError: (Object? error, StackTrace stacktrace, String valor){},
   onComplete: (){},
   expirationDuration: const Duration(seconds: 5),
-  recurrenceDuration: const Duration(seconds: 4),
+  retryInterval: const Duration(seconds: 4),
   defaultValue: 'defaultValue',
   maxRetry: 1
 );
