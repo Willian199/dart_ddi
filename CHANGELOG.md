@@ -7,7 +7,10 @@
 * Added support for events with retry interval and maximum retries.
 * Added support to filter events based on the value.ed in the value.
 
+
 ## 0.5.1
+
+### New Features
 
 * Introduced a shorthand variable `ddi` for ease of use, replacing the need to use `DDI.instance`. 
 * Added the capability to register children instances within module registrations.

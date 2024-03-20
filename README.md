@@ -601,7 +601,9 @@ DDIEvent.instance.subscribe<String>(
   expirationDuration: const Duration(seconds: 5),
   retryInterval: const Duration(seconds: 4),
   defaultValue: 'defaultValue',
-  maxRetry: 1
+  maxRetry: 1,
+  autoRun: false,
+  filter: (value) => true,
 );
 ```
 
@@ -626,7 +628,13 @@ DDIEvent.instance.subscribeAsync<String>(
   unsubscribeAfterFire: false,
   lock: false,
   onError: (Object? error, StackTrace stacktrace, String valor){},
-  onComplete: (){}
+  onComplete: (){},
+  expirationDuration: const Duration(seconds: 5),
+  retryInterval: const Duration(seconds: 4),
+  defaultValue: 'defaultValue',
+  maxRetry: 1,
+  autoRun: false,
+  filter: (value) => true,
 );
 ```
 
@@ -648,7 +656,13 @@ DDIEvent.instance.subscribeIsolate<String>(
   unsubscribeAfterFire: false,
   lock: false,
   onError: (Object? error, StackTrace stacktrace, String valor){},
-  onComplete: (){}
+  onComplete: (){},
+  expirationDuration: const Duration(seconds: 5),
+  retryInterval: const Duration(seconds: 4),
+  defaultValue: 'defaultValue',
+  maxRetry: 1,
+  autoRun: false,
+  filter: (value) => true,
 );
 ```
 
