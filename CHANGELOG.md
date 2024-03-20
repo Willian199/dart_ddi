@@ -1,6 +1,13 @@
-## 0.5.1
+## 0.6.0
 
-### New Features
+* Added support to register locked events.
+* Added support for onError and onComplete callbacks on events.
+* Added support for events with expiration duration.
+* Added support to auto-run events.
+* Added support for events with retry interval and maximum retries.
+* Added support to filter events based on the value.ed in the value.
+
+## 0.5.1
 
 * Introduced a shorthand variable `ddi` for ease of use, replacing the need to use `DDI.instance`. 
 * Added the capability to register children instances within module registrations.
