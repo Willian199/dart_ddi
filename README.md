@@ -542,14 +542,16 @@ Designed for flexibility and efficiency, this system empowers you to seamlessly 
 The Events follow a straightforward flow. Functions or methods `subscribe` to specific events using the subscribe method of the `DDIEvent` class. Events are fired using the `fire` or `fireWait` methods, triggering the execution of all subscribed callbacks. Subscribed callbacks are then executed, handling the event data and performing any specified tasks. Subscriptions can be removed using the `unsubscribe` function.
 
 ### Subscribing an Event
-When subscribing to an event, you have the option to choose from three different types of subscriptions:  `subscribe`, `subscribeAsync` and `subscribeIsolate`.
-
-#### subscribe
-The common subscription type, subscribe, functions as a simple callback. It allows you to respond to events in a synchronous manner, making it suitable for most scenarios.
+When subscribing to an event, you have the option to choose from three different types of subscriptions:
 
 - `DDIEvent.instance.subscribe` It's the common type, working as a simples callback.
 - `DDIEvent.instance.subscribeAsync` Runs the callback as a Future.
 - `DDIEvent.instance.subscribeIsolate` Runs as a Isolate.
+
+#### subscribe
+The common subscription type, subscribe, functions as a simple callback. It allows you to respond to events in a synchronous manner, making it suitable for most scenarios.
+
+Obs: If you register an event that uses async and await, it will not be possible to wait even using `fireWait`. For this scenario, use `subscribeAsync`.
 
 Parameters:
 
@@ -571,7 +573,7 @@ Parameters:
      * If `maxRetry` is greater than 0 and `autoRun` is true, the subscription will be removed when the maximum number of retries is reached.
      * If `maxRetry` is greater than 0, `autoRun` is false and `onError` is used, the subscription will stop retrying when the maximum number is reached.
      * If `expirationDuration` is used, the subscription will be removed when the first rule is met, either when the expiration duration is reached or when the maximum number of retries is reached.
-- `autoRun`: If true, the event will be automatically run when the subscription is created.
+- `autoRun`: If true, the event will run automatically when the subscription is created.
      * Only one event is allowed.
      * `allowUnsubscribe` is ignored.
      * `unsubscribeAfterFire` is ignored.
@@ -579,6 +581,7 @@ Parameters:
      * Cannot be used in combination with `lock`.
      * Requires the `defaultValue` parameter.
      * If `maxRetry` is 0, will run forever.
+- `filter`: Allows you to filter events based on their value. Only events when the filter returns true will be fired.
 
 ```dart
 void myEvent(String message) {
@@ -605,6 +608,8 @@ DDIEvent.instance.subscribe<String>(
 #### subscribeAsync
 The subscribeAsync type runs the callback as a Future, allowing for asynchronous event handling. Making it suitable for scenarios where asynchronous execution is needed without waiting for completion.
 Note that it not be possible to await this type of subscription.
+
+Obs: If you want to await for the event to be completed, fire it using `fireWait`.
 
 Parameters are the same as for `subscribe`.
 

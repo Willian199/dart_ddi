@@ -19,6 +19,7 @@ class _DDIEventImpl implements DDIEvent {
     Duration? retryInterval,
     EventTypeT? defaultValue,
     int maxRetry = 0,
+    FutureOr<bool> Function(EventTypeT)? filter,
   }) {
     return _subscribe(
       event: event,
@@ -36,6 +37,7 @@ class _DDIEventImpl implements DDIEvent {
       defaultValue: defaultValue,
       maxRetry: maxRetry,
       autoRun: autoRun,
+      filter: filter,
     );
   }
 
@@ -55,6 +57,7 @@ class _DDIEventImpl implements DDIEvent {
     Duration? retryInterval,
     EventTypeT? defaultValue,
     int maxRetry = 0,
+    FutureOr<bool> Function(EventTypeT)? filter,
   }) {
     return _subscribe(
       event: event,
@@ -72,6 +75,7 @@ class _DDIEventImpl implements DDIEvent {
       defaultValue: defaultValue,
       maxRetry: maxRetry,
       autoRun: autoRun,
+      filter: filter,
     );
   }
 
@@ -91,6 +95,7 @@ class _DDIEventImpl implements DDIEvent {
     Duration? retryInterval,
     EventTypeT? defaultValue,
     int maxRetry = 0,
+    FutureOr<bool> Function(EventTypeT)? filter,
   }) {
     return _subscribe(
       event: event,
@@ -108,6 +113,7 @@ class _DDIEventImpl implements DDIEvent {
       defaultValue: defaultValue,
       maxRetry: maxRetry,
       autoRun: autoRun,
+      filter: filter,
     );
   }
 
@@ -127,14 +133,19 @@ class _DDIEventImpl implements DDIEvent {
     Duration? retryInterval,
     EventTypeT? defaultValue,
     int maxRetry = 0,
+    FutureOr<bool> Function(EventTypeT)? filter,
   }) async {
-    assert((!autoRun && defaultValue == null) || (autoRun && defaultValue != null), 'You should provide a default value when using autoRun');
+    assert(
+        (!autoRun && defaultValue == null) || (autoRun && defaultValue != null),
+        'You should provide a default value when using autoRun');
 
     assert(maxRetry >= 0, 'maxRetry should be greater or equal to 0');
 
-    assert(retryInterval == null || retryInterval > Duration.zero, 'retryInterval should be greater than Duration.zero');
+    assert(retryInterval == null || retryInterval > Duration.zero,
+        'retryInterval should be greater than Duration.zero');
 
-    assert((lock && !autoRun) || (!lock), 'Not able to use lock and autoRun at the same time');
+    assert((lock && !autoRun) || (!lock),
+        'Not able to use lock and autoRun at the same time');
 
     bool shouldRegister = true;
 
@@ -154,13 +165,16 @@ class _DDIEventImpl implements DDIEvent {
 
       _events.putIfAbsent(effectiveQualifierName, () => []);
 
-      final existingEvents = _events[effectiveQualifierName]!.cast<Event<EventTypeT>>();
+      final existingEvents =
+          _events[effectiveQualifierName]!.cast<Event<EventTypeT>>();
 
-      if (existingEvents.isNotEmpty && retryInterval != null) {
-        throw EventNotAllowedException('Not allowed to register multiple events with the same $effectiveQualifierName where using retryInterval');
+      if (existingEvents.isNotEmpty && autoRun) {
+        throw EventNotAllowedException(
+            'Not allowed to register multiple events with the same $effectiveQualifierName where using autoRun');
       }
 
-      final isDuplicate = existingEvents.any((existingEvent) => existingEvent.event.hashCode == event.hashCode);
+      final isDuplicate = existingEvents.any(
+          (existingEvent) => existingEvent.event.hashCode == event.hashCode);
 
       if (!isDuplicate) {
         existingEvents.add(
@@ -176,6 +190,7 @@ class _DDIEventImpl implements DDIEvent {
             onError: onError,
             retryInterval: autoRun ? null : retryInterval,
             maxRetry: autoRun ? 0 : maxRetry,
+            filter: filter,
           ),
         );
 
@@ -183,19 +198,21 @@ class _DDIEventImpl implements DDIEvent {
 
         if (expirationDuration != null) {
           Future.delayed(expirationDuration, () {
-            _removeEvents(event, effectiveQualifierName);
+            _removeEvents<EventTypeT>(event, effectiveQualifierName);
           });
         }
 
         if (autoRun && defaultValue != null) {
           if (retryInterval != null && retryInterval > Duration.zero) {
             Timer.periodic(retryInterval, (timer) async {
-              if (!isRegistered<EventTypeT>(qualifier: effectiveQualifierName)) {
+              if (!isRegistered<EventTypeT>(
+                  qualifier: effectiveQualifierName)) {
                 timer.cancel();
                 return;
               }
 
-              await fireWait<EventTypeT>(defaultValue, qualifier: effectiveQualifierName);
+              await fireWait<EventTypeT>(defaultValue,
+                  qualifier: effectiveQualifierName);
 
               if (maxRetry <= 1) {
                 timer.cancel();
@@ -205,7 +222,8 @@ class _DDIEventImpl implements DDIEvent {
               }
             });
           } else {
-            await fireWait<EventTypeT>(defaultValue, qualifier: effectiveQualifierName);
+            await fireWait<EventTypeT>(defaultValue,
+                qualifier: effectiveQualifierName);
           }
         }
       }
@@ -214,10 +232,12 @@ class _DDIEventImpl implements DDIEvent {
     return;
   }
 
-  void _removeEvents<EventTypeT extends Object>(void Function(EventTypeT) event, Object effectiveQualifierName) {
+  void _removeEvents<EventTypeT extends Object>(
+      void Function(EventTypeT) event, Object effectiveQualifierName) {
     if (_events[effectiveQualifierName] case final eventsList?) {
       if (eventsList.isNotEmpty) {
-        eventsList.cast<Event<EventTypeT>>().removeWhere((e) => e.allowUnsubscribe && e.event.hashCode == event.hashCode);
+        eventsList.cast<Event<EventTypeT>>().removeWhere(
+            (e) => e.allowUnsubscribe && e.event.hashCode == event.hashCode);
       }
 
       if (eventsList.isEmpty) {
@@ -235,7 +255,8 @@ class _DDIEventImpl implements DDIEvent {
 
     if (_events[effectiveQualifierName] case final eventsList?) {
       if (eventsList.isNotEmpty) {
-        eventsList.cast<Event<EventTypeT>>().removeWhere((e) => e.allowUnsubscribe && e.event.hashCode == event.hashCode);
+        eventsList.cast<Event<EventTypeT>>().removeWhere(
+            (e) => e.allowUnsubscribe && e.event.hashCode == event.hashCode);
       }
 
       if (eventsList.isEmpty) {
@@ -250,17 +271,13 @@ class _DDIEventImpl implements DDIEvent {
   void fire<EventTypeT extends Object>(EventTypeT value, {Object? qualifier}) {
     final effectiveQualifierName = qualifier ?? EventTypeT;
 
-    if (_events[effectiveQualifierName] case final eventsList? when eventsList.isNotEmpty) {
+    if (_events[effectiveQualifierName] case final eventsList?
+        when eventsList.isNotEmpty) {
       final eventsToRemove = <Event<EventTypeT>>[];
 
-      for (final Event<EventTypeT> event in eventsList.cast<Event<EventTypeT>>()) {
-        if (event.lock case final EventLock eventLock?) {
-          eventLock.lock(
-            () async => event.mode.execute<EventTypeT>(event, value),
-          );
-        } else {
-          event.mode.execute<EventTypeT>(event, value);
-        }
+      for (final Event<EventTypeT> event
+          in eventsList.cast<Event<EventTypeT>>()) {
+        _validateFilter(event, value);
 
         if (event.unsubscribeAfterFire) {
           eventsToRemove.add(event);
@@ -281,21 +298,51 @@ class _DDIEventImpl implements DDIEvent {
     }
   }
 
+  FutureOr<void> _execFire<EventTypeT extends Object>(
+      Event<EventTypeT> event, EventTypeT value) {
+    if (event.lock case final EventLock eventLock?) {
+      return eventLock.lock(
+        () async => event.mode.execute<EventTypeT>(event, value),
+      );
+    }
+
+    return event.mode.execute<EventTypeT>(event, value);
+  }
+
+  FutureOr<void> _validateFilter<EventTypeT extends Object>(
+      Event<EventTypeT> event, EventTypeT value) async {
+    return switch (event.filter) {
+      final bool Function(EventTypeT) filter => {
+          if (filter(value)) _execFire(event, value),
+        },
+      final Future<bool> Function(EventTypeT) filter
+          when event.mode == EventMode.normal =>
+        filter(value).then((result) {
+          if (result) {
+            _execFire(event, value);
+          }
+        }),
+      final Future<bool> Function(EventTypeT) filter
+          when event.mode != EventMode.normal =>
+        {
+          if (await filter(value)) await _execFire(event, value),
+        },
+      _ => _execFire(event, value),
+    };
+  }
+
   @override
-  Future<void> fireWait<EventTypeT extends Object>(EventTypeT value, {Object? qualifier}) async {
+  Future<void> fireWait<EventTypeT extends Object>(EventTypeT value,
+      {Object? qualifier}) async {
     final effectiveQualifierName = qualifier ?? EventTypeT;
 
-    if (_events[effectiveQualifierName] case final eventsList? when eventsList.isNotEmpty) {
+    if (_events[effectiveQualifierName] case final eventsList?
+        when eventsList.isNotEmpty) {
       final eventsToRemove = <Event<EventTypeT>>[];
 
-      for (final Event<EventTypeT> event in eventsList.cast<Event<EventTypeT>>()) {
-        if (event.lock case final EventLock eventLock?) {
-          await eventLock.lock(
-            () async => await event.mode.execute<EventTypeT>(event, value),
-          );
-        } else {
-          await event.mode.execute<EventTypeT>(event, value);
-        }
+      for (final Event<EventTypeT> event
+          in eventsList.cast<Event<EventTypeT>>()) {
+        await _validateFilter(event, value);
 
         if (event.unsubscribeAfterFire) {
           eventsToRemove.add(event);

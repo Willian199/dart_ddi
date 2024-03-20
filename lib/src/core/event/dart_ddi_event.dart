@@ -62,6 +62,8 @@ abstract class DDIEvent {
   ///   * Requires the `defaultValue` parameter.
   ///   * If maxRetry is 0, will run forever.
   ///
+  /// - `filter`: Allows you to filter events based on their value. Only events when the filter returns true will be fired.
+  ///
   Future<void> subscribe<EventTypeT extends Object>(
     FutureOr<void> Function(EventTypeT) event, {
     Object? qualifier,
@@ -77,6 +79,7 @@ abstract class DDIEvent {
     Duration? retryInterval,
     EventTypeT? defaultValue,
     int maxRetry = 0,
+    FutureOr<bool> Function(EventTypeT)? filter,
   });
 
   /// Subscribes an Async callback function to an event.
@@ -120,6 +123,9 @@ abstract class DDIEvent {
   ///   * Cannot be used in combination with `lock`.
   ///   * Requires the `defaultValue` parameter.
   ///   * If `maxRetry` is 0, will run forever.
+  ///
+  /// - `filter`: Allows you to filter events based on their value. Only events when the filter returns true will be fired.
+  ///
   Future<void> subscribeAsync<EventTypeT extends Object>(
     FutureOr<void> Function(EventTypeT) event, {
     Object? qualifier,
@@ -135,6 +141,7 @@ abstract class DDIEvent {
     Duration? retryInterval,
     EventTypeT? defaultValue,
     int maxRetry = 0,
+    FutureOr<bool> Function(EventTypeT)? filter,
   });
 
   /// Subscribes an Isolate callback function to an event.
@@ -176,6 +183,9 @@ abstract class DDIEvent {
   ///   * Cannot be used in combination with `lock`.
   ///   * Requires the `defaultValue` parameter.
   ///   * If maxRetry is 0, will run forever.
+  ///
+  /// - `filter`: Allows you to filter events based on their value. Only events when the filter returns true will be fired.
+  ///
   Future<void> subscribeIsolate<EventTypeT extends Object>(
     FutureOr<void> Function(EventTypeT) event, {
     Object? qualifier,
@@ -191,6 +201,7 @@ abstract class DDIEvent {
     bool autoRun = false,
     EventTypeT? defaultValue,
     int maxRetry = 0,
+    FutureOr<bool> Function(EventTypeT)? filter,
   });
 
   /// Unsubscribes a callback function from an event.
@@ -198,7 +209,8 @@ abstract class DDIEvent {
   /// - `event`: The callback function to be unsubscribed.
   ///
   /// - `qualifier`: Optional qualifier name used to distinguish between different events of the same type.
-  void unsubscribe<EventTypeT extends Object>(void Function(EventTypeT) event, {Object? qualifier});
+  void unsubscribe<EventTypeT extends Object>(void Function(EventTypeT) event,
+      {Object? qualifier});
 
   /// Fires an event with the specified value.
   ///
@@ -212,7 +224,8 @@ abstract class DDIEvent {
   /// - `value`: The value to be passed to the subscribed callback functions.
   ///
   /// - `qualifier`: Optional qualifier name used to distinguish between different events of the same type.
-  Future<void> fireWait<EventTypeT extends Object>(EventTypeT value, {Object? qualifier});
+  Future<void> fireWait<EventTypeT extends Object>(EventTypeT value,
+      {Object? qualifier});
 
   /// Verify if an event is already registered.
   ///

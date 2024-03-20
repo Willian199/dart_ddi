@@ -26,6 +26,7 @@ import 'beans_test/session_future_test.dart';
 import 'beans_test/session_test.dart';
 import 'beans_test/singleton_future_test.dart';
 import 'beans_test/singleton_test.dart';
+import 'event_test/event_filter_test.dart';
 import 'event_test/event_lock_test.dart';
 import 'event_test/event_test.dart';
 import 'event_test/timer_events_test.dart';
@@ -76,6 +77,7 @@ void main() {
 
   //Events
   eventTest();
+  eventFilterTest();
   eventLockTest();
   eventDurationTests();
 

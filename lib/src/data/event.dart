@@ -40,6 +40,9 @@ class Event<EventTypeT> {
   /// Maximum number of retries for the event
   final int maxRetry;
 
+  /// The filter for the event
+  final FutureOr<bool> Function(EventTypeT)? filter;
+
   Event({
     required this.event,
     required this.type,
@@ -52,6 +55,7 @@ class Event<EventTypeT> {
     this.onComplete,
     this.retryInterval,
     this.maxRetry = 0,
+    this.filter,
   });
 
   @override
@@ -68,7 +72,8 @@ class Event<EventTypeT> {
         other.onError == onError &&
         other.onComplete == onComplete &&
         other.retryInterval == retryInterval &&
-        other.maxRetry == maxRetry;
+        other.maxRetry == maxRetry &&
+        other.filter == filter;
   }
 
   @override
@@ -83,6 +88,7 @@ class Event<EventTypeT> {
         onError.hashCode ^
         onComplete.hashCode ^
         retryInterval.hashCode ^
-        maxRetry.hashCode;
+        maxRetry.hashCode ^
+        filter.hashCode;
   }
 }

@@ -65,7 +65,8 @@ void eventDurationTests() {
           isFalse);
     });
 
-    test('Subscribe periodic event and throw error in event function', () async {
+    test('Subscribe periodic event and throw error in event function',
+        () async {
       int count = 0;
       void mockEvent(int value) {
         count++;
@@ -233,7 +234,8 @@ void eventDurationTests() {
       expect(ddiEvent.isRegistered<int>(qualifier: 'duration_test'), isFalse);
     });
 
-    test('Subscribe event with expirationDuration and fire after expiration', () async {
+    test('Subscribe event with expirationDuration and fire after expiration',
+        () async {
       int finalValue = 0;
       void mockEvent(int value) => finalValue += value;
       const expirationDuration = Duration(milliseconds: 200);
@@ -248,13 +250,15 @@ void eventDurationTests() {
       // Wait longer than expirationDuration
       await Future.delayed(const Duration(milliseconds: 400));
 
-      expect(() => DDIEvent.instance.fire<int>(1, qualifier: 'duration_test'), throwsA(isA<EventNotFoundException>()));
+      expect(() => DDIEvent.instance.fire<int>(1, qualifier: 'duration_test'),
+          throwsA(isA<EventNotFoundException>()));
 
       // After expiration, the event should be removed
       expect(ddiEvent.isRegistered<int>(qualifier: 'duration_test'), isFalse);
     });
 
-    test('Subscribe event with expirationDuration and fire before expiration', () async {
+    test('Subscribe event with expirationDuration and fire before expiration',
+        () async {
       int finalValue = 0;
       void mockEvent(int value) => finalValue += value;
       const expirationDuration = Duration(milliseconds: 200);
@@ -273,14 +277,16 @@ void eventDurationTests() {
       // Wait longer than expirationDuration
       await Future.delayed(const Duration(milliseconds: 400));
 
-      expect(() => DDIEvent.instance.fire<int>(1, qualifier: 'duration_test'), throwsA(isA<EventNotFoundException>()));
+      expect(() => DDIEvent.instance.fire<int>(1, qualifier: 'duration_test'),
+          throwsA(isA<EventNotFoundException>()));
 
       // After expiration, the event should be removed
       expect(finalValue, 1);
       expect(ddiEvent.isRegistered<int>(qualifier: 'duration_test'), isFalse);
     });
 
-    test('Subscribe event with expirationDuration and cancel before expiration', () async {
+    test('Subscribe event with expirationDuration and cancel before expiration',
+        () async {
       int finalValue = 0;
       void mockEvent(int value) => finalValue += value;
       const expirationDuration = Duration(milliseconds: 200);
@@ -299,14 +305,17 @@ void eventDurationTests() {
       // Wait longer than expirationDuration
       await Future.delayed(const Duration(milliseconds: 400));
 
-      expect(() => DDIEvent.instance.fire<int>(1, qualifier: 'duration_test'), throwsA(isA<EventNotFoundException>()));
+      expect(() => DDIEvent.instance.fire<int>(1, qualifier: 'duration_test'),
+          throwsA(isA<EventNotFoundException>()));
 
       // After expiration, the event should be removed
       expect(finalValue, 0);
       expect(ddiEvent.isRegistered<int>(qualifier: 'duration_test'), isFalse);
     });
 
-    test('Subscribe periodic event, receive values and cancel after expirationDuration', () async {
+    test(
+        'Subscribe periodic event, receive values and cancel after expirationDuration',
+        () async {
       int finalValue = 0;
       void mockEvent(int value) => finalValue += value;
       const retryInterval = Duration(milliseconds: 100);
@@ -407,7 +416,8 @@ void eventDurationTests() {
       expect(ddiEvent.isRegistered<int>(qualifier: 'error_test'), isFalse);
     });
 
-    test('Subscribe periodic event and throw error with retryInterval', () async {
+    test('Subscribe periodic event and throw error with retryInterval',
+        () async {
       int finalValue = 0;
       int count = 0;
       void mockEvent(int value) {
