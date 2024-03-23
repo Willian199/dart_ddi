@@ -1,3 +1,7 @@
+## 0.6.1
+
+* Fixed `EventLock`, `DDIEventSender` and `DDIStreamSender` export.
+
 ## 0.6.0
 
 * Added support to register locked events.
@@ -5,7 +9,7 @@
 * Added support for events with expiration duration.
 * Added support to auto-run events.
 * Added support for events with retry interval and maximum retries.
-* Added support to filter events based on the value.ed in the value.
+* Added support to filter events based on the value.
 
 
 ## 0.5.1
