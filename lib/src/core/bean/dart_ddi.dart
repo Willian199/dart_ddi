@@ -11,9 +11,12 @@ import 'package:dart_ddi/src/exception/future_not_accept.dart';
 
 part 'dart_ddi_impl.dart';
 
+/// Shortcut for getting the shared instance of the [DDI] class.
+/// The [DDI] class provides methods for managing beans.
 DDI ddi = DDI.instance;
 
 /// [DDI] is an abstract class representing a Dependency Injection system.
+/// It provides methods for managing beans.
 abstract class DDI {
   /// Creates the shared instance of the [DDI] class.
   static final DDI _instance = _DDIImpl();

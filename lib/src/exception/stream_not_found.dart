@@ -1,5 +1,6 @@
-class StreamNotFound implements Exception {
-  const StreamNotFound(this.cause);
+/// [StreamNotFoundException] is an exception that is thrown when tried to access a stream that doesn't exist.
+class StreamNotFoundException implements Exception {
+  const StreamNotFoundException(this.cause);
   final String cause;
 
   @override

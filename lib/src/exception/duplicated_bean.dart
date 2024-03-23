@@ -1,5 +1,6 @@
-class DuplicatedBean implements Exception {
-  const DuplicatedBean(this.type);
+/// [DuplicatedBeanException] is an exception that is thrown when tried to register a bean that already exists.
+class DuplicatedBeanException implements Exception {
+  const DuplicatedBeanException(this.type);
   final String type;
 
   @override

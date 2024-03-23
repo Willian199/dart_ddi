@@ -14,7 +14,7 @@ void circularDetection() {
       expect(
           () => DDI.instance
               .registerSingleton(() => Father(mother: DDI.instance())),
-          throwsA(isA<BeanNotFound>()));
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Inject a Application bean depending from a bean that not exists yet',
@@ -31,7 +31,8 @@ void circularDetection() {
       DDI.instance.registerApplication(() => Father(mother: DDI.instance()));
       DDI.instance.registerApplication(() => Mother(father: DDI.instance()));
 
-      expect(() => DDI.instance<Mother>(), throwsA(isA<CircularDetection>()));
+      expect(() => DDI.instance<Mother>(),
+          throwsA(isA<CircularDetectionException>()));
 
       DDI.instance.destroy<Mother>();
       DDI.instance.destroy<Father>();
@@ -41,7 +42,8 @@ void circularDetection() {
       DDI.instance.registerDependent(() => Father(mother: DDI.instance()));
       DDI.instance.registerDependent(() => Mother(father: DDI.instance()));
 
-      expect(() => DDI.instance<Mother>(), throwsA(isA<CircularDetection>()));
+      expect(() => DDI.instance<Mother>(),
+          throwsA(isA<CircularDetectionException>()));
 
       DDI.instance.destroy<Mother>();
       DDI.instance.destroy<Father>();
@@ -51,7 +53,8 @@ void circularDetection() {
       DDI.instance.registerSession(() => Father(mother: DDI.instance()));
       DDI.instance.registerSession(() => Mother(father: DDI.instance()));
 
-      expect(() => DDI.instance<Mother>(), throwsA(isA<CircularDetection>()));
+      expect(() => DDI.instance<Mother>(),
+          throwsA(isA<CircularDetectionException>()));
 
       DDI.instance.destroy<Mother>();
       DDI.instance.destroy<Father>();

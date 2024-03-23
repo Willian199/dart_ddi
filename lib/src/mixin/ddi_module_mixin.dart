@@ -2,6 +2,22 @@ import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
 
+/// Mixin to make it easy to create modules
+///
+/// Example:
+/// ```dart
+/// class MyModule with DDIModule {
+///   @override
+///   FutureOr<void> onPostConstruct(){
+///     print('do something after construct or register the childrens beans');
+///
+///     registerApplication<MyEvent>(() => MyEvent());
+///     registerSingleton<OtherEvent>(() => OtherEvent());
+///     registerDisposable<SimpleEvent>(() => SimpleEvent());
+///   }
+/// }
+/// ```
+
 mixin DDIModule implements PostConstruct {
   Object get moduleQualifier => runtimeType;
 

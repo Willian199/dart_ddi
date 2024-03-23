@@ -13,7 +13,8 @@ void registerIf() {
         return false;
       });
 
-      expect(() => DDI.instance.get<C>(), throwsA(isA<BeanNotFound>()));
+      expect(
+          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
 
       DDI.instance.destroy<C>();
     });
@@ -48,7 +49,7 @@ void registerIf() {
       DDI.instance.destroy(qualifier: 'typeC');
 
       expect(() => DDI.instance.get(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFound>()));
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Register a Singleton bean with registerIf false and qualifier',
@@ -64,7 +65,7 @@ void registerIf() {
       );
 
       expect(() => DDI.instance.get(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFound>()));
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Register a Application bean with registerIf true', () async {
@@ -83,7 +84,7 @@ void registerIf() {
       DDI.instance.destroy(qualifier: 'typeC');
 
       expect(() => DDI.instance.get(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFound>()));
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Register a Application bean with registerIf false', () async {
@@ -98,7 +99,7 @@ void registerIf() {
       );
 
       expect(() => DDI.instance.get(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFound>()));
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Register a Session bean with registerIf true', () async {
@@ -117,7 +118,7 @@ void registerIf() {
       DDI.instance.destroy(qualifier: 'typeC');
 
       expect(() => DDI.instance.get(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFound>()));
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Register a Session bean with registerIf false', () async {
@@ -132,7 +133,7 @@ void registerIf() {
       );
 
       expect(() => DDI.instance.get(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFound>()));
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Register a Dependent bean with registerIf true', () async {
@@ -151,7 +152,7 @@ void registerIf() {
       DDI.instance.destroy(qualifier: 'typeC');
 
       expect(() => DDI.instance.get(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFound>()));
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Register a Dependent bean with registerIf false', () async {
@@ -166,7 +167,7 @@ void registerIf() {
       );
 
       expect(() => DDI.instance.get(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFound>()));
+          throwsA(isA<BeanNotFoundException>()));
     });
   });
 }

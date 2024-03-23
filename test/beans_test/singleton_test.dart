@@ -1,8 +1,7 @@
+import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/exception/bean_not_found.dart';
 import 'package:dart_ddi/src/exception/duplicated_bean.dart';
 import 'package:test/test.dart';
-
-import 'package:dart_ddi/dart_ddi.dart';
 
 import '../clazz_samples/a.dart';
 import '../clazz_samples/b.dart';
@@ -79,7 +78,7 @@ void singleton() {
 
       ddi.destroy<C>();
 
-      expect(() => ddi.get<C>(), throwsA(isA<BeanNotFound>()));
+      expect(() => ddi.get<C>(), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Create, get and remove a qualifier bean', () {
@@ -89,7 +88,8 @@ void singleton() {
 
       ddi.destroy(qualifier: 'typeC');
 
-      expect(() => ddi.get(qualifier: 'typeC'), throwsA(isA<BeanNotFound>()));
+      expect(() => ddi.get(qualifier: 'typeC'),
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Try to destroy a undestroyable Singleton bean', () {
@@ -113,7 +113,7 @@ void singleton() {
       ddi.destroy<SingletonDestroyRegister>();
 
       expect(() => ddi.registerSingleton(() => SingletonDestroyRegister()),
-          throwsA(isA<DuplicatedBean>()));
+          throwsA(isA<DuplicatedBeanException>()));
     });
   });
 }

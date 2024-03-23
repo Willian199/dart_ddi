@@ -90,7 +90,8 @@ void dependentFuture() {
 
       DDI.instance.destroy<C>();
 
-      expect(() async => DDI.instance.get<C>(), throwsA(isA<BeanNotFound>()));
+      expect(() async => DDI.instance.get<C>(),
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Create, get and remove a qualifier bean', () {
@@ -105,7 +106,7 @@ void dependentFuture() {
       DDI.instance.destroy(qualifier: 'typeC');
 
       expect(() => DDI.instance.get(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFound>()));
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Try to destroy a undestroyable Dependent bean', () async {

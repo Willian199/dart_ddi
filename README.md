@@ -55,6 +55,8 @@ Summary
    2. [Pre Destroy](#pre-destroy-mixin)
    3. [Pre Dispose](#pre-dispose-mixin)
    4. [DDIModule Mixin](#ddimodule-mixin)
+   5. [DDIInject and DDIInjectAsync Mixins](#ddiinject-and-ddiinjectasync-mixins)
+   6. [DDIEventSender and DDIStreamSender Mixins](#ddieventsender-and-ddistreamsender-mixins)
 7. [Events](#events)
    1. [Creating and Managing Events](#creating-and-managing-events)
    2. [Subscribing an Event](#subscribing-an-event)
@@ -469,11 +471,11 @@ class MyClass with PreDispose {
 }
 ```
 
-## DDIModule Mixin
+### DDIModule Mixin
 
 The `DDIModule` mixin provides a convenient way to organize and manage your dependency injection configuration within your Dart application. By implementing this mixin in your module classes, you can easily register instances with different scopes and dependencies using the provided methods.
 
-## Example Usage:
+#### Example Usage:
 
 ```dart
 // Define a module using the DDIModule mixin
@@ -490,30 +492,96 @@ class AppModule with DDIModule {
 }
 ```
 
+### `DDIInject` and `DDIInjectAsync` Mixins
+
+The `DDIInject` and `DDIInjectAsync` mixins are designed to facilitate dependency injection of an instance into your classes. They provide a convenient method to obtain an instance of a specific type from the dependency injection container.
+
+The `DDIInject` mixin allows for synchronous injection of an instance and `DDIInjectAsync` mixin allows for asynchronous injection. Both defines a `instance` property that will be initialized with the `InjectType` instance obtained.
+
+#### Example Usage:
+```dart
+class MyController with DDIInject<MyService> {
+  void businessLogic() {
+    instance.runSomething();
+  }
+}
+
+class MyAsyncController with DDIInjectAsync<MyService> {
+  Future<void> businessLogic() async {
+    final myInstance = await instance;
+    myInstance.runSomething();
+  }
+}
+```	
+
+### `DDIEventSender` and `DDIStreamSender` Mixins
+
+The `DDIEventSender` and `DDIStreamSender` mixins are designed to simplify the process of sending events and stream values to listeners. They provide a convenient method fire to send the specified value to an event or stream.
+
+The `DDIEventSender` mixin is used to send events to all registered listeners and the `DDIStreamSender` mixin is to send stream values. Both defines a fire method that takes the value as a parameter and sends it to all registered listeners.
+
+#### Example Usage:
+```dart
+class MyEvent with DDIEventSender<String> {
+  void businessLogic() {
+    fire('Hello World');
+  }
+}
+
+class MyStreamEvent with DDIStreamSender<int> {
+  void businessLogic() {
+    fire(42);
+  }
+}
+```
+
 # Events
 Designed for flexibility and efficiency, this system empowers you to seamlessly manage, subscribe to, and respond to events, making it a crucial asset for building reactive and scalable Dart applications.
 
 ## Creating and Managing Events
-The Events follow a straightforward flow. Functions or methods `subscribe` to specific events using the subscribe method of the `DDIEvent` class. Events are fired using the `fire` method, triggering the execution of all subscribed callbacks. Subscribed callbacks are then executed, handling the event data and performing any specified tasks. Subscriptions can be removed using the `unsubscribe` function.
+The Events follow a straightforward flow. Functions or methods `subscribe` to specific events using the subscribe method of the `DDIEvent` class. Events are fired using the `fire` or `fireWait` methods, triggering the execution of all subscribed callbacks. Subscribed callbacks are then executed, handling the event data and performing any specified tasks. Subscriptions can be removed using the `unsubscribe` function.
 
 ### Subscribing an Event
-When subscribing to an event, you have the option to choose from three different types of subscriptions:  `subscribe`, `subscribeAsync` and `subscribeIsolate`.
+When subscribing to an event, you have the option to choose from three different types of subscriptions:
+
+- `DDIEvent.instance.subscribe` It's the common type, working as a simples callback.
+- `DDIEvent.instance.subscribeAsync` Runs the callback as a Future.
+- `DDIEvent.instance.subscribeIsolate` Runs as a Isolate.
 
 #### subscribe
 The common subscription type, subscribe, functions as a simple callback. It allows you to respond to events in a synchronous manner, making it suitable for most scenarios.
 
-- `DDIEvent.instance.subscribe` It's the common type, working as a simples callback.
-- `DDIEvent.instance.subscribeAsync` Runs as a Future. Perhaps it's not possible to await.
-- `DDIEvent.instance.subscribeIsolate` Runs as a Isolate.
+Obs: If you register an event that uses async and await, it will not be possible to wait even using `fireWait`. For this scenario, use `subscribeAsync`.
 
 Parameters:
 
 - `event:` The callback function to be executed when the event is fired.
 - `qualifier:` Optional qualifier name to distinguish between different events of the same type.
-- `registerIf:` A bool function that if returns true, allows the subscription to proceed.
-- `allowUnsubscribe:` Indicates if the event can be unsubscribe.
-- `priority:` Priority of the subscription relative to other subscriptions (lower values indicate higher priority).
-- `unsubscribeAfterFire:` If true, the subscription will be automatically removed after the first time the event is fired.
+- `registerIf:` A FutureOr<bool> function that if returns true, allows the subscription to proceed.
+- `allowUnsubscribe:` Indicates if the event can be unsubscribe. Ignored if `autoRun` is used.
+- `priority:` Priority of the subscription relative to other subscriptions (lower values indicate higher priority). Ignored if `autoRun` is used.
+- `unsubscribeAfterFire:` If true, the subscription will be automatically removed after the first time the event is fired. Ignored if `autoRun` is used.
+- `lock`: Indicates if the event should be locked. Running only one event simultaneously. Cannot be used in combination with `autoRun`.
+- `onError`: The callback function to be executed when an error occurs.
+- `onComplete`: The callback function to be executed when the event is completed. It's called even if an error occurs.
+- `expirationDuration`: The duration after which the subscription will be automatically removed.
+- `retryInterval`: Adds the ability to automatically retry the event after the interval specified.
+- `defaultValue`: The default value to be used when the event is fired. Required if `retryInterval` is used.
+- `maxRetry`: The maximum number of times the subscription will be automatically fired if `retryInterval` is used.
+     * Can be used in combination with `autoRun` and `onError`.
+     * If `maxRetry` is 0 and `autoRun` is true, will run forever.
+     * If `maxRetry` is greater than 0 and `autoRun` is true, the subscription will be removed when the maximum number of retries is reached.
+     * If `maxRetry` is greater than 0, `autoRun` is false and `onError` is used, the subscription will stop retrying when the maximum number is reached.
+     * If `expirationDuration` is used, the subscription will be removed when the first rule is met, either when the expiration duration is reached or when the maximum number of retries is reached.
+- `autoRun`: If true, the event will run automatically when the subscription is created.
+     * Only one event is allowed.
+     * `allowUnsubscribe` is ignored.
+     * `unsubscribeAfterFire` is ignored.
+     * `priority` is ignored.
+     * Cannot be used in combination with `lock`.
+     * Requires the `defaultValue` parameter.
+     * If `maxRetry` is 0, will run forever.
+- `filter`: Allows you to filter events based on their value. Only events when the filter returns true will be fired.
 
 ```dart
 void myEvent(String message) {
@@ -525,14 +593,25 @@ DDIEvent.instance.subscribe<String>(
   qualifier: 'exampleEvent',
   registerIf: () => true,
   allowUnsubscribe: true,
+  priority: 0
   unsubscribeAfterFire: false,
-  runAsIsolate: false,
+  lock: false,
+  onError: (Object? error, StackTrace stacktrace, String valor){},
+  onComplete: (){},
+  expirationDuration: const Duration(seconds: 5),
+  retryInterval: const Duration(seconds: 4),
+  defaultValue: 'defaultValue',
+  maxRetry: 1,
+  autoRun: false,
+  filter: (value) => true,
 );
 ```
 
 #### subscribeAsync
 The subscribeAsync type runs the callback as a Future, allowing for asynchronous event handling. Making it suitable for scenarios where asynchronous execution is needed without waiting for completion.
 Note that it not be possible to await this type of subscription.
+
+Obs: If you want to await for the event to be completed, fire it using `fireWait`.
 
 Parameters are the same as for `subscribe`.
 
@@ -547,7 +626,15 @@ DDIEvent.instance.subscribeAsync<String>(
   registerIf: () => true,
   allowUnsubscribe: true,
   unsubscribeAfterFire: false,
-  runAsIsolate: false,
+  lock: false,
+  onError: (Object? error, StackTrace stacktrace, String valor){},
+  onComplete: (){},
+  expirationDuration: const Duration(seconds: 5),
+  retryInterval: const Duration(seconds: 4),
+  defaultValue: 'defaultValue',
+  maxRetry: 1,
+  autoRun: false,
+  filter: (value) => true,
 );
 ```
 
@@ -567,7 +654,15 @@ DDIEvent.instance.subscribeIsolate<String>(
   registerIf: () => true,
   allowUnsubscribe: true,
   unsubscribeAfterFire: false,
-  runAsIsolate: false,
+  lock: false,
+  onError: (Object? error, StackTrace stacktrace, String valor){},
+  onComplete: (){},
+  expirationDuration: const Duration(seconds: 5),
+  retryInterval: const Duration(seconds: 4),
+  defaultValue: 'defaultValue',
+  maxRetry: 1,
+  autoRun: false,
+  filter: (value) => true,
 );
 ```
 
@@ -584,29 +679,43 @@ DDIEvent.instance.unsubscribe<String>(
 
 ### Firing an Event
 
-To fire an event, use the `fire` function:
+To fire an event, use the `fire` or `fireWait` function. Using `fireWait` makes it possible to wait for all events to complete.
 
 ```dart
 DDIEvent.instance.fire('Hello, Dart DDI!', qualifier: 'exampleEvent');
+
+await DDIEvent.instance.fireWait('Hello, Dart DDI!', qualifier: 'exampleEvent');
 ```
 
 ## Events Considerations
 
 When using the Event System, consider the following:
 
-`Async Event Handling:` You will not abble to await an Async event run.
+`Event Granularity`: Design events with appropriate granularity to ensure they represent meaningful actions or states in the application.
 
-`Possible Problems:` Be cautious of potential issues such as race conditions and excessive use of isolate-based event handling, which may impact performance.
+`Modularity`: Keep events and their handlers modular and self-contained.
+
+`Single Responsibility`: Ensure each event and its handler have a single responsibility.
+
+`Possible Problems`: Be cautious of potential issues such as race conditions and excessive use of isolate-based event handling, which may impact performance.
+
+`Unnecessary Locking`: Applying locks to events unnecessarily may hinder the application's responsiveness. Use locking only when essential to prevent conflicting event executions.
+
+`Event Looping`: Carefully manage scenarios where events trigger further events, as this can lead to infinite loops or excessive event cascades.
 
 See the considerations about [Qualifiers](#considerations).
 
 ## Use Cases
 
-`Cross-State Communication:` Facilitate communication between differents Cubits/Bloc or other State Management in a Flutter application.
+`Application Lifecycle`: Manage events related to the application's lifecycle.
 
-`Network Request Handling`: Manage events related to network requests and responses for streamlined communication.
+`Data Synchronization`: Handle data synchronization events between local and remote data sources.
 
 `Background Task`: Coordinate background tasks and events for efficient task execution.
+
+`Custom Event Bus`: Build a custom event bus for inter-component communication, allowing different parts of the application to communicate without tight coupling.
+
+`Notifications`: Implement notifications for updates in various parts of the application, such as new messages, alerts, or data changes.
 
 # Stream
 
