@@ -9,7 +9,7 @@ import 'package:dart_ddi/src/features/event_lock.dart';
 part 'dart_ddi_event_impl.dart';
 
 /// Shortcut for getting the shared instance of the [DDIEvent] class.
-/// The [DDIEvent] class provides methods for subscribing and unsubscribing
+/// The [DDIEvent] class provides methods for subscribing and unsubscribing to events.
 DDIEvent ddiEvent = DDIEvent.instance;
 
 /// This class provides methods for subscribing and unsubscribing to events

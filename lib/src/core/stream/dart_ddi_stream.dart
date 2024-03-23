@@ -4,8 +4,8 @@ import 'package:dart_ddi/src/exception/stream_not_found.dart';
 part 'dart_ddi_stream_manager.dart';
 
 /// Shortcut for getting the shared instance of the [DDIStream] class.
-/// The [DDIStream] class provides methods for subscribing and unsubscribing
-/// to streams and for dispatching streams with optional qualifiers.
+/// The [DDIStream] class provides methods for subscribing, closing
+/// and dispatching streams with optional qualifiers.
 DDIStream ddiStream = DDIStream.instance;
 
 /// [DDIStream] is an abstract class representing a stream.

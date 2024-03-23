@@ -13,7 +13,7 @@ import 'package:dart_ddi/dart_ddi.dart';
 ///
 ///     registerApplication<MyEvent>(() => MyEvent());
 ///     registerSingleton<OtherEvent>(() => OtherEvent());
-///     registerDisposable<SimpleEvent>(() => SimpleEvent());
+///     registerDependent<SimpleEvent>(() => SimpleEvent());
 ///   }
 /// }
 /// ```
@@ -21,7 +21,7 @@ import 'package:dart_ddi/dart_ddi.dart';
 mixin DDIModule implements PostConstruct {
   Object get moduleQualifier => runtimeType;
 
-  /// Registers an instance of a class as a Singleton.
+  /// Registers an instance as a Singleton.
   ///
   /// - `clazzRegister`: Factory function to create the instance.
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
@@ -54,7 +54,7 @@ mixin DDIModule implements PostConstruct {
     );
   }
 
-  /// Registers an instance of a class as a Application.
+  /// Registers an instance as an Application.
   ///
   /// - `clazzRegister`: Factory function to create the instance.
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
@@ -88,7 +88,7 @@ mixin DDIModule implements PostConstruct {
     );
   }
 
-  /// Registers an instance of a class as a Session.
+  /// Registers an instance as a Session.
   ///
   /// - `clazzRegister`: Factory function to create the instance.
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
@@ -122,7 +122,7 @@ mixin DDIModule implements PostConstruct {
     );
   }
 
-  /// Registers an instance of a class as a Dependent.
+  /// Registers an instance as a Dependent.
   ///
   /// - `clazzRegister`: Factory function to create the instance.
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.

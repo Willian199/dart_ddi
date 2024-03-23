@@ -24,7 +24,7 @@ abstract class DDI {
   /// Gets the shared instance of the [DDI] class.
   static DDI get instance => _instance;
 
-  /// Registers an instance of a class as a Singleton.
+  /// Registers an instance as a Singleton.
   ///
   /// - `clazzRegister`: Factory function to create the instance.
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
@@ -53,7 +53,7 @@ abstract class DDI {
     List<Object>? children,
   });
 
-  /// Registers an instance of a class as a Application.
+  /// Registers an instance as an Application.
   ///
   /// - `clazzRegister`: Factory function to create the instance.
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
@@ -83,7 +83,7 @@ abstract class DDI {
     List<Object>? children,
   });
 
-  /// Registers an instance of a class as a Session.
+  /// Registers an instance as a Session.
   ///
   /// - `clazzRegister`: Factory function to create the instance.
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
@@ -113,7 +113,7 @@ abstract class DDI {
     List<Object>? children,
   });
 
-  /// Registers an instance of a class as a Dependent.
+  /// Registers an instance as a Dependent.
   ///
   /// - `clazzRegister`: Factory function to create the instance.
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
@@ -251,17 +251,17 @@ abstract class DDI {
     Object? qualifier,
   });
 
-  // This function adds multiple child modules to a parent module.
-  // It takes a list of 'child' objects and an optional 'qualifier' for the parent module.
+  /// This function adds multiple child modules to a parent module.
+  /// It takes a list of 'child' objects and an optional 'qualifier' for the parent module.
   void addChildrenModules<BeanT extends Object>(
       {required List<Object> child, Object? qualifier});
 
-  // This function adds a single child module to a parent module.
-  // It takes a 'child' object and an optional 'qualifier' for the parent module.
+  /// This function adds a single child module to a parent module.
+  /// It takes a 'child' object and an optional 'qualifier' for the parent module.
   void addChildModules<BeanT extends Object>(
       {required Object child, Object? qualifier});
 
-  // This function sets the debug mode.
-  // It takes a boolean 'debug' parameter to enable or disable debug mode.
+  /// This function sets the debug mode.
+  /// It takes a boolean 'debug' parameter to enable or disable debug mode.
   void setDebugMode(bool debug);
 }
