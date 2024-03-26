@@ -68,9 +68,9 @@ class _DDIImpl implements DDI {
       );
 
       if (clazz is PostConstruct) {
-        clazz.onPostConstruct();
+        return clazz.onPostConstruct();
       } else if (clazz is Future<PostConstruct>) {
-        _runFutureOrPostConstruct(clazz);
+        return _runFutureOrPostConstruct(clazz);
       }
     }
   }
@@ -247,9 +247,9 @@ class _DDIImpl implements DDI {
       );
 
       if (register is PostConstruct) {
-        register.onPostConstruct();
+        return register.onPostConstruct();
       } else if (register is Future<PostConstruct>) {
-        _runFutureOrPostConstruct(register);
+        return _runFutureOrPostConstruct(register);
       }
     }
   }
@@ -503,10 +503,10 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  void destroy<BeanT extends Object>({Object? qualifier}) {
+  Future<void> destroy<BeanT extends Object>({Object? qualifier}) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    _destroy<BeanT>(effectiveQualifierName);
+    return _destroy<BeanT>(effectiveQualifierName);
   }
 
   void _destroyChildren(FactoryClazz factoryClazz) {
@@ -518,7 +518,7 @@ class _DDIImpl implements DDI {
     }
   }
 
-  void _destroy<BeanT>(Object effectiveQualifierName) {
+  Future<void> _destroy<BeanT>(Object effectiveQualifierName) {
     if (_beans[effectiveQualifierName] case final factoryClazz?
         when factoryClazz.destroyable) {
       //Only destroy if destroyable was registered with true
@@ -530,15 +530,16 @@ class _DDIImpl implements DDI {
         }
 
         if (clazz is PreDestroy) {
-          _runFutureOrPreDestroy(factoryClazz, clazz, effectiveQualifierName);
-          //Should return because the _runFutureOrPreDestroy apply the remove
-          return;
+          return _runFutureOrPreDestroy(
+              factoryClazz, clazz, effectiveQualifierName);
         }
       }
 
       _destroyChildren(factoryClazz);
       _beans.remove(effectiveQualifierName);
     }
+
+    return Future.value();
   }
 
   @override
@@ -565,7 +566,7 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  void dispose<BeanT extends Object>({Object? qualifier}) {
+  Future<void> dispose<BeanT extends Object>({Object? qualifier}) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
     if (_beans[effectiveQualifierName]
@@ -575,16 +576,17 @@ class _DDIImpl implements DDI {
       switch (factoryClazz.scopeType) {
         case Scopes.application:
         case Scopes.session:
-          _disposeBean<BeanT>(factoryClazz, effectiveQualifierName);
-          break;
+          return _disposeBean<BeanT>(factoryClazz, effectiveQualifierName);
         default:
           break;
       }
     }
+
+    return Future.value();
   }
 
   /// Dispose only clean the class Instance
-  void _disposeBean<BeanT>(
+  Future<void> _disposeBean<BeanT>(
     FactoryClazz<BeanT> factoryClazz,
     Object effectiveQualifierName,
   ) {
@@ -597,13 +599,13 @@ class _DDIImpl implements DDI {
       }
 
       if (clazz is PreDispose) {
-        _runFutureOrPreDispose(factoryClazz, clazz, effectiveQualifierName);
-        //Should return because the _runFutureOrPreDestroy apply the remove
-        return;
+        return _runFutureOrPreDispose(
+            factoryClazz, clazz, effectiveQualifierName);
       }
     }
 
     _disposeChildren(factoryClazz);
+    return Future.value();
   }
 
   @override
@@ -708,10 +710,10 @@ class _DDIImpl implements DDI {
         _executarDecorators(register, factoryClazz.decorators);
   }
 
-  void _runFutureOrPostConstruct(Future<PostConstruct> register) async {
+  Future<void> _runFutureOrPostConstruct(Future<PostConstruct> register) async {
     final PostConstruct clazz = await register;
 
-    clazz.onPostConstruct();
+    return clazz.onPostConstruct();
   }
 
   Future<void> _runFutureOrPreDestroy(FactoryClazz factoryClazz,
@@ -721,6 +723,8 @@ class _DDIImpl implements DDI {
     _destroyChildren(factoryClazz);
 
     _beans.remove(effectiveQualifierName);
+
+    return Future.value();
   }
 
   Future<void> _runFutureOrPreDispose(FactoryClazz factoryClazz,

@@ -200,7 +200,7 @@ abstract class DDI {
   /// Removes the instance of the registered class in [DDI].
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
-  void destroy<BeanT extends Object>({Object? qualifier});
+  Future<void> destroy<BeanT extends Object>({Object? qualifier});
 
   /// Removes all the instance registered as Session Scope.
   void destroyAllSession();
@@ -211,7 +211,7 @@ abstract class DDI {
   /// Disposes of the instance of the registered class in [DDI].
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
-  void dispose<BeanT extends Object>({Object? qualifier});
+  Future<void> dispose<BeanT extends Object>({Object? qualifier});
 
   /// Disposes all the instance registered as Session Scope.
   void disposeAllSession();
