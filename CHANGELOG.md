@@ -1,3 +1,6 @@
+## 0.6.2
+* Fixed an issue when using await where registering, disposing, and destroying a bean.
+
 ## 0.6.1
 
 * Fixed `EventLock`, `DDIEventSender` and `DDIStreamSender` export.
