@@ -1,4 +1,11 @@
+## 0.6.3
+
+* Added the ability to retrieve the last fired state from `DDIEventSender` and `DDIStreamSender`.
+* Added the ability to retrieve the `StreaController` from `DDIStream`.
+* Improved code quality.
+
 ## 0.6.2
+
 * Fixed an issue when using await where registering, disposing, and destroying a bean.
 
 ## 0.6.1

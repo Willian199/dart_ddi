@@ -81,4 +81,14 @@ final class _DDIStreamManager implements DDIStream {
         .putIfAbsent(effectiveQualifierName, () => DDIStreamCore<StreamTypeT>())
         .getStream() as Stream<StreamTypeT>;
   }
+
+  @override
+  StreamController<StreamTypeT> getStreamController<StreamTypeT extends Object>(
+      {Object? qualifier}) {
+    final Object effectiveQualifierName = qualifier ?? StreamTypeT;
+
+    return _streamMap
+        .putIfAbsent(effectiveQualifierName, () => DDIStreamCore<StreamTypeT>())
+        .streamController as StreamController<StreamTypeT>;
+  }
 }

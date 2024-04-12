@@ -13,9 +13,15 @@ import 'package:dart_ddi/dart_ddi.dart';
 /// }
 /// ```
 mixin DDIStreamSender<StreamStateType extends Object> {
+  StreamStateType? _state;
+
+  /// @return The current state of the event.
+  StreamStateType? get state => _state;
+
   /// Sends a value to the stream.
   /// @param state The value to be send.
-  void fire(StreamStateType state) {
-    ddiStream.fire<StreamStateType>(value: state);
+  void fire(StreamStateType stateValue) {
+    _state = stateValue;
+    ddiStream.fire<StreamStateType>(value: stateValue);
   }
 }

@@ -6,6 +6,8 @@ class DDIStreamCore<StreamTypeT extends Object> {
   final StreamController<StreamTypeT> _streamController =
       StreamController<StreamTypeT>.broadcast();
 
+  StreamController<StreamTypeT> get streamController => _streamController;
+
   void subscribe(
     void Function(StreamTypeT) callback, {
     bool unsubscribeAfterFire = false,

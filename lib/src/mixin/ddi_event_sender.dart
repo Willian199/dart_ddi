@@ -13,9 +13,15 @@ import 'package:dart_ddi/dart_ddi.dart';
 /// }
 /// ```
 mixin DDIEventSender<EventStateType extends Object> {
+  EventStateType? _state;
+
+  /// @return The current state of the event.
+  EventStateType? get state => _state;
+
   /// Sends an event to all listeners.
   /// @param state The value to be send.
-  void fire(EventStateType state) {
-    ddiEvent.fire<EventStateType>(state);
+  void fire(EventStateType stateValue) {
+    _state = stateValue;
+    ddiEvent.fire<EventStateType>(stateValue);
   }
 }

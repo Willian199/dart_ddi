@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dart_ddi/src/core/stream/dart_ddi_stream_core.dart';
 import 'package:dart_ddi/src/exception/stream_not_found.dart';
 
@@ -61,5 +63,12 @@ abstract final class DDIStream {
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
   Stream<StreamTypeT> getOrCreateStream<StreamTypeT extends Object>(
+      {Object? qualifier});
+
+  /// Retrieves a stream controller of type [StreamTypeT].
+  /// Creates a new one if it doesn't exist.
+  ///
+  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
+  StreamController<StreamTypeT> getStreamController<StreamTypeT extends Object>(
       {Object? qualifier});
 }
