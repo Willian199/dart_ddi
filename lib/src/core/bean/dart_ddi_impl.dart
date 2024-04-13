@@ -4,7 +4,7 @@ bool _debug = !const bool.fromEnvironment('dart.vm.product') &&
     !const bool.fromEnvironment('dart.vm.profile');
 
 class _DDIImpl implements DDI {
-  final Map<Object, FactoryClazz> _beans = {};
+  final Map<Object, FactoryClazz<Object>> _beans = {};
   static const _resolutionKey = #_resolutionKey;
 
   final Map<Object, List<Object>> _resolutionMap =
@@ -12,19 +12,19 @@ class _DDIImpl implements DDI {
 
   @override
   Future<void> registerSingleton<BeanT extends Object>(
-    FutureOr<BeanT> Function() clazzRegister, {
+    BeanRegister<BeanT> clazzRegister, {
     Object? qualifier,
-    void Function()? postConstruct,
-    List<BeanT Function(BeanT)>? decorators,
-    List<DDIInterceptor<BeanT> Function()>? interceptors,
-    FutureOr<bool> Function()? registerIf,
+    VoidCallback? postConstruct,
+    ListDecorator<BeanT>? decorators,
+    ListDDIInterceptor<BeanT>? interceptors,
+    FutureOrBoolCallback? registerIf,
     bool destroyable = true,
     List<Object>? children,
   }) async {
     bool shouldRegister = true;
 
     if (registerIf != null) {
-      if (registerIf is bool Function()) {
+      if (registerIf is BoolCallback) {
         shouldRegister = registerIf();
       } else {
         shouldRegister = await registerIf();
@@ -43,9 +43,9 @@ class _DDIImpl implements DDI {
       late BeanT clazz;
 
       if (clazzRegister is BeanT Function()) {
-        clazz = clazzRegister.call();
+        clazz = clazzRegister();
       } else {
-        clazz = await clazzRegister.call();
+        clazz = await clazzRegister();
       }
 
       if (interceptors != null) {
@@ -77,12 +77,12 @@ class _DDIImpl implements DDI {
 
   @override
   Future<void> registerApplication<BeanT extends Object>(
-    FutureOr<BeanT> Function() clazzRegister, {
+    BeanRegister<BeanT> clazzRegister, {
     Object? qualifier,
-    void Function()? postConstruct,
-    List<BeanT Function(BeanT)>? decorators,
-    List<DDIInterceptor<BeanT> Function()>? interceptors,
-    FutureOr<bool> Function()? registerIf,
+    VoidCallback? postConstruct,
+    ListDecorator<BeanT>? decorators,
+    ListDDIInterceptor<BeanT>? interceptors,
+    FutureOrBoolCallback? registerIf,
     bool destroyable = true,
     List<Object>? children,
   }) {
@@ -100,12 +100,12 @@ class _DDIImpl implements DDI {
 
   @override
   Future<void> registerSession<BeanT extends Object>(
-    FutureOr<BeanT> Function() clazzRegister, {
+    BeanRegister<BeanT> clazzRegister, {
     Object? qualifier,
-    void Function()? postConstruct,
-    List<BeanT Function(BeanT)>? decorators,
-    List<DDIInterceptor<BeanT> Function()>? interceptors,
-    FutureOr<bool> Function()? registerIf,
+    VoidCallback? postConstruct,
+    ListDecorator<BeanT>? decorators,
+    ListDDIInterceptor<BeanT>? interceptors,
+    FutureOrBoolCallback? registerIf,
     bool destroyable = true,
     List<Object>? children,
   }) {
@@ -124,12 +124,12 @@ class _DDIImpl implements DDI {
 
   @override
   Future<void> registerDependent<BeanT extends Object>(
-    FutureOr<BeanT> Function() clazzRegister, {
+    BeanRegister<BeanT> clazzRegister, {
     Object? qualifier,
-    void Function()? postConstruct,
-    List<BeanT Function(BeanT)>? decorators,
-    List<DDIInterceptor<BeanT> Function()>? interceptors,
-    FutureOr<bool> Function()? registerIf,
+    VoidCallback? postConstruct,
+    ListDecorator<BeanT>? decorators,
+    ListDDIInterceptor<BeanT>? interceptors,
+    FutureOrBoolCallback? registerIf,
     bool destroyable = true,
     List<Object>? children,
   }) {
@@ -147,20 +147,20 @@ class _DDIImpl implements DDI {
   }
 
   Future<void> _register<BeanT extends Object>({
-    required FutureOr<BeanT> Function() clazzRegister,
+    required BeanRegister<BeanT> clazzRegister,
     required Scopes scopeType,
     required bool destroyable,
     Object? qualifier,
-    void Function()? postConstruct,
-    List<BeanT Function(BeanT)>? decorators,
-    List<DDIInterceptor<BeanT> Function()>? interceptors,
-    FutureOr<bool> Function()? registerIf,
+    VoidCallback? postConstruct,
+    ListDecorator<BeanT>? decorators,
+    ListDDIInterceptor<BeanT>? interceptors,
+    FutureOrBoolCallback? registerIf,
     List<Object>? children,
   }) async {
     bool shouldRegister = true;
 
     if (registerIf != null) {
-      if (registerIf is bool Function()) {
+      if (registerIf is BoolCallback) {
         shouldRegister = registerIf();
       } else {
         shouldRegister = await registerIf();
@@ -202,17 +202,17 @@ class _DDIImpl implements DDI {
   Future<void> registerObject<BeanT extends Object>(
     BeanT register, {
     Object? qualifier,
-    void Function()? postConstruct,
-    List<BeanT Function(BeanT)>? decorators,
-    List<DDIInterceptor<BeanT> Function()>? interceptors,
-    FutureOr<bool> Function()? registerIf,
+    VoidCallback? postConstruct,
+    ListDecorator<BeanT>? decorators,
+    ListDDIInterceptor<BeanT>? interceptors,
+    FutureOrBoolCallback? registerIf,
     bool destroyable = true,
     List<Object>? children,
   }) async {
     bool shouldRegister = true;
 
     if (registerIf != null) {
-      if (registerIf is bool Function()) {
+      if (registerIf is BoolCallback) {
         shouldRegister = registerIf();
       } else {
         shouldRegister = await registerIf();
@@ -414,7 +414,7 @@ class _DDIImpl implements DDI {
 
     if (_beans[effectiveQualifierName]
         case final FactoryClazz<BeanT> factoryClazz?) {
-      if (factoryClazz.clazzRegister is FutureOr<BeanT> Function() &&
+      if (factoryClazz.clazzRegister is BeanRegister<BeanT> &&
           BeanT is Future) {
         throw const FutureNotAcceptException();
       }
@@ -510,7 +510,7 @@ class _DDIImpl implements DDI {
 
   BeanT _executarDecorators<BeanT extends Object>(
     BeanT clazz,
-    List<BeanT Function(BeanT)>? decorators,
+    ListDecorator<BeanT>? decorators,
   ) {
     if (decorators != null) {
       for (final decorator in decorators) {
@@ -528,7 +528,7 @@ class _DDIImpl implements DDI {
     return _destroy<BeanT>(effectiveQualifierName);
   }
 
-  void _destroyChildren(FactoryClazz factoryClazz) {
+  void _destroyChildren<BeanT>(FactoryClazz<BeanT> factoryClazz) {
     if (factoryClazz.children case final List<Object> children?
         when children.isNotEmpty) {
       for (final Object child in children) {
@@ -618,7 +618,7 @@ class _DDIImpl implements DDI {
       }
 
       if (clazz is PreDispose) {
-        return _runFutureOrPreDispose(
+        return _runFutureOrPreDispose<BeanT>(
             factoryClazz, clazz, effectiveQualifierName);
       }
     }
@@ -735,7 +735,7 @@ class _DDIImpl implements DDI {
     return clazz.onPostConstruct();
   }
 
-  Future<void> _runFutureOrPreDestroy(FactoryClazz factoryClazz,
+  Future<void> _runFutureOrPreDestroy<BeanT>(FactoryClazz<BeanT> factoryClazz,
       PreDestroy clazz, Object effectiveQualifierName) async {
     await clazz.onPreDestroy();
 
@@ -746,14 +746,14 @@ class _DDIImpl implements DDI {
     return Future.value();
   }
 
-  Future<void> _runFutureOrPreDispose(FactoryClazz factoryClazz,
+  Future<void> _runFutureOrPreDispose<BeanT>(FactoryClazz<BeanT> factoryClazz,
       PreDispose clazz, Object effectiveQualifierName) async {
     await clazz.onPreDispose();
 
-    _disposeChildren(factoryClazz);
+    _disposeChildren<BeanT>(factoryClazz);
   }
 
-  void _disposeChildren(FactoryClazz factoryClazz) {
+  void _disposeChildren<BeanT>(FactoryClazz<BeanT> factoryClazz) {
     if (factoryClazz.children case final List<Object> children?
         when children.isNotEmpty) {
       for (final Object child in children) {

@@ -3,7 +3,7 @@
 import 'dart:async';
 
 import 'package:dart_ddi/src/enum/scopes.dart';
-import 'package:dart_ddi/src/features/ddi_interceptor.dart';
+import 'package:dart_ddi/src/typedef/typedef.dart';
 
 /// [FactoryClazz] is a class that represents a factory bean.
 /// It is used to register a bean in the [DDI] system.
@@ -12,16 +12,16 @@ class FactoryClazz<BeanT> {
   BeanT? clazzInstance;
 
   /// The list of decorators that are called in the bean creation.
-  List<BeanT Function(BeanT instance)>? decorators;
+  ListDecorator<BeanT>? decorators;
 
   /// The list of interceptors that are called at the stages of the bean usage.
-  List<DDIInterceptor<BeanT> Function()>? interceptors;
+  ListDDIInterceptor<BeanT>? interceptors;
 
   /// The [FutureOr] function that returns the bean instance.
-  final FutureOr<BeanT> Function()? clazzRegister;
+  final BeanRegister<BeanT>? clazzRegister;
 
   /// The function that is called after the bean is created.
-  final void Function()? postConstruct;
+  final VoidCallback? postConstruct;
 
   /// The scope type of the bean.
   final Scopes scopeType;
@@ -49,10 +49,10 @@ class FactoryClazz<BeanT> {
 
   FactoryClazz<BeanT> copyWith({
     BeanT? clazzInstance,
-    List<BeanT Function(BeanT i)>? decorators,
-    List<DDIInterceptor<BeanT> Function()>? interceptors,
-    FutureOr<BeanT> Function()? clazzRegister,
-    void Function()? postConstruct,
+    ListDecorator<BeanT>? decorators,
+    ListDDIInterceptor<BeanT>? interceptors,
+    BeanRegister<BeanT>? clazzRegister,
+    VoidCallback? postConstruct,
     Scopes? scopeType,
     Type? type,
     bool? destroyable,

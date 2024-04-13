@@ -1,13 +1,13 @@
 part of 'dart_ddi_event.dart';
 
 class _DDIEventImpl implements DDIEvent {
-  final Map<Object, List<Event>> _events = {};
+  final Map<Object, List<Event<Object>>> _events = {};
 
   @override
   Future<void> subscribe<EventTypeT extends Object>(
     FutureOr<void> Function(EventTypeT) event, {
     Object? qualifier,
-    FutureOr<bool> Function()? registerIf,
+    FutureOrBoolCallback? registerIf,
     bool allowUnsubscribe = true,
     int priority = 0,
     bool unsubscribeAfterFire = false,
@@ -45,7 +45,7 @@ class _DDIEventImpl implements DDIEvent {
   Future<void> subscribeAsync<EventTypeT extends Object>(
     FutureOr<void> Function(EventTypeT) event, {
     Object? qualifier,
-    FutureOr<bool> Function()? registerIf,
+    FutureOrBoolCallback? registerIf,
     bool allowUnsubscribe = true,
     int priority = 0,
     bool unsubscribeAfterFire = false,
@@ -83,7 +83,7 @@ class _DDIEventImpl implements DDIEvent {
   Future<void> subscribeIsolate<EventTypeT extends Object>(
     FutureOr<void> Function(EventTypeT) event, {
     Object? qualifier,
-    FutureOr<bool> Function()? registerIf,
+    FutureOrBoolCallback? registerIf,
     bool allowUnsubscribe = true,
     int priority = 0,
     bool unsubscribeAfterFire = false,
@@ -121,7 +121,7 @@ class _DDIEventImpl implements DDIEvent {
     required FutureOr<void> Function(EventTypeT) event,
     required EventMode mode,
     Object? qualifier,
-    FutureOr<bool> Function()? registerIf,
+    FutureOrBoolCallback? registerIf,
     bool allowUnsubscribe = true,
     int priority = 0,
     bool unsubscribeAfterFire = false,
