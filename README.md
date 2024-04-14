@@ -137,8 +137,8 @@ The Dart Dependency Injection (DDI) Library supports various scopes for efficien
 `Use Case`: Creating instances of transient objects like data repositories or request handlers.
 
 `Note`: 
-        - Dispose functions and PreDispose mixin are not supported.
-        - PreDetroy mixins are not supported. Use Interceptor instead. 
+        - Dispose functions, aroundDipose and PreDispose mixin are not supported.
+        - PreDetroy mixins are not supported. Use Interceptor.aroundDestroy instead. 
 
 ## Object
 `Description`: Registers an Object in the Object Scope, ensuring it is created once and shared throughout the entire application, functioning similarly to a Singleton.
