@@ -1,4 +1,4 @@
-## 0.6.4
+## 0.6.5
 
 * Added `Packages` and `Projects` information.
 * Updated example to make it simpler.

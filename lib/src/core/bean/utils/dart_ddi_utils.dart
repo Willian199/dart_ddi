@@ -30,9 +30,9 @@ final class DartDDIUtils {
       // ignore: avoid_print
       print(
           'Is already registered a instance with Type ${effectiveQualifierName.toString()}');
+    } else {
+      throw DuplicatedBeanException(effectiveQualifierName.toString());
     }
-
-    throw DuplicatedBeanException(effectiveQualifierName.toString());
   }
 
   static BeanT getSingleton<BeanT extends Object>(
