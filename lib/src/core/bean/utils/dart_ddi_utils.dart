@@ -26,7 +26,7 @@ final class DartDDIUtils {
   }
 
   static void validateDuplicated(Object effectiveQualifierName, bool debug) {
-    if (!debug) {
+    if (debug) {
       // ignore: avoid_print
       print(
           'Is already registered a instance with Type ${effectiveQualifierName.toString()}');
