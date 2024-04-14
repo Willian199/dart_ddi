@@ -1,3 +1,9 @@
+## 0.6.4
+
+* Added `Packages` and `Projects` information.
+* Updated example to make it simpler.
+* Fixed and documented the Dependent Scope with dispose and destroy behavior.
+
 ## 0.6.3
 
 * Added the ability to retrieve the last fired state from `DDIEventSender` and `DDIStreamSender`.

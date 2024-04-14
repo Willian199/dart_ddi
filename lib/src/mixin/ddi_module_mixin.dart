@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
+import 'package:dart_ddi/src/typedef/typedef.dart';
 
 /// Mixin to make it easy to create modules
 ///
@@ -31,12 +32,12 @@ mixin DDIModule implements PostConstruct {
   /// - `registerIf`: Optional function to conditionally register the instance.
   /// - `destroyable`: Optional parameter to make the instance indestructible.
   Future<void> registerSingleton<BeanT extends Object>(
-    FutureOr<BeanT> Function() clazzRegister, {
+    BeanRegister<BeanT> clazzRegister, {
     Object? qualifier,
-    void Function()? postConstruct,
-    List<BeanT Function(BeanT)>? decorators,
-    List<DDIInterceptor<BeanT> Function()>? interceptors,
-    FutureOr<bool> Function()? registerIf,
+    VoidCallback? postConstruct,
+    ListDecorator<BeanT>? decorators,
+    ListDDIInterceptor<BeanT>? interceptors,
+    FutureOrBoolCallback? registerIf,
     bool destroyable = true,
     List<Object>? children,
   }) {
@@ -65,12 +66,12 @@ mixin DDIModule implements PostConstruct {
   /// - `destroyable`: Optional parameter to make the instance indestructible.
   /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module.
   Future<void> registerApplication<BeanT extends Object>(
-    FutureOr<BeanT> Function() clazzRegister, {
+    BeanRegister<BeanT> clazzRegister, {
     Object? qualifier,
-    void Function()? postConstruct,
-    List<BeanT Function(BeanT)>? decorators,
-    List<DDIInterceptor<BeanT> Function()>? interceptors,
-    FutureOr<bool> Function()? registerIf,
+    VoidCallback? postConstruct,
+    ListDecorator<BeanT>? decorators,
+    ListDDIInterceptor<BeanT>? interceptors,
+    FutureOrBoolCallback? registerIf,
     bool destroyable = true,
     List<Object>? children,
   }) {
@@ -99,12 +100,12 @@ mixin DDIModule implements PostConstruct {
   /// - `destroyable`: Optional parameter to make the instance indestructible.
   /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module.
   Future<void> registerSession<BeanT extends Object>(
-    FutureOr<BeanT> Function() clazzRegister, {
+    BeanRegister<BeanT> clazzRegister, {
     Object? qualifier,
-    void Function()? postConstruct,
-    List<BeanT Function(BeanT)>? decorators,
-    List<DDIInterceptor<BeanT> Function()>? interceptors,
-    FutureOr<bool> Function()? registerIf,
+    VoidCallback? postConstruct,
+    ListDecorator<BeanT>? decorators,
+    ListDDIInterceptor<BeanT>? interceptors,
+    FutureOrBoolCallback? registerIf,
     bool destroyable = true,
     List<Object>? children,
   }) {
@@ -133,12 +134,12 @@ mixin DDIModule implements PostConstruct {
   /// - `destroyable`: Optional parameter to make the instance indestructible.
   /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module.
   Future<void> registerDependent<BeanT extends Object>(
-    FutureOr<BeanT> Function() clazzRegister, {
+    BeanRegister<BeanT> clazzRegister, {
     Object? qualifier,
-    void Function()? postConstruct,
-    List<BeanT Function(BeanT)>? decorators,
-    List<DDIInterceptor<BeanT> Function()>? interceptors,
-    FutureOr<bool> Function()? registerIf,
+    VoidCallback? postConstruct,
+    ListDecorator<BeanT>? decorators,
+    ListDDIInterceptor<BeanT>? interceptors,
+    FutureOrBoolCallback? registerIf,
     bool destroyable = true,
     List<Object>? children,
   }) {
@@ -169,10 +170,10 @@ mixin DDIModule implements PostConstruct {
   Future<void> registerObject<BeanT extends Object>(
     BeanT register, {
     Object? qualifier,
-    void Function()? postConstruct,
-    List<BeanT Function(BeanT)>? decorators,
-    List<DDIInterceptor<BeanT> Function()>? interceptors,
-    FutureOr<bool> Function()? registerIf,
+    VoidCallback? postConstruct,
+    ListDecorator<BeanT>? decorators,
+    ListDDIInterceptor<BeanT>? interceptors,
+    FutureOrBoolCallback? registerIf,
     bool destroyable = true,
     List<Object>? children,
   }) {

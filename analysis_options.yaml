@@ -17,7 +17,7 @@ analyzer:
     #Strict-inference: Quando definido como true, esse lint irá sinalizar quando a inferência de tipo é muito genérica, ou seja, quando o tipo inferido é dynamic. Quando definido como false, o lint não irá sinalizar esses casos.
     strict-inference: false
     #strict-raw-types: Quando definido como true, esse lint irá sinalizar o uso de tipos genéricos sem especificar os tipos dos argumentos. Por exemplo, usar List em vez de List<String>. Quando definido como false, o lint não irá sinalizar esses casos.
-    strict-raw-types: false
+    strict-raw-types: true
 
   errors:
     unnecessary_await_in_return: error

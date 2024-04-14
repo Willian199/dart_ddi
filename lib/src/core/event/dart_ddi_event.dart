@@ -5,6 +5,7 @@ import 'package:dart_ddi/src/enum/event_mode.dart';
 import 'package:dart_ddi/src/exception/event_not_allowed.dart';
 import 'package:dart_ddi/src/exception/event_not_found.dart';
 import 'package:dart_ddi/src/features/event_lock.dart';
+import 'package:dart_ddi/src/typedef/typedef.dart';
 
 part 'dart_ddi_event_impl.dart';
 
@@ -67,7 +68,7 @@ abstract class DDIEvent {
   Future<void> subscribe<EventTypeT extends Object>(
     FutureOr<void> Function(EventTypeT) event, {
     Object? qualifier,
-    FutureOr<bool> Function()? registerIf,
+    FutureOrBoolCallback? registerIf,
     bool allowUnsubscribe = true,
     int priority = 0,
     bool unsubscribeAfterFire = false,
@@ -129,7 +130,7 @@ abstract class DDIEvent {
   Future<void> subscribeAsync<EventTypeT extends Object>(
     FutureOr<void> Function(EventTypeT) event, {
     Object? qualifier,
-    FutureOr<bool> Function()? registerIf,
+    FutureOrBoolCallback? registerIf,
     bool allowUnsubscribe = true,
     int priority = 0,
     bool unsubscribeAfterFire = false,
@@ -189,7 +190,7 @@ abstract class DDIEvent {
   Future<void> subscribeIsolate<EventTypeT extends Object>(
     FutureOr<void> Function(EventTypeT) event, {
     Object? qualifier,
-    FutureOr<bool> Function()? registerIf,
+    FutureOrBoolCallback? registerIf,
     bool allowUnsubscribe = true,
     int priority = 0,
     bool unsubscribeAfterFire = false,

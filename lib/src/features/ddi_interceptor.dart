@@ -54,8 +54,8 @@ abstract class DDIInterceptor<BeanT> {
   }
 
   /// Invoked when an instance is being destroyed, allowing you to perform cleanup or additional logic.
-  void aroundDestroy(BeanT instance) {}
+  void aroundDestroy(BeanT? instance) {}
 
   /// Invoked during the disposal of an instance, providing an opportunity for you to release resources or add custom cleanup logic.
-  void aroundDispose(BeanT instance) {}
+  void aroundDispose(BeanT? instance) {}
 }
