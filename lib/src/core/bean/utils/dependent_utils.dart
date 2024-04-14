@@ -47,6 +47,13 @@ final class DependentUtils {
     FactoryClazz<BeanT> factoryClazz,
     BeanT dependentClazz,
   ) {
+    assert(
+        dependentClazz is! PreDispose || dependentClazz is! Future<PreDispose>,
+        'Dependent instances dont support PreDispose. Use Interceptors instead.');
+    assert(
+        dependentClazz is! PreDestroy || dependentClazz is! Future<PreDestroy>,
+        'Dependent instances dont support PreDestroy. Use Interceptors instead.');
+
     if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
         dependentClazz = interceptor().aroundConstruct(dependentClazz);

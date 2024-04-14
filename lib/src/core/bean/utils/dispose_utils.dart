@@ -3,22 +3,17 @@ import 'package:dart_ddi/src/data/factory_clazz.dart';
 
 final class DisposeUtils {
   /// Dispose only clean the class Instance
-  static Future<void> disposeBean<BeanT>(
-    FactoryClazz<BeanT> factoryClazz,
-    Object effectiveQualifierName,
-  ) {
-    if (factoryClazz.clazzInstance case final clazz?) {
-      if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
-        //Call aroundDispose before reset the clazzInstance
-        for (final interceptor in inter) {
-          interceptor().aroundDispose(clazz);
-        }
+  static Future<void> disposeBean<BeanT>(FactoryClazz<BeanT> factoryClazz) {
+    if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
+      // Call aroundDispose before reset the clazzInstance
+      // Should call interceptors even if the instance is null
+      for (final interceptor in inter) {
+        interceptor().aroundDispose(factoryClazz.clazzInstance);
       }
+    }
 
-      if (clazz is PreDispose) {
-        return _runFutureOrPreDispose<BeanT>(
-            factoryClazz, clazz, effectiveQualifierName);
-      }
+    if (factoryClazz.clazzInstance case final clazz? when clazz is PreDispose) {
+      return _runFutureOrPreDispose<BeanT>(factoryClazz, clazz);
     }
 
     _disposeChildren(factoryClazz);
@@ -26,12 +21,14 @@ final class DisposeUtils {
   }
 
   static Future<void> _runFutureOrPreDispose<BeanT>(
-      FactoryClazz<BeanT> factoryClazz,
-      PreDispose clazz,
-      Object effectiveQualifierName) async {
+      FactoryClazz<BeanT> factoryClazz, PreDispose clazz) async {
+    disposeChildrenAsync<BeanT>(factoryClazz);
+
     await clazz.onPreDispose();
 
-    _disposeChildren<BeanT>(factoryClazz);
+    factoryClazz.clazzInstance = null;
+
+    return Future.value();
   }
 
   static void _disposeChildren<BeanT>(FactoryClazz<BeanT> factoryClazz) {
@@ -43,5 +40,15 @@ final class DisposeUtils {
     }
 
     factoryClazz.clazzInstance = null;
+  }
+
+  static Future<void> disposeChildrenAsync<BeanT>(
+      FactoryClazz<BeanT> factoryClazz) async {
+    if (factoryClazz.children case final List<Object> children?
+        when children.isNotEmpty) {
+      for (final Object child in children) {
+        await ddi.dispose(qualifier: child);
+      }
+    }
   }
 }

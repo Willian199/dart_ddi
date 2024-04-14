@@ -27,6 +27,17 @@ The Dart Dependency Injection (DDI) library is a robust and flexible dependency 
 
 🚀 Contribute to the DDI by sharing your ideas, feedback, or practical examples.
 
+See this basic [example](https://github.com/Willian199/dart_ddi/blob/master/example/main.dart) to get started with DDI.
+
+## Packages
+
+- [Flutter DDI](https://github.com/Willian199/flutter_ddi) - This package is designed to facilitate the dependency injection process in your Flutter application.
+
+## Projects
+
+- [Perfumei](https://github.com/Willian199/Perfumei) - A simple mobile app about perfumes. Built using DDI and Cubit.
+- [Clinicas](https://github.com/Willian199/lab_clinicas_fe) - A mobile, desktop and web application about Service Queue. Built using Signal and Flutter DDI to enable route-based dependency injection management.
+
 Summary
 
 1. [Getting Started](#getting-started)
@@ -87,29 +98,6 @@ Summary
    15. [addInterceptor](#addinterceptor)
    16. [refreshObject](#refreshobject)
 
-## Getting Started
-
-To incorporate DDI into your Dart project, you must implement the `DDI` abstract class. The default implementation, can be accessed through the `instance` getter.
-
-```dart
-// Instantiate DDI
-DDI ddi = DDI.instance;
-
-// Register a singleton instance
-ddi.registerSingleton<MyService>(MyService.new);
-
-// Retrieve the singleton instance
-MyService myService = ddi.get<MyService>();
-
-// Register an application-scoped instance
-ddi.registerApplication<MyAppService>(MyAppService.new);
-
-// Retrieve the application-scoped instance
-MyAppService appService = ddi.get<MyAppService>();
-
-// ... (similar usage for other scopes)
-```
-
 # Core Concepts
 ## Scopes
 
@@ -130,6 +118,8 @@ The Dart Dependency Injection (DDI) Library supports various scopes for efficien
 
 `Use Case`: Managing application-level resources, such as a network client or a global configuration.
 
+`Note`: PreDispose and PreDetroy mixins will only be called if the instance is in use. Use Interceptor if you want to call them regardless.
+
 ## Session
 `Description`: Ties an instance to a specific session, persisting throughout the session's lifespan.
 
@@ -137,12 +127,18 @@ The Dart Dependency Injection (DDI) Library supports various scopes for efficien
 
 `Use Case`: Managing user authentication state or caching user-specific preferences.
 
+`Note`: PreDispose and PreDetroy mixins will only be called if the instance is in use. Use Interceptor if you want to call them regardless.
+
 ## Dependent
 `Description`: Produces a new instance every time it is requested, ensuring independence and uniqueness.
 
 `Recommendation`: Useful for objects that should remain independent and different in each context or request.
 
 `Use Case`: Creating instances of transient objects like data repositories or request handlers.
+
+`Note`: 
+        - Dispose functions and PreDispose mixin are not supported.
+        - PreDetroy mixins are not supported. Use Interceptor instead. 
 
 ## Object
 `Description`: Registers an Object in the Object Scope, ensuring it is created once and shared throughout the entire application, functioning similarly to a Singleton.

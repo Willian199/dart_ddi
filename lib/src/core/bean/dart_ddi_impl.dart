@@ -305,26 +305,47 @@ class _DDIImpl implements DDI {
     }
   }
 
+  Future<void> _destroyChildrenAsync<BeanT>(
+      FactoryClazz<BeanT> factoryClazz) async {
+    if (factoryClazz.children case final List<Object> children?
+        when children.isNotEmpty) {
+      for (final Object child in children) {
+        await _destroy(child);
+      }
+    }
+  }
+
   Future<void> _destroy<BeanT>(Object effectiveQualifierName) {
     if (_beans[effectiveQualifierName] case final factoryClazz?
         when factoryClazz.destroyable) {
-      //Only destroy if destroyable was registered with true
-      if (factoryClazz.clazzInstance case final clazz?) {
-        if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
-          for (final interceptor in inter) {
-            interceptor().aroundDestroy(clazz);
-          }
+      // Only destroy if destroyable was registered with true
+      // Should call interceptors even if the instance is null
+      if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
+        for (final interceptor in inter) {
+          interceptor().aroundDestroy(factoryClazz.clazzInstance);
         }
+      }
 
-        if (clazz is PreDestroy) {
-          return _runFutureOrPreDestroy(
-              factoryClazz, clazz, effectiveQualifierName);
-        }
+      if (factoryClazz.clazzInstance case final clazz?
+          when clazz is PreDestroy) {
+        return _runFutureOrPreDestroy(
+            factoryClazz, clazz, effectiveQualifierName);
       }
 
       _destroyChildren(factoryClazz);
       _beans.remove(effectiveQualifierName);
     }
+
+    return Future.value();
+  }
+
+  Future<void> _runFutureOrPreDestroy<BeanT>(FactoryClazz<BeanT> factoryClazz,
+      PreDestroy clazz, Object effectiveQualifierName) async {
+    await _destroyChildrenAsync(factoryClazz);
+
+    await clazz.onPreDestroy();
+
+    _beans.remove(effectiveQualifierName);
 
     return Future.value();
   }
@@ -363,10 +384,9 @@ class _DDIImpl implements DDI {
       switch (factoryClazz.scopeType) {
         case Scopes.application:
         case Scopes.session:
-          return DisposeUtils.disposeBean<BeanT>(
-              factoryClazz, effectiveQualifierName);
+          return DisposeUtils.disposeBean<BeanT>(factoryClazz);
         default:
-          break;
+          return DisposeUtils.disposeChildrenAsync<BeanT>(factoryClazz);
       }
     }
 
@@ -375,9 +395,9 @@ class _DDIImpl implements DDI {
 
   @override
   void disposeAllSession() {
-    for (final MapEntry(:key, :value) in _beans.entries) {
+    for (final MapEntry(key: _, :value) in _beans.entries) {
       if (value.scopeType == Scopes.session) {
-        DisposeUtils.disposeBean(value, key);
+        DisposeUtils.disposeBean(value);
       }
     }
   }
@@ -389,8 +409,8 @@ class _DDIImpl implements DDI {
     final clazz =
         _beans.entries.where((element) => element.value.type == type).toList();
 
-    for (final MapEntry(:key, :value) in clazz) {
-      DisposeUtils.disposeBean(value, key);
+    for (final MapEntry(key: _, :value) in clazz) {
+      DisposeUtils.disposeBean(value);
     }
   }
 
@@ -473,17 +493,6 @@ class _DDIImpl implements DDI {
 
     factoryClazz.clazzInstance = DartDDIUtils.executarDecorators<BeanT>(
         register, factoryClazz.decorators);
-  }
-
-  Future<void> _runFutureOrPreDestroy<BeanT>(FactoryClazz<BeanT> factoryClazz,
-      PreDestroy clazz, Object effectiveQualifierName) async {
-    await clazz.onPreDestroy();
-
-    _destroyChildren(factoryClazz);
-
-    _beans.remove(effectiveQualifierName);
-
-    return Future.value();
   }
 
   @override
