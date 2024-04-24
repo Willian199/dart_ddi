@@ -1,6 +1,7 @@
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/core/bean/utils/dart_ddi_utils.dart';
 import 'package:dart_ddi/src/data/factory_clazz.dart';
+import 'package:dart_ddi/src/extensions/bean_register_extension.dart';
 
 final class ApplicationUtils {
   static Future<BeanT> getAplicationAsync<BeanT extends Object>(
@@ -8,8 +9,11 @@ final class ApplicationUtils {
     late BeanT applicationClazz;
 
     if (factoryClazz.clazzInstance == null) {
-      applicationClazz = _applyApplication<BeanT>(
-          factoryClazz, await factoryClazz.clazzRegister!.call());
+      final SimpleBeanFactory<BeanT> clazzRegister =
+          factoryClazz.clazzRegister! as SimpleBeanFactory<BeanT>;
+
+      applicationClazz =
+          _applyApplication<BeanT>(factoryClazz, await clazzRegister.call());
 
       if (applicationClazz is PostConstruct) {
         await applicationClazz.onPostConstruct();
@@ -30,7 +34,10 @@ final class ApplicationUtils {
   }
 
   static BeanT getAplication<BeanT extends Object>(
-      FactoryClazz<BeanT> factoryClazz, Object effectiveQualifierName) {
+    FactoryClazz<BeanT> factoryClazz,
+    Object? value,
+    Object effectiveQualifierName,
+  ) {
     late BeanT applicationClazz;
 
     if (factoryClazz.clazzInstance == null) {

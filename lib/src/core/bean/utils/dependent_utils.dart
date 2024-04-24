@@ -1,12 +1,22 @@
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/core/bean/utils/dart_ddi_utils.dart';
 import 'package:dart_ddi/src/data/factory_clazz.dart';
+import 'package:dart_ddi/src/extensions/bean_register_extension.dart';
+import 'package:dart_ddi/src/typedef/typedef.dart';
 
 final class DependentUtils {
   static BeanT getDependent<BeanT extends Object>(
-      FactoryClazz<BeanT> factoryClazz) {
-    BeanT dependentClazz = _applyDependent<BeanT>(
-        factoryClazz, (factoryClazz.clazzRegister as BeanT Function())());
+    FactoryClazz<BeanT> factoryClazz,
+    Object? value,
+  ) {
+    BeanT dependentClazz = switch (factoryClazz.clazzRegister!) {
+      final CustomBeanFactory<BeanT> clazzRegister => clazzRegister.call(value),
+      final SimpleBeanFactory<BeanT> clazzRegister => clazzRegister.call(),
+      final RegisterFunction<BeanT> clazzRegister =>
+        clazzRegister.register() as FutureOrBean<BeanT>
+    } as BeanT;
+
+    dependentClazz = _applyDependent<BeanT>(factoryClazz, dependentClazz);
 
     if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
@@ -24,9 +34,23 @@ final class DependentUtils {
   }
 
   static Future<BeanT> getDependentAsync<BeanT extends Object>(
-      FactoryClazz<BeanT> factoryClazz) async {
-    BeanT dependentClazz = _applyDependent<BeanT>(
-        factoryClazz, await factoryClazz.clazzRegister!.call());
+    FactoryClazz<BeanT> factoryClazz,
+    Object? value,
+  ) async {
+    BeanT dependentClazz = switch (factoryClazz.clazzRegister!) {
+      final CustomBeanFactory<BeanT> clazzRegister =>
+        await clazzRegister.call(value),
+      final SimpleBeanFactory<BeanT> clazzRegister =>
+        await clazzRegister.call(),
+      final RegisterFunction<BeanT> clazzRegister =>
+        await clazzRegister.register() as BeanT
+    };
+
+    final SimpleBeanFactory<BeanT> clazzRegister =
+        factoryClazz.clazzRegister! as SimpleBeanFactory<BeanT>;
+
+    dependentClazz =
+        _applyDependent<BeanT>(factoryClazz, await clazzRegister.call());
 
     if (dependentClazz is PostConstruct) {
       await dependentClazz.onPostConstruct();

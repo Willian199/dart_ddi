@@ -13,7 +13,10 @@ final class ScopeUtils {
   static final Map<Object, List<Object>> _resolutionMap =
       Zone.current[_resolutionKey] as Map<Object, List<Object>>? ?? {};
   static BeanT _getScoped<BeanT extends Object>(
-      FactoryClazz<BeanT> factoryClazz, Object effectiveQualifierName) {
+    FactoryClazz<BeanT> factoryClazz,
+    Object? value,
+    Object effectiveQualifierName,
+  ) {
     if (_resolutionMap[effectiveQualifierName]?.isNotEmpty ?? false) {
       throw CircularDetectionException(effectiveQualifierName.toString());
     }
@@ -27,19 +30,25 @@ final class ScopeUtils {
       return switch (factoryClazz.scopeType) {
         Scopes.singleton || Scopes.object => DartDDIUtils.getSingleton<BeanT>(
             factoryClazz, effectiveQualifierName),
-        Scopes.dependent => DependentUtils.getDependent<BeanT>(factoryClazz),
+        Scopes.dependent =>
+          DependentUtils.getDependent<BeanT>(factoryClazz, value),
         Scopes.application ||
         Scopes.session =>
           ApplicationUtils.getAplication<BeanT>(
-              factoryClazz, effectiveQualifierName)
+              factoryClazz, value, effectiveQualifierName)
       };
+    } catch (error) {
+      rethrow;
     } finally {
       _resolutionMap[effectiveQualifierName]?.removeLast();
     }
   }
 
   static Future<BeanT> _getScopedAsync<BeanT extends Object>(
-      FactoryClazz<BeanT> factoryClazz, Object effectiveQualifierName) {
+    FactoryClazz<BeanT> factoryClazz,
+    Object? value,
+    Object effectiveQualifierName,
+  ) {
     if (_resolutionMap[effectiveQualifierName]?.isNotEmpty ?? false) {
       throw CircularDetectionException(effectiveQualifierName.toString());
     }
@@ -55,7 +64,7 @@ final class ScopeUtils {
             DartDDIUtils.getSingleton<BeanT>(
                 factoryClazz, effectiveQualifierName)),
         Scopes.dependent =>
-          DependentUtils.getDependentAsync<BeanT>(factoryClazz),
+          DependentUtils.getDependentAsync<BeanT>(factoryClazz, value),
         Scopes.application ||
         Scopes.session =>
           ApplicationUtils.getAplicationAsync<BeanT>(
@@ -67,20 +76,27 @@ final class ScopeUtils {
   }
 
   static BeanT executar<BeanT extends Object>(
-      FactoryClazz<BeanT> factoryClazz, Object effectiveQualifierName) {
+    FactoryClazz<BeanT> factoryClazz,
+    Object? value,
+    Object effectiveQualifierName,
+  ) {
     return runZoned(
       () {
-        return _getScoped<BeanT>(factoryClazz, effectiveQualifierName);
+        return _getScoped<BeanT>(factoryClazz, value, effectiveQualifierName);
       },
       zoneValues: {_resolutionKey: <Object, List<Object>>{}},
     );
   }
 
   static Future<BeanT> executarAsync<BeanT extends Object>(
-      FactoryClazz<BeanT> factoryClazz, Object effectiveQualifierName) {
+    FactoryClazz<BeanT> factoryClazz,
+    Object? value,
+    Object effectiveQualifierName,
+  ) {
     return runZoned(
       () {
-        return _getScopedAsync<BeanT>(factoryClazz, effectiveQualifierName);
+        return _getScopedAsync<BeanT>(
+            factoryClazz, value, effectiveQualifierName);
       },
       zoneValues: {_resolutionKey: <Object, List<Object>>{}},
     );

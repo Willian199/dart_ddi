@@ -7,7 +7,7 @@ import 'package:dart_ddi/src/core/bean/utils/scope_utils.dart';
 import 'package:dart_ddi/src/data/factory_clazz.dart';
 import 'package:dart_ddi/src/enum/scopes.dart';
 import 'package:dart_ddi/src/exception/bean_not_found.dart';
-import 'package:dart_ddi/src/exception/future_not_accept.dart';
+import 'package:dart_ddi/src/extensions/bean_register_extension.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
 
 part 'dart_ddi_impl.dart';
@@ -173,6 +173,37 @@ abstract class DDI {
     List<Object>? children,
   });
 
+  /// Registers a Custom Instance.
+  ///
+  /// - `clazzRegister`: Factory function to create the instance.
+  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
+  /// - `postConstruct`: Optional function to be executed after the instance is constructed.
+  /// - `decorators`: List of decoration functions to apply to the instance.
+  /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
+  /// - `registerIf`: Optional function to conditionally register the instance.
+  /// - `destroyable`: Optional parameter to make the instance indestructible.
+  /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module
+  /// - `scope`: The scope of the instance.
+  ///
+  /// **Custom Scope:**
+  /// - The behavior of the instance depends on the scope of the instance. Default scope is Dependent.
+  ///
+  ///
+  ///  **Use Case:**
+  /// - Register instances with parameters to facilitate dynamic configuration and initialization based on runtime conditions.
+  /// - Utilize factory functions to produce instances with custom logic and dynamic instantiation behavior.
+  Future<void> registerCustom<BeanT extends Object>(
+    RegisterFunction<BeanT> clazzRegister, {
+    Object? qualifier,
+    VoidCallback? postConstruct,
+    ListDecorator<BeanT>? decorators,
+    ListDDIInterceptor<BeanT>? interceptors,
+    FutureOrBoolCallback? registerIf,
+    bool destroyable = true,
+    List<Object>? children,
+    Scopes scope = Scopes.dependent,
+  });
+
   /// Verify if an instance is already registered in [DDI].
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
@@ -181,12 +212,15 @@ abstract class DDI {
   /// Gets an instance of the registered class in [DDI].
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
-  BeanT get<BeanT extends Object>({Object? qualifier});
+  /// - `value`: Optional value to be used to create the instance. Only for custom instances.
+  BeanT get<BeanT extends Object>({Object? value, Object? qualifier});
 
   /// Gets an instance of the registered class in [DDI].
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
-  Future<BeanT> getAsync<BeanT extends Object>({Object? qualifier});
+  /// - `value`: Optional value to be used to create the instance. Only for custom instances.
+  Future<BeanT> getAsync<BeanT extends Object>(
+      {Object? value, Object? qualifier});
 
   /// Retrieves a list of keys associated with objects of a specific type BeanT`.
   ///
@@ -196,7 +230,8 @@ abstract class DDI {
   /// Gets an instance of the registered class in [DDI].
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
-  BeanT call<BeanT extends Object>();
+  /// - `value`: Optional value to be used to create the instance. Only for custom instances.
+  BeanT call<BeanT extends Object>({Object? value});
 
   /// Removes the instance of the registered class in [DDI].
   ///

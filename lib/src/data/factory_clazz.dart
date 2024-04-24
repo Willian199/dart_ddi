@@ -3,11 +3,12 @@
 import 'dart:async';
 
 import 'package:dart_ddi/src/enum/scopes.dart';
+import 'package:dart_ddi/src/extensions/bean_register_extension.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
 
 /// [FactoryClazz] is a class that represents a factory bean.
 /// It is used to register a bean in the [DDI] system.
-class FactoryClazz<BeanT> {
+class FactoryClazz<BeanT extends Object> {
   /// The [BeanT] instance of the bean.
   BeanT? clazzInstance;
 
@@ -18,7 +19,7 @@ class FactoryClazz<BeanT> {
   ListDDIInterceptor<BeanT>? interceptors;
 
   /// The [FutureOr] function that returns the bean instance.
-  final BeanRegister<BeanT>? clazzRegister;
+  final RegisterFunction<BeanT>? clazzRegister;
 
   /// The function that is called after the bean is created.
   final VoidCallback? postConstruct;
@@ -51,7 +52,7 @@ class FactoryClazz<BeanT> {
     BeanT? clazzInstance,
     ListDecorator<BeanT>? decorators,
     ListDDIInterceptor<BeanT>? interceptors,
-    BeanRegister<BeanT>? clazzRegister,
+    RegisterFunction<BeanT>? clazzRegister,
     VoidCallback? postConstruct,
     Scopes? scopeType,
     Type? type,

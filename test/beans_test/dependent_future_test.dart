@@ -94,12 +94,12 @@ void dependentFuture() {
           throwsA(isA<BeanNotFoundException>()));
     });
 
-    test('Create, get and remove a qualifier bean', () {
+    test('Create, get and remove a qualifier bean', () async {
       DDI.instance
           .registerDependent(() => Future.value(C()), qualifier: 'typeC');
 
-      final instance1 = DDI.instance.get(qualifier: 'typeC');
-      final instance2 = DDI.instance.get(qualifier: 'typeC');
+      final C instance1 = await DDI.instance.getAsync(qualifier: 'typeC');
+      final C instance2 = await DDI.instance.getAsync(qualifier: 'typeC');
 
       expect(false, identical(instance1, instance2));
 
@@ -130,6 +130,21 @@ void dependentFuture() {
         final C value = await Future.delayed(const Duration(seconds: 2), C.new);
         return value;
       });
+
+      final C intance = await DDI.instance.getAsync<C>();
+
+      await expectLater(intance.value, 1);
+
+      DDI.instance.destroy<C>();
+    });
+
+    test('Register Future and retrieve as non Future Dependent bean', () async {
+      DDI.instance.registerDependent(() async {
+        final C value = await Future.delayed(const Duration(seconds: 2), C.new);
+        return value;
+      });
+
+      expect(() => DDI.instance.get<C>(), throwsA(isA<AssertionError>()));
 
       final C intance = await DDI.instance.getAsync<C>();
 
