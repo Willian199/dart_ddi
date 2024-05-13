@@ -1,3 +1,8 @@
+## 0.6.6
+
+* Resolved issue with concurrent modification in events.
+* Corrected events with `autoRun` capability, ensuring they can run infinitely as intended.
+
 ## 0.6.5
 
 * Added `Packages` and `Projects` information.

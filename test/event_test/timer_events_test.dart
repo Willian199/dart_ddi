@@ -453,5 +453,37 @@ void eventDurationTests() {
       // After the maxExecutions, the event should be removed
       expect(ddiEvent.isRegistered<int>(qualifier: 'error_test'), isFalse);
     });
+
+    test('Subscribe periodic event and try to remove after 5 executions',
+        () async {
+      int finalValue = 0;
+      void mockEvent(int value) {
+        finalValue += value;
+
+        if (finalValue == 5) {
+          // Future.delayed(Duration.zero, () {
+          ddiEvent.unsubscribe<int>(mockEvent, qualifier: 'run_finite_test');
+          // });
+        }
+      }
+
+      const retryInterval = Duration(milliseconds: 5);
+      const defaultValue = 1;
+
+      ddiEvent.subscribe<int>(
+        mockEvent,
+        autoRun: true,
+        retryInterval: retryInterval,
+        defaultValue: defaultValue,
+        qualifier: 'run_finite_test',
+      );
+
+      // Wait a bit more than the interval to ensure events are called
+      await Future.delayed(const Duration(milliseconds: 60));
+
+      expect(finalValue, 5);
+      // After the executions, the event should be removed
+      expect(ddiEvent.isRegistered<int>(qualifier: 'run_finite_test'), isFalse);
+    });
   });
 }
