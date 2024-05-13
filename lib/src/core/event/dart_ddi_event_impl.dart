@@ -170,11 +170,11 @@ class _DDIEventImpl implements DDIEvent {
 
       if (existingEvents.isNotEmpty && autoRun) {
         throw EventNotAllowedException(
-            'Not allowed to register multiple events with the same $effectiveQualifierName where using autoRun');
+            'Not allowed to register multiple events with the same qualifier ($effectiveQualifierName) where using autoRun');
       }
 
-      final isDuplicate = existingEvents.any(
-          (existingEvent) => existingEvent.event.hashCode == event.hashCode);
+      final isDuplicate =
+          existingEvents.any((existingEvent) => existingEvent.event == event);
 
       if (!isDuplicate) {
         existingEvents.add(
@@ -204,6 +204,8 @@ class _DDIEventImpl implements DDIEvent {
 
         if (autoRun && defaultValue != null) {
           if (retryInterval != null && retryInterval > Duration.zero) {
+            final bool isFinite = maxRetry > 0;
+
             Timer.periodic(retryInterval, (timer) async {
               if (!isRegistered<EventTypeT>(
                   qualifier: effectiveQualifierName)) {
@@ -214,11 +216,13 @@ class _DDIEventImpl implements DDIEvent {
               await fireWait<EventTypeT>(defaultValue,
                   qualifier: effectiveQualifierName);
 
-              if (maxRetry <= 1) {
-                timer.cancel();
-                _removeEvents<EventTypeT>(event, effectiveQualifierName);
-              } else {
-                maxRetry--;
+              if (isFinite) {
+                if (maxRetry <= 1) {
+                  timer.cancel();
+                  _removeEvents<EventTypeT>(event, effectiveQualifierName);
+                } else {
+                  maxRetry--;
+                }
               }
             });
           } else {
@@ -336,13 +340,13 @@ class _DDIEventImpl implements DDIEvent {
       {Object? qualifier}) async {
     final effectiveQualifierName = qualifier ?? EventTypeT;
 
-    if (_events[effectiveQualifierName] case final eventsList?
-        when eventsList.isNotEmpty) {
+    final eventsList = List.from(_events[effectiveQualifierName] ?? []);
+
+    if (eventsList.isNotEmpty) {
       final eventsToRemove = <Event<EventTypeT>>[];
 
-      for (final Event<EventTypeT> event
-          in eventsList.cast<Event<EventTypeT>>()) {
-        await _validateFilter(event, value);
+      for (final event in eventsList) {
+        await _validateFilter<EventTypeT>(event as Event<EventTypeT>, value);
 
         if (event.unsubscribeAfterFire) {
           eventsToRemove.add(event);
@@ -354,7 +358,7 @@ class _DDIEventImpl implements DDIEvent {
           _events[effectiveQualifierName]?.remove(event);
         }
 
-        if (eventsList.isEmpty) {
+        if (_events[effectiveQualifierName]?.isEmpty ?? true) {
           _events.remove(effectiveQualifierName);
         }
       }
