@@ -23,4 +23,4 @@ environment:
 
 dev_dependencies:
   test: ">=1.15.0 <2.0.0"
-  lints: ^3.0.0
+  lints: ^4.0.0

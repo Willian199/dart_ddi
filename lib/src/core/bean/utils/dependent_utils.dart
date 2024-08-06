@@ -4,7 +4,9 @@ import 'package:dart_ddi/src/data/factory_clazz.dart';
 
 final class DependentUtils {
   static BeanT getDependent<BeanT extends Object>(
-      FactoryClazz<BeanT> factoryClazz) {
+    FactoryClazz<BeanT> factoryClazz,
+    Object effectiveQualifierName,
+  ) {
     BeanT dependentClazz = _applyDependent<BeanT>(
         factoryClazz, (factoryClazz.clazzRegister as BeanT Function())());
 
@@ -12,6 +14,10 @@ final class DependentUtils {
       for (final interceptor in inter) {
         dependentClazz = interceptor().aroundGet(dependentClazz);
       }
+    }
+
+    if (dependentClazz is DDIModule) {
+      dependentClazz.moduleQualifier = effectiveQualifierName;
     }
 
     if (dependentClazz is PostConstruct) {
@@ -24,9 +30,15 @@ final class DependentUtils {
   }
 
   static Future<BeanT> getDependentAsync<BeanT extends Object>(
-      FactoryClazz<BeanT> factoryClazz) async {
+    FactoryClazz<BeanT> factoryClazz,
+    Object effectiveQualifierName,
+  ) async {
     BeanT dependentClazz = _applyDependent<BeanT>(
         factoryClazz, await factoryClazz.clazzRegister!.call());
+
+    if (dependentClazz is DDIModule) {
+      dependentClazz.moduleQualifier = effectiveQualifierName;
+    }
 
     if (dependentClazz is PostConstruct) {
       await dependentClazz.onPostConstruct();

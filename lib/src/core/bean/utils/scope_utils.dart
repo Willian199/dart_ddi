@@ -26,12 +26,19 @@ final class ScopeUtils {
     try {
       return switch (factoryClazz.scopeType) {
         Scopes.singleton || Scopes.object => DartDDIUtils.getSingleton<BeanT>(
-            factoryClazz, effectiveQualifierName),
-        Scopes.dependent => DependentUtils.getDependent<BeanT>(factoryClazz),
+            factoryClazz,
+            effectiveQualifierName,
+          ),
+        Scopes.dependent => DependentUtils.getDependent<BeanT>(
+            factoryClazz,
+            effectiveQualifierName,
+          ),
         Scopes.application ||
         Scopes.session =>
           ApplicationUtils.getAplication<BeanT>(
-              factoryClazz, effectiveQualifierName)
+            factoryClazz,
+            effectiveQualifierName,
+          )
       };
     } finally {
       _resolutionMap[effectiveQualifierName]?.removeLast();
@@ -51,15 +58,22 @@ final class ScopeUtils {
 
     try {
       return switch (factoryClazz.scopeType) {
-        Scopes.singleton || Scopes.object => Future.value(
-            DartDDIUtils.getSingleton<BeanT>(
-                factoryClazz, effectiveQualifierName)),
-        Scopes.dependent =>
-          DependentUtils.getDependentAsync<BeanT>(factoryClazz),
+        Scopes.singleton ||
+        Scopes.object =>
+          Future.value(DartDDIUtils.getSingleton<BeanT>(
+            factoryClazz,
+            effectiveQualifierName,
+          )),
+        Scopes.dependent => DependentUtils.getDependentAsync<BeanT>(
+            factoryClazz,
+            effectiveQualifierName,
+          ),
         Scopes.application ||
         Scopes.session =>
           ApplicationUtils.getAplicationAsync<BeanT>(
-              factoryClazz, effectiveQualifierName)
+            factoryClazz,
+            effectiveQualifierName,
+          )
       };
     } finally {
       _resolutionMap[effectiveQualifierName]?.removeLast();

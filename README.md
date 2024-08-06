@@ -36,7 +36,7 @@ See this basic [example](https://github.com/Willian199/dart_ddi/blob/master/exam
 ## Projects
 
 - [Perfumei](https://github.com/Willian199/Perfumei) - A simple mobile app about perfumes. Built using DDI and Cubit.
-- [Clinicas](https://github.com/Willian199/lab_clinicas_fe) - A mobile, desktop and web application about Service Queue. Built using Signal and Flutter DDI to enable route-based dependency injection management.
+- [Clinicas](https://github.com/Willian199/lab_clinicas_fe) - A mobile, desktop and web application about Attendance Rank. Built using Signal and Flutter DDI to enable route-based dependency injection management.
 
 Summary
 

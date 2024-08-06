@@ -11,6 +11,10 @@ final class ApplicationUtils {
       applicationClazz = _applyApplication<BeanT>(
           factoryClazz, await factoryClazz.clazzRegister!.call());
 
+      if (applicationClazz is DDIModule) {
+        applicationClazz.moduleQualifier = effectiveQualifierName;
+      }
+
       if (applicationClazz is PostConstruct) {
         await applicationClazz.onPostConstruct();
       } else if (applicationClazz is Future<PostConstruct>) {
@@ -30,12 +34,18 @@ final class ApplicationUtils {
   }
 
   static BeanT getAplication<BeanT extends Object>(
-      FactoryClazz<BeanT> factoryClazz, Object effectiveQualifierName) {
+    FactoryClazz<BeanT> factoryClazz,
+    Object effectiveQualifierName,
+  ) {
     late BeanT applicationClazz;
 
     if (factoryClazz.clazzInstance == null) {
       applicationClazz = _applyApplication<BeanT>(
           factoryClazz, (factoryClazz.clazzRegister as BeanT Function())());
+
+      if (applicationClazz is DDIModule) {
+        applicationClazz.moduleQualifier = effectiveQualifierName;
+      }
 
       if (applicationClazz is PostConstruct) {
         applicationClazz.onPostConstruct();

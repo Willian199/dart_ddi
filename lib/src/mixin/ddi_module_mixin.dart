@@ -20,7 +20,15 @@ import 'package:dart_ddi/src/typedef/typedef.dart';
 /// ```
 
 mixin DDIModule implements PostConstruct {
-  Object get moduleQualifier => runtimeType;
+  Object? _internalQualifier;
+
+  Object get moduleQualifier => _internalQualifier ?? runtimeType;
+
+  set moduleQualifier(Object value) {
+    _internalQualifier = value;
+  }
+
+  List<Object> get children => ddi.getChildren(qualifier: moduleQualifier);
 
   /// Registers an instance as a Singleton.
   ///

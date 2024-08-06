@@ -54,6 +54,10 @@ class _DDIImpl implements DDI {
 
       postConstruct?.call();
 
+      if (clazz is DDIModule) {
+        clazz.moduleQualifier = effectiveQualifierName;
+      }
+
       _beans[effectiveQualifierName] = FactoryClazz<BeanT>(
         clazzInstance: clazz,
         type: BeanT,
@@ -223,6 +227,10 @@ class _DDIImpl implements DDI {
 
       postConstruct?.call();
 
+      if (register is DDIModule) {
+        register.moduleQualifier = effectiveQualifierName;
+      }
+
       _beans[effectiveQualifierName] = FactoryClazz<BeanT>(
         clazzInstance: register,
         type: BeanT,
@@ -290,7 +298,7 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  Future<void> destroy<BeanT extends Object>({Object? qualifier}) {
+  FutureOr<void> destroy<BeanT extends Object>({Object? qualifier}) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
     return _destroy<BeanT>(effectiveQualifierName);
@@ -315,7 +323,7 @@ class _DDIImpl implements DDI {
     }
   }
 
-  Future<void> _destroy<BeanT>(Object effectiveQualifierName) {
+  FutureOr<void> _destroy<BeanT>(Object effectiveQualifierName) {
     if (_beans[effectiveQualifierName] case final factoryClazz?
         when factoryClazz.destroyable) {
       // Only destroy if destroyable was registered with true
@@ -335,8 +343,6 @@ class _DDIImpl implements DDI {
       _destroyChildren(factoryClazz);
       _beans.remove(effectiveQualifierName);
     }
-
-    return Future.value();
   }
 
   Future<void> _runFutureOrPreDestroy<BeanT>(FactoryClazz<BeanT> factoryClazz,
@@ -512,6 +518,11 @@ class _DDIImpl implements DDI {
     } else {
       throw BeanNotFoundException(effectiveQualifierName.toString());
     }
+  }
+
+  @override
+  List<Object> getChildren<BeanT extends Object>({Object? qualifier}) {
+    return _beans[qualifier ?? BeanT]?.children ?? [];
   }
 
   @override

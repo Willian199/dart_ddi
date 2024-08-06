@@ -201,7 +201,7 @@ abstract class DDI {
   /// Removes the instance of the registered class in [DDI].
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
-  Future<void> destroy<BeanT extends Object>({Object? qualifier});
+  FutureOr<void> destroy<BeanT extends Object>({Object? qualifier});
 
   /// Removes all the instance registered as Session Scope.
   void destroyAllSession();
@@ -261,6 +261,8 @@ abstract class DDI {
   /// It takes a 'child' object and an optional 'qualifier' for the parent module.
   void addChildModules<BeanT extends Object>(
       {required Object child, Object? qualifier});
+
+  List<Object> getChildren<BeanT extends Object>({Object? qualifier});
 
   /// This function sets the debug mode.
   /// It takes a boolean 'debug' parameter to enable or disable debug mode.

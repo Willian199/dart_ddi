@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/exception/event_not_found.dart';
 import 'package:test/test.dart';
@@ -457,12 +459,14 @@ void eventDurationTests() {
     test('Subscribe periodic event and try to remove after 5 executions',
         () async {
       int finalValue = 0;
+      final Completer<void> completer = Completer();
       void mockEvent(int value) {
         finalValue += value;
 
         if (finalValue == 5) {
           // Future.delayed(Duration.zero, () {
           ddiEvent.unsubscribe<int>(mockEvent, qualifier: 'run_finite_test');
+          completer.complete();
           // });
         }
       }
@@ -478,8 +482,7 @@ void eventDurationTests() {
         qualifier: 'run_finite_test',
       );
 
-      // Wait a bit more than the interval to ensure events are called
-      await Future.delayed(const Duration(milliseconds: 60));
+      await completer.future;
 
       expect(finalValue, 5);
       // After the executions, the event should be removed
