@@ -14,6 +14,7 @@ import 'beans_test/get_by_future_type_test.dart';
 import 'beans_test/get_by_type_test.dart';
 import 'beans_test/interceptor_test.dart';
 import 'beans_test/module_application_test.dart';
+import 'beans_test/module_component_test.dart';
 import 'beans_test/module_dependent_test.dart';
 import 'beans_test/module_object_test.dart';
 import 'beans_test/module_session_test.dart';
@@ -74,6 +75,7 @@ void main() {
   moduleDependentTest();
   moduleObjectTest();
   moduleSessionTest();
+  moduleComponentTest();
 
   //Events
   eventTest();
