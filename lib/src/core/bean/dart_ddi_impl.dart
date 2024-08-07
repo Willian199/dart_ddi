@@ -353,7 +353,7 @@ class _DDIImpl implements DDI {
     return _destroy<BeanT>(effectiveQualifierName);
   }
 
-  FutureOr<void> _destroyChildren<BeanT>(Set<Object>? children) {
+  FutureOr<void> _destroyChildren<BeanT extends Object>(Set<Object>? children) {
     if (children?.isNotEmpty ?? false) {
       for (final Object child in children!) {
         _destroy(child);
@@ -361,7 +361,8 @@ class _DDIImpl implements DDI {
     }
   }
 
-  Future<void> _destroyChildrenAsync<BeanT>(Set<Object>? children) async {
+  Future<void> _destroyChildrenAsync<BeanT extends Object>(
+      Set<Object>? children) async {
     if (children?.isNotEmpty ?? false) {
       for (final Object child in children!) {
         await _destroy(child);
@@ -369,7 +370,7 @@ class _DDIImpl implements DDI {
     }
   }
 
-  FutureOr<void> _destroy<BeanT>(Object effectiveQualifierName) {
+  FutureOr<void> _destroy<BeanT extends Object>(Object effectiveQualifierName) {
     if (_beans[effectiveQualifierName] case final factoryClazz?
         when factoryClazz.destroyable) {
       // Only destroy if destroyable was registered with true
@@ -391,8 +392,10 @@ class _DDIImpl implements DDI {
     }
   }
 
-  Future<void> _runFutureOrPreDestroy<BeanT>(FactoryClazz<BeanT> factoryClazz,
-      PreDestroy clazz, Object effectiveQualifierName) async {
+  Future<void> _runFutureOrPreDestroy<BeanT extends Object>(
+      FactoryClazz<BeanT> factoryClazz,
+      PreDestroy clazz,
+      Object effectiveQualifierName) async {
     await _destroyChildrenAsync(factoryClazz.children);
 
     await clazz.onPreDestroy();
@@ -438,11 +441,11 @@ class _DDIImpl implements DDI {
         case Scopes.session:
           return DisposeUtils.disposeBean<BeanT>(factoryClazz);
         default:
-          return DisposeUtils.disposeChildrenAsync<BeanT>(factoryClazz);
+          return Future.value();
       }
     }
 
-    return Future.value();
+    throw BeanNotFoundException(effectiveQualifierName.toString());
   }
 
   @override
@@ -456,10 +459,13 @@ class _DDIImpl implements DDI {
 
   @override
   void disposeByType<BeanT extends Object>() {
-    final Type type = BeanT;
+    final List<Scopes> allowedScopes = [Scopes.application, Scopes.session];
 
-    final clazz =
-        _beans.entries.where((element) => element.value.type == type).toList();
+    final clazz = _beans.entries
+        .where((element) =>
+            element.value.type is BeanT &&
+            allowedScopes.contains(element.value.scopeType))
+        .toList();
 
     for (final MapEntry(key: _, :value) in clazz) {
       DisposeUtils.disposeBean(value);
@@ -530,21 +536,15 @@ class _DDIImpl implements DDI {
     Object? qualifier,
   }) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
-    final FactoryClazz<BeanT>? factoryClazz =
-        _beans[effectiveQualifierName] as FactoryClazz<BeanT>?;
 
-    if (factoryClazz == null) {
-      throw BeanNotFoundException(effectiveQualifierName.toString());
+    if (_beans[effectiveQualifierName]
+        case final FactoryClazz<BeanT> factoryClazz?) {
+      factoryClazz.clazzInstance = DartDDIUtils.executarDecorators<BeanT>(
+          register, factoryClazz.decorators);
+      return;
     }
 
-    if (factoryClazz.interceptors != null) {
-      for (final interceptor in factoryClazz.interceptors!) {
-        register = interceptor().aroundConstruct(register);
-      }
-    }
-
-    factoryClazz.clazzInstance = DartDDIUtils.executarDecorators<BeanT>(
-        register, factoryClazz.decorators);
+    throw BeanNotFoundException(effectiveQualifierName.toString());
   }
 
   @override
