@@ -1,6 +1,7 @@
 ## 0.7.0
 
 * Added `registerComponent` and `getComponent` to `DDI`. Making Flutter Widgets components easier to reuse.
+* Added `DDIComponentInject` mixin.
 * Refactor `children` behavior.
 
 ## 0.6.6

@@ -360,7 +360,7 @@ To add a single class to a module to your dependency injection container, you ca
 - `qualifier` (optional): This parameter refers to the main class type of the module. It is optional and is used as a qualifier if needed.
 
 ```dart
-// Adding a single module with a possible specific qualifier.
+// Adding a single module with an optional specific qualifier.
 ddi.addChildModules<MyModule>(
   child: MySubmoduleType, 
   qualifier: 'MyModule',
@@ -369,6 +369,9 @@ ddi.addChildModules<MyModule>(
 
 ### Adding Multiple Class
 To add multiple class to a module at once, you can utilize the `addChildrenModules` method.
+
+- `child`: This refers to the type or qualifier of the subclasses that will be part of the module. Note that these are not instances, but rather types or qualifiers.
+- `qualifier` (optional): This parameter refers to the main class type of the module. It is optional and is used as a qualifier if needed.
 
 ```dart
 // Adding multiple modules at once.
@@ -379,7 +382,7 @@ ddi.addChildrenModules<MyModule>(
 ```
 With these methods, you can modularize your dependency injection configuration, which can be especially useful in larger applications with complex instance management requirements.
 
-### Regsiter With Children Parameter
+### Register With Children Parameter
 
 The `children` parameter is designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module, enhancing the organization and management of your dependency injection configuration.
 
@@ -495,11 +498,13 @@ class AppModule with DDIModule {
 }
 ```
 
-### `DDIInject` and `DDIInjectAsync` Mixins
+### `DDIInject`, `DDIInjectAsync` and `DDIComponentInject` Mixins
 
-The `DDIInject` and `DDIInjectAsync` mixins are designed to facilitate dependency injection of an instance into your classes. They provide a convenient method to obtain an instance of a specific type from the dependency injection container.
+The `DDIInject`, `DDIInjectAsync` and `DDIComponentInject` mixins are designed to facilitate dependency injection of an instance into your classes. They provide a convenient method to obtain an instance of a specific type from the dependency injection container.
 
 The `DDIInject` mixin allows for synchronous injection of an instance and `DDIInjectAsync` mixin allows for asynchronous injection. Both defines a `instance` property that will be initialized with the `InjectType` instance obtained.
+
+The `DDIComponentInject` allows injecting a specific instance using a module as a selector.
 
 #### Example Usage:
 ```dart
@@ -513,6 +518,12 @@ class MyAsyncController with DDIInjectAsync<MyService> {
   Future<void> businessLogic() async {
     final myInstance = await instance;
     myInstance.runSomething();
+  }
+
+class MyController with DDIComponentInject<MyComponent, MyModule> {
+
+  void businessLogic() {
+    instance.runSomething();
   }
 }
 ```	
