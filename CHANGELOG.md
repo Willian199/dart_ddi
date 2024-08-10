@@ -4,6 +4,7 @@
 * Added `DDIComponentInject` mixin.
 * Refactor `children` behavior.
 * Removed `setDebugMode` behaviors.
+* Bump min dart sdk to 3.4.0
 
 ## 0.6.6
 
