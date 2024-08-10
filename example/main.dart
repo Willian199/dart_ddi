@@ -63,14 +63,14 @@ class MyModule with DDIModule, PreDestroy {
     // Register MyLoggingService with dependency on MyService1
     registerSession<MyLoggingService>(
       () => MyLoggingService(ddi.get(qualifier: 'MyService1')),
-      qualifier: 'MyLoggingService1',
+      qualifier: 'MyLoggingSession',
       interceptors: [CustomInterceptor.new],
     );
 
     // Register MyLoggingService with dependency on MyService2
     registerDependent<MyLoggingService>(
       () => MyLoggingService(ddi.get(qualifier: 'MyService2')),
-      qualifier: 'MyLoggingService2',
+      qualifier: 'MyLoggingDependent',
       interceptors: [CustomInterceptor.new],
     );
 
@@ -122,7 +122,6 @@ class CustomInterceptor extends DDIInterceptor<MyLoggingService> {
 
 // Main function where the code execution starts
 void main() async {
-  ddi.setDebugMode(false);
   // Register services from MyModule
   await ddi.registerSingleton(MyModule.new);
 
@@ -137,16 +136,16 @@ void main() async {
   myService2.doSomething();
 
   // Get an instance of MyLoggingService with qualifier
-  final MyLoggingService myLoggingService1 =
-      ddi.get(qualifier: 'MyLoggingService1');
+  final MyLoggingService myLoggingSession =
+      ddi.get(qualifier: 'MyLoggingSession');
 
   // Call a method on the MyLoggingService instance
-  myLoggingService1.logSomething();
+  myLoggingSession.logSomething();
 
   // Get another instance of MyLoggingService with different qualifier
-  final MyLoggingService myLoggingService2 =
-      ddi.get(qualifier: 'MyLoggingService2');
-  myLoggingService2.logSomething();
+  final MyLoggingService myLoggingDependent =
+      ddi.get(qualifier: 'MyLoggingDependent');
+  myLoggingDependent.logSomething();
 
   // Add a decorator to uppercase strings
   String uppercaseDecorator(String str) => str.toUpperCase();
@@ -161,7 +160,7 @@ void main() async {
   await ddi.dispose<MyModule>();
 
   // Destroy of the MyModule instance, will also destroy MyService and MyLoggingService
-  ddi.destroy<MyModule>();
+  await ddi.destroy<MyModule>();
 
   await Future.delayed(const Duration(seconds: 1));
 }

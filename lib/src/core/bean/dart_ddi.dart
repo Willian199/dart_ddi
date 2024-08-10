@@ -7,7 +7,9 @@ import 'package:dart_ddi/src/core/bean/utils/scope_utils.dart';
 import 'package:dart_ddi/src/data/factory_clazz.dart';
 import 'package:dart_ddi/src/enum/scopes.dart';
 import 'package:dart_ddi/src/exception/bean_not_found.dart';
+import 'package:dart_ddi/src/exception/duplicated_bean.dart';
 import 'package:dart_ddi/src/exception/future_not_accept.dart';
+import 'package:dart_ddi/src/exception/module_not_found.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
 
 part 'dart_ddi_impl.dart';
@@ -51,7 +53,7 @@ abstract class DDI {
     ListDDIInterceptor<BeanT>? interceptors,
     FutureOrBoolCallback? registerIf,
     bool destroyable = true,
-    List<Object>? children,
+    Set<Object>? children,
   });
 
   /// Registers an instance as an Application.
@@ -81,7 +83,7 @@ abstract class DDI {
     ListDDIInterceptor<BeanT>? interceptors,
     FutureOrBoolCallback? registerIf,
     bool destroyable = true,
-    List<Object>? children,
+    Set<Object>? children,
   });
 
   /// Registers an instance as a Session.
@@ -111,7 +113,7 @@ abstract class DDI {
     ListDDIInterceptor<BeanT>? interceptors,
     FutureOrBoolCallback? registerIf,
     bool destroyable = true,
-    List<Object>? children,
+    Set<Object>? children,
   });
 
   /// Registers an instance as a Dependent.
@@ -140,7 +142,7 @@ abstract class DDI {
     ListDDIInterceptor<BeanT>? interceptors,
     FutureOrBoolCallback? registerIf,
     bool destroyable = true,
-    List<Object>? children,
+    Set<Object>? children,
   });
 
   /// Registers an Object.
@@ -170,7 +172,41 @@ abstract class DDI {
     ListDDIInterceptor<BeanT>? interceptors,
     FutureOrBoolCallback? registerIf,
     bool destroyable = true,
-    List<Object>? children,
+    Set<Object>? children,
+  });
+
+  /// Registers an instance as a Component.
+  ///
+  /// Registering the instance with this method means that "This instance is for this module only".
+  ///
+  /// To retrieve the instance, requires to use with `ddi.getComponent`
+  ///
+  /// Example:
+  /// ```dart
+  /// MyWidgetComponent get myWidget => ddi.getComponent(MyModule);
+  /// ```
+  ///
+  /// Useful for Flutter apps where you want to reuse the same component or instance across specific routes or Widgets.
+  /// Additionally, you can inject and retrieve the same component in each "SubModule" or even in a "SubModule" get the parent module instance.
+  ///
+  /// - `clazzRegister`: Factory function to create the instance.
+  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
+  /// - `postConstruct`: Optional function to be executed after the instance is constructed.
+  /// - `decorators`: List of decoration functions to apply to the instance.
+  /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
+  /// - `registerIf`: Optional function to conditionally register the instance.
+  /// - `destroyable`: Optional parameter to make the instance indestructible.
+  /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to vinculate multiple classes under a single parent module.
+  Future<void> registerComponent<BeanT extends Object>({
+    required BeanRegister<BeanT> clazzRegister,
+    required Object moduleQualifier,
+    Object? qualifier,
+    VoidCallback? postConstruct,
+    ListDecorator<BeanT>? decorators,
+    ListDDIInterceptor<BeanT>? interceptors,
+    FutureOrBoolCallback? registerIf,
+    bool destroyable = true,
+    Set<Object>? children,
   });
 
   /// Verify if an instance is already registered in [DDI].
@@ -182,6 +218,18 @@ abstract class DDI {
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
   BeanT get<BeanT extends Object>({Object? qualifier});
+
+  /// Gets an instance of the registered class in [DDI] from the specified [module].
+  ///
+  /// The [module] class requires to have DDIModule mixin.
+  ///
+  /// The [module] must be registered in [DDI].
+  ///
+  /// Also the [module] class could be the qualifier from the Module Bean.
+  ///
+  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
+  BeanT getComponent<BeanT extends Object>(
+      {required Object module, Object? qualifier});
 
   /// Gets an instance of the registered class in [DDI].
   ///
@@ -255,16 +303,12 @@ abstract class DDI {
   /// This function adds multiple child modules to a parent module.
   /// It takes a list of 'child' objects and an optional 'qualifier' for the parent module.
   void addChildrenModules<BeanT extends Object>(
-      {required List<Object> child, Object? qualifier});
+      {required Set<Object> child, Object? qualifier});
 
   /// This function adds a single child module to a parent module.
   /// It takes a 'child' object and an optional 'qualifier' for the parent module.
   void addChildModules<BeanT extends Object>(
       {required Object child, Object? qualifier});
 
-  List<Object> getChildren<BeanT extends Object>({Object? qualifier});
-
-  /// This function sets the debug mode.
-  /// It takes a boolean 'debug' parameter to enable or disable debug mode.
-  void setDebugMode(bool debug);
+  Set<Object> getChildren<BeanT extends Object>({Object? qualifier});
 }

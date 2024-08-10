@@ -33,7 +33,7 @@ class FactoryClazz<BeanT> {
   final bool destroyable;
 
   /// The children of the bean. Works as a Module.
-  List<Object>? children;
+  Set<Object>? children;
 
   FactoryClazz({
     required this.scopeType,
@@ -56,7 +56,7 @@ class FactoryClazz<BeanT> {
     Scopes? scopeType,
     Type? type,
     bool? destroyable,
-    List<Object>? children,
+    Set<Object>? children,
   }) {
     return FactoryClazz<BeanT>(
       clazzInstance: clazzInstance ?? this.clazzInstance,

@@ -40,63 +40,45 @@ See this basic [example](https://github.com/Willian199/dart_ddi/blob/master/exam
 
 Summary
 
-1. [Getting Started](#getting-started)
-2. [Core Concepts](#core-concepts)
+1. [Core Concepts](#core-concepts)
    1. [Singleton](#singleton)
    2. [Application](#application)
    3. [Session](#session)
    4. [Dependent](#dependent)
    5. [Object](#object)
    6. [Common Considerations](#common-considerations)
-3. [Qualifiers](#qualifiers)
+2. [Qualifiers](#qualifiers)
    1. [How Qualifiers Work](#how-qualifiers-work)
    2. [Use Cases for Qualifiers](#use-cases-for-qualifiers)
    3. [Considerations](#considerations)
-4. [Extra Customization](#extra-customization)
+3. [Extra Customization](#extra-customization)
    1. [PostConstruct](#postconstruct)
    2. [Decorators](#decorators)
    3. [Interceptor](#interceptor)
    4. [RegisterIf](#registerif)
    5. [Destroyable](#destroyable)
-5. [Modules](#modules)
+4. [Modules](#modules)
    1. [Adding a Class](#adding-a-class)
    2. [Adding Multiple Class](#adding-multiple-class)
-6. [Mixins](#mixins)
+5. [Mixins](#mixins)
    1. [Post Construct](#post-construct-mixin)
    2. [Pre Destroy](#pre-destroy-mixin)
    3. [Pre Dispose](#pre-dispose-mixin)
    4. [DDIModule Mixin](#ddimodule-mixin)
-   5. [DDIInject and DDIInjectAsync Mixins](#ddiinject-and-ddiinjectasync-mixins)
+   5. [DDIInject, DDIInjectAsync and DDIComponentInject Mixins](#ddiinject-ddiinjectasync-and-ddicomponentinject-mixins)
    6. [DDIEventSender and DDIStreamSender Mixins](#ddieventsender-and-ddistreamsender-mixins)
-7. [Events](#events)
+6. [Events](#events)
    1. [Creating and Managing Events](#creating-and-managing-events)
    2. [Subscribing an Event](#subscribing-an-event)
    3. [Unsubscribing an Event](#unsubscribing-an-event)
    4. [Firing an Event](#firing-an-event)
    5. [Events Considerations](#events-considerations)
    6. [Use Cases](#use-cases)
-8. [Stream](#stream)
+7. [Stream](#stream)
    1. [Subscription](#subscription)
    2. [Closing Stream](#closing-stream)
    3. [Firing Events](#firing-events)
    4. [Retrieving Stream](#retrieving-stream)
-9. [API Reference](#api-reference)
-   1. [registerSingleton](#registersingleton)
-   2. [registerApplication](#registerapplication)
-   3. [registerDependent](#registerdependent)
-   4. [registerSession](#registersession)
-   5. [registerObject](#registerobject)
-   6. [get](#get)
-   7. [getAsync](#getasync)
-   8. [getByType](#getbytype)
-   9. [call](#call)
-   10. [destroy](#destroy)
-   11. [destroyByType](#destroybytype)
-   12. [dispose](#dispose)
-   13. [disposeByType](#disposebytype)
-   14. [addDecorator](#adddecorator)
-   15. [addInterceptor](#addinterceptor)
-   16. [refreshObject](#refreshobject)
 
 # Core Concepts
 ## Scopes
@@ -109,7 +91,10 @@ The Dart Dependency Injection (DDI) Library supports various scopes for efficien
 `Recommendation`: Suitable for objects that need to be globally shared across the application, maintaining a single instance.
 
 `Use Case`: Sharing a configuration manager, a logging service, or a global state manager.
-        
+
+`Note`: 
+        - `Interceptor.aroundDipose` and `PreDispose` mixin are not supported. You can just destroy the instance. 
+        - If you call dispose, only the Application or Session childrens will be disposed.      
 
 ## Application
 `Description`: Generates an instance when first used and reuses it for all subsequent requests during the application's execution.
@@ -118,7 +103,7 @@ The Dart Dependency Injection (DDI) Library supports various scopes for efficien
 
 `Use Case`: Managing application-level resources, such as a network client or a global configuration.
 
-`Note`: PreDispose and PreDetroy mixins will only be called if the instance is in use. Use Interceptor if you want to call them regardless.
+`Note`: `PreDispose` and `PreDestroy` mixins will only be called if the instance is in use. Use `Interceptor` if you want to call them regardless.
 
 ## Session
 `Description`: Ties an instance to a specific session, persisting throughout the session's lifespan.
@@ -127,7 +112,7 @@ The Dart Dependency Injection (DDI) Library supports various scopes for efficien
 
 `Use Case`: Managing user authentication state or caching user-specific preferences.
 
-`Note`: PreDispose and PreDetroy mixins will only be called if the instance is in use. Use Interceptor if you want to call them regardless.
+`Note`: `PreDispose` and `PreDestroy` mixins will only be called if the instance is in use. Use `Interceptor` if you want to call them regardless.
 
 ## Dependent
 `Description`: Produces a new instance every time it is requested, ensuring independence and uniqueness.
@@ -137,20 +122,24 @@ The Dart Dependency Injection (DDI) Library supports various scopes for efficien
 `Use Case`: Creating instances of transient objects like data repositories or request handlers.
 
 `Note`: 
-        - Dispose functions, aroundDipose and PreDispose mixin are not supported.
-        - PreDetroy mixins are not supported. Use Interceptor.aroundDestroy instead. 
+        - `Dispose` functions, `Interceptor.aroundDipose` and `PreDispose` mixin are not supported.
+        - `PreDestroy` mixins are not supported. Use `Interceptor.aroundDestroy` instead. 
 
 ## Object
-`Description`: Registers an Object in the Object Scope, ensuring it is created once and shared throughout the entire application, functioning similarly to a Singleton.
+`Description`: Registers an Object in the Object Scope, ensuring it is created once and shared throughout the entire application, working like Singleton.
 
 `Recommendation`: Suitable for objects that are stateless or have shared state across the entire application.
 
 `Use Case`: Application or device properties, like platform or dark mode settings, where the object's state needs to be consistent across the entire application.
 
+`Note`: 
+        - `Interceptor.aroundDipose` and `PreDispose` mixin are not supported. You can just destroy the instance. 
+        - If you call dispose, only the Application or Session childrens will be disposed.
+
 ## Common Considerations:
 `Single Registration`: Ensure that the instance to be registered is unique for a specific type or use qualifiers to enable the registration of multiple instances of the same type.
 
-`Memory Management`: Be aware of memory implications for long-lived objects, especially in the Singleton and Application scopes.
+`Memory Management`: Be aware of memory implications for long-lived objects, especially in the Singleton and Object scopes.
 
 `Nested Instances`: Avoid unintentional coupling by carefully managing instances within larger-scoped objects.
 
@@ -353,7 +342,7 @@ To add a single class to a module to your dependency injection container, you ca
 - `qualifier` (optional): This parameter refers to the main class type of the module. It is optional and is used as a qualifier if needed.
 
 ```dart
-// Adding a single module with a possible specific qualifier.
+// Adding a single module with an optional specific qualifier.
 ddi.addChildModules<MyModule>(
   child: MySubmoduleType, 
   qualifier: 'MyModule',
@@ -362,6 +351,9 @@ ddi.addChildModules<MyModule>(
 
 ### Adding Multiple Class
 To add multiple class to a module at once, you can utilize the `addChildrenModules` method.
+
+- `child`: This refers to the type or qualifier of the subclasses that will be part of the module. Note that these are not instances, but rather types or qualifiers.
+- `qualifier` (optional): This parameter refers to the main class type of the module. It is optional and is used as a qualifier if needed.
 
 ```dart
 // Adding multiple modules at once.
@@ -372,7 +364,7 @@ ddi.addChildrenModules<MyModule>(
 ```
 With these methods, you can modularize your dependency injection configuration, which can be especially useful in larger applications with complex instance management requirements.
 
-### Regsiter With Children Parameter
+### Register With Children Parameter
 
 The `children` parameter is designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module, enhancing the organization and management of your dependency injection configuration.
 
@@ -488,11 +480,13 @@ class AppModule with DDIModule {
 }
 ```
 
-### `DDIInject` and `DDIInjectAsync` Mixins
+### `DDIInject`, `DDIInjectAsync` and `DDIComponentInject` Mixins
 
-The `DDIInject` and `DDIInjectAsync` mixins are designed to facilitate dependency injection of an instance into your classes. They provide a convenient method to obtain an instance of a specific type from the dependency injection container.
+The `DDIInject`, `DDIInjectAsync` and `DDIComponentInject` mixins are designed to facilitate dependency injection of an instance into your classes. They provide a convenient method to obtain an instance of a specific type from the dependency injection container.
 
 The `DDIInject` mixin allows for synchronous injection of an instance and `DDIInjectAsync` mixin allows for asynchronous injection. Both defines a `instance` property that will be initialized with the `InjectType` instance obtained.
+
+The `DDIComponentInject` allows injecting a specific instance using a module as a selector.
 
 #### Example Usage:
 ```dart
@@ -506,6 +500,12 @@ class MyAsyncController with DDIInjectAsync<MyService> {
   Future<void> businessLogic() async {
     final myInstance = await instance;
     myInstance.runSomething();
+  }
+
+class MyController with DDIComponentInject<MyComponent, MyModule> {
+
+  void businessLogic() {
+    instance.runSomething();
   }
 }
 ```	
@@ -775,174 +775,3 @@ Stream<StreamTypeT> getStream<StreamTypeT extends Object>(
     {Object? qualifier});
 
 ```
-
-# API Reference
-
-## registerSingleton
-
-Registers a singleton instance. The `clazzRegister` parameter is a factory function to create the instance. Optional parameters allow customization of the instance's behavior and lifecycle.
-
-```dart
-FutureOr<void> registerSingleton<BeanT extends Object>(
-  FutureOr<BeanT> Function() clazzRegister, {
-  Object? qualifier,
-  void Function()? postConstruct,
-  List<BeanT Function(BeanT)>? decorators,
-  List<DDIInterceptor<BeanT> Function()>? interceptors,
-  FutureOr<bool> Function()? registerIf,
-  bool destroyable = true,
-});
-```
-
-## registerApplication<BeanT>
-
-Registers an application-scoped instance. The instance is created when first used and reused afterward.
-
-```dart
-FutureOr<void> registerApplication<BeanT extends Object>(
-  FutureOr<BeanT> Function() clazzRegister, {
-  Object? qualifier,
-  void Function()? postConstruct,
-  List<BeanT Function(BeanT)>? decorators,
-  List<DDIInterceptor<BeanT> Function()>? interceptors,
-  FutureOr<bool> Function()? registerIf,
-  bool destroyable = true,
-});
-```
-
-## registerDependent
-
-Registers a dependent instance. A new instance is created every time it is used.
-
-```dart
-FutureOr<void> registerDependent<BeanT extends Object>(
-  FutureOr<BeanT> Function() clazzRegister, {
-  Object? qualifier,
-  void Function()? postConstruct,
-  List<BeanT Function(BeanT)>? decorators,
-  List<DDIInterceptor<BeanT> Function()>? interceptors,
-  FutureOr<bool> Function()? registerIf,
-  bool destroyable = true,
-});
-```
-
-## registerSession
-
-Registers a session-scoped instance. The instance is tied to a specific session.
-
-```dart
-FutureOr<void> registerSession<BeanT extends Object>(
-  BeanT Function() clazzRegister, {
-  Object? qualifier,
-  void Function()? postConstruct,
-  List<BeanT Function(BeanT)>? decorators,
-  List<DDIInterceptor<BeanT> Function()>? interceptors,
-  FutureOr<bool> Function()? registerIf,
-  bool destroyable = true,
-});
-```
-
-## registerObject
-
-Registers an Object values as instance. The `register` parameter is the value shared across de application.
-
-```dart
-FutureOr<void> registerObject<BeanT extends Object>(
-  BeanT register, {
-  required Object qualifier,
-  void Function()? postConstruct,
-  List<BeanT Function(BeanT)>? decorators,
-  List<DDIInterceptor<BeanT> Function()>? interceptors,
-  FutureOr<bool> Function()? registerIf,
-  bool destroyable = true,
-});
-```
-
-## get
-
-Retrieves an instance of type `BeanT` from the appropriate scope. You can provide a `qualifier` to distinguish between instances of the same type.
-
-```dart
-BeanT get<BeanT extends Object>({Object? qualifier});
-```
-
-## getAsync
-
-Retrieves a Future instance of type `BeanT`, making possible to await to get the instances. 
-
-```dart
-Future<BeanT> getAsync<BeanT extends Object>({Object? qualifier});
-```
-
-## getByType
-
-Retrieves all instance identifiers of type `BeanT`.
-
-```dart
-List<Object> getByType<BeanT extends Object>();
-```
-
-## call
-
-A shorthand for `get<BeanT>()`, allowing a more concise syntax for obtaining instances.
-
-```dart
-BeanT call<BeanT extends Object>();
-```
-
-## destroy
-
-Destroy an instance from the container. Useful for manual cleanup.
-
-```dart
-void destroy<BeanT>({Object? qualifier});
-```
-
-## destroyByType
-
-Destroy all instance with type `BeanT`.
-
-```dart
-void destroyByType<BeanT extends Object>();
-```
-
-## dispose
-
-Disposes of an instance, invoking any cleanup logic. This is particularly useful for instances with resources that need to be released. Only applied to Application and Session Scopes
-
-```dart
-void dispose<BeanT>({Object? qualifier});
-```
-
-## disposeByType
-
-Disposes all instance with type `BeanT`. Only applied to Application and Session Scopes
-
-```dart
-void disposeByType<BeanT extends Object>();
-```
-
-## addDecorator
-
-This provides a dynamic way to enhance the behavior of registered instances by adding decorators. The `addDecorator` method allows you to apply additional functionality to instances managed by the library.
-When using the addDecorator method, keep in mind the order of execution, scope considerations, and the fact that instances already obtained remain unaffected. 
-
-```dart
-void addDecorator<BeanT extends Object>(List<BeanT Function(BeanT)> decorators, {Object? qualifier});
-```
-
-## addInterceptor
-
-This feature allows you to dynamically influence the instantiation, retrieval, destruction, and disposal of instances by adding custom interceptors. The `addInterceptor` method enables you to associate specific interceptors with particular types.
-```dart
-void addInterceptor<BeanT extends Object>(List<DDIInterceptor<BeanT> Function()> interceptors, {Object? qualifier});
-```
-
-## refreshObject
-
-Enables the dynamic refreshing of an object within the Object Scope. Use it to update the existing object without affecting instances already obtained.
-```dart
-void refreshObject<BeanT extends Object>({required Object qualifier, required BeanT register,
-});
-```
-

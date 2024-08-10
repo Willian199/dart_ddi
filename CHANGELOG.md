@@ -1,3 +1,11 @@
+## 0.7.0
+
+* Added `registerComponent` and `getComponent` to `DDI`. Making Flutter Widgets components easier to reuse.
+* Added `DDIComponentInject` mixin.
+* Refactor `children` behavior.
+* Removed `setDebugMode` behaviors.
+* Bump min dart sdk to 3.4.0
+
 ## 0.6.6
 
 * Resolved issue with concurrent modification in events.
@@ -12,7 +20,7 @@
 ## 0.6.3
 
 * Added the ability to retrieve the last fired state from `DDIEventSender` and `DDIStreamSender`.
-* Added the ability to retrieve the `StreaController` from `DDIStream`.
+* Added the ability to retrieve the `StreamController` from `DDIStream`.
 * Improved code quality.
 
 ## 0.6.2
