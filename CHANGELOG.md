@@ -18,7 +18,7 @@
 ## 0.6.3
 
 * Added the ability to retrieve the last fired state from `DDIEventSender` and `DDIStreamSender`.
-* Added the ability to retrieve the `StreaController` from `DDIStream`.
+* Added the ability to retrieve the `StreamController` from `DDIStream`.
 * Improved code quality.
 
 ## 0.6.2
