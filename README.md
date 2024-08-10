@@ -112,7 +112,7 @@ The Dart Dependency Injection (DDI) Library supports various scopes for efficien
 
 `Note`: 
         - `Interceptor.aroundDipose` and `PreDispose` mixin are not supported. You can just destroy the instance. 
-        - If you call dispose, no one children will be disposed.      
+        - If you call dispose, only the Application or Session childrens will be disposed.      
 
 ## Application
 `Description`: Generates an instance when first used and reuses it for all subsequent requests during the application's execution.
@@ -152,7 +152,7 @@ The Dart Dependency Injection (DDI) Library supports various scopes for efficien
 
 `Note`: 
         - `Interceptor.aroundDipose` and `PreDispose` mixin are not supported. You can just destroy the instance. 
-        - If you call dispose, no one children will be disposed.
+        - If you call dispose, only the Application or Session childrens will be disposed.
 
 ## Common Considerations:
 `Single Registration`: Ensure that the instance to be registered is unique for a specific type or use qualifiers to enable the registration of multiple instances of the same type.
