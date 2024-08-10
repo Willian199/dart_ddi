@@ -1,8 +1,5 @@
 part of 'dart_ddi.dart';
 
-bool _debug = !const bool.fromEnvironment('dart.vm.product') &&
-    !const bool.fromEnvironment('dart.vm.profile');
-
 class _DDIImpl implements DDI {
   final Map<Object, FactoryClazz<Object>> _beans = {};
 
@@ -31,9 +28,7 @@ class _DDIImpl implements DDI {
       final Object effectiveQualifierName = qualifier ?? BeanT;
 
       if (_beans[effectiveQualifierName] != null) {
-        DartDDIUtils.validateDuplicated(effectiveQualifierName, _debug);
-
-        return;
+        throw DuplicatedBeanException(effectiveQualifierName.toString());
       }
 
       late BeanT clazz;
@@ -171,8 +166,7 @@ class _DDIImpl implements DDI {
       final Object effectiveQualifierName = qualifier ?? BeanT;
 
       if (_beans[effectiveQualifierName] != null) {
-        DartDDIUtils.validateDuplicated(effectiveQualifierName, _debug);
-        return;
+        throw DuplicatedBeanException(effectiveQualifierName.toString());
       }
 
       _beans[effectiveQualifierName] = FactoryClazz<BeanT>(
@@ -213,8 +207,7 @@ class _DDIImpl implements DDI {
       final Object effectiveQualifierName = qualifier ?? BeanT;
 
       if (_beans[effectiveQualifierName] != null) {
-        DartDDIUtils.validateDuplicated(effectiveQualifierName, _debug);
-        return;
+        throw DuplicatedBeanException(effectiveQualifierName.toString());
       }
 
       if (interceptors != null) {
@@ -570,10 +563,5 @@ class _DDIImpl implements DDI {
   @override
   Set<Object> getChildren<BeanT extends Object>({Object? qualifier}) {
     return _beans[qualifier ?? BeanT]?.children ?? {};
-  }
-
-  @override
-  void setDebugMode(bool debug) {
-    _debug = debug;
   }
 }

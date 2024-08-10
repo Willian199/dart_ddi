@@ -122,7 +122,6 @@ class CustomInterceptor extends DDIInterceptor<MyLoggingService> {
 
 // Main function where the code execution starts
 void main() async {
-  ddi.setDebugMode(false);
   // Register services from MyModule
   await ddi.registerSingleton(MyModule.new);
 

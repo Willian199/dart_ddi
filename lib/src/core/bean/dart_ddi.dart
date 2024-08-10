@@ -7,6 +7,7 @@ import 'package:dart_ddi/src/core/bean/utils/scope_utils.dart';
 import 'package:dart_ddi/src/data/factory_clazz.dart';
 import 'package:dart_ddi/src/enum/scopes.dart';
 import 'package:dart_ddi/src/exception/bean_not_found.dart';
+import 'package:dart_ddi/src/exception/duplicated_bean.dart';
 import 'package:dart_ddi/src/exception/future_not_accept.dart';
 import 'package:dart_ddi/src/exception/module_not_found.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
@@ -310,8 +311,4 @@ abstract class DDI {
       {required Object child, Object? qualifier});
 
   Set<Object> getChildren<BeanT extends Object>({Object? qualifier});
-
-  /// This function sets the debug mode.
-  /// It takes a boolean 'debug' parameter to enable or disable debug mode.
-  void setDebugMode(bool debug);
 }
