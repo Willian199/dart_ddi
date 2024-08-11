@@ -13,12 +13,13 @@ and the Flutter guide for
 
 # Dart Dependency Injection (DDI) Library
 
-[![pub package](https://img.shields.io/pub/v/flutter_ddi.svg?logo=dart&logoColor=00b9fc)](https://pub.dartlang.org/packages/flutter_ddi)
-[![Last Commits](https://img.shields.io/github/last-commit/Willian199/flutter_ddi?logo=git&logoColor=white)](https://github.com/Willian199/flutter_ddi/commits/master)
-[![Issues](https://img.shields.io/github/issues/Willian199/flutter_ddi?logo=github&logoColor=white)](https://github.com/Willian199/flutter_ddi/issues)
-[![Pull Requests](https://img.shields.io/github/issues-pr/Willian199/flutter_ddi?logo=github&logoColor=white)](https://github.com/Willian199/flutter_ddi/pulls)
-[![Code size](https://img.shields.io/github/languages/code-size/Willian199/flutter_ddi?logo=github&logoColor=white)](https://github.com/Willian199/flutter_ddi)
-[![License](https://img.shields.io/github/license/Willian199/flutter_ddi?logo=open-source-initiative&logoColor=green)](https://github.com/Willian199/flutter_ddi/blob/master/LICENSE)
+[![pub package](https://img.shields.io/pub/v/dart_ddi.svg?logo=dart&logoColor=00b9fc)](https://pub.dartlang.org/packages/dart_ddi)
+[![CI](https://img.shields.io/github/actions/workflow/status/Willian199/dart_ddi/dart.yml?branch=master&logo=github-actions&logoColor=white)](https://github.com/Willian199/dart_ddi/actions)
+[![Last Commits](https://img.shields.io/github/last-commit/Willian199/dart_ddi?logo=git&logoColor=white)](https://github.com/Willian199/dart_ddi/commits/master)
+[![Issues](https://img.shields.io/github/issues/Willian199/dart_ddi?logo=github&logoColor=white)](https://github.com/Willian199/dart_ddi/issues)
+[![Pull Requests](https://img.shields.io/github/issues-pr/Willian199/dart_ddi?logo=github&logoColor=white)](https://github.com/Willian199/dart_ddi/pulls)
+[![Code size](https://img.shields.io/github/languages/code-size/Willian199/dart_ddi?logo=github&logoColor=white)](https://github.com/Willian199/dart_ddi)
+[![License](https://img.shields.io/github/license/Willian199/dart_ddi?logo=open-source-initiative&logoColor=green)](https://github.com/Willian199/dart_ddi/blob/master/LICENSE)
 
 ## Overview
 
