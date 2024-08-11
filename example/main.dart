@@ -22,7 +22,7 @@ class MyService with PostConstruct, PreDispose {
 
   @override
   void onPreDispose() {
-    print('MyService $name about to be disposed.');
+    print('MyService $name is about to be disposed.');
   }
 }
 
@@ -136,21 +136,18 @@ void main() async {
   myService2.doSomething();
 
   // Get an instance of MyLoggingService with qualifier
-  final MyLoggingService myLoggingSession =
-      ddi.get(qualifier: 'MyLoggingSession');
+  final MyLoggingService myLoggingSession = ddi.get(qualifier: 'MyLoggingSession');
 
   // Call a method on the MyLoggingService instance
   myLoggingSession.logSomething();
 
   // Get another instance of MyLoggingService with different qualifier
-  final MyLoggingService myLoggingDependent =
-      ddi.get(qualifier: 'MyLoggingDependent');
+  final MyLoggingService myLoggingDependent = ddi.get(qualifier: 'MyLoggingDependent');
   myLoggingDependent.logSomething();
 
   // Add a decorator to uppercase strings
   String uppercaseDecorator(String str) => str.toUpperCase();
-  ddi.registerObject('Hello World',
-      qualifier: 'authored', decorators: [uppercaseDecorator]);
+  ddi.registerObject('Hello World', qualifier: 'authored', decorators: [uppercaseDecorator]);
 
   // Will return HELLO WORLD
   print(ddi.get(qualifier: 'authored'));
