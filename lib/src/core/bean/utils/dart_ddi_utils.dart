@@ -1,5 +1,4 @@
 import 'package:dart_ddi/dart_ddi.dart';
-import 'package:dart_ddi/src/data/factory_clazz.dart';
 import 'package:dart_ddi/src/exception/bean_destroyed.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
 

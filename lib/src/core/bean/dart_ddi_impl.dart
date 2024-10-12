@@ -53,10 +53,8 @@ class _DDIImpl implements DDI {
         clazz.moduleQualifier = effectiveQualifierName;
       }
 
-      _beans[effectiveQualifierName] = FactoryClazz<BeanT>(
+      _beans[effectiveQualifierName] = FactoryClazz<BeanT>.singleton(
         clazzInstance: clazz,
-        type: BeanT,
-        scopeType: Scopes.singleton,
         interceptors: interceptors,
         destroyable: destroyable,
         children: children,
@@ -81,14 +79,15 @@ class _DDIImpl implements DDI {
     bool destroyable = true,
     Set<Object>? children,
   }) {
-    return _register<BeanT>(
-      clazzRegister: clazzRegister,
-      scopeType: Scopes.application,
+    return register<BeanT>(
+      factoryClazz: FactoryClazz.application(
+        clazzRegister: clazzRegister,
+        children: children,
+        interceptors: interceptors,
+        decorators: decorators,
+        destroyable: destroyable,
+      ),
       qualifier: qualifier,
-      postConstruct: postConstruct,
-      decorators: decorators,
-      interceptors: interceptors,
-      destroyable: destroyable,
       registerIf: registerIf,
     );
   }
@@ -104,16 +103,16 @@ class _DDIImpl implements DDI {
     bool destroyable = true,
     Set<Object>? children,
   }) {
-    return _register<BeanT>(
-      clazzRegister: clazzRegister,
-      scopeType: Scopes.session,
+    return register<BeanT>(
+      factoryClazz: FactoryClazz.session(
+        clazzRegister: clazzRegister,
+        children: children,
+        interceptors: interceptors,
+        decorators: decorators,
+        destroyable: destroyable,
+      ),
       qualifier: qualifier,
-      postConstruct: postConstruct,
-      decorators: decorators,
-      interceptors: interceptors,
-      destroyable: destroyable,
       registerIf: registerIf,
-      children: children,
     );
   }
 
@@ -128,29 +127,24 @@ class _DDIImpl implements DDI {
     bool destroyable = true,
     Set<Object>? children,
   }) {
-    return _register<BeanT>(
-      clazzRegister: clazzRegister,
-      scopeType: Scopes.dependent,
+    return register<BeanT>(
+      factoryClazz: FactoryClazz.dependent(
+        clazzRegister: clazzRegister,
+        children: children,
+        interceptors: interceptors,
+        decorators: decorators,
+        destroyable: destroyable,
+      ),
       qualifier: qualifier,
-      postConstruct: postConstruct,
-      decorators: decorators,
-      interceptors: interceptors,
-      destroyable: destroyable,
       registerIf: registerIf,
-      children: children,
     );
   }
 
-  Future<void> _register<BeanT extends Object>({
-    required BeanRegister<BeanT> clazzRegister,
-    required Scopes scopeType,
-    required bool destroyable,
+  @override
+  Future<void> register<BeanT extends Object>({
+    required FactoryClazz<BeanT> factoryClazz,
     Object? qualifier,
-    VoidCallback? postConstruct,
-    ListDecorator<BeanT>? decorators,
-    ListDDIInterceptor<BeanT>? interceptors,
     FutureOrBoolCallback? registerIf,
-    Set<Object>? children,
   }) async {
     bool shouldRegister = true;
 
@@ -169,16 +163,7 @@ class _DDIImpl implements DDI {
         throw DuplicatedBeanException(effectiveQualifierName.toString());
       }
 
-      _beans[effectiveQualifierName] = FactoryClazz<BeanT>(
-        clazzRegister: clazzRegister,
-        type: BeanT,
-        postConstruct: postConstruct,
-        decorators: decorators,
-        interceptors: interceptors,
-        scopeType: scopeType,
-        destroyable: destroyable,
-        children: children,
-      );
+      _beans[effectiveQualifierName] = factoryClazz;
     }
   }
 
@@ -224,10 +209,8 @@ class _DDIImpl implements DDI {
         register.moduleQualifier = effectiveQualifierName;
       }
 
-      _beans[effectiveQualifierName] = FactoryClazz<BeanT>(
+      _beans[effectiveQualifierName] = FactoryClazz<BeanT>.object(
         clazzInstance: register,
-        type: BeanT,
-        scopeType: Scopes.object,
         interceptors: interceptors,
         destroyable: destroyable,
         children: children,
@@ -257,10 +240,7 @@ class _DDIImpl implements DDI {
         '$moduleQualifier${qualifier ?? BeanT}';
 
     if (_beans[moduleQualifier] case final FactoryClazz<DDIModule> _?) {
-      addChildModules(
-          child: effectiveQualifierName, qualifier: moduleQualifier);
-
-      return registerApplication<BeanT>(
+      final bean = registerApplication<BeanT>(
         clazzRegister,
         qualifier: effectiveQualifierName,
         postConstruct: postConstruct,
@@ -270,6 +250,11 @@ class _DDIImpl implements DDI {
         registerIf: registerIf,
         children: children,
       );
+
+      addChildModules(
+          child: effectiveQualifierName, qualifier: moduleQualifier);
+
+      return bean;
     }
 
     throw ModuleNotFoundException(moduleQualifier.toString());

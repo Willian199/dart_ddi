@@ -1,5 +1,4 @@
 import 'package:dart_ddi/dart_ddi.dart';
-import 'package:dart_ddi/src/data/factory_clazz.dart';
 
 final class DisposeUtils {
   /// Dispose only clean the class Instance

@@ -4,7 +4,6 @@ import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/core/bean/utils/dart_ddi_utils.dart';
 import 'package:dart_ddi/src/core/bean/utils/dispose_utils.dart';
 import 'package:dart_ddi/src/core/bean/utils/scope_utils.dart';
-import 'package:dart_ddi/src/data/factory_clazz.dart';
 import 'package:dart_ddi/src/enum/scopes.dart';
 import 'package:dart_ddi/src/exception/bean_not_found.dart';
 import 'package:dart_ddi/src/exception/duplicated_bean.dart';
@@ -207,6 +206,18 @@ abstract class DDI {
     FutureOrBoolCallback? registerIf,
     bool destroyable = true,
     Set<Object>? children,
+  });
+
+  /// Registers a factory to create an instance of the class [BeanT].
+  ///
+  /// - `factoryClazz`: Factory to create the instance.
+  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
+  /// - `registerIf`: Optional function to conditionally register the instance.
+  ///
+  Future<void> register<BeanT extends Object>({
+    required FactoryClazz<BeanT> factoryClazz,
+    Object? qualifier,
+    FutureOrBoolCallback? registerIf,
   });
 
   /// Verify if an instance is already registered in [DDI].
