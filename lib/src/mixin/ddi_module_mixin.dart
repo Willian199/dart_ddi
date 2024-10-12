@@ -50,9 +50,7 @@ mixin DDIModule implements PostConstruct {
     bool destroyable = true,
     Set<Object>? children,
   }) {
-    ddi.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
-
-    return ddi.registerSingleton<BeanT>(
+    final bean = ddi.registerSingleton<BeanT>(
       clazzRegister,
       qualifier: qualifier,
       postConstruct: postConstruct,
@@ -62,6 +60,10 @@ mixin DDIModule implements PostConstruct {
       registerIf: registerIf,
       children: children,
     );
+
+    ddi.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
+
+    return bean;
   }
 
   /// Registers an instance as an Application.
@@ -84,9 +86,7 @@ mixin DDIModule implements PostConstruct {
     bool destroyable = true,
     Set<Object>? children,
   }) {
-    ddi.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
-
-    return ddi.registerApplication<BeanT>(
+    final bean = ddi.registerApplication<BeanT>(
       clazzRegister,
       qualifier: qualifier,
       postConstruct: postConstruct,
@@ -96,6 +96,10 @@ mixin DDIModule implements PostConstruct {
       registerIf: registerIf,
       children: children,
     );
+
+    ddi.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
+
+    return bean;
   }
 
   /// Registers an instance as a Session.
@@ -118,9 +122,7 @@ mixin DDIModule implements PostConstruct {
     bool destroyable = true,
     Set<Object>? children,
   }) {
-    ddi.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
-
-    return ddi.registerSession<BeanT>(
+    final bean = ddi.registerSession<BeanT>(
       clazzRegister,
       qualifier: qualifier,
       postConstruct: postConstruct,
@@ -130,6 +132,10 @@ mixin DDIModule implements PostConstruct {
       registerIf: registerIf,
       children: children,
     );
+
+    ddi.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
+
+    return bean;
   }
 
   /// Registers an instance as a Dependent.
@@ -152,9 +158,7 @@ mixin DDIModule implements PostConstruct {
     bool destroyable = true,
     Set<Object>? children,
   }) {
-    ddi.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
-
-    return ddi.registerDependent<BeanT>(
+    final bean = ddi.registerDependent<BeanT>(
       clazzRegister,
       qualifier: qualifier,
       postConstruct: postConstruct,
@@ -164,6 +168,10 @@ mixin DDIModule implements PostConstruct {
       registerIf: registerIf,
       children: children,
     );
+
+    ddi.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
+
+    return bean;
   }
 
   /// Registers an Object.
@@ -186,9 +194,7 @@ mixin DDIModule implements PostConstruct {
     bool destroyable = true,
     Set<Object>? children,
   }) {
-    ddi.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
-
-    return ddi.registerObject<BeanT>(
+    final bean = ddi.registerObject<BeanT>(
       register,
       qualifier: qualifier,
       postConstruct: postConstruct,
@@ -198,6 +204,10 @@ mixin DDIModule implements PostConstruct {
       registerIf: registerIf,
       children: children,
     );
+
+    ddi.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
+
+    return bean;
   }
 
   /// Registers an instance as a Component.
@@ -222,7 +232,7 @@ mixin DDIModule implements PostConstruct {
   /// - `registerIf`: Optional function to conditionally register the instance.
   /// - `destroyable`: Optional parameter to make the instance indestructible.
   /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to vinculate multiple classes under a single parent module.
-  Future<void> registerComponent<BeanT extends Object>(
+  Future<void> registerModule<BeanT extends Object>(
     BeanRegister<BeanT> clazzRegister, {
     Object? qualifier,
     VoidCallback? postConstruct,
@@ -232,7 +242,7 @@ mixin DDIModule implements PostConstruct {
     bool destroyable = true,
     Set<Object>? children,
   }) {
-    return ddi.registerComponent<BeanT>(
+    return ddi.registerModule<BeanT>(
       clazzRegister: clazzRegister,
       moduleQualifier: moduleQualifier,
       qualifier: qualifier,

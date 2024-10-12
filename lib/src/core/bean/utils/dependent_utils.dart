@@ -1,6 +1,5 @@
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/core/bean/utils/dart_ddi_utils.dart';
-import 'package:dart_ddi/src/data/factory_clazz.dart';
 
 final class DependentUtils {
   static BeanT getDependent<BeanT extends Object>(
@@ -34,7 +33,9 @@ final class DependentUtils {
     Object effectiveQualifierName,
   ) async {
     BeanT dependentClazz = _applyDependent<BeanT>(
-        factoryClazz, await factoryClazz.clazzRegister!.call());
+      factoryClazz,
+      (await factoryClazz.clazzRegister!.call()) as BeanT,
+    );
 
     if (dependentClazz is DDIModule) {
       dependentClazz.moduleQualifier = effectiveQualifierName;

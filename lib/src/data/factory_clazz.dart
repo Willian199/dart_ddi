@@ -7,7 +7,7 @@ import 'package:dart_ddi/src/typedef/typedef.dart';
 
 /// [FactoryClazz] is a class that represents a factory bean.
 /// It is used to register a bean in the [DDI] system.
-class FactoryClazz<BeanT> {
+final class FactoryClazz<BeanT extends Object> {
   /// The [BeanT] instance of the bean.
   BeanT? clazzInstance;
 
@@ -18,7 +18,7 @@ class FactoryClazz<BeanT> {
   ListDDIInterceptor<BeanT>? interceptors;
 
   /// The [FutureOr] function that returns the bean instance.
-  final BeanRegister<BeanT>? clazzRegister;
+  final Function? clazzRegister;
 
   /// The function that is called after the bean is created.
   final VoidCallback? postConstruct;
@@ -27,7 +27,7 @@ class FactoryClazz<BeanT> {
   final Scopes scopeType;
 
   /// The type of the bean.
-  final Type type;
+  final Type type = BeanT;
 
   /// Whether the bean can be destroyed.
   final bool destroyable;
@@ -35,9 +35,8 @@ class FactoryClazz<BeanT> {
   /// The children of the bean. Works as a Module.
   Set<Object>? children;
 
-  FactoryClazz({
+  FactoryClazz._({
     required this.scopeType,
-    required this.type,
     required this.destroyable,
     this.clazzInstance,
     this.clazzRegister,
@@ -47,27 +46,90 @@ class FactoryClazz<BeanT> {
     this.children,
   });
 
-  FactoryClazz<BeanT> copyWith({
-    BeanT? clazzInstance,
-    ListDecorator<BeanT>? decorators,
+  factory FactoryClazz.singleton({
+    required BeanT clazzInstance,
     ListDDIInterceptor<BeanT>? interceptors,
-    BeanRegister<BeanT>? clazzRegister,
-    VoidCallback? postConstruct,
-    Scopes? scopeType,
-    Type? type,
-    bool? destroyable,
+    bool destroyable = true,
     Set<Object>? children,
   }) {
-    return FactoryClazz<BeanT>(
-      clazzInstance: clazzInstance ?? this.clazzInstance,
-      decorators: decorators ?? this.decorators,
-      interceptors: interceptors ?? this.interceptors,
-      clazzRegister: clazzRegister ?? this.clazzRegister,
-      postConstruct: postConstruct ?? this.postConstruct,
-      scopeType: scopeType ?? this.scopeType,
-      type: type ?? this.type,
-      destroyable: destroyable ?? this.destroyable,
-      children: children ?? this.children,
+    return FactoryClazz<BeanT>._(
+      scopeType: Scopes.singleton,
+      destroyable: destroyable,
+      clazzInstance: clazzInstance,
+      interceptors: interceptors,
+      children: children,
+    );
+  }
+
+  factory FactoryClazz.application({
+    required Function clazzRegister,
+    VoidCallback? postConstruct,
+    ListDecorator<BeanT>? decorators,
+    ListDDIInterceptor<BeanT>? interceptors,
+    bool destroyable = true,
+    Set<Object>? children,
+  }) {
+    return FactoryClazz<BeanT>._(
+      scopeType: Scopes.application,
+      destroyable: destroyable,
+      clazzRegister: clazzRegister,
+      postConstruct: postConstruct,
+      decorators: decorators,
+      interceptors: interceptors,
+      children: children,
+    );
+  }
+
+  factory FactoryClazz.session({
+    required Function clazzRegister,
+    VoidCallback? postConstruct,
+    ListDecorator<BeanT>? decorators,
+    ListDDIInterceptor<BeanT>? interceptors,
+    bool destroyable = true,
+    Set<Object>? children,
+  }) {
+    return FactoryClazz<BeanT>._(
+      scopeType: Scopes.session,
+      destroyable: destroyable,
+      clazzRegister: clazzRegister,
+      postConstruct: postConstruct,
+      decorators: decorators,
+      interceptors: interceptors,
+      children: children,
+    );
+  }
+
+  factory FactoryClazz.dependent({
+    required Function clazzRegister,
+    VoidCallback? postConstruct,
+    ListDecorator<BeanT>? decorators,
+    ListDDIInterceptor<BeanT>? interceptors,
+    bool destroyable = true,
+    Set<Object>? children,
+  }) {
+    return FactoryClazz<BeanT>._(
+      scopeType: Scopes.dependent,
+      destroyable: destroyable,
+      clazzRegister: clazzRegister,
+      postConstruct: postConstruct,
+      decorators: decorators,
+      interceptors: interceptors,
+      children: children,
+    );
+  }
+
+  factory FactoryClazz.object({
+    required BeanT clazzInstance,
+    ListDDIInterceptor<BeanT>? interceptors,
+    bool destroyable = true,
+    Set<Object>? children,
+  }) {
+    return FactoryClazz<BeanT>._(
+      scopeType: Scopes.object,
+      destroyable: destroyable,
+      clazzInstance: clazzInstance,
+      interceptors: interceptors,
+      children: children,
     );
   }
 }

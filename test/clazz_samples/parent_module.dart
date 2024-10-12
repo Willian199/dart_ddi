@@ -6,7 +6,7 @@ import 'component.dart';
 class ParentModule with DDIModule {
   @override
   void onPostConstruct() {
-    registerComponent(() => const Component('parent'));
+    registerModule(() => const Component('parent'));
     registerApplication(ChildModule.new);
   }
 }
