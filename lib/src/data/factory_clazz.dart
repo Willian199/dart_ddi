@@ -47,10 +47,12 @@ final class FactoryClazz<BeanT extends Object> {
   });
 
   factory FactoryClazz.singleton({
-    required BeanT clazzInstance,
+    BeanT? clazzInstance,
+    Function? clazzRegister,
     ListDDIInterceptor<BeanT>? interceptors,
     bool destroyable = true,
     Set<Object>? children,
+    ListDecorator<BeanT>? decorators,
   }) {
     return FactoryClazz<BeanT>._(
       scopeType: Scopes.singleton,
@@ -58,6 +60,8 @@ final class FactoryClazz<BeanT extends Object> {
       clazzInstance: clazzInstance,
       interceptors: interceptors,
       children: children,
+      clazzRegister: clazzRegister,
+      decorators: decorators,
     );
   }
 

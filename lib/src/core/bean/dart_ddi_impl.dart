@@ -13,59 +13,18 @@ class _DDIImpl implements DDI {
     FutureOrBoolCallback? registerIf,
     bool destroyable = true,
     Set<Object>? children,
-  }) async {
-    bool shouldRegister = true;
-
-    if (registerIf != null) {
-      if (registerIf is BoolCallback) {
-        shouldRegister = registerIf();
-      } else {
-        shouldRegister = await registerIf();
-      }
-    }
-
-    if (shouldRegister) {
-      final Object effectiveQualifierName = qualifier ?? BeanT;
-
-      if (_beans[effectiveQualifierName] != null) {
-        throw DuplicatedBeanException(effectiveQualifierName.toString());
-      }
-
-      late BeanT clazz;
-
-      if (clazzRegister is BeanT Function()) {
-        clazz = clazzRegister();
-      } else {
-        clazz = await clazzRegister();
-      }
-
-      if (interceptors != null) {
-        for (final interceptor in interceptors) {
-          clazz = interceptor().aroundConstruct(clazz);
-        }
-      }
-
-      clazz = DartDDIUtils.executarDecorators<BeanT>(clazz, decorators);
-
-      postConstruct?.call();
-
-      if (clazz is DDIModule) {
-        clazz.moduleQualifier = effectiveQualifierName;
-      }
-
-      _beans[effectiveQualifierName] = FactoryClazz<BeanT>.singleton(
-        clazzInstance: clazz,
-        interceptors: interceptors,
-        destroyable: destroyable,
+  }) {
+    return register<BeanT>(
+      factoryClazz: FactoryClazz.singleton(
+        clazzRegister: clazzRegister,
         children: children,
-      );
-
-      if (clazz is PostConstruct) {
-        return clazz.onPostConstruct();
-      } else if (clazz is Future<PostConstruct>) {
-        return DartDDIUtils.runFutureOrPostConstruct(clazz);
-      }
-    }
+        interceptors: interceptors,
+        decorators: decorators,
+        destroyable: destroyable,
+      ),
+      qualifier: qualifier,
+      registerIf: registerIf,
+    );
   }
 
   @override
@@ -146,6 +105,10 @@ class _DDIImpl implements DDI {
     Object? qualifier,
     FutureOrBoolCallback? registerIf,
   }) async {
+    if (factoryClazz.scopeType == Scopes.object) {
+      throw FactoryNotAllowedException(BeanT.toString());
+    }
+
     bool shouldRegister = true;
 
     if (registerIf != null) {
@@ -163,7 +126,54 @@ class _DDIImpl implements DDI {
         throw DuplicatedBeanException(effectiveQualifierName.toString());
       }
 
-      _beans[effectiveQualifierName] = factoryClazz;
+      if (factoryClazz.scopeType == Scopes.singleton) {
+        if (factoryClazz.clazzRegister == null ||
+            factoryClazz.clazzInstance != null) {
+          throw FactoryNotAllowedException(effectiveQualifierName.toString());
+        }
+        return _applySingleton<BeanT>(factoryClazz, effectiveQualifierName);
+      } else {
+        _beans[effectiveQualifierName] = factoryClazz;
+      }
+    }
+  }
+
+  Future<void> _applySingleton<BeanT extends Object>(
+      FactoryClazz<BeanT> factoryClazz, Object effectiveQualifierName) async {
+    late BeanT clazz;
+
+    if (factoryClazz.clazzRegister is BeanT Function()) {
+      clazz = factoryClazz.clazzRegister!() as BeanT;
+    } else {
+      clazz = (await factoryClazz.clazzRegister!()) as BeanT;
+    }
+
+    if (factoryClazz.interceptors != null) {
+      for (final interceptor in factoryClazz.interceptors!) {
+        clazz = interceptor().aroundConstruct(clazz);
+      }
+    }
+
+    clazz =
+        DartDDIUtils.executarDecorators<BeanT>(clazz, factoryClazz.decorators);
+
+    factoryClazz.postConstruct?.call();
+
+    if (clazz is DDIModule) {
+      clazz.moduleQualifier = effectiveQualifierName;
+    }
+
+    _beans[effectiveQualifierName] = FactoryClazz<BeanT>.singleton(
+      clazzInstance: clazz,
+      interceptors: factoryClazz.interceptors,
+      destroyable: factoryClazz.destroyable,
+      children: factoryClazz.children,
+    );
+
+    if (clazz is PostConstruct) {
+      return clazz.onPostConstruct();
+    } else if (clazz is Future<PostConstruct>) {
+      return DartDDIUtils.runFutureOrPostConstruct(clazz);
     }
   }
 

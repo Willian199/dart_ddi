@@ -1,3 +1,7 @@
+## 0.7.2
+
+* Fix Singleton and Object behavior when registering with the `register` method.
+
 ## 0.7.1
 
 * Added support for registering a custom factory class with the `register` method. Note: Factories with parameters are not yet supported.
