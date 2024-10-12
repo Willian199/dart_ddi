@@ -50,26 +50,26 @@ class MyModule with DDIModule, PreDestroy {
   Future<void> onPostConstruct() async {
     // Register MyService with a custom qualifier
     registerSingleton<MyService>(
-      () => MyService('1st Instance'),
+      clazzRegister: () => MyService('1st Instance'),
       qualifier: 'MyService1',
     );
 
     // Register another instance of MyService with a different qualifier
     registerApplication<MyService>(
-      () => MyService('2nd Instance'),
+      clazzRegister: () => MyService('2nd Instance'),
       qualifier: 'MyService2',
     );
 
     // Register MyLoggingService with dependency on MyService1
     registerSession<MyLoggingService>(
-      () => MyLoggingService(ddi.get(qualifier: 'MyService1')),
+      clazzRegister: () => MyLoggingService(ddi.get(qualifier: 'MyService1')),
       qualifier: 'MyLoggingSession',
       interceptors: [CustomInterceptor.new],
     );
 
     // Register MyLoggingService with dependency on MyService2
     registerDependent<MyLoggingService>(
-      () => MyLoggingService(ddi.get(qualifier: 'MyService2')),
+      clazzRegister: () => MyLoggingService(ddi.get(qualifier: 'MyService2')),
       qualifier: 'MyLoggingDependent',
       interceptors: [CustomInterceptor.new],
     );
@@ -123,7 +123,7 @@ class CustomInterceptor extends DDIInterceptor<MyLoggingService> {
 // Main function where the code execution starts
 void main() async {
   // Register services from MyModule
-  await ddi.registerSingleton(MyModule.new);
+  await ddi.registerSingleton(clazzRegister: MyModule.new);
 
   // Get an instance of MyService with qualifier
   final MyService myService1 = ddi.get(qualifier: 'MyService1');
@@ -136,21 +136,18 @@ void main() async {
   myService2.doSomething();
 
   // Get an instance of MyLoggingService with qualifier
-  final MyLoggingService myLoggingSession =
-      ddi.get(qualifier: 'MyLoggingSession');
+  final MyLoggingService myLoggingSession = ddi.get(qualifier: 'MyLoggingSession');
 
   // Call a method on the MyLoggingService instance
   myLoggingSession.logSomething();
 
   // Get another instance of MyLoggingService with different qualifier
-  final MyLoggingService myLoggingDependent =
-      ddi.get(qualifier: 'MyLoggingDependent');
+  final MyLoggingService myLoggingDependent = ddi.get(qualifier: 'MyLoggingDependent');
   myLoggingDependent.logSomething();
 
   // Add a decorator to uppercase strings
   String uppercaseDecorator(String str) => str.toUpperCase();
-  ddi.registerObject('Hello World',
-      qualifier: 'authored', decorators: [uppercaseDecorator]);
+  ddi.registerObject('Hello World', qualifier: 'authored', decorators: [uppercaseDecorator]);
 
   // Will return HELLO WORLD
   print(ddi.get(qualifier: 'authored'));
@@ -161,6 +158,4 @@ void main() async {
 
   // Destroy of the MyModule instance, will also destroy MyService and MyLoggingService
   await ddi.destroy<MyModule>();
-
-  await Future.delayed(const Duration(seconds: 1));
 }

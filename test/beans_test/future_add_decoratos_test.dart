@@ -24,7 +24,7 @@ void futureAddDecorator() {
 
     test('ADD Decorators to a Singleton bean', () async {
       await DDI.instance.registerSingleton<D>(
-        () => Future.value(D()),
+        clazzRegister: () => Future.value(D()),
         decorators: [
           (instance) => E(instance),
           (instance) => F(instance),
@@ -38,7 +38,7 @@ void futureAddDecorator() {
 
     test('ADD Decorators to a Application bean', () async {
       DDI.instance.registerApplication<D>(
-        () => Future.value(D()),
+        clazzRegister: () => Future.value(D()),
         decorators: [
           (instance) => E(instance),
           (instance) => F(instance),
@@ -52,7 +52,7 @@ void futureAddDecorator() {
 
     test('ADD Decorators to a Session bean', () async {
       DDI.instance.registerSession<D>(
-        () => Future.value(D()),
+        clazzRegister: () => Future.value(D()),
         decorators: [
           (instance) => E(instance),
           (instance) => F(instance),
@@ -66,7 +66,7 @@ void futureAddDecorator() {
 
     test('ADD Decorators to a Dependent bean', () async {
       DDI.instance.registerDependent<D>(
-        () => Future.value(D()),
+        clazzRegister: () => Future.value(D()),
         decorators: [
           (instance) => E(instance),
           (instance) => F(instance),

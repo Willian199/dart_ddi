@@ -7,8 +7,8 @@ import 'c.dart';
 class ModuleApplication with DDIModule {
   @override
   void onPostConstruct() {
-    registerApplication(() => B(ddi()));
-    registerApplication(() => A(ddi()));
-    registerApplication(C.new);
+    registerApplication(clazzRegister: () => B(ddi()));
+    registerApplication(clazzRegister: () => A(ddi()));
+    registerApplication(clazzRegister: C.new);
   }
 }

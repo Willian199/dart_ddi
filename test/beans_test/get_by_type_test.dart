@@ -9,12 +9,12 @@ import '../clazz_samples/i.dart';
 void runByType() {
   group('DDI Process By Type', () {
     test('Application Get bean by Type that have registered and dispose', () {
-      DDI.instance.registerApplication<G>(() => H(), qualifier: 'firtsClass');
+      DDI.instance.registerApplication<G>(clazzRegister: () => H(), qualifier: 'firtsClass');
 
       final List<Object> keys1 = DDI.instance.getByType<G>();
 
       expect(keys1.length, 1);
-      DDI.instance.registerApplication<G>(() => I(), qualifier: 'secondClass');
+      DDI.instance.registerApplication<G>(clazzRegister: () => I(), qualifier: 'secondClass');
 
       final List<Object> keys2 = DDI.instance.getByType<G>();
 
@@ -28,19 +28,17 @@ void runByType() {
       DDI.instance.disposeByType<G>();
       DDI.instance.destroyByType<G>();
 
-      expect(() => DDI.instance.get(qualifier: keys2[0]),
-          throwsA(isA<BeanNotFoundException>()));
-      expect(() => DDI.instance.get(qualifier: keys2[1]),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get(qualifier: keys2[0]), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get(qualifier: keys2[1]), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Dependent Get bean by Type that have registered and dispose', () {
-      DDI.instance.registerDependent<G>(() => H(), qualifier: 'firtsClass');
+      DDI.instance.registerDependent<G>(clazzRegister: H.new, qualifier: 'firtsClass');
 
       final List<Object> keys1 = DDI.instance.getByType<G>();
 
       expect(keys1.length, 1);
-      DDI.instance.registerDependent<G>(() => I(), qualifier: 'secondClass');
+      DDI.instance.registerDependent<G>(clazzRegister: I.new, qualifier: 'secondClass');
 
       final List<Object> keys2 = DDI.instance.getByType<G>();
 
@@ -54,19 +52,17 @@ void runByType() {
       DDI.instance.disposeByType<G>();
       DDI.instance.destroyByType<G>();
 
-      expect(() => DDI.instance.get(qualifier: keys2[0]),
-          throwsA(isA<BeanNotFoundException>()));
-      expect(() => DDI.instance.get(qualifier: keys2[1]),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get(qualifier: keys2[0]), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get(qualifier: keys2[1]), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Session Get bean by Type that have registered and dispose', () {
-      DDI.instance.registerSession<G>(() => H(), qualifier: 'firtsClass');
+      DDI.instance.registerSession<G>(clazzRegister: H.new, qualifier: 'firtsClass');
 
       final List<Object> keys1 = DDI.instance.getByType<G>();
 
       expect(keys1.length, 1);
-      DDI.instance.registerSession<G>(() => I(), qualifier: 'secondClass');
+      DDI.instance.registerSession<G>(clazzRegister: I.new, qualifier: 'secondClass');
 
       final List<Object> keys2 = DDI.instance.getByType<G>();
 
@@ -80,20 +76,17 @@ void runByType() {
       DDI.instance.disposeByType<G>();
       DDI.instance.destroyByType<G>();
 
-      expect(() => DDI.instance.get(qualifier: keys2[0]),
-          throwsA(isA<BeanNotFoundException>()));
-      expect(() => DDI.instance.get(qualifier: keys2[1]),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get(qualifier: keys2[0]), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get(qualifier: keys2[1]), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Get bean by Type that have registered and dispose', () {
-      ///Where is Singleton, should the register in the correct order
-      DDI.instance.registerApplication<G>(() => H(), qualifier: 'firtsClass');
+      DDI.instance.registerApplication<G>(clazzRegister: () => H(), qualifier: 'firtsClass');
 
       final List<Object> keys1 = DDI.instance.getByType<G>();
 
       expect(keys1.length, 1);
-      DDI.instance.registerDependent<G>(() => I(), qualifier: 'secondClass');
+      DDI.instance.registerDependent<G>(clazzRegister: I.new, qualifier: 'secondClass');
 
       final List<Object> keys2 = DDI.instance.getByType<G>();
 
@@ -107,10 +100,8 @@ void runByType() {
       DDI.instance.disposeByType<G>();
       DDI.instance.destroyByType<G>();
 
-      expect(() => DDI.instance.get(qualifier: keys2[0]),
-          throwsA(isA<BeanNotFoundException>()));
-      expect(() => DDI.instance.get(qualifier: keys2[1]),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get(qualifier: keys2[0]), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get(qualifier: keys2[1]), throwsA(isA<BeanNotFoundException>()));
     });
   });
 }

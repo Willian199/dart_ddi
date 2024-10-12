@@ -1,5 +1,6 @@
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/exception/bean_not_found.dart';
+import 'package:dart_ddi/src/exception/duplicated_bean.dart';
 import 'package:test/test.dart';
 
 import '../clazz_samples/a.dart';
@@ -11,9 +12,9 @@ import '../clazz_samples/undestroyable/application_destroy_register.dart';
 void application() {
   group('DDI Application Basic Tests', () {
     void registerApplicationBeans() {
-      DDI.instance.registerApplication(() => A(DDI.instance()));
-      DDI.instance.registerApplication(() => B(DDI.instance()));
-      DDI.instance.registerApplication(C.new);
+      DDI.instance.registerApplication(clazzRegister: () => A(DDI.instance()));
+      DDI.instance.registerApplication(clazzRegister: () => B(DDI.instance()));
+      DDI.instance.registerApplication(clazzRegister: C.new);
     }
 
     void removeApplicationBeans() {
@@ -51,8 +52,7 @@ void application() {
       removeApplicationBeans();
     });
 
-    test('Retrieve Application bean after a second "child" bean is diposed',
-        () {
+    test('Retrieve Application bean after a second "child" bean is diposed', () {
       registerApplicationBeans();
 
       final instance = DDI.instance.get<A>();
@@ -67,8 +67,7 @@ void application() {
       removeApplicationBeans();
     });
 
-    test('Retrieve Application bean after the last "child" bean is diposed',
-        () {
+    test('Retrieve Application bean after the last "child" bean is diposed', () {
       registerApplicationBeans();
 
       final instance1 = DDI.instance.get<A>();
@@ -120,7 +119,7 @@ void application() {
     });
 
     test('Try to retrieve Application bean after disposed', () {
-      DDI.instance.registerApplication(C.new);
+      DDI.instance.registerApplication(clazzRegister: C.new);
 
       final instance1 = DDI.instance.get<C>();
 
@@ -134,30 +133,27 @@ void application() {
     });
 
     test('Try to retrieve Application bean after removed', () {
-      DDI.instance.registerApplication(C.new);
+      DDI.instance.registerApplication(clazzRegister: C.new);
 
       DDI.instance.get<C>();
 
       DDI.instance.destroy<C>();
 
-      expect(
-          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Create, get and remove a qualifier bean', () {
-      DDI.instance.registerApplication(C.new, qualifier: 'typeC');
+      DDI.instance.registerApplication(clazzRegister: C.new, qualifier: 'typeC');
 
       DDI.instance.get(qualifier: 'typeC');
 
       DDI.instance.destroy(qualifier: 'typeC');
 
-      expect(() => DDI.instance.get(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get(qualifier: 'typeC'), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Try to destroy a undestroyable Application bean', () {
-      DDI.instance
-          .registerApplication(ApplicationDestroyGet.new, destroyable: false);
+      DDI.instance.registerApplication(clazzRegister: ApplicationDestroyGet.new, destroyable: false);
 
       final instance1 = DDI.instance.get<ApplicationDestroyGet>();
 
@@ -169,14 +165,13 @@ void application() {
     });
 
     test('Try to register again a undestroyable Application bean', () {
-      DDI.instance.registerApplication(ApplicationDestroyRegister.new,
-          destroyable: false);
+      DDI.instance.registerApplication(clazzRegister: ApplicationDestroyRegister.new, destroyable: false);
 
       DDI.instance.get<ApplicationDestroyRegister>();
 
       DDI.instance.destroy<ApplicationDestroyRegister>();
 
-      // expect(() => DDI.instance.registerApplication(() => ApplicationDestroyRegister()), throwsA(isA<DuplicatedBean>()));
+      expect(() => DDI.instance.registerApplication(clazzRegister: ApplicationDestroyRegister.new), throwsA(isA<DuplicatedBeanException>()));
     });
   });
 }

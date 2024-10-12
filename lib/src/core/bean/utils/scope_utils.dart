@@ -10,18 +10,13 @@ import 'package:dart_ddi/src/exception/circular_detection.dart';
 final class ScopeUtils {
   static const _resolutionKey = #_resolutionKey;
 
-  static final Map<Object, List<Object>> _resolutionMap =
-      Zone.current[_resolutionKey] as Map<Object, List<Object>>? ?? {};
-  static BeanT _getScoped<BeanT extends Object>(
-      FactoryClazz<BeanT> factoryClazz, Object effectiveQualifierName) {
+  static final Map<Object, List<Object>> _resolutionMap = Zone.current[_resolutionKey] as Map<Object, List<Object>>? ?? {};
+  static BeanT _getScoped<BeanT extends Object, ParameterT extends Object>(FactoryClazz<BeanT> factoryClazz, Object effectiveQualifierName) {
     if (_resolutionMap[effectiveQualifierName]?.isNotEmpty ?? false) {
       throw CircularDetectionException(effectiveQualifierName.toString());
     }
 
-    _resolutionMap[effectiveQualifierName] = [
-      ..._resolutionMap[effectiveQualifierName] ?? [],
-      effectiveQualifierName
-    ];
+    _resolutionMap[effectiveQualifierName] = [..._resolutionMap[effectiveQualifierName] ?? [], effectiveQualifierName];
 
     try {
       return switch (factoryClazz.scopeType) {
@@ -29,15 +24,13 @@ final class ScopeUtils {
             factoryClazz,
             effectiveQualifierName,
           ),
-        Scopes.dependent => DependentUtils.getDependent<BeanT>(
-            factoryClazz,
-            effectiveQualifierName,
+        Scopes.dependent => DependentUtils.getDependent<BeanT, ParameterT>(
+            factoryClazz: factoryClazz,
+            effectiveQualifierName: effectiveQualifierName,
           ),
-        Scopes.application ||
-        Scopes.session =>
-          ApplicationUtils.getAplication<BeanT>(
-            factoryClazz,
-            effectiveQualifierName,
+        Scopes.application || Scopes.session => ApplicationUtils.getAplication<BeanT, ParameterT>(
+            factoryClazz: factoryClazz,
+            effectiveQualifierName: effectiveQualifierName,
           )
       };
     } finally {
@@ -45,34 +38,27 @@ final class ScopeUtils {
     }
   }
 
-  static Future<BeanT> _getScopedAsync<BeanT extends Object>(
+  static Future<BeanT> _getScopedAsync<BeanT extends Object, ParameterT extends Object>(
       FactoryClazz<BeanT> factoryClazz, Object effectiveQualifierName) {
     if (_resolutionMap[effectiveQualifierName]?.isNotEmpty ?? false) {
       throw CircularDetectionException(effectiveQualifierName.toString());
     }
 
-    _resolutionMap[effectiveQualifierName] = [
-      ..._resolutionMap[effectiveQualifierName] ?? [],
-      effectiveQualifierName
-    ];
+    _resolutionMap[effectiveQualifierName] = [..._resolutionMap[effectiveQualifierName] ?? [], effectiveQualifierName];
 
     try {
       return switch (factoryClazz.scopeType) {
-        Scopes.singleton ||
-        Scopes.object =>
-          Future.value(DartDDIUtils.getSingleton<BeanT>(
+        Scopes.singleton || Scopes.object => Future.value(DartDDIUtils.getSingleton<BeanT>(
             factoryClazz,
             effectiveQualifierName,
           )),
-        Scopes.dependent => DependentUtils.getDependentAsync<BeanT>(
-            factoryClazz,
-            effectiveQualifierName,
+        Scopes.dependent => DependentUtils.getDependentAsync<BeanT, ParameterT>(
+            factoryClazz: factoryClazz,
+            effectiveQualifierName: effectiveQualifierName,
           ),
-        Scopes.application ||
-        Scopes.session =>
-          ApplicationUtils.getAplicationAsync<BeanT>(
-            factoryClazz,
-            effectiveQualifierName,
+        Scopes.application || Scopes.session => ApplicationUtils.getAplicationAsync<BeanT, ParameterT>(
+            factoryClazz: factoryClazz,
+            effectiveQualifierName: effectiveQualifierName,
           )
       };
     } finally {
@@ -80,21 +66,20 @@ final class ScopeUtils {
     }
   }
 
-  static BeanT executar<BeanT extends Object>(
-      FactoryClazz<BeanT> factoryClazz, Object effectiveQualifierName) {
+  static BeanT executar<BeanT extends Object, ParameterT extends Object>(FactoryClazz<BeanT> factoryClazz, Object effectiveQualifierName) {
     return runZoned(
       () {
-        return _getScoped<BeanT>(factoryClazz, effectiveQualifierName);
+        return _getScoped<BeanT, ParameterT>(factoryClazz, effectiveQualifierName);
       },
       zoneValues: {_resolutionKey: <Object, List<Object>>{}},
     );
   }
 
-  static Future<BeanT> executarAsync<BeanT extends Object>(
+  static Future<BeanT> executarAsync<BeanT extends Object, ParameterT extends Object>(
       FactoryClazz<BeanT> factoryClazz, Object effectiveQualifierName) {
     return runZoned(
       () {
-        return _getScopedAsync<BeanT>(factoryClazz, effectiveQualifierName);
+        return _getScopedAsync<BeanT, ParameterT>(factoryClazz, effectiveQualifierName);
       },
       zoneValues: {_resolutionKey: <Object, List<Object>>{}},
     );

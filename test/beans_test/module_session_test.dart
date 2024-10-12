@@ -9,7 +9,7 @@ import '../clazz_samples/module_session.dart';
 void moduleSessionTest() {
   group('DDI Modules Session Basic Tests', () {
     test('Register a Session Module', () {
-      DDI.instance.registerSession(ModuleSession.new);
+      DDI.instance.registerSession(clazzRegister: ModuleSession.new);
 
       DDI.instance.get<ModuleSession>();
       final instance1 = DDI.instance.get<A>();
@@ -22,8 +22,7 @@ void moduleSessionTest() {
 
       DDI.instance.destroy<ModuleSession>();
 
-      expect(
-          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
     });
   });
 }

@@ -11,9 +11,9 @@ import '../clazz_samples/c.dart';
 void disposeDestroyAllSession() {
   group('DDI Dispose Destroy All Session Tests', () {
     void registerSessionBeans() {
-      DDI.instance.registerSession(() => A(DDI.instance()));
-      DDI.instance.registerSession(() => B(DDI.instance()));
-      DDI.instance.registerSession(() => C());
+      DDI.instance.registerSession(clazzRegister: () => A(DDI.instance()));
+      DDI.instance.registerSession(clazzRegister: () => B(DDI.instance()));
+      DDI.instance.registerSession(clazzRegister: C.new);
     }
 
     test('Register and retrieve Session bean', () {
@@ -23,12 +23,9 @@ void disposeDestroyAllSession() {
 
       DDI.instance.destroyAllSession();
 
-      expect(
-          () => DDI.instance.get<A>(), throwsA(isA<BeanNotFoundException>()));
-      expect(
-          () => DDI.instance.get<B>(), throwsA(isA<BeanNotFoundException>()));
-      expect(
-          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<A>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<B>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Register, get, dispose and destroy Session bean', () {
@@ -53,19 +50,15 @@ void disposeDestroyAllSession() {
 
       DDI.instance.destroyAllSession();
 
-      expect(
-          () => DDI.instance.get<A>(), throwsA(isA<BeanNotFoundException>()));
-      expect(
-          () => DDI.instance.get<B>(), throwsA(isA<BeanNotFoundException>()));
-      expect(
-          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<A>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<B>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Register, get, dispose and destroy Session bean', () async {
-      DDI.instance
-          .registerSession(() async => A(await DDI.instance.getAsync()));
-      DDI.instance.registerSession<B>(() => Future.value(B(DDI.instance())));
-      DDI.instance.registerSession(C.new);
+      DDI.instance.registerSession(clazzRegister: () async => A(await DDI.instance.getAsync()));
+      DDI.instance.registerSession<B>(clazzRegister: () => Future.value(B(DDI.instance())));
+      DDI.instance.registerSession(clazzRegister: C.new);
 
       final instance1 = await DDI.instance.getAsync<A>();
       final instance2 = await DDI.instance.getAsync<A>();
@@ -86,12 +79,9 @@ void disposeDestroyAllSession() {
 
       DDI.instance.destroyAllSession();
 
-      expect(() async => DDI.instance.getAsync<A>(),
-          throwsA(isA<BeanNotFoundException>()));
-      expect(() async => DDI.instance.getAsync<B>(),
-          throwsA(isA<BeanNotFoundException>()));
-      expect(() async => DDI.instance.getAsync<C>(),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() async => DDI.instance.getAsync<A>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() async => DDI.instance.getAsync<B>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() async => DDI.instance.getAsync<C>(), throwsA(isA<BeanNotFoundException>()));
     });
   });
 }

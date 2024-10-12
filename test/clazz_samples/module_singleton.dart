@@ -7,8 +7,8 @@ import 'c.dart';
 class ModuleSingleton with DDIModule {
   @override
   void onPostConstruct() {
-    registerSingleton(C.new);
-    registerSingleton(() => B(ddi()));
-    registerSingleton(() => A(ddi()));
+    registerSingleton(clazzRegister: C.new);
+    registerSingleton(clazzRegister: () => B(ddi()));
+    registerSingleton(clazzRegister: () => A(ddi()));
   }
 }

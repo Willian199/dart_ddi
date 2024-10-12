@@ -1,15 +1,25 @@
+import 'dart:async';
+
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/core/bean/utils/dart_ddi_utils.dart';
+import 'package:dart_ddi/src/core/bean/utils/instance_factory_util.dart';
 import 'package:dart_ddi/src/data/factory_clazz.dart';
 
 final class ApplicationUtils {
-  static Future<BeanT> getAplicationAsync<BeanT extends Object>(
-      FactoryClazz<BeanT> factoryClazz, Object effectiveQualifierName) async {
+  static Future<BeanT> getAplicationAsync<BeanT extends Object, ParameterT extends Object>({
+    required FactoryClazz<BeanT> factoryClazz,
+    required Object effectiveQualifierName,
+    ParameterT? parameters,
+  }) async {
     late BeanT applicationClazz;
 
     if (factoryClazz.clazzInstance == null) {
-      applicationClazz = _applyApplication<BeanT>(
-          factoryClazz, await factoryClazz.clazzRegister!.call());
+      applicationClazz = await InstanceFactoryUtil.createAsync<BeanT, ParameterT>(
+        clazzRegister: factoryClazz.clazzRegister!,
+        parameters: parameters,
+      );
+
+      applicationClazz = _applyApplication<BeanT>(factoryClazz, applicationClazz);
 
       if (applicationClazz is DDIModule) {
         applicationClazz.moduleQualifier = effectiveQualifierName;
@@ -33,15 +43,20 @@ final class ApplicationUtils {
     return applicationClazz;
   }
 
-  static BeanT getAplication<BeanT extends Object>(
-    FactoryClazz<BeanT> factoryClazz,
-    Object effectiveQualifierName,
-  ) {
+  static BeanT getAplication<BeanT extends Object, ParameterT extends Object>({
+    required FactoryClazz<BeanT> factoryClazz,
+    required Object effectiveQualifierName,
+    ParameterT? parameters,
+  }) {
     late BeanT applicationClazz;
 
     if (factoryClazz.clazzInstance == null) {
-      applicationClazz = _applyApplication<BeanT>(
-          factoryClazz, (factoryClazz.clazzRegister as BeanT Function())());
+      applicationClazz = InstanceFactoryUtil.create<BeanT, ParameterT>(
+        clazzRegister: factoryClazz.clazzRegister!,
+        parameters: parameters,
+      );
+
+      applicationClazz = _applyApplication<BeanT>(factoryClazz, applicationClazz);
 
       if (applicationClazz is DDIModule) {
         applicationClazz.moduleQualifier = effectiveQualifierName;
@@ -75,8 +90,7 @@ final class ApplicationUtils {
       }
     }
 
-    applicationClazz = DartDDIUtils.executarDecorators<BeanT>(
-        applicationClazz, factoryClazz.decorators);
+    applicationClazz = DartDDIUtils.executarDecorators<BeanT>(applicationClazz, factoryClazz.decorators);
 
     factoryClazz.postConstruct?.call();
 

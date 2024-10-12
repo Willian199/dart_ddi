@@ -7,8 +7,8 @@ import 'c.dart';
 class ModuleSession with DDIModule {
   @override
   void onPostConstruct() {
-    registerSession(C.new);
-    registerSession(() => B(ddi()));
-    registerSession(() => A(ddi()));
+    registerSession(clazzRegister: C.new);
+    registerSession(clazzRegister: () => B(ddi()));
+    registerSession(clazzRegister: () => A(ddi()));
   }
 }

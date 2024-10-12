@@ -23,9 +23,9 @@ void addDecorator() {
     }
 
     test('ADD Decorators to a Singleton bean', () {
-      ///Where is Singleton, should the register in the correct order
+      ///Where is Singleton, should register in the correct order
       DDI.instance.registerSingleton(
-        () => D(),
+        clazzRegister: D.new,
         decorators: [
           (instance) => E(instance),
           (instance) => F(instance),
@@ -38,9 +38,8 @@ void addDecorator() {
     });
 
     test('ADD Decorators to a Application bean', () {
-      ///Where is Singleton, should the register in the correct order
       DDI.instance.registerApplication(
-        () => D(),
+        clazzRegister: D.new,
         decorators: [
           (instance) => E(instance),
           (instance) => F(instance),
@@ -53,9 +52,8 @@ void addDecorator() {
     });
 
     test('ADD Decorators to a Session bean', () {
-      ///Where is Singleton, should the register in the correct order
       DDI.instance.registerSession(
-        () => D(),
+        clazzRegister: D.new,
         decorators: [
           (instance) => E(instance),
           (instance) => F(instance),
@@ -68,9 +66,8 @@ void addDecorator() {
     });
 
     test('ADD Decorators to a Dependent bean', () {
-      ///Where is Singleton, should the register in the correct order
       DDI.instance.registerDependent(
-        () => D(),
+        clazzRegister: D.new,
         decorators: [
           (instance) => E(instance),
           (instance) => F(instance),

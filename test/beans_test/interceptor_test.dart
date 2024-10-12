@@ -14,8 +14,8 @@ import '../clazz_samples/k.dart';
 void interceptor() {
   group('DDI Interceptor Tests', () {
     test('ADD Interceptor to a Singleton bean', () {
-      ///Where is Singleton, should the register in the correct order
-      DDI.instance.registerSingleton<G>(() => H(), interceptors: [() => J()]);
+      ///Where is Singleton, should register in the correct order
+      DDI.instance.registerSingleton<G>(clazzRegister: H.new, interceptors: [() => J()]);
 
       final G instance = DDI.instance.get<G>();
 
@@ -24,12 +24,11 @@ void interceptor() {
 
       DDI.instance.destroy<G>();
 
-      expect(
-          () => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('ADD Interceptor to a Application bean', () {
-      DDI.instance.registerApplication<G>(() => H(), interceptors: [() => J()]);
+      DDI.instance.registerApplication<G>(clazzRegister: () => H(), interceptors: [() => J()]);
 
       final G instance = DDI.instance.get<G>();
 
@@ -38,13 +37,11 @@ void interceptor() {
 
       DDI.instance.destroy<G>();
 
-      expect(
-          () => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('ADD Interceptor to a Application bean with qualifier', () {
-      DDI.instance.registerApplication<G>(() => H(),
-          qualifier: 'qualifier', interceptors: [() => J()]);
+      DDI.instance.registerApplication<G>(clazzRegister: () => H(), qualifier: 'qualifier', interceptors: [() => J()]);
 
       final G instance = DDI.instance.get<G>(qualifier: 'qualifier');
 
@@ -53,12 +50,11 @@ void interceptor() {
 
       DDI.instance.destroy<G>(qualifier: 'qualifier');
 
-      expect(() => DDI.instance.get<G>(qualifier: 'qualifier'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<G>(qualifier: 'qualifier'), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('ADD Interceptor to a Dependent bean', () {
-      DDI.instance.registerDependent<G>(() => H(), interceptors: [() => J()]);
+      DDI.instance.registerDependent<G>(clazzRegister: H.new, interceptors: [() => J()]);
 
       final G instance = DDI.instance.get<G>();
 
@@ -67,12 +63,11 @@ void interceptor() {
 
       DDI.instance.destroy<G>();
 
-      expect(
-          () => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('ADD Interceptor to a Session bean', () {
-      DDI.instance.registerSession<G>(() => H(), interceptors: [() => J()]);
+      DDI.instance.registerSession<G>(clazzRegister: H.new, interceptors: [() => J()]);
 
       final G instance = DDI.instance.get<G>();
 
@@ -81,12 +76,11 @@ void interceptor() {
 
       DDI.instance.destroy<G>();
 
-      expect(
-          () => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('ADD Interceptor after registered a Application bean', () {
-      DDI.instance.registerApplication<G>(() => H());
+      DDI.instance.registerApplication<G>(clazzRegister: () => H());
 
       final G instance = DDI.instance.get<G>();
 
@@ -106,14 +100,13 @@ void interceptor() {
 
       DDI.instance.destroy<G>();
 
-      expect(
-          () => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('ADD Decorators and Interceptor to a Singleton bean', () {
-      ///Where is Singleton, should the register in the correct order
+      ///Where is Singleton, should register in the correct order
       DDI.instance.registerSingleton(
-        () => D(),
+        clazzRegister: D.new,
         decorators: [
           (instance) => E(instance),
           (instance) => F(instance),

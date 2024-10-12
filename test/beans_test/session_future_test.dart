@@ -12,10 +12,9 @@ import '../clazz_samples/undestroyable/future_session_destroy_get.dart';
 void sessionFuture() {
   group('DDI Session Future Basic Tests', () {
     void registerSessionBeans() {
-      DDI.instance
-          .registerSession(() async => A(await DDI.instance.getAsync()));
-      DDI.instance.registerSession<B>(() => Future.value(B(DDI.instance())));
-      DDI.instance.registerSession(C.new);
+      DDI.instance.registerSession(clazzRegister: () async => A(await DDI.instance.getAsync()));
+      DDI.instance.registerSession<B>(clazzRegister: () => Future.value(B(DDI.instance())));
+      DDI.instance.registerSession(clazzRegister: C.new);
     }
 
     void removeSessionBeans() {
@@ -53,8 +52,7 @@ void sessionFuture() {
       removeSessionBeans();
     });
 
-    test('Retrieve Session bean after a second "child" bean is diposed',
-        () async {
+    test('Retrieve Session bean after a second "child" bean is diposed', () async {
       registerSessionBeans();
 
       final instance = await DDI.instance.getAsync<A>();
@@ -70,8 +68,7 @@ void sessionFuture() {
       removeSessionBeans();
     });
 
-    test('Retrieve Session bean after the last "child" bean is diposed',
-        () async {
+    test('Retrieve Session bean after the last "child" bean is diposed', () async {
       registerSessionBeans();
 
       final instance1 = await DDI.instance.getAsync<A>();
@@ -123,7 +120,7 @@ void sessionFuture() {
     });
 
     test('Try to retrieve Session bean after disposed', () async {
-      DDI.instance.registerSession(() => Future.value(C()));
+      DDI.instance.registerSession(clazzRegister: () => Future.value(C()));
 
       final instance1 = await DDI.instance.getAsync<C>();
 
@@ -136,31 +133,27 @@ void sessionFuture() {
     });
 
     test('Try to retrieve Session bean after removed', () async {
-      DDI.instance.registerSession(() => Future.value(C()));
+      DDI.instance.registerSession(clazzRegister: () => Future.value(C()));
 
       await DDI.instance.getAsync<C>();
 
       DDI.instance.destroy<C>();
 
-      expect(() async => DDI.instance.getAsync<C>(),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() async => DDI.instance.getAsync<C>(), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Create, get and remove a qualifier bean', () {
-      DDI.instance.registerSession(() => Future.value(C()), qualifier: 'typeC');
+      DDI.instance.registerSession(clazzRegister: () => Future.value(C()), qualifier: 'typeC');
 
       DDI.instance.getAsync(qualifier: 'typeC');
 
       DDI.instance.destroy(qualifier: 'typeC');
 
-      expect(() async => DDI.instance.getAsync(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() async => DDI.instance.getAsync(qualifier: 'typeC'), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Try to destroy a undestroyable Session bean', () async {
-      DDI.instance.registerSession(
-          () => Future.value(FutureSessionDestroyGet()),
-          destroyable: false);
+      DDI.instance.registerSession(clazzRegister: () => Future.value(FutureSessionDestroyGet()), destroyable: false);
 
       final instance1 = await DDI.instance.getAsync<FutureSessionDestroyGet>();
 
@@ -172,7 +165,7 @@ void sessionFuture() {
     });
 
     test('Register and retrieve Future delayed Session bean', () async {
-      DDI.instance.registerSession(() async {
+      DDI.instance.registerSession(clazzRegister: () async {
         final C value = await Future.delayed(const Duration(seconds: 2), C.new);
         return value;
       });
@@ -184,12 +177,10 @@ void sessionFuture() {
       await expectLater(intance.value, 1);
     });
 
-    test('Retrieve Session bean after a "child" bean is disposed using Future',
-        () async {
-      DDI.instance
-          .registerSession(() async => A(await DDI.instance.getAsync()));
-      DDI.instance.registerSession<B>(() async => B(DDI.instance()));
-      DDI.instance.registerSession(C.new);
+    test('Retrieve Session bean after a "child" bean is disposed using Future', () async {
+      DDI.instance.registerSession(clazzRegister: () async => A(await DDI.instance.getAsync()));
+      DDI.instance.registerSession<B>(clazzRegister: () async => B(DDI.instance()));
+      DDI.instance.registerSession(clazzRegister: C.new);
 
       final instance1 = await DDI.instance.getAsync<A>();
 
@@ -207,7 +198,7 @@ void sessionFuture() {
     });
 
     test('Retrieve Session bean Stream', () async {
-      DDI.instance.registerSession(StreamController<C>.new);
+      DDI.instance.registerSession(clazzRegister: StreamController<C>.new);
 
       final StreamController<C> streamController = DDI.instance();
 

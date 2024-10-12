@@ -9,59 +9,51 @@ import '../clazz_samples/mother.dart';
 
 void circularDetection() {
   group('DDI Circular Injection Detection tests', () {
-    test('Inject a Singleton bean depending from a bean that not exists yet',
-        () {
-      expect(
-          () => DDI.instance
-              .registerSingleton(() => Father(mother: DDI.instance())),
-          throwsA(isA<BeanNotFoundException>()));
+    test('Inject a Singleton bean depending from a bean that not exists yet', () {
+      expect(() => DDI.instance.registerSingleton(clazzRegister: () => Father(mother: DDI.instance())), throwsA(isA<BeanNotFoundException>()));
     });
 
-    test('Inject a Application bean depending from a bean that not exists yet',
-        () {
+    test('Inject a Application bean depending from a bean that not exists yet', () {
       //Work because just Register
-      DDI.instance.registerApplication(() => Father(mother: DDI.instance()));
-      DDI.instance.registerApplication(() => Mother(father: DDI.instance()));
+      DDI.instance.registerApplication(clazzRegister: () => Father(mother: DDI.instance()));
+      DDI.instance.registerApplication(clazzRegister: () => Mother(father: DDI.instance()));
 
       DDI.instance.destroy<Mother>();
       DDI.instance.destroy<Father>();
     });
 
     test('Inject a Application bean with circular dependency', () {
-      DDI.instance.registerApplication(() => Father(mother: DDI.instance()));
-      DDI.instance.registerApplication(() => Mother(father: DDI.instance()));
+      DDI.instance.registerApplication(clazzRegister: () => Father(mother: DDI.instance()));
+      DDI.instance.registerApplication(clazzRegister: () => Mother(father: DDI.instance()));
 
-      expect(() => DDI.instance<Mother>(),
-          throwsA(isA<CircularDetectionException>()));
+      expect(() => DDI.instance<Mother>(), throwsA(isA<CircularDetectionException>()));
 
       DDI.instance.destroy<Mother>();
       DDI.instance.destroy<Father>();
     });
 
     test('Inject a Dependent bean with circular dependency', () {
-      DDI.instance.registerDependent(() => Father(mother: DDI.instance()));
-      DDI.instance.registerDependent(() => Mother(father: DDI.instance()));
+      DDI.instance.registerDependent(clazzRegister: () => Father(mother: DDI.instance()));
+      DDI.instance.registerDependent(clazzRegister: () => Mother(father: DDI.instance()));
 
-      expect(() => DDI.instance<Mother>(),
-          throwsA(isA<CircularDetectionException>()));
+      expect(() => DDI.instance<Mother>(), throwsA(isA<CircularDetectionException>()));
 
       DDI.instance.destroy<Mother>();
       DDI.instance.destroy<Father>();
     });
 
     test('Inject a Session bean with circular dependency', () {
-      DDI.instance.registerSession(() => Father(mother: DDI.instance()));
-      DDI.instance.registerSession(() => Mother(father: DDI.instance()));
+      DDI.instance.registerSession(clazzRegister: () => Father(mother: DDI.instance()));
+      DDI.instance.registerSession(clazzRegister: () => Mother(father: DDI.instance()));
 
-      expect(() => DDI.instance<Mother>(),
-          throwsA(isA<CircularDetectionException>()));
+      expect(() => DDI.instance<Mother>(), throwsA(isA<CircularDetectionException>()));
 
       DDI.instance.destroy<Mother>();
       DDI.instance.destroy<Father>();
     });
 
     test('Get the same Singleton bean 100 times', () {
-      DDI.instance.registerSingleton(() => C());
+      DDI.instance.registerSingleton(clazzRegister: C.new);
 
       int count = 0;
       for (int i = 0; i < 100; i++) {
@@ -74,7 +66,7 @@ void circularDetection() {
     });
 
     test('Get the same Application bean 100 times', () {
-      DDI.instance.registerApplication(() => C());
+      DDI.instance.registerApplication(clazzRegister: C.new);
 
       int count = 0;
       for (int i = 0; i < 100; i++) {
@@ -87,7 +79,7 @@ void circularDetection() {
     });
 
     test('Get the same Session bean 100 times', () {
-      DDI.instance.registerSession(() => C());
+      DDI.instance.registerSession(clazzRegister: C.new);
 
       int count = 0;
       for (int i = 0; i < 100; i++) {
@@ -100,7 +92,7 @@ void circularDetection() {
     });
 
     test('Get the same Dependent bean 100 times', () {
-      DDI.instance.registerDependent(() => C());
+      DDI.instance.registerDependent(clazzRegister: C.new);
 
       int count = 0;
       for (int i = 0; i < 100; i++) {

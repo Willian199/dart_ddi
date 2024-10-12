@@ -9,15 +9,15 @@ import '../clazz_samples/b.dart';
 import '../clazz_samples/c.dart';
 import '../clazz_samples/undestroyable/future_application_destroy_get.dart';
 
-void applicationFuture() {
-  group('DDI Application Future Basic Tests', () {
+void applicationFactoryFuture() {
+  group('DDI Factory Application Future Basic Tests', () {
     void registerApplicationBeans() {
-      DDI.instance.registerApplication<A>(clazzRegister: () async => A(await DDI.instance.getAsync<B>()));
-      DDI.instance.registerApplication<B>(clazzRegister: () async {
+      DDI.instance.registerApplication<A>(customFactory: () async => A(await DDI.instance.getAsync<B>()));
+      DDI.instance.registerApplication<B>(customFactory: () async {
         await Future.delayed(const Duration(milliseconds: 200));
-        return B(DDI.instance());
+        return B.new;
       });
-      DDI.instance.registerApplication(clazzRegister: C.new);
+      DDI.instance.registerApplication<C>(customFactory: C.new);
     }
 
     void removeApplicationBeans() {
@@ -26,7 +26,7 @@ void applicationFuture() {
       DDI.instance.destroy<C>();
     }
 
-    test('Register and retrieve Application bean', () async {
+    test('Register and retrieve Factory Application bean', () async {
       registerApplicationBeans();
 
       final instance1 = await DDI.instance.getAsync<A>();
@@ -40,7 +40,7 @@ void applicationFuture() {
       removeApplicationBeans();
     });
 
-    test('Retrieve Application bean after a "child" bean is diposed', () async {
+    test('Retrieve Factory Application bean after a "child" bean is diposed', () async {
       registerApplicationBeans();
 
       final instance = await DDI.instance.getAsync<A>();
@@ -55,7 +55,7 @@ void applicationFuture() {
       removeApplicationBeans();
     });
 
-    test('Retrieve Application bean after a second "child" bean is diposed', () async {
+    test('Retrieve Factory Application bean after a second "child" bean is diposed', () async {
       registerApplicationBeans();
 
       final instance = await DDI.instance.getAsync<A>();
@@ -70,7 +70,7 @@ void applicationFuture() {
       removeApplicationBeans();
     });
 
-    test('Retrieve Application bean after the last "child" bean is diposed', () async {
+    test('Retrieve Factory Application bean after the last "child" bean is diposed', () async {
       registerApplicationBeans();
 
       final instance1 = await DDI.instance.getAsync<A>();
@@ -86,7 +86,7 @@ void applicationFuture() {
       removeApplicationBeans();
     });
 
-    test('Retrieve Application bean after 2 "child" bean is diposed', () async {
+    test('Retrieve Factory Application bean after 2 "child" bean is diposed', () async {
       registerApplicationBeans();
 
       final instance1 = await DDI.instance.getAsync<A>();
@@ -103,7 +103,7 @@ void applicationFuture() {
       removeApplicationBeans();
     });
 
-    test('Retrieve Application bean after 3 "child" bean is diposed', () async {
+    test('Retrieve Factory Application bean after 3 "child" bean is diposed', () async {
       registerApplicationBeans();
 
       final instance1 = await DDI.instance.getAsync<A>();
@@ -121,32 +121,11 @@ void applicationFuture() {
       removeApplicationBeans();
     });
 
-    test('Try to retrieve Application bean after disposed', () {
-      DDI.instance.registerApplication(clazzRegister: () => Future.value(C()));
-
-      final instance1 = DDI.instance.getAsync<C>();
-
-      DDI.instance.dispose<C>();
-
-      final instance2 = DDI.instance.getAsync<C>();
-
-      expect(false, identical(instance1, instance2));
-
-      DDI.instance.destroy<C>();
-    });
-
-    test('Try to retrieve Application bean after removed', () {
-      DDI.instance.registerApplication(clazzRegister: () => Future.value(C()));
-
-      DDI.instance.getAsync<C>();
-
-      DDI.instance.destroy<C>();
-
-      expect(() => DDI.instance.getAsync<C>(), throwsA(isA<BeanNotFoundException>()));
-    });
-
-    test('Create, get and remove a qualifier bean', () {
-      DDI.instance.registerApplication(clazzRegister: () => Future.value(C()), qualifier: 'typeC');
+    test('Create, get and remove a Factory qualifier bean', () {
+      DDI.instance.registerApplication<C>(
+        customFactory: () => Future.value(C()),
+        qualifier: 'typeC',
+      );
 
       DDI.instance.getAsync(qualifier: 'typeC');
 
@@ -155,8 +134,11 @@ void applicationFuture() {
       expect(() => DDI.instance.getAsync(qualifier: 'typeC'), throwsA(isA<BeanNotFoundException>()));
     });
 
-    test('Try to destroy a undestroyable Application bean', () async {
-      DDI.instance.registerApplication(clazzRegister: () => Future.value(FutureApplicationDestroyGet()), destroyable: false);
+    test('Try to destroy a undestroyable Factory Application bean', () async {
+      DDI.instance.registerApplication<FutureApplicationDestroyGet>(
+        customFactory: () => Future.value(FutureApplicationDestroyGet()),
+        destroyable: false,
+      );
 
       final instance1 = await DDI.instance.getAsync<FutureApplicationDestroyGet>();
 
@@ -166,9 +148,9 @@ void applicationFuture() {
 
       expect(instance1, same(instance2));
     });
-    test('Register and retrieve Future Application', () async {
-      DDI.instance.registerApplication(clazzRegister: () async => A(await DDI.instance.getAsync<B>()));
-      DDI.instance.registerApplication(clazzRegister: () async => B(DDI.instance()));
+    test('Register and retrieve Future Factory Application', () async {
+      DDI.instance.registerApplication<A>(customFactory: () async => A(await DDI.instance.getAsync<B>()));
+      DDI.instance.registerApplication<B>(customFactory: () async => B.new);
       DDI.instance.registerApplication(clazzRegister: C.new);
 
       final instance1 = await DDI.instance.getAsync<A>();
@@ -184,8 +166,8 @@ void applicationFuture() {
       DDI.instance.destroy<C>();
     });
 
-    test('Register and retrieve Future delayed Application bean', () async {
-      DDI.instance.registerApplication<C>(clazzRegister: () async {
+    test('Register and retrieve Future delayed Factory Application bean', () async {
+      DDI.instance.registerApplication<C>(customFactory: () async {
         final C value = await Future.delayed(const Duration(seconds: 2), C.new);
         return value;
       });
@@ -197,10 +179,10 @@ void applicationFuture() {
       await expectLater(intance.value, 1);
     });
 
-    test('Try to retrieve Application bean using Future', () async {
-      DDI.instance.registerApplication(clazzRegister: () async => A(await DDI.instance()));
-      DDI.instance.registerApplication(clazzRegister: () async => B(DDI.instance()));
-      DDI.instance.registerApplication(clazzRegister: C.new);
+    test('Try to retrieve Factory Application bean using Future', () async {
+      DDI.instance.registerApplication<A>(customFactory: () async => A(await DDI.instance()));
+      DDI.instance.registerApplication<B>(customFactory: () async => B.new);
+      DDI.instance.registerApplication<C>(customFactory: C.new);
 
       //This happens because A(await DDI.instance()) transform to A(await DDI.instance<FutureOr<B>>())
       expect(() => DDI.instance.getAsync<A>(), throwsA(isA<BeanNotFoundException>()));
@@ -210,10 +192,10 @@ void applicationFuture() {
       DDI.instance.destroy<C>();
     });
 
-    test('Register and retrieve Application bean using FutureOr', () async {
-      DDI.instance.registerApplication(clazzRegister: () async => A(await DDI.instance.getAsync()));
-      DDI.instance.registerApplication<B>(clazzRegister: () async => B(DDI.instance()));
-      DDI.instance.registerApplication(clazzRegister: C.new);
+    test('Register and retrieve Factory Application bean using FutureOr', () async {
+      DDI.instance.registerApplication<A>(customFactory: () async => A(await DDI.instance.getAsync()));
+      DDI.instance.registerApplication<B>(customFactory: () async => B.new);
+      DDI.instance.registerApplication<C>(customFactory: C.new);
 
       final instance1 = await DDI.instance.getAsync<A>();
       final instance2 = await DDI.instance.getAsync<A>();
@@ -227,10 +209,10 @@ void applicationFuture() {
       DDI.instance.destroy<B>();
       DDI.instance.destroy<C>();
     });
-    test('Retrieve Application bean after a "child" bean is disposed using Future', () async {
-      DDI.instance.registerApplication(clazzRegister: () async => A(await DDI.instance.getAsync<B>()));
-      DDI.instance.registerApplication<B>(clazzRegister: () async => B(DDI.instance()));
-      DDI.instance.registerApplication(clazzRegister: C.new);
+    test('Retrieve Factory Application bean after a "child" bean is disposed using Future', () async {
+      DDI.instance.registerApplication<A>(customFactory: () async => A(await DDI.instance.getAsync<B>()));
+      DDI.instance.registerApplication<B>(customFactory: () async => B.new);
+      DDI.instance.registerApplication<C>(customFactory: C.new);
 
       final instance1 = await DDI.instance.getAsync<A>();
 
@@ -247,8 +229,8 @@ void applicationFuture() {
       DDI.instance.destroy<C>();
     });
 
-    test('Retrieve Application bean Stream', () async {
-      DDI.instance.registerApplication(clazzRegister: StreamController<C>.new);
+    test('Retrieve Factory Application bean Stream', () async {
+      DDI.instance.registerApplication<StreamController<C>>(customFactory: StreamController<C>.new);
 
       final StreamController<C> streamController = DDI.instance();
 

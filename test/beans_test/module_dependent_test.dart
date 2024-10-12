@@ -9,7 +9,7 @@ import '../clazz_samples/module_dependent.dart';
 void moduleDependentTest() {
   group('DDI Modules Dependent Basic Tests', () {
     test('Register a Dependent Module', () {
-      DDI.instance.registerDependent(ModuleDependent.new);
+      DDI.instance.registerDependent(clazzRegister: ModuleDependent.new);
 
       DDI.instance.get<ModuleDependent>();
       final instance1 = DDI.instance.get<A>();
@@ -22,8 +22,7 @@ void moduleDependentTest() {
 
       DDI.instance.destroy<ModuleDependent>();
 
-      expect(
-          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
     });
   });
 }

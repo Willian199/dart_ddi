@@ -5,25 +5,23 @@ import 'package:test/test.dart';
 import '../clazz_samples/a.dart';
 import '../clazz_samples/b.dart';
 import '../clazz_samples/c.dart';
-import '../clazz_samples/undestroyable/session_destroy_get.dart';
-import '../clazz_samples/undestroyable/session_destroy_register.dart';
 
-void session() {
-  group('DDI Session Basic Tests', () {
-    void registerSessionBeans() {
-      DDI.instance.registerSession(clazzRegister: () => A(DDI.instance()));
-      DDI.instance.registerSession(clazzRegister: () => B(DDI.instance()));
-      DDI.instance.registerSession(clazzRegister: C.new);
+void applicationFactory() {
+  group('DDI Application Factory Tests', () {
+    void registerApplicationBeans() {
+      DDI.instance.registerApplication<A>(customFactory: A.new);
+      DDI.instance.registerApplication<B>(customFactory: B.new);
+      DDI.instance.registerApplication<C>(customFactory: C.new);
     }
 
-    void removeSessionBeans() {
+    void removeApplicationBeans() {
       DDI.instance.destroy<A>();
       DDI.instance.destroy<B>();
       DDI.instance.destroy<C>();
     }
 
-    test('Register and retrieve Session bean', () {
-      registerSessionBeans();
+    test('Register and retrieve Factory Application bean', () {
+      registerApplicationBeans();
 
       final instance1 = DDI.instance.get<A>();
       final instance2 = DDI.instance.get<A>();
@@ -33,11 +31,11 @@ void session() {
       expect(instance1.b.c, same(instance2.b.c));
       expect(instance1.b.c.value, same(instance2.b.c.value));
 
-      removeSessionBeans();
+      removeApplicationBeans();
     });
 
-    test('Retrieve Session bean after a "child" bean is diposed', () {
-      registerSessionBeans();
+    test('Retrieve Factory Application bean after a "child" bean is diposed', () {
+      registerApplicationBeans();
 
       final instance = DDI.instance.get<A>();
 
@@ -48,15 +46,14 @@ void session() {
       expect(instance.b.c, same(instance1.b.c));
       expect(instance.b.c.value, same(instance1.b.c.value));
 
-      removeSessionBeans();
+      removeApplicationBeans();
     });
 
-    test('Retrieve Session bean after a second "child" bean is diposed', () {
-      registerSessionBeans();
+    test('Retrieve Factory Application bean after a second "child" bean is diposed', () {
+      registerApplicationBeans();
 
       final instance = DDI.instance.get<A>();
 
-      DDI.instance.dispose<C>();
       DDI.instance.dispose<B>();
       final instance1 = DDI.instance.get<A>();
       expect(instance1, same(instance));
@@ -64,11 +61,11 @@ void session() {
       expect(instance.b.c, same(instance1.b.c));
       expect(instance.b.c.value, same(instance1.b.c.value));
 
-      removeSessionBeans();
+      removeApplicationBeans();
     });
 
-    test('Retrieve Session bean after the last "child" bean is diposed', () {
-      registerSessionBeans();
+    test('Retrieve Factory Application bean after the last "child" bean is diposed', () {
+      registerApplicationBeans();
 
       final instance1 = DDI.instance.get<A>();
 
@@ -80,11 +77,11 @@ void session() {
       expect(true, identical(instance1.b.c, instance2.b.c));
       expect(instance1.b.c.value, same(instance2.b.c.value));
 
-      removeSessionBeans();
+      removeApplicationBeans();
     });
 
-    test('Retrieve Session bean after 2 "child" bean is diposed', () {
-      registerSessionBeans();
+    test('Retrieve Factory Application bean after 2 "child" bean is diposed', () {
+      registerApplicationBeans();
 
       final instance1 = DDI.instance.get<A>();
 
@@ -97,11 +94,11 @@ void session() {
       expect(true, identical(instance1.b.c, instance2.b.c));
       expect(instance1.b.c.value, same(instance2.b.c.value));
 
-      removeSessionBeans();
+      removeApplicationBeans();
     });
 
-    test('Retrieve Session bean after 3 "child" bean is diposed', () {
-      registerSessionBeans();
+    test('Retrieve Factory Application bean after 3 "child" bean is diposed', () {
+      registerApplicationBeans();
 
       final instance1 = DDI.instance.get<A>();
 
@@ -115,11 +112,11 @@ void session() {
       expect(false, identical(instance1.b.c, instance2.b.c));
       expect(instance1.b.c.value, same(instance2.b.c.value));
 
-      removeSessionBeans();
+      removeApplicationBeans();
     });
 
-    test('Try to retrieve Session bean after disposed', () {
-      DDI.instance.registerSession(clazzRegister: C.new);
+    test('Try to retrieve Factory Application bean after disposed', () {
+      DDI.instance.registerApplication<C>(customFactory: C.new);
 
       final instance1 = DDI.instance.get<C>();
 
@@ -128,9 +125,13 @@ void session() {
       final instance2 = DDI.instance.get<C>();
 
       expect(false, identical(instance1, instance2));
+
+      DDI.instance.destroy<C>();
     });
 
-    test('Try to retrieve Session bean after removed', () {
+    test('Try to retrieve Factory Application bean after removed', () {
+      DDI.instance.registerApplication<C>(customFactory: C.new);
+
       DDI.instance.get<C>();
 
       DDI.instance.destroy<C>();
@@ -138,36 +139,14 @@ void session() {
       expect(() => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
     });
 
-    test('Create, get and remove a qualifier bean', () {
-      DDI.instance.registerSession(clazzRegister: C.new, qualifier: 'typeC');
+    test('Create, get and remove a Factory with qualifier bean', () {
+      DDI.instance.registerApplication<C>(customFactory: C.new, qualifier: 'typeC');
 
       DDI.instance.get(qualifier: 'typeC');
 
       DDI.instance.destroy(qualifier: 'typeC');
 
       expect(() => DDI.instance.get(qualifier: 'typeC'), throwsA(isA<BeanNotFoundException>()));
-    });
-
-    test('Try to destroy a undestroyable Session bean', () {
-      DDI.instance.registerSession(clazzRegister: SessionDestroyGet.new, destroyable: false);
-
-      final instance1 = DDI.instance.get<SessionDestroyGet>();
-
-      DDI.instance.destroy<SessionDestroyGet>();
-
-      final instance2 = DDI.instance.get<SessionDestroyGet>();
-
-      expect(instance1, same(instance2));
-    });
-
-    test('Try to register again a undestroyable Session bean', () {
-      DDI.instance.registerSession(clazzRegister: SessionDestroyRegister.new, destroyable: false);
-
-      DDI.instance.get<SessionDestroyRegister>();
-
-      DDI.instance.destroy<SessionDestroyRegister>();
-
-      // expect(() => DDI.instance.registerSession(() => SessionDestroyRegister()), throwsA(isA<DuplicatedBean>()));
     });
   });
 }

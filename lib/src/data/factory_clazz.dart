@@ -18,7 +18,7 @@ class FactoryClazz<BeanT> {
   ListDDIInterceptor<BeanT>? interceptors;
 
   /// The [FutureOr] function that returns the bean instance.
-  final BeanRegister<BeanT>? clazzRegister;
+  final Function? clazzRegister;
 
   /// The function that is called after the bean is created.
   final VoidCallback? postConstruct;
@@ -35,6 +35,8 @@ class FactoryClazz<BeanT> {
   /// The children of the bean. Works as a Module.
   Set<Object>? children;
 
+  final FactoryBeanRegister<BeanT, Object>? clazzFactory;
+
   FactoryClazz({
     required this.scopeType,
     required this.type,
@@ -45,18 +47,20 @@ class FactoryClazz<BeanT> {
     this.postConstruct,
     this.interceptors,
     this.children,
+    this.clazzFactory,
   });
 
   FactoryClazz<BeanT> copyWith({
     BeanT? clazzInstance,
     ListDecorator<BeanT>? decorators,
     ListDDIInterceptor<BeanT>? interceptors,
-    BeanRegister<BeanT>? clazzRegister,
+    Function? clazzRegister,
     VoidCallback? postConstruct,
     Scopes? scopeType,
     Type? type,
     bool? destroyable,
     Set<Object>? children,
+    FactoryBeanRegister<BeanT, dynamic>? clazzFactory,
   }) {
     return FactoryClazz<BeanT>(
       clazzInstance: clazzInstance ?? this.clazzInstance,
@@ -68,6 +72,7 @@ class FactoryClazz<BeanT> {
       type: type ?? this.type,
       destroyable: destroyable ?? this.destroyable,
       children: children ?? this.children,
+      clazzFactory: clazzFactory ?? this.clazzFactory,
     );
   }
 }

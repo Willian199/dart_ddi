@@ -6,7 +6,7 @@ import '../clazz_samples/l.dart';
 void postConstructPreDestroyTest() {
   group('DDI PostConstruct and PreDestroy test', () {
     test('Regsiter a Singleton bean with PostConstruct  and PreDestroy', () {
-      DDI.instance.registerSingleton(() => L());
+      DDI.instance.registerSingleton(clazzRegister: L.new);
 
       final L instance = DDI.instance.get();
 
@@ -16,7 +16,7 @@ void postConstructPreDestroyTest() {
     });
 
     test('Regsiter a Applcation bean with PostConstruct  and PreDestroy', () {
-      DDI.instance.registerApplication(() => L());
+      DDI.instance.registerApplication(clazzRegister: () => L());
 
       final L instance = DDI.instance.get();
 
@@ -26,7 +26,7 @@ void postConstructPreDestroyTest() {
     });
 
     test('Regsiter a Session bean with PostConstruct  and PreDestroy', () {
-      DDI.instance.registerSession(() => L());
+      DDI.instance.registerSession(clazzRegister: L.new);
 
       final L instance = DDI.instance.get();
 
@@ -36,7 +36,7 @@ void postConstructPreDestroyTest() {
     });
 
     test('Regsiter a Dependent bean with PostConstruct  and PreDestroy', () {
-      DDI.instance.registerDependent(() => L());
+      DDI.instance.registerDependent(clazzRegister: L.new);
 
       final L instance = DDI.instance.get();
 

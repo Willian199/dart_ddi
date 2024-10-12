@@ -3,11 +3,14 @@ import 'dart:async';
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/core/bean/utils/dart_ddi_utils.dart';
 import 'package:dart_ddi/src/core/bean/utils/dispose_utils.dart';
+import 'package:dart_ddi/src/core/bean/utils/instance_factory_util.dart';
 import 'package:dart_ddi/src/core/bean/utils/scope_utils.dart';
 import 'package:dart_ddi/src/data/factory_clazz.dart';
 import 'package:dart_ddi/src/enum/scopes.dart';
 import 'package:dart_ddi/src/exception/bean_not_found.dart';
 import 'package:dart_ddi/src/exception/duplicated_bean.dart';
+import 'package:dart_ddi/src/exception/factory_null.dart';
+import 'package:dart_ddi/src/exception/factory_unknow_type.dart';
 import 'package:dart_ddi/src/exception/future_not_accept.dart';
 import 'package:dart_ddi/src/exception/module_not_found.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
@@ -45,8 +48,9 @@ abstract class DDI {
   ///  **Use Case:**
   /// - Suitable for objects that are stateless or have shared state across the entire application.
   /// - Examples include utility classes, configuration objects, or services that maintain global state.
-  Future<void> registerSingleton<BeanT extends Object>(
-    BeanRegister<BeanT> clazzRegister, {
+  Future<void> registerSingleton<BeanT extends Object>({
+    BeanRegister<BeanT>? clazzRegister,
+    Function? customFactory,
     Object? qualifier,
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
@@ -75,8 +79,9 @@ abstract class DDI {
   ///  **Use Case:**
   /// - Appropriate for objects that need to persist during the entire application's lifecycle, but may have a more dynamic nature than Singleton instances.
   /// - Examples include managers, controllers, or services that should persist but might be recreated under certain circumstances.
-  Future<void> registerApplication<BeanT extends Object>(
-    BeanRegister<BeanT> clazzRegister, {
+  Future<void> registerApplication<BeanT extends Object>({
+    BeanRegister<BeanT>? clazzRegister,
+    Function? customFactory,
     Object? qualifier,
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
@@ -93,6 +98,7 @@ abstract class DDI {
   /// - `postConstruct`: Optional function to be executed after the instance is constructed.
   /// - `decorators`: List of decoration functions to apply to the instance.
   /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
+  /// - Examples include managers, controllers, or services that should persist but might be recreated under certain circumstances.
   /// - `registerIf`: Optional function to conditionally register the instance.
   /// - `destroyable`: Optional parameter to make the instance indestructible.
   /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module
@@ -105,8 +111,9 @@ abstract class DDI {
   ///  **Use Case:**
   /// - Appropriate for objects that need to persist during the entire application's lifecycle, but may have a more dynamic nature than Singleton instances.
   /// - Examples include managing user authentication state or caching user-specific preferences.
-  Future<void> registerSession<BeanT extends Object>(
-    BeanRegister<BeanT> clazzRegister, {
+  Future<void> registerSession<BeanT extends Object>({
+    BeanRegister<BeanT>? clazzRegister,
+    Function? customFactory,
     Object? qualifier,
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
@@ -134,8 +141,9 @@ abstract class DDI {
   ///  **Use Case:**
   /// - Suitable for objects with a short lifecycle or those that need to be recreated frequently, ensuring isolation between different parts of the application.
   /// - Examples include transient objects, temporary data holders, or components with a short lifespan.
-  Future<void> registerDependent<BeanT extends Object>(
-    BeanRegister<BeanT> clazzRegister, {
+  Future<void> registerDependent<BeanT extends Object>({
+    BeanRegister<BeanT>? clazzRegister,
+    Function? customFactory,
     Object? qualifier,
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
@@ -219,6 +227,8 @@ abstract class DDI {
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
   BeanT get<BeanT extends Object>({Object? qualifier});
 
+  BeanT getFactory<BeanT extends Object, ParameterT extends Object>({ParameterT? parameter, Object? qualifier});
+
   /// Gets an instance of the registered class in [DDI] from the specified [module].
   ///
   /// The [module] class requires to have DDIModule mixin.
@@ -228,8 +238,7 @@ abstract class DDI {
   /// Also the [module] class could be the qualifier from the Module Bean.
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
-  BeanT getComponent<BeanT extends Object>(
-      {required Object module, Object? qualifier});
+  BeanT getComponent<BeanT extends Object>({required Object module, Object? qualifier});
 
   /// Gets an instance of the registered class in [DDI].
   ///
@@ -274,9 +283,7 @@ abstract class DDI {
   ///
   /// - **Order of Execution:** Decorators are applied in the order they are provided.
   /// - **Instaces Already Gets:** No changes any Instances that have been get.
-  FutureOr<void> addDecorator<BeanT extends Object>(
-      ListDecorator<BeanT> decorators,
-      {Object? qualifier});
+  FutureOr<void> addDecorator<BeanT extends Object>(ListDecorator<BeanT> decorators, {Object? qualifier});
 
   /// Allows to dynamically add a Interceptor.
   ///
@@ -286,9 +293,7 @@ abstract class DDI {
   /// - **Around Constructor:** Will not work with Singletons Scope.
   /// - **Order of Execution:** Interceptor are applied in the order they are provided.
   /// - **Instaces Already Gets:** No changes any Instances that have been get.
-  void addInterceptor<BeanT extends Object>(
-      ListDDIInterceptor<BeanT> interceptors,
-      {Object? qualifier});
+  void addInterceptor<BeanT extends Object>(ListDDIInterceptor<BeanT> interceptors, {Object? qualifier});
 
   /// Allows to dynamically refresh the Object.
   ///
@@ -302,13 +307,11 @@ abstract class DDI {
 
   /// This function adds multiple child modules to a parent module.
   /// It takes a list of 'child' objects and an optional 'qualifier' for the parent module.
-  void addChildrenModules<BeanT extends Object>(
-      {required Set<Object> child, Object? qualifier});
+  void addChildrenModules<BeanT extends Object>({required Set<Object> child, Object? qualifier});
 
   /// This function adds a single child module to a parent module.
   /// It takes a 'child' object and an optional 'qualifier' for the parent module.
-  void addChildModules<BeanT extends Object>(
-      {required Object child, Object? qualifier});
+  void addChildModules<BeanT extends Object>({required Object child, Object? qualifier});
 
   Set<Object> getChildren<BeanT extends Object>({Object? qualifier});
 }

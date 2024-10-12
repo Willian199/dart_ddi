@@ -12,9 +12,9 @@ import '../clazz_samples/undestroyable/singleton_destroy_register.dart';
 void singleton() {
   group('DDI Singleton Basic Tests', () {
     void registerSingletonBeans() {
-      ddi.registerSingleton(C.new);
-      ddi.registerSingleton(() => B(ddi()));
-      ddi.registerSingleton(() => A(ddi()));
+      ddi.registerSingleton(clazzRegister: C.new);
+      ddi.registerSingleton(clazzRegister: () => B(ddi()));
+      ddi.registerSingleton(clazzRegister: () => A(ddi()));
     }
 
     void removeSingletonBeans() {
@@ -24,7 +24,7 @@ void singleton() {
     }
 
     test('Register and retrieve singleton bean', () {
-      ///Where is Singleton, should the register in the correct order
+      ///Where is Singleton, should register in the correct order
       registerSingletonBeans();
 
       final instance1 = ddi.get<A>();
@@ -54,8 +54,7 @@ void singleton() {
       ddi.destroy<B>();
     });
 
-    test('Retrieve singleton bean after a second "child" bean is destroyed',
-        () {
+    test('Retrieve singleton bean after a second "child" bean is destroyed', () {
       registerSingletonBeans();
 
       final instance = ddi.get<A>();
@@ -72,7 +71,7 @@ void singleton() {
     });
 
     test('Try to retrieve singleton bean after removed', () {
-      ddi.registerSingleton(() => C());
+      ddi.registerSingleton(clazzRegister: C.new);
 
       ddi.get<C>();
 
@@ -82,18 +81,17 @@ void singleton() {
     });
 
     test('Create, get and remove a qualifier bean', () {
-      ddi.registerSingleton(() => C(), qualifier: 'typeC');
+      ddi.registerSingleton(clazzRegister: C.new, qualifier: 'typeC');
 
       ddi.get(qualifier: 'typeC');
 
       ddi.destroy(qualifier: 'typeC');
 
-      expect(() => ddi.get(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => ddi.get(qualifier: 'typeC'), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Try to destroy a undestroyable Singleton bean', () {
-      ddi.registerSingleton(() => SingletonDestroyGet(), destroyable: false);
+      ddi.registerSingleton(clazzRegister: SingletonDestroyGet.new, destroyable: false);
 
       final instance1 = ddi.get<SingletonDestroyGet>();
 
@@ -105,15 +103,13 @@ void singleton() {
     });
 
     test('Try to register again a undestroyable Singleton bean', () {
-      ddi.registerSingleton(() => SingletonDestroyRegister(),
-          destroyable: false);
+      ddi.registerSingleton(clazzRegister: SingletonDestroyRegister.new, destroyable: false);
 
       ddi.get<SingletonDestroyRegister>();
 
       ddi.destroy<SingletonDestroyRegister>();
 
-      expect(() => ddi.registerSingleton(() => SingletonDestroyRegister()),
-          throwsA(isA<DuplicatedBeanException>()));
+      expect(() => ddi.registerSingleton(clazzRegister: SingletonDestroyRegister.new), throwsA(isA<DuplicatedBeanException>()));
     });
   });
 }

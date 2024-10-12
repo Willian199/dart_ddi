@@ -19,3 +19,5 @@ typedef BeanInterceptor<BeanT> = DDIInterceptor<BeanT> Function();
 typedef ListDDIInterceptor<BeanT> = List<BeanInterceptor<BeanT>>;
 
 typedef BeanRegister<BeanT> = FutureOr<BeanT> Function();
+
+typedef FactoryBeanRegister<BeanT, ParameterT> = FutureOr<BeanT> Function(ParameterT);

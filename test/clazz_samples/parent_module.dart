@@ -7,6 +7,6 @@ class ParentModule with DDIModule {
   @override
   void onPostConstruct() {
     registerComponent(() => const Component('parent'));
-    registerApplication(ChildModule.new);
+    registerApplication(clazzRegister: ChildModule.new);
   }
 }

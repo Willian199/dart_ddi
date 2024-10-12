@@ -9,7 +9,7 @@ import '../clazz_samples/module_application.dart';
 void moduleApplicationTest() {
   group('DDI Modules Application Basic Tests', () {
     test('Register a Application Module', () {
-      DDI.instance.registerApplication(ModuleApplication.new);
+      DDI.instance.registerApplication(clazzRegister: ModuleApplication.new);
 
       DDI.instance.get<ModuleApplication>();
       final instance1 = DDI.instance.get<A>();
@@ -22,8 +22,7 @@ void moduleApplicationTest() {
 
       DDI.instance.destroy<ModuleApplication>();
 
-      expect(
-          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
     });
   });
 }
