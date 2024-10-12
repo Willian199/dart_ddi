@@ -196,7 +196,7 @@ abstract class DDI {
   /// - `registerIf`: Optional function to conditionally register the instance.
   /// - `destroyable`: Optional parameter to make the instance indestructible.
   /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to vinculate multiple classes under a single parent module.
-  Future<void> registerModule<BeanT extends Object>({
+  Future<void> registerComponent<BeanT extends Object>({
     required BeanRegister<BeanT> clazzRegister,
     required Object moduleQualifier,
     Object? qualifier,

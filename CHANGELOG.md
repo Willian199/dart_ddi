@@ -1,7 +1,6 @@
 ## 0.7.1
 
 * Added support for registering a custom factory class with the `register` method. Note: Factories with parameters are not yet supported.
-* Breaking change: Renamed `registerComponent` to `registerModule`.
 
 ## 0.7.0
 

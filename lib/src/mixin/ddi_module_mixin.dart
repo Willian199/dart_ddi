@@ -232,7 +232,7 @@ mixin DDIModule implements PostConstruct {
   /// - `registerIf`: Optional function to conditionally register the instance.
   /// - `destroyable`: Optional parameter to make the instance indestructible.
   /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to vinculate multiple classes under a single parent module.
-  Future<void> registerModule<BeanT extends Object>(
+  Future<void> registerComponent<BeanT extends Object>(
     BeanRegister<BeanT> clazzRegister, {
     Object? qualifier,
     VoidCallback? postConstruct,
@@ -242,7 +242,7 @@ mixin DDIModule implements PostConstruct {
     bool destroyable = true,
     Set<Object>? children,
   }) {
-    return ddi.registerModule<BeanT>(
+    return ddi.registerComponent<BeanT>(
       clazzRegister: clazzRegister,
       moduleQualifier: moduleQualifier,
       qualifier: qualifier,

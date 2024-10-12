@@ -225,7 +225,7 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  Future<void> registerModule<BeanT extends Object>({
+  Future<void> registerComponent<BeanT extends Object>({
     required BeanRegister<BeanT> clazzRegister,
     required Object moduleQualifier,
     Object? qualifier,
