@@ -1,5 +1,6 @@
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/core/bean/utils/dart_ddi_utils.dart';
+import 'package:dart_ddi/src/core/bean/utils/instance_factory_util.dart';
 
 final class DependentUtils {
   static BeanT getDependent<BeanT extends Object>(
@@ -7,7 +8,9 @@ final class DependentUtils {
     Object effectiveQualifierName,
   ) {
     BeanT dependentClazz = _applyDependent<BeanT>(
-        factoryClazz, (factoryClazz.clazzRegister as BeanT Function())());
+      factoryClazz,
+      InstanceFactoryUtil.create(clazzFactory: factoryClazz.clazzFactory!),
+    );
 
     if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
@@ -34,7 +37,8 @@ final class DependentUtils {
   ) async {
     BeanT dependentClazz = _applyDependent<BeanT>(
       factoryClazz,
-      (await factoryClazz.clazzRegister!.call()) as BeanT,
+      await InstanceFactoryUtil.createAsync(
+          clazzFactory: factoryClazz.clazzFactory!),
     );
 
     if (dependentClazz is DDIModule) {

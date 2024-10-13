@@ -1,5 +1,6 @@
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/exception/bean_not_found.dart';
+import 'package:dart_ddi/src/exception/duplicated_bean.dart';
 import 'package:test/test.dart';
 
 import '../clazz_samples/a.dart';
@@ -176,7 +177,10 @@ void application() {
 
       DDI.instance.destroy<ApplicationDestroyRegister>();
 
-      // expect(() => DDI.instance.registerApplication(() => ApplicationDestroyRegister()), throwsA(isA<DuplicatedBean>()));
+      expect(
+          () => DDI.instance
+              .registerApplication(() => ApplicationDestroyRegister()),
+          throwsA(isA<DuplicatedBeanException>()));
     });
   });
 }

@@ -2,6 +2,7 @@
 
 import 'dart:async';
 
+import 'package:dart_ddi/src/data/custom_factory.dart';
 import 'package:dart_ddi/src/enum/scopes.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
 
@@ -18,7 +19,7 @@ final class FactoryClazz<BeanT extends Object> {
   ListDDIInterceptor<BeanT>? interceptors;
 
   /// The [FutureOr] function that returns the bean instance.
-  final Function? clazzRegister;
+  final CustomFactory<FutureOr<BeanT>>? clazzFactory;
 
   /// The function that is called after the bean is created.
   final VoidCallback? postConstruct;
@@ -39,7 +40,7 @@ final class FactoryClazz<BeanT extends Object> {
     required this.scopeType,
     required this.destroyable,
     this.clazzInstance,
-    this.clazzRegister,
+    this.clazzFactory,
     this.decorators,
     this.postConstruct,
     this.interceptors,
@@ -48,7 +49,7 @@ final class FactoryClazz<BeanT extends Object> {
 
   factory FactoryClazz.singleton({
     BeanT? clazzInstance,
-    Function? clazzRegister,
+    CustomFactory<FutureOr<BeanT>>? clazzFactory,
     ListDDIInterceptor<BeanT>? interceptors,
     bool destroyable = true,
     Set<Object>? children,
@@ -60,13 +61,13 @@ final class FactoryClazz<BeanT extends Object> {
       clazzInstance: clazzInstance,
       interceptors: interceptors,
       children: children,
-      clazzRegister: clazzRegister,
+      clazzFactory: clazzFactory,
       decorators: decorators,
     );
   }
 
   factory FactoryClazz.application({
-    required Function clazzRegister,
+    required CustomFactory<FutureOr<BeanT>> clazzFactory,
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
     ListDDIInterceptor<BeanT>? interceptors,
@@ -76,7 +77,7 @@ final class FactoryClazz<BeanT extends Object> {
     return FactoryClazz<BeanT>._(
       scopeType: Scopes.application,
       destroyable: destroyable,
-      clazzRegister: clazzRegister,
+      clazzFactory: clazzFactory,
       postConstruct: postConstruct,
       decorators: decorators,
       interceptors: interceptors,
@@ -85,7 +86,7 @@ final class FactoryClazz<BeanT extends Object> {
   }
 
   factory FactoryClazz.session({
-    required Function clazzRegister,
+    required CustomFactory<FutureOr<BeanT>> clazzFactory,
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
     ListDDIInterceptor<BeanT>? interceptors,
@@ -95,7 +96,7 @@ final class FactoryClazz<BeanT extends Object> {
     return FactoryClazz<BeanT>._(
       scopeType: Scopes.session,
       destroyable: destroyable,
-      clazzRegister: clazzRegister,
+      clazzFactory: clazzFactory,
       postConstruct: postConstruct,
       decorators: decorators,
       interceptors: interceptors,
@@ -104,7 +105,7 @@ final class FactoryClazz<BeanT extends Object> {
   }
 
   factory FactoryClazz.dependent({
-    required Function clazzRegister,
+    required CustomFactory<FutureOr<BeanT>> clazzFactory,
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
     ListDDIInterceptor<BeanT>? interceptors,
@@ -114,7 +115,7 @@ final class FactoryClazz<BeanT extends Object> {
     return FactoryClazz<BeanT>._(
       scopeType: Scopes.dependent,
       destroyable: destroyable,
-      clazzRegister: clazzRegister,
+      clazzFactory: clazzFactory,
       postConstruct: postConstruct,
       decorators: decorators,
       interceptors: interceptors,

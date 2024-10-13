@@ -14,9 +14,23 @@ class _DDIImpl implements DDI {
     bool destroyable = true,
     Set<Object>? children,
   }) {
+    if (clazzRegister is Future || clazzRegister is! BeanT Function()) {
+      return register<BeanT>(
+        factoryClazz: FactoryClazz.singleton(
+          clazzFactory: (clazzRegister as Future<BeanT> Function()).factory,
+          children: children,
+          interceptors: interceptors,
+          decorators: decorators,
+          destroyable: destroyable,
+        ),
+        qualifier: qualifier,
+        registerIf: registerIf,
+      );
+    }
+
     return register<BeanT>(
       factoryClazz: FactoryClazz.singleton(
-        clazzRegister: clazzRegister,
+        clazzFactory: (clazzRegister).factory,
         children: children,
         interceptors: interceptors,
         decorators: decorators,
@@ -40,7 +54,7 @@ class _DDIImpl implements DDI {
   }) {
     return register<BeanT>(
       factoryClazz: FactoryClazz.application(
-        clazzRegister: clazzRegister,
+        clazzFactory: clazzRegister.factory,
         children: children,
         interceptors: interceptors,
         decorators: decorators,
@@ -64,7 +78,7 @@ class _DDIImpl implements DDI {
   }) {
     return register<BeanT>(
       factoryClazz: FactoryClazz.session(
-        clazzRegister: clazzRegister,
+        clazzFactory: clazzRegister.factory,
         children: children,
         interceptors: interceptors,
         decorators: decorators,
@@ -88,7 +102,7 @@ class _DDIImpl implements DDI {
   }) {
     return register<BeanT>(
       factoryClazz: FactoryClazz.dependent(
-        clazzRegister: clazzRegister,
+        clazzFactory: clazzRegister.factory,
         children: children,
         interceptors: interceptors,
         decorators: decorators,
@@ -105,7 +119,9 @@ class _DDIImpl implements DDI {
     Object? qualifier,
     FutureOrBoolCallback? registerIf,
   }) async {
-    if (factoryClazz.scopeType == Scopes.object) {
+    if (factoryClazz.scopeType == Scopes.object ||
+        factoryClazz.clazzFactory == null ||
+        BeanT == Object) {
       throw FactoryNotAllowedException(BeanT.toString());
     }
 
@@ -127,10 +143,6 @@ class _DDIImpl implements DDI {
       }
 
       if (factoryClazz.scopeType == Scopes.singleton) {
-        if (factoryClazz.clazzRegister == null ||
-            factoryClazz.clazzInstance != null) {
-          throw FactoryNotAllowedException(effectiveQualifierName.toString());
-        }
         return _applySingleton<BeanT>(factoryClazz, effectiveQualifierName);
       } else {
         _beans[effectiveQualifierName] = factoryClazz;
@@ -142,10 +154,14 @@ class _DDIImpl implements DDI {
       FactoryClazz<BeanT> factoryClazz, Object effectiveQualifierName) async {
     late BeanT clazz;
 
-    if (factoryClazz.clazzRegister is BeanT Function()) {
-      clazz = factoryClazz.clazzRegister!() as BeanT;
+    // Prevents a FutureOr<BeanT> being evaluated erronously
+    if (factoryClazz.clazzFactory!.isFuture ||
+        factoryClazz.clazzFactory!.returnType != BeanT) {
+      clazz = await InstanceFactoryUtil.createAsync(
+          clazzFactory: factoryClazz.clazzFactory!);
     } else {
-      clazz = (await factoryClazz.clazzRegister!()) as BeanT;
+      clazz =
+          InstanceFactoryUtil.create(clazzFactory: factoryClazz.clazzFactory!);
     }
 
     if (factoryClazz.interceptors != null) {
@@ -165,6 +181,7 @@ class _DDIImpl implements DDI {
 
     _beans[effectiveQualifierName] = FactoryClazz<BeanT>.singleton(
       clazzInstance: clazz,
+      clazzFactory: factoryClazz.clazzFactory,
       interceptors: factoryClazz.interceptors,
       destroyable: factoryClazz.destroyable,
       children: factoryClazz.children,
@@ -286,8 +303,8 @@ class _DDIImpl implements DDI {
 
     if (_beans[effectiveQualifierName]
         case final FactoryClazz<BeanT> factoryClazz?) {
-      if (factoryClazz.clazzRegister is BeanRegister<BeanT> &&
-          BeanT is Future) {
+      if (factoryClazz.scopeType != Scopes.object &&
+          factoryClazz.clazzFactory!.isFuture) {
         throw const FutureNotAcceptException();
       }
 

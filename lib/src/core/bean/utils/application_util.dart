@@ -1,5 +1,6 @@
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/core/bean/utils/dart_ddi_utils.dart';
+import 'package:dart_ddi/src/core/bean/utils/instance_factory_util.dart';
 
 final class ApplicationUtils {
   static Future<BeanT> getAplicationAsync<BeanT extends Object>(
@@ -9,7 +10,8 @@ final class ApplicationUtils {
     if (factoryClazz.clazzInstance == null) {
       applicationClazz = _applyApplication<BeanT>(
         factoryClazz,
-        (await factoryClazz.clazzRegister!.call()) as BeanT,
+        await InstanceFactoryUtil.createAsync(
+            clazzFactory: factoryClazz.clazzFactory!),
       );
 
       if (applicationClazz is DDIModule) {
@@ -41,8 +43,8 @@ final class ApplicationUtils {
     late BeanT applicationClazz;
 
     if (factoryClazz.clazzInstance == null) {
-      applicationClazz = _applyApplication<BeanT>(
-          factoryClazz, (factoryClazz.clazzRegister as BeanT Function())());
+      applicationClazz = _applyApplication<BeanT>(factoryClazz,
+          InstanceFactoryUtil.create(clazzFactory: factoryClazz.clazzFactory!));
 
       if (applicationClazz is DDIModule) {
         applicationClazz.moduleQualifier = effectiveQualifierName;
