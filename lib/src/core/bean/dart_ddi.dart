@@ -11,7 +11,6 @@ import 'package:dart_ddi/src/exception/duplicated_bean.dart';
 import 'package:dart_ddi/src/exception/factory_not_allowed.dart';
 import 'package:dart_ddi/src/exception/future_not_accept.dart';
 import 'package:dart_ddi/src/exception/module_not_found.dart';
-import 'package:dart_ddi/src/extension/function_extension.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
 
 part 'dart_ddi_impl.dart';

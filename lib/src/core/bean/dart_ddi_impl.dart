@@ -304,7 +304,10 @@ class _DDIImpl implements DDI {
     if (_beans[effectiveQualifierName]
         case final FactoryClazz<BeanT> factoryClazz?) {
       if (factoryClazz.scopeType != Scopes.object &&
-          factoryClazz.clazzFactory!.isFuture) {
+          factoryClazz.clazzFactory!.isFuture &&
+          // If the instance is already created
+          // We allow get it
+          factoryClazz.clazzInstance == null) {
         throw const FutureNotAcceptException();
       }
 

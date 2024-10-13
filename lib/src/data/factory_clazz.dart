@@ -54,6 +54,7 @@ final class FactoryClazz<BeanT extends Object> {
     bool destroyable = true,
     Set<Object>? children,
     ListDecorator<BeanT>? decorators,
+    VoidCallback? postConstruct,
   }) {
     return FactoryClazz<BeanT>._(
       scopeType: Scopes.singleton,
@@ -63,6 +64,7 @@ final class FactoryClazz<BeanT extends Object> {
       children: children,
       clazzFactory: clazzFactory,
       decorators: decorators,
+      postConstruct: postConstruct,
     );
   }
 

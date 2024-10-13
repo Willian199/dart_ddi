@@ -98,8 +98,8 @@ void dependentFuture() {
       DDI.instance
           .registerDependent(() => Future.value(C()), qualifier: 'typeC');
 
-      final instance1 = DDI.instance.get(qualifier: 'typeC');
-      final instance2 = DDI.instance.get(qualifier: 'typeC');
+      final instance1 = DDI.instance.getAsync(qualifier: 'typeC');
+      final instance2 = DDI.instance.getAsync(qualifier: 'typeC');
 
       expect(false, identical(instance1, instance2));
 

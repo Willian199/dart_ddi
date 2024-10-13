@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
-import 'package:dart_ddi/src/data/custom_factory.dart';
 
 class InstanceFactoryUtil {
   static BeanT create<BeanT extends Object, ParameterT extends Object>({
@@ -56,10 +55,12 @@ class InstanceFactoryUtil {
 
   static FutureOr<BeanT> _autoInjectAsync<BeanT extends Object>(
       CustomFactory<FutureOr<BeanT>> clazzFactory) async {
-    final instances = await Future.wait([
+    /// Must await inject by inject
+    /// If use await Future.wait([]) could create different instance for the same type.
+    final instances = [
       for (final inject in clazzFactory.parametersType)
-        ddi.getAsync(qualifier: inject)
-    ]);
+        await ddi.getAsync(qualifier: inject)
+    ];
 
     return Function.apply(clazzFactory.clazzRegister, instances) as BeanT;
   }

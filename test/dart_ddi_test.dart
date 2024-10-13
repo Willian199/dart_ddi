@@ -1,4 +1,7 @@
+import 'beans_test/add_decoratos_factory_test.dart';
 import 'beans_test/add_decoratos_test.dart';
+import 'beans_test/application_factory_future_test.dart';
+import 'beans_test/application_factory_test.dart';
 import 'beans_test/application_future_test.dart';
 import 'beans_test/application_test.dart';
 import 'beans_test/circular_injection_test.dart';
@@ -23,6 +26,8 @@ import 'beans_test/post_construct_pre_destroy_test.dart';
 import 'beans_test/register_if_test.dart';
 import 'beans_test/session_future_test.dart';
 import 'beans_test/session_test.dart';
+import 'beans_test/singleton_factory_future_test.dart';
+import 'beans_test/singleton_factory_test.dart';
 import 'beans_test/singleton_future_test.dart';
 import 'beans_test/singleton_test.dart';
 import 'event_test/event_filter_test.dart';
@@ -38,6 +43,13 @@ void main() {
   session();
   dependent();
   object();
+
+  //Factories
+  singletonFactory();
+  singletonFactoryFuture();
+  applicationFactory();
+  applicationFactoryFuture();
+  addDecoratorFactory();
 
   runByType();
   disposeDestroyAllSession();
