@@ -5,6 +5,8 @@ import 'beans_test/application_factory_test.dart';
 import 'beans_test/application_future_test.dart';
 import 'beans_test/application_test.dart';
 import 'beans_test/circular_injection_test.dart';
+import 'beans_test/dependent_factory_future_test.dart';
+import 'beans_test/dependent_factory_test.dart';
 import 'beans_test/dependent_future_test.dart';
 import 'beans_test/dependent_test.dart';
 import 'beans_test/dispose_destroy_all_session_test.dart';
@@ -19,6 +21,7 @@ import 'beans_test/interceptor_test.dart';
 import 'beans_test/module_application_test.dart';
 import 'beans_test/module_component_test.dart';
 import 'beans_test/module_dependent_test.dart';
+import 'beans_test/module_factory_test.dart';
 import 'beans_test/module_object_test.dart';
 import 'beans_test/module_session_test.dart';
 import 'beans_test/module_singleton_test.dart';
@@ -51,6 +54,8 @@ void main() {
   singletonFactoryFuture();
   applicationFactory();
   applicationFactoryFuture();
+  dependentFactory();
+  dependentFactoryFuture();
 
   runByType();
   disposeDestroyAllSession();
@@ -89,6 +94,7 @@ void main() {
   moduleObjectTest();
   moduleSessionTest();
   moduleComponentTest();
+  moduleFactoryApplicationTest();
 
   //Events
   eventTest();

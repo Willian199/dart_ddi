@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
+import 'package:dart_ddi/src/exception/bean_creation.dart';
 
 class InstanceFactoryUtil {
   static BeanT create<BeanT extends Object, ParameterT extends Object>({
@@ -12,13 +13,13 @@ class InstanceFactoryUtil {
       final BeanT Function(ParameterT) c when parameters != null =>
         c.call(parameters),
       final BeanT Function(ParameterT) c when parameters == null =>
-        c.call(ddi.get(qualifier: builder.parametersType.first)),
+        c.call(ddi.get<ParameterT>()),
       final Function f when parameters != null && parameters is List =>
         Function.apply(f, [...parameters]) as BeanT,
       final Function f when parameters != null =>
         Function.apply(f, [parameters]) as BeanT,
       final Function _ when parameters == null => _autoInject(builder),
-      _ => throw Exception("erro")
+      _ => throw BeanCreationException(BeanT.toString())
     };
   }
 
@@ -35,19 +36,19 @@ class InstanceFactoryUtil {
       createAsync<BeanT extends Object, ParameterT extends Object>({
     required CustomBuilder<FutureOr<BeanT>> builder,
     ParameterT? parameters,
-  }) {
+  }) async {
     return switch (builder.producer) {
       final FutureOr<BeanT> Function() s => s.call(),
       final FutureOr<BeanT> Function(ParameterT) c when parameters != null =>
         c.call(parameters),
       final FutureOr<BeanT> Function(ParameterT) c when parameters == null =>
-        c.call(ddi.get<ParameterT>()),
+        c.call(await ddi.getAsync<ParameterT>()),
       final Function f when parameters != null && parameters is List =>
         Function.apply(f, [...parameters]) as FutureOr<BeanT>,
       final Function f when parameters != null =>
         Function.apply(f, [parameters]) as FutureOr<BeanT>,
       final Function _ when parameters == null => _autoInjectAsync(builder),
-      _ => throw Exception("erro")
+      _ => throw BeanCreationException(BeanT.toString())
     };
   }
 
