@@ -4,15 +4,15 @@ import 'package:dart_ddi/src/core/bean/utils/instance_factory_util.dart';
 
 final class DependentUtils {
   static BeanT getDependent<BeanT extends Object>(
-    FactoryClazz<BeanT> factoryClazz,
+    ScopeFactory<BeanT> factory,
     Object effectiveQualifierName,
   ) {
     BeanT dependentClazz = _applyDependent<BeanT>(
-      factoryClazz,
-      InstanceFactoryUtil.create(clazzFactory: factoryClazz.clazzFactory!),
+      factory,
+      InstanceFactoryUtil.create(builder: factory.builder!),
     );
 
-    if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
+    if (factory.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
         dependentClazz = interceptor().onGet(dependentClazz);
       }
@@ -32,13 +32,12 @@ final class DependentUtils {
   }
 
   static Future<BeanT> getDependentAsync<BeanT extends Object>(
-    FactoryClazz<BeanT> factoryClazz,
+    ScopeFactory<BeanT> factory,
     Object effectiveQualifierName,
   ) async {
     BeanT dependentClazz = _applyDependent<BeanT>(
-      factoryClazz,
-      await InstanceFactoryUtil.createAsync(
-          clazzFactory: factoryClazz.clazzFactory!),
+      factory,
+      await InstanceFactoryUtil.createAsync(builder: factory.builder!),
     );
 
     if (dependentClazz is DDIModule) {
@@ -51,7 +50,7 @@ final class DependentUtils {
       await DartDDIUtils.runFutureOrPostConstruct(dependentClazz);
     }
 
-    if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
+    if (factory.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
         dependentClazz = interceptor().onGet(dependentClazz);
       }
@@ -61,7 +60,7 @@ final class DependentUtils {
   }
 
   static BeanT _applyDependent<BeanT extends Object>(
-    FactoryClazz<BeanT> factoryClazz,
+    ScopeFactory<BeanT> factory,
     BeanT dependentClazz,
   ) {
     assert(
@@ -71,16 +70,16 @@ final class DependentUtils {
         dependentClazz is! PreDestroy || dependentClazz is! Future<PreDestroy>,
         'Dependent instances dont support PreDestroy. Use Interceptors instead.');
 
-    if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
+    if (factory.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
         dependentClazz = interceptor().onCreate(dependentClazz);
       }
     }
 
     dependentClazz = DartDDIUtils.executarDecorators<BeanT>(
-        dependentClazz, factoryClazz.decorators);
+        dependentClazz, factory.decorators);
 
-    factoryClazz.postConstruct?.call();
+    factory.postConstruct?.call();
 
     return dependentClazz;
   }

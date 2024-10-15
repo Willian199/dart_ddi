@@ -39,7 +39,7 @@ void addDecoratorFactory() {
 
     test('ADD Decorators to a Factory Singleton bean', () {
       DDI.instance.register(
-        factoryClazz: D.new.factory.asSingleton(
+        factory: D.new.builder.asSingleton(
           decorators: [
             (instance) => E(instance),
             (instance) => F(instance),
@@ -54,7 +54,7 @@ void addDecoratorFactory() {
 
     test('ADD Decorators to a Factory Application bean', () {
       DDI.instance.register(
-        factoryClazz: D.new.factory.asApplication(
+        factory: D.new.builder.asApplication(
           decorators: [
             (instance) => E(instance),
             (instance) => F(instance),
@@ -69,7 +69,7 @@ void addDecoratorFactory() {
 
     test('ADD Decorators to a Session bean', () {
       DDI.instance.register(
-        factoryClazz: D.new.factory.asSession(
+        factory: D.new.builder.asSession(
           decorators: [
             (instance) => E(instance),
             (instance) => F(instance),
@@ -84,7 +84,7 @@ void addDecoratorFactory() {
 
     test('ADD Decorators to a Dependent bean', () {
       DDI.instance.register(
-        factoryClazz: D.new.factory.asDependent(
+        factory: D.new.builder.asDependent(
           decorators: [
             (instance) => E(instance),
             (instance) => F(instance),
@@ -99,10 +99,10 @@ void addDecoratorFactory() {
 
     test('ADD Decorators to a Future Factory Singleton bean', () async {
       await DDI.instance.register(
-        factoryClazz: () async {
+        factory: () async {
           await Future.delayed(const Duration(milliseconds: 10));
           return Future.value(D());
-        }.factory.asSingleton(
+        }.builder.asSingleton(
           decorators: [
             (instance) => E(instance),
             (instance) => F(instance),
@@ -117,10 +117,10 @@ void addDecoratorFactory() {
 
     test('ADD Decorators to a Future Factory Application bean', () async {
       DDI.instance.register(
-        factoryClazz: () async {
+        factory: () async {
           await Future.delayed(const Duration(milliseconds: 10));
           return Future.value(D());
-        }.factory.asApplication(
+        }.builder.asApplication(
           decorators: [
             (instance) => E(instance),
             (instance) => F(instance),
@@ -135,10 +135,10 @@ void addDecoratorFactory() {
 
     test('ADD Decorators to a Future Factory Session bean', () async {
       DDI.instance.register(
-        factoryClazz: () async {
+        factory: () async {
           await Future.delayed(const Duration(milliseconds: 10));
           return Future.value(D());
-        }.factory.asSession(
+        }.builder.asSession(
           decorators: [
             (instance) => E(instance),
             (instance) => F(instance),
@@ -153,10 +153,10 @@ void addDecoratorFactory() {
 
     test('ADD Decorators to a Future Factory Dependent bean', () async {
       DDI.instance.register(
-        factoryClazz: () async {
+        factory: () async {
           await Future.delayed(const Duration(milliseconds: 10));
           return Future.value(D());
-        }.factory.asDependent(
+        }.builder.asDependent(
           decorators: [
             (instance) => E(instance),
             (instance) => F(instance),

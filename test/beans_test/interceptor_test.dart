@@ -24,7 +24,8 @@ void interceptor() {
 
       DDI.instance.destroy<G>();
 
-      expect(() => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
+      expect(
+          () => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('ADD Interceptor to a Application bean', () {
@@ -37,11 +38,13 @@ void interceptor() {
 
       DDI.instance.destroy<G>();
 
-      expect(() => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
+      expect(
+          () => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('ADD Interceptor to a Application bean with qualifier', () {
-      DDI.instance.registerApplication<G>(() => H(), qualifier: 'qualifier', interceptors: [() => J()]);
+      DDI.instance.registerApplication<G>(() => H(),
+          qualifier: 'qualifier', interceptors: [() => J()]);
 
       final G instance = DDI.instance.get<G>(qualifier: 'qualifier');
 
@@ -50,7 +53,8 @@ void interceptor() {
 
       DDI.instance.destroy<G>(qualifier: 'qualifier');
 
-      expect(() => DDI.instance.get<G>(qualifier: 'qualifier'), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<G>(qualifier: 'qualifier'),
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('ADD Interceptor to a Dependent bean', () {
@@ -63,7 +67,8 @@ void interceptor() {
 
       DDI.instance.destroy<G>();
 
-      expect(() => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
+      expect(
+          () => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('ADD Interceptor to a Session bean', () {
@@ -76,7 +81,8 @@ void interceptor() {
 
       DDI.instance.destroy<G>();
 
-      expect(() => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
+      expect(
+          () => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('ADD Interceptor after registered a Application bean', () {
@@ -100,7 +106,8 @@ void interceptor() {
 
       DDI.instance.destroy<G>();
 
-      expect(() => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
+      expect(
+          () => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('ADD Decorators and Interceptor to a Singleton bean', () {

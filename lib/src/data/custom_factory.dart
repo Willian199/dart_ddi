@@ -1,22 +1,22 @@
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
 
-final class CustomFactory<BeanT extends Object> {
-  const CustomFactory(
+final class CustomBuilder<BeanT extends Object> {
+  const CustomBuilder(
       this.clazzRegister, this.parametersType, this.returnType, this.isFuture);
   final Function clazzRegister;
   final List<Type> parametersType;
   final Type returnType;
   final bool isFuture;
 
-  FactoryClazz<BeanT> asApplication({
+  ScopeFactory<BeanT> asApplication({
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
     bool destroyable = true,
     Set<Object>? children,
   }) {
-    return FactoryClazz<BeanT>.application(
-      clazzFactory: this,
+    return ScopeFactory<BeanT>.application(
+      builder: this,
       postConstruct: postConstruct,
       decorators: decorators,
       destroyable: destroyable,
@@ -24,14 +24,14 @@ final class CustomFactory<BeanT extends Object> {
     );
   }
 
-  FactoryClazz<BeanT> asSession({
+  ScopeFactory<BeanT> asSession({
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
     bool destroyable = true,
     Set<Object>? children,
   }) {
-    return FactoryClazz<BeanT>.session(
-      clazzFactory: this,
+    return ScopeFactory<BeanT>.session(
+      builder: this,
       postConstruct: postConstruct,
       decorators: decorators,
       destroyable: destroyable,
@@ -39,14 +39,14 @@ final class CustomFactory<BeanT extends Object> {
     );
   }
 
-  FactoryClazz<BeanT> asDependent({
+  ScopeFactory<BeanT> asDependent({
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
     bool destroyable = true,
     Set<Object>? children,
   }) {
-    return FactoryClazz<BeanT>.dependent(
-      clazzFactory: this,
+    return ScopeFactory<BeanT>.dependent(
+      builder: this,
       postConstruct: postConstruct,
       decorators: decorators,
       destroyable: destroyable,
@@ -54,14 +54,14 @@ final class CustomFactory<BeanT extends Object> {
     );
   }
 
-  FactoryClazz<BeanT> asSingleton({
+  ScopeFactory<BeanT> asSingleton({
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
     bool destroyable = true,
     Set<Object>? children,
   }) {
-    return FactoryClazz<BeanT>.singleton(
-      clazzFactory: this,
+    return ScopeFactory<BeanT>.singleton(
+      builder: this,
       postConstruct: postConstruct,
       decorators: decorators,
       destroyable: destroyable,

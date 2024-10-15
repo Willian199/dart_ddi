@@ -31,8 +31,8 @@ extension DDIExtension on DDI {
     Set<Object>? children,
   }) {
     return register<BeanT>(
-      factoryClazz: FactoryClazz.singleton(
-        clazzFactory: clazzRegister.factory,
+      factory: ScopeFactory.singleton(
+        builder: clazzRegister.builder,
         children: children,
         interceptors: interceptors,
         decorators: decorators,
@@ -73,8 +73,8 @@ extension DDIExtension on DDI {
     Set<Object>? children,
   }) {
     return register<BeanT>(
-      factoryClazz: FactoryClazz.application(
-        clazzFactory: clazzRegister.factory,
+      factory: ScopeFactory.application(
+        builder: clazzRegister.builder,
         children: children,
         interceptors: interceptors,
         decorators: decorators,
@@ -115,8 +115,8 @@ extension DDIExtension on DDI {
     Set<Object>? children,
   }) {
     return register<BeanT>(
-      factoryClazz: FactoryClazz.session(
-        clazzFactory: clazzRegister.factory,
+      factory: ScopeFactory.session(
+        builder: clazzRegister.builder,
         children: children,
         interceptors: interceptors,
         decorators: decorators,
@@ -156,8 +156,8 @@ extension DDIExtension on DDI {
     Set<Object>? children,
   }) {
     return register<BeanT>(
-      factoryClazz: FactoryClazz.dependent(
-        clazzFactory: clazzRegister.factory,
+      factory: ScopeFactory.dependent(
+        builder: clazzRegister.builder,
         children: children,
         interceptors: interceptors,
         decorators: decorators,

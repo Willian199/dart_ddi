@@ -115,13 +115,13 @@ void runByType() {
     test('Factory Singleton Get bean by Type that have registered and dispose',
         () {
       ddi.register<G>(
-          factoryClazz: H.new.factory.asSingleton(), qualifier: 'firtsClass');
+          factory: H.new.builder.asSingleton(), qualifier: 'firtsClass');
 
       final List<Object> keys1 = ddi.getByType<G>();
 
       expect(keys1.length, 1);
       ddi.register<G>(
-          factoryClazz: I.new.factory.asSingleton(), qualifier: 'secondClass');
+          factory: I.new.builder.asSingleton(), qualifier: 'secondClass');
 
       final List<Object> keys2 = ddi.getByType<G>();
 
@@ -145,14 +145,13 @@ void runByType() {
         'Factory Application Get bean by Type that have registered and dispose',
         () {
       ddi.register<G>(
-          factoryClazz: H.new.factory.asApplication(), qualifier: 'firtsClass');
+          factory: H.new.builder.asApplication(), qualifier: 'firtsClass');
 
       final List<Object> keys1 = ddi.getByType<G>();
 
       expect(keys1.length, 1);
       ddi.register<G>(
-          factoryClazz: I.new.factory.asApplication(),
-          qualifier: 'secondClass');
+          factory: I.new.builder.asApplication(), qualifier: 'secondClass');
 
       final List<Object> keys2 = ddi.getByType<G>();
 
@@ -176,7 +175,7 @@ void runByType() {
         'Factory and Non Factory Application Get bean by Type that have registered and dispose',
         () {
       ddi.register<G>(
-          factoryClazz: H.new.factory.asApplication(), qualifier: 'firtsClass');
+          factory: H.new.builder.asApplication(), qualifier: 'firtsClass');
 
       final List<Object> keys1 = ddi.getByType<G>();
 
@@ -206,11 +205,11 @@ void runByType() {
         () async {
       ddi.register<G>(
         qualifier: 'firtsClass',
-        factoryClazz: FactoryClazz.application(
-          clazzFactory: () async {
+        factory: ScopeFactory.application(
+          builder: () async {
             await Future.delayed(const Duration(milliseconds: 200));
             return H();
-          }.factory,
+          }.builder,
         ),
       );
 
@@ -219,11 +218,11 @@ void runByType() {
       expect(keys1.length, 1);
       ddi.register<G>(
         qualifier: 'secondClass',
-        factoryClazz: FactoryClazz.application(
-          clazzFactory: () async {
+        factory: ScopeFactory.application(
+          builder: () async {
             await Future.delayed(const Duration(milliseconds: 200));
             return I();
-          }.factory,
+          }.builder,
         ),
       );
 
@@ -250,11 +249,11 @@ void runByType() {
         () async {
       await ddi.register<G>(
         qualifier: 'firtsClass',
-        factoryClazz: FactoryClazz.singleton(
-          clazzFactory: () async {
+        factory: ScopeFactory.singleton(
+          builder: () async {
             await Future.delayed(const Duration(milliseconds: 200));
             return H();
-          }.factory,
+          }.builder,
         ),
       );
 
@@ -263,11 +262,11 @@ void runByType() {
       expect(keys1.length, 1);
       await ddi.register<G>(
         qualifier: 'secondClass',
-        factoryClazz: FactoryClazz.singleton(
-          clazzFactory: () async {
+        factory: ScopeFactory.singleton(
+          builder: () async {
             await Future.delayed(const Duration(milliseconds: 200));
             return I();
-          }.factory,
+          }.builder,
         ),
       );
 
@@ -294,11 +293,11 @@ void runByType() {
         () async {
       ddi.register<G>(
         qualifier: 'firtsClass',
-        factoryClazz: FactoryClazz.dependent(
-          clazzFactory: () async {
+        factory: ScopeFactory.dependent(
+          builder: () async {
             await Future.delayed(const Duration(milliseconds: 200));
             return H();
-          }.factory,
+          }.builder,
         ),
       );
 
@@ -307,11 +306,11 @@ void runByType() {
       expect(keys1.length, 1);
       ddi.register<G>(
         qualifier: 'secondClass',
-        factoryClazz: FactoryClazz.dependent(
-          clazzFactory: () async {
+        factory: ScopeFactory.dependent(
+          builder: () async {
             await Future.delayed(const Duration(milliseconds: 200));
             return I();
-          }.factory,
+          }.builder,
         ),
       );
 
@@ -336,11 +335,11 @@ void runByType() {
     test('Future Factory and Non Future Singleton getByType', () async {
       await ddi.register<G>(
         qualifier: 'firtsClass',
-        factoryClazz: FactoryClazz.singleton(
-          clazzFactory: () async {
+        factory: ScopeFactory.singleton(
+          builder: () async {
             await Future.delayed(const Duration(milliseconds: 200));
             return H();
-          }.factory,
+          }.builder,
         ),
       );
 
@@ -348,7 +347,7 @@ void runByType() {
 
       expect(keys1.length, 1);
       ddi.register<G>(
-          factoryClazz: I.new.factory.asSingleton(), qualifier: 'secondClass');
+          factory: I.new.builder.asSingleton(), qualifier: 'secondClass');
 
       final List<Object> keys2 = ddi.getByType<G>();
 
@@ -371,11 +370,11 @@ void runByType() {
     test('Future Factory and Non Future Application getByType', () async {
       await ddi.register<G>(
         qualifier: 'firtsClass',
-        factoryClazz: FactoryClazz.application(
-          clazzFactory: () async {
+        factory: ScopeFactory.application(
+          builder: () async {
             await Future.delayed(const Duration(milliseconds: 200));
             return H();
-          }.factory,
+          }.builder,
         ),
       );
 
@@ -383,8 +382,7 @@ void runByType() {
 
       expect(keys1.length, 1);
       ddi.register<G>(
-          factoryClazz: I.new.factory.asApplication(),
-          qualifier: 'secondClass');
+          factory: I.new.builder.asApplication(), qualifier: 'secondClass');
 
       final List<Object> keys2 = ddi.getByType<G>();
 

@@ -13,10 +13,10 @@ import '../clazz_samples/undestroyable/singleton_factory_destroy_register.dart';
 void singletonFactory() {
   group('DDI Singleton Factory Basic Tests', () {
     void registerBeans() {
-      ddi.register(factoryClazz: C.new.factory.asSingleton());
-      ddi.register(factoryClazz: B.new.factory.asSingleton());
-      ddi.register(factoryClazz: A.new.factory.asSingleton());
-      ddi.register(factoryClazz: MultiInject.new.factory.asSingleton());
+      ddi.register(factory: C.new.builder.asSingleton());
+      ddi.register(factory: B.new.builder.asSingleton());
+      ddi.register(factory: A.new.builder.asSingleton());
+      ddi.register(factory: MultiInject.new.builder.asSingleton());
     }
 
     void removeSingletonBeans() {
@@ -79,7 +79,7 @@ void singletonFactory() {
     });
 
     test('Try to retrieve a Factory singleton bean after removed', () {
-      ddi.register(factoryClazz: C.new.factory.asSingleton());
+      ddi.register(factory: C.new.builder.asSingleton());
 
       ddi.get<C>();
 
@@ -89,8 +89,7 @@ void singletonFactory() {
     });
 
     test('Create, get and remove a Factory qualifier bean', () {
-      ddi.register(
-          factoryClazz: C.new.factory.asSingleton(), qualifier: 'typeC');
+      ddi.register(factory: C.new.builder.asSingleton(), qualifier: 'typeC');
 
       ddi.get(qualifier: 'typeC');
 
@@ -102,7 +101,7 @@ void singletonFactory() {
 
     test('Try to destroy a undestroyable Factory Singleton bean', () {
       ddi.register(
-          factoryClazz: SingletonFactoryDestroyGet.new.factory
+          factory: SingletonFactoryDestroyGet.new.builder
               .asSingleton(destroyable: false));
 
       final instance1 = ddi.get<SingletonFactoryDestroyGet>();
@@ -116,7 +115,7 @@ void singletonFactory() {
 
     test('Try to register again a undestroyable Factory Singleton bean', () {
       ddi.register(
-          factoryClazz: SingletonFactoryDestroyRegister.new.factory
+          factory: SingletonFactoryDestroyRegister.new.builder
               .asSingleton(destroyable: false));
 
       ddi.get<SingletonFactoryDestroyRegister>();
@@ -125,8 +124,8 @@ void singletonFactory() {
 
       expect(
           () => ddi.register(
-              factoryClazz:
-                  SingletonFactoryDestroyRegister.new.factory.asSingleton()),
+              factory:
+                  SingletonFactoryDestroyRegister.new.builder.asSingleton()),
           throwsA(isA<DuplicatedBeanException>()));
     });
   });

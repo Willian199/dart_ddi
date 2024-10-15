@@ -4,14 +4,13 @@ import 'package:dart_ddi/src/core/bean/utils/instance_factory_util.dart';
 
 final class ApplicationUtils {
   static Future<BeanT> getAplicationAsync<BeanT extends Object>(
-      FactoryClazz<BeanT> factoryClazz, Object effectiveQualifierName) async {
+      ScopeFactory<BeanT> factory, Object effectiveQualifierName) async {
     late BeanT applicationClazz;
 
-    if (factoryClazz.clazzInstance == null) {
+    if (factory.instanceHolder == null) {
       applicationClazz = _applyApplication<BeanT>(
-        factoryClazz,
-        await InstanceFactoryUtil.createAsync(
-            clazzFactory: factoryClazz.clazzFactory!),
+        factory,
+        await InstanceFactoryUtil.createAsync(builder: factory.builder!),
       );
 
       if (applicationClazz is DDIModule) {
@@ -24,10 +23,10 @@ final class ApplicationUtils {
         await DartDDIUtils.runFutureOrPostConstruct(applicationClazz);
       }
     } else {
-      applicationClazz = factoryClazz.clazzInstance!;
+      applicationClazz = factory.instanceHolder!;
     }
 
-    if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
+    if (factory.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
         applicationClazz = interceptor().onGet(applicationClazz);
       }
@@ -37,14 +36,14 @@ final class ApplicationUtils {
   }
 
   static BeanT getAplication<BeanT extends Object>(
-    FactoryClazz<BeanT> factoryClazz,
+    ScopeFactory<BeanT> factory,
     Object effectiveQualifierName,
   ) {
     late BeanT applicationClazz;
 
-    if (factoryClazz.clazzInstance == null) {
-      applicationClazz = _applyApplication<BeanT>(factoryClazz,
-          InstanceFactoryUtil.create(clazzFactory: factoryClazz.clazzFactory!));
+    if (factory.instanceHolder == null) {
+      applicationClazz = _applyApplication<BeanT>(
+          factory, InstanceFactoryUtil.create(builder: factory.builder!));
 
       if (applicationClazz is DDIModule) {
         applicationClazz.moduleQualifier = effectiveQualifierName;
@@ -56,10 +55,10 @@ final class ApplicationUtils {
         DartDDIUtils.runFutureOrPostConstruct(applicationClazz);
       }
     } else {
-      applicationClazz = factoryClazz.clazzInstance!;
+      applicationClazz = factory.instanceHolder!;
     }
 
-    if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
+    if (factory.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
         applicationClazz = interceptor().onGet(applicationClazz);
       }
@@ -69,21 +68,21 @@ final class ApplicationUtils {
   }
 
   static BeanT _applyApplication<BeanT extends Object>(
-    FactoryClazz<BeanT> factoryClazz,
+    ScopeFactory<BeanT> factory,
     BeanT applicationClazz,
   ) {
-    if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
+    if (factory.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
         applicationClazz = interceptor().onCreate(applicationClazz);
       }
     }
 
     applicationClazz = DartDDIUtils.executarDecorators<BeanT>(
-        applicationClazz, factoryClazz.decorators);
+        applicationClazz, factory.decorators);
 
-    factoryClazz.postConstruct?.call();
+    factory.postConstruct?.call();
 
-    factoryClazz.clazzInstance = applicationClazz;
+    factory.instanceHolder = applicationClazz;
 
     return applicationClazz;
   }

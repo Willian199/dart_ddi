@@ -2,15 +2,15 @@
 
 import 'dart:async';
 
-import 'package:dart_ddi/src/data/custom_factory.dart';
+import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/enum/scopes.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
 
-/// [FactoryClazz] is a class that represents a factory bean.
+/// [ScopeFactory] is a class that represents a factory bean.
 /// It is used to register a bean in the [DDI] system.
-final class FactoryClazz<BeanT extends Object> {
-  /// The [BeanT] instance of the bean.
-  BeanT? clazzInstance;
+final class ScopeFactory<BeanT extends Object> {
+  /// The instance created by the factory.
+  BeanT? instanceHolder;
 
   /// The list of decorators that are called in the bean creation.
   ListDecorator<BeanT>? decorators;
@@ -19,7 +19,7 @@ final class FactoryClazz<BeanT extends Object> {
   ListDDIInterceptor<BeanT>? interceptors;
 
   /// The [FutureOr] function that returns the bean instance.
-  final CustomFactory<FutureOr<BeanT>>? clazzFactory;
+  final CustomBuilder<FutureOr<BeanT>>? builder;
 
   /// The function that is called after the bean is created.
   final VoidCallback? postConstruct;
@@ -37,50 +37,50 @@ final class FactoryClazz<BeanT extends Object> {
   /// The children of the bean. Works as a Module.
   Set<Object>? children;
 
-  FactoryClazz._({
+  ScopeFactory._({
     required this.scopeType,
     required this.destroyable,
-    this.clazzInstance,
-    this.clazzFactory,
+    this.instanceHolder,
+    this.builder,
     this.decorators,
     this.postConstruct,
     this.interceptors,
     this.children,
   });
 
-  factory FactoryClazz.singleton({
-    BeanT? clazzInstance,
-    CustomFactory<FutureOr<BeanT>>? clazzFactory,
+  factory ScopeFactory.singleton({
+    BeanT? instanceHolder,
+    CustomBuilder<FutureOr<BeanT>>? builder,
     ListDDIInterceptor<BeanT>? interceptors,
     bool destroyable = true,
     Set<Object>? children,
     ListDecorator<BeanT>? decorators,
     VoidCallback? postConstruct,
   }) {
-    return FactoryClazz<BeanT>._(
+    return ScopeFactory<BeanT>._(
       scopeType: Scopes.singleton,
       destroyable: destroyable,
-      clazzInstance: clazzInstance,
+      instanceHolder: instanceHolder,
       interceptors: interceptors,
       children: children,
-      clazzFactory: clazzFactory,
+      builder: builder,
       decorators: decorators,
       postConstruct: postConstruct,
     );
   }
 
-  factory FactoryClazz.application({
-    required CustomFactory<FutureOr<BeanT>> clazzFactory,
+  factory ScopeFactory.application({
+    required CustomBuilder<FutureOr<BeanT>> builder,
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
     ListDDIInterceptor<BeanT>? interceptors,
     bool destroyable = true,
     Set<Object>? children,
   }) {
-    return FactoryClazz<BeanT>._(
+    return ScopeFactory<BeanT>._(
       scopeType: Scopes.application,
       destroyable: destroyable,
-      clazzFactory: clazzFactory,
+      builder: builder,
       postConstruct: postConstruct,
       decorators: decorators,
       interceptors: interceptors,
@@ -88,18 +88,18 @@ final class FactoryClazz<BeanT extends Object> {
     );
   }
 
-  factory FactoryClazz.session({
-    required CustomFactory<FutureOr<BeanT>> clazzFactory,
+  factory ScopeFactory.session({
+    required CustomBuilder<FutureOr<BeanT>> builder,
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
     ListDDIInterceptor<BeanT>? interceptors,
     bool destroyable = true,
     Set<Object>? children,
   }) {
-    return FactoryClazz<BeanT>._(
+    return ScopeFactory<BeanT>._(
       scopeType: Scopes.session,
       destroyable: destroyable,
-      clazzFactory: clazzFactory,
+      builder: builder,
       postConstruct: postConstruct,
       decorators: decorators,
       interceptors: interceptors,
@@ -107,18 +107,18 @@ final class FactoryClazz<BeanT extends Object> {
     );
   }
 
-  factory FactoryClazz.dependent({
-    required CustomFactory<FutureOr<BeanT>> clazzFactory,
+  factory ScopeFactory.dependent({
+    required CustomBuilder<FutureOr<BeanT>> builder,
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
     ListDDIInterceptor<BeanT>? interceptors,
     bool destroyable = true,
     Set<Object>? children,
   }) {
-    return FactoryClazz<BeanT>._(
+    return ScopeFactory<BeanT>._(
       scopeType: Scopes.dependent,
       destroyable: destroyable,
-      clazzFactory: clazzFactory,
+      builder: builder,
       postConstruct: postConstruct,
       decorators: decorators,
       interceptors: interceptors,
@@ -126,23 +126,30 @@ final class FactoryClazz<BeanT extends Object> {
     );
   }
 
-  factory FactoryClazz.object({
-    required BeanT clazzInstance,
+  factory ScopeFactory.object({
+    required BeanT instanceHolder,
     ListDDIInterceptor<BeanT>? interceptors,
     bool destroyable = true,
     Set<Object>? children,
   }) {
-    return FactoryClazz<BeanT>._(
+    return ScopeFactory<BeanT>._(
       scopeType: Scopes.object,
       destroyable: destroyable,
-      clazzInstance: clazzInstance,
+      instanceHolder: instanceHolder,
       interceptors: interceptors,
       children: children,
     );
   }
 
-  FactoryClazz<NewType> cast<NewType extends Object>() {
+  ScopeFactory<NewType> cast<NewType extends Object>() {
     _type = NewType;
-    return this as FactoryClazz<NewType>;
+    return this as ScopeFactory<NewType>;
+  }
+
+  Future<void> register({
+    Object? qualifier,
+    FutureOr<bool> Function()? registerIf,
+  }) {
+    return DDI.instance.register(factory: this);
   }
 }

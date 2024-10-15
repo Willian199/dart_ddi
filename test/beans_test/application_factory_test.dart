@@ -13,11 +13,10 @@ import '../clazz_samples/undestroyable/application_factory_destroy_register.dart
 void applicationFactory() {
   group('DDI Factory Application Basic Tests', () {
     void registerApplicationBeans() {
-      DDI.instance
-          .register(factoryClazz: MultiInject.new.factory.asApplication());
-      DDI.instance.register(factoryClazz: A.new.factory.asApplication());
-      DDI.instance.register(factoryClazz: B.new.factory.asApplication());
-      DDI.instance.register(factoryClazz: C.new.factory.asApplication());
+      MultiInject.new.builder.asApplication().register();
+      A.new.builder.asApplication().register();
+      B.new.builder.asApplication().register();
+      C.new.builder.asApplication().register();
     }
 
     void removeApplicationBeans() {
@@ -130,8 +129,8 @@ void applicationFactory() {
     });
 
     test('Try to retrieve a Factory Application bean after disposed', () {
-      DDI.instance.register(
-          factoryClazz: FactoryClazz.application(clazzFactory: C.new.factory));
+      DDI.instance
+          .register(factory: ScopeFactory.application(builder: C.new.builder));
 
       final instance1 = DDI.instance.get<C>();
 
@@ -145,8 +144,8 @@ void applicationFactory() {
     });
 
     test('Try to retrieve Application bean after removed', () {
-      DDI.instance.register(
-          factoryClazz: FactoryClazz.application(clazzFactory: C.new.factory));
+      DDI.instance
+          .register(factory: ScopeFactory.application(builder: C.new.builder));
 
       DDI.instance.get<C>();
 
@@ -158,7 +157,7 @@ void applicationFactory() {
 
     test('Create, get and remove a qualifier bean', () {
       DDI.instance.register(
-          factoryClazz: FactoryClazz.application(clazzFactory: C.new.factory),
+          factory: ScopeFactory.application(builder: C.new.builder),
           qualifier: 'typeC');
 
       DDI.instance.get(qualifier: 'typeC');
@@ -171,8 +170,8 @@ void applicationFactory() {
 
     test('Try to destroy a undestroyable Application bean', () {
       DDI.instance.register(
-        factoryClazz: FactoryClazz.application(
-          clazzFactory: ApplicationFactoryDestroyGet.new.factory,
+        factory: ScopeFactory.application(
+          builder: ApplicationFactoryDestroyGet.new.builder,
           destroyable: false,
         ),
       );
@@ -188,8 +187,8 @@ void applicationFactory() {
 
     test('Try to register again a undestroyable Application bean', () {
       DDI.instance.register(
-          factoryClazz: FactoryClazz.application(
-        clazzFactory: ApplicationFactoryDestroyRegister.new.factory,
+          factory: ScopeFactory.application(
+        builder: ApplicationFactoryDestroyRegister.new.builder,
         destroyable: false,
       ));
 
@@ -199,8 +198,8 @@ void applicationFactory() {
 
       expect(
           () => DDI.instance.register(
-                factoryClazz: FactoryClazz.application(
-                  clazzFactory: ApplicationFactoryDestroyRegister.new.factory,
+                factory: ScopeFactory.application(
+                  builder: ApplicationFactoryDestroyRegister.new.builder,
                   destroyable: false,
                 ),
               ),

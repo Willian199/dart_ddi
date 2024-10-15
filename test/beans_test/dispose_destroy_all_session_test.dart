@@ -32,9 +32,9 @@ void disposeDestroyAllSession() {
     });
 
     test('Register and retrieve Factory Session bean', () {
-      DDI.instance.register(factoryClazz: A.new.factory.asSession());
-      DDI.instance.register(factoryClazz: B.new.factory.asSession());
-      DDI.instance.register(factoryClazz: C.new.factory.asSession());
+      DDI.instance.register(factory: A.new.builder.asSession());
+      DDI.instance.register(factory: B.new.builder.asSession());
+      DDI.instance.register(factory: C.new.builder.asSession());
 
       DDI.instance.get<A>();
 

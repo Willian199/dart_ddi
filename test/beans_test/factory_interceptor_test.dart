@@ -15,8 +15,8 @@ void factoryInterceptor() {
   group('DDI Factory Interceptor Tests', () {
     test('ADD Interceptor to a Factory Singleton bean', () {
       ddi.register<G>(
-        factoryClazz: FactoryClazz.singleton(
-          clazzFactory: H.new.factory,
+        factory: ScopeFactory.singleton(
+          builder: H.new.builder,
           interceptors: [J.new],
         ),
       );
@@ -33,8 +33,8 @@ void factoryInterceptor() {
 
     test('ADD Interceptor to a Factory Application bean', () {
       ddi.register<G>(
-        factoryClazz: FactoryClazz.application(
-          clazzFactory: H.new.factory,
+        factory: ScopeFactory.application(
+          builder: H.new.builder,
           interceptors: [J.new],
         ),
       );
@@ -52,8 +52,8 @@ void factoryInterceptor() {
     test('ADD Interceptor to a Factory Application bean with qualifier', () {
       ddi.register<G>(
         qualifier: 'qualifier',
-        factoryClazz: FactoryClazz.application(
-          clazzFactory: H.new.factory,
+        factory: ScopeFactory.application(
+          builder: H.new.builder,
           interceptors: [J.new],
         ),
       );
@@ -65,13 +65,14 @@ void factoryInterceptor() {
 
       ddi.destroy<G>(qualifier: 'qualifier');
 
-      expect(() => ddi.get<G>(qualifier: 'qualifier'), throwsA(isA<BeanNotFoundException>()));
+      expect(() => ddi.get<G>(qualifier: 'qualifier'),
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('ADD Interceptor to a Factory Dependent bean', () {
       ddi.register<G>(
-        factoryClazz: FactoryClazz.dependent(
-          clazzFactory: H.new.factory,
+        factory: ScopeFactory.dependent(
+          builder: H.new.builder,
           interceptors: [J.new],
         ),
       );
@@ -89,8 +90,8 @@ void factoryInterceptor() {
     test('ADD Interceptor after registered a Factory Application bean', () {
       // Don't use [H.new.factory.asApplication()] with interceptor
       ddi.register(
-        factoryClazz: FactoryClazz<G>.application(
-          clazzFactory: H.new.factory,
+        factory: ScopeFactory<G>.application(
+          builder: CustomBuilder<H>(() => H(), [], G, false),
         ),
       );
       final G instance = ddi.get<G>();
@@ -116,8 +117,8 @@ void factoryInterceptor() {
 
     test('ADD Decorators and Interceptor to a Factory Singleton bean', () {
       ddi.register(
-        factoryClazz: FactoryClazz.singleton(
-          clazzFactory: D.new.factory,
+        factory: ScopeFactory.singleton(
+          builder: D.new.builder,
           decorators: [
             (instance) => E(instance),
             (instance) => F(instance),
@@ -145,8 +146,8 @@ void factoryInterceptor() {
 
     test('ADD Decorators and Interceptor to a Factory Application bean', () {
       ddi.register(
-        factoryClazz: FactoryClazz.application(
-          clazzFactory: D.new.factory,
+        factory: ScopeFactory.application(
+          builder: D.new.builder,
           decorators: [
             (instance) => E(instance),
             (instance) => F(instance),

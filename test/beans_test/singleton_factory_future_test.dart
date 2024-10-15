@@ -14,28 +14,27 @@ void singletonFactoryFuture() {
   group('DDI Singleton Factory Future Basic Tests', () {
     Future<void> registerBeans() async {
       DDI.instance.register(
-        factoryClazz: C.new.factory.asSingleton(),
+        factory: C.new.builder.asSingleton(),
       );
 
       await DDI.instance.register<B>(
-        factoryClazz: FactoryClazz.singleton(
-          clazzFactory: () async {
+        factory: ScopeFactory.singleton(
+          builder: () async {
             await Future.delayed(const Duration(milliseconds: 200));
             return B(DDI.instance());
-          }.factory,
+          }.builder,
         ),
       );
 
       await DDI.instance.register<A>(
-        factoryClazz: FactoryClazz.singleton(
-          clazzFactory: () async {
+        factory: ScopeFactory.singleton(
+          builder: () async {
             return A(await DDI.instance.getAsync<B>());
-          }.factory,
+          }.builder,
         ),
       );
 
-      DDI.instance
-          .register(factoryClazz: MultiInject.new.factory.asSingleton());
+      DDI.instance.register(factory: MultiInject.new.builder.asSingleton());
     }
 
     void removeSingletonBeans() {
@@ -98,12 +97,12 @@ void singletonFactoryFuture() {
 
     test('Try to retrieve a Factory singleton bean after removed', () async {
       await DDI.instance.register<C>(
-        factoryClazz: FactoryClazz.singleton(
-          clazzFactory: () async {
+        factory: ScopeFactory.singleton(
+          builder: () async {
             final C value =
                 await Future.delayed(const Duration(seconds: 2), C.new);
             return value;
-          }.factory,
+          }.builder,
         ),
       );
 
@@ -117,12 +116,12 @@ void singletonFactoryFuture() {
 
     test('Create, get and remove a Factory qualifier bean', () async {
       await DDI.instance.register<C>(
-        factoryClazz: FactoryClazz.singleton(
-          clazzFactory: () async {
+        factory: ScopeFactory.singleton(
+          builder: () async {
             final C value =
                 await Future.delayed(const Duration(seconds: 2), C.new);
             return value;
-          }.factory,
+          }.builder,
         ),
         qualifier: 'typeC',
       );
@@ -137,14 +136,14 @@ void singletonFactoryFuture() {
 
     test('Try to destroy a undestroyable Factory Singleton bean', () async {
       await DDI.instance.register<FutureSingletonFactoryDestroyGet>(
-        factoryClazz: FactoryClazz.singleton(
+        factory: ScopeFactory.singleton(
           destroyable: false,
-          clazzFactory: () async {
+          builder: () async {
             final FutureSingletonFactoryDestroyGet value = await Future.delayed(
                 const Duration(seconds: 2),
                 FutureSingletonFactoryDestroyGet.new);
             return value;
-          }.factory,
+          }.builder,
         ),
       );
 

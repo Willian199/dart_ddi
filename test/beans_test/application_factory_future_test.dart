@@ -13,27 +13,26 @@ import '../clazz_samples/undestroyable/future_application_factory_destroy_get.da
 void applicationFactoryFuture() {
   group('DDI Factory Application Future Basic Tests', () {
     void registerApplicationBeans() {
-      DDI.instance
-          .register(factoryClazz: MultiInject.new.factory.asApplication());
+      DDI.instance.register(factory: MultiInject.new.builder.asApplication());
 
       DDI.instance.register<A>(
-        factoryClazz: FactoryClazz.application(
-          clazzFactory: () async {
+        factory: ScopeFactory.application(
+          builder: () async {
             return A(await DDI.instance.getAsync<B>());
-          }.factory,
+          }.builder,
         ),
       );
 
       DDI.instance.register<B>(
-        factoryClazz: FactoryClazz.application(
-          clazzFactory: () async {
+        factory: ScopeFactory.application(
+          builder: () async {
             await Future.delayed(const Duration(milliseconds: 200));
             return B(DDI.instance());
-          }.factory,
+          }.builder,
         ),
       );
       DDI.instance.register(
-        factoryClazz: C.new.factory.asApplication(),
+        factory: C.new.builder.asApplication(),
       );
     }
 
@@ -148,9 +147,9 @@ void applicationFactoryFuture() {
 
     test('Try to retrieve Factory Application bean after disposed', () async {
       DDI.instance.register(
-        factoryClazz: () {
+        factory: () {
           return Future.value(C());
-        }.factory.asApplication(),
+        }.builder.asApplication(),
       );
 
       final instance1 = await DDI.instance.getAsync<C>();
@@ -166,9 +165,9 @@ void applicationFactoryFuture() {
 
     test('Try to retrieve Factory Application bean after removed', () {
       DDI.instance.register(
-        factoryClazz: () {
+        factory: () {
           return Future.value(C());
-        }.factory.asApplication(),
+        }.builder.asApplication(),
       );
 
       DDI.instance.getAsync<C>();
@@ -182,9 +181,9 @@ void applicationFactoryFuture() {
     test('Create, get and remove a Factory qualifier bean', () {
       DDI.instance.register(
         qualifier: 'typeC',
-        factoryClazz: () {
+        factory: () {
           return Future.value(C());
-        }.factory.asApplication(),
+        }.builder.asApplication(),
       );
 
       DDI.instance.getAsync(qualifier: 'typeC');
@@ -197,11 +196,11 @@ void applicationFactoryFuture() {
 
     test('Try to destroy a undestroyable Factory Application bean', () async {
       DDI.instance.register(
-        factoryClazz: FactoryClazz.application(
+        factory: ScopeFactory.application(
           destroyable: false,
-          clazzFactory: () {
+          builder: () {
             return Future.value(FutureApplicationFactoryDestroyGet());
-          }.factory,
+          }.builder,
         ),
       );
 
@@ -217,22 +216,22 @@ void applicationFactoryFuture() {
     });
     test('Register and retrieve Future Factory Application', () async {
       DDI.instance.register<A>(
-        factoryClazz: FactoryClazz.application(
-          clazzFactory: () async {
+        factory: ScopeFactory.application(
+          builder: () async {
             return A(await DDI.instance.getAsync<B>());
-          }.factory,
+          }.builder,
         ),
       );
 
       DDI.instance.register<B>(
-        factoryClazz: FactoryClazz.application(
-          clazzFactory: () async {
+        factory: ScopeFactory.application(
+          builder: () async {
             await Future.delayed(const Duration(milliseconds: 200));
             return B(DDI.instance());
-          }.factory,
+          }.builder,
         ),
       );
-      DDI.instance.register(factoryClazz: C.new.factory.asApplication());
+      DDI.instance.register(factory: C.new.builder.asApplication());
 
       final instance1 = await DDI.instance.getAsync<A>();
       final instance2 = await DDI.instance.getAsync<A>();
@@ -250,12 +249,12 @@ void applicationFactoryFuture() {
     test('Register and retrieve Future delayed Factory Application bean',
         () async {
       DDI.instance.register<C>(
-        factoryClazz: FactoryClazz.application(
-          clazzFactory: () async {
+        factory: ScopeFactory.application(
+          builder: () async {
             final C value =
                 await Future.delayed(const Duration(seconds: 2), C.new);
             return value;
-          }.factory,
+          }.builder,
         ),
       );
 
@@ -268,22 +267,22 @@ void applicationFactoryFuture() {
 
     test('Try to retrieve Factory Application bean using Future', () async {
       DDI.instance.register(
-        factoryClazz: FactoryClazz.application(
-          clazzFactory: () async {
+        factory: ScopeFactory.application(
+          builder: () async {
             return A(await DDI.instance.getAsync<B>());
-          }.factory,
+          }.builder,
         ),
       );
 
       DDI.instance.register(
-        factoryClazz: FactoryClazz.application(
-          clazzFactory: () async {
+        factory: ScopeFactory.application(
+          builder: () async {
             await Future.delayed(const Duration(milliseconds: 200));
             return B(DDI.instance());
-          }.factory,
+          }.builder,
         ),
       );
-      DDI.instance.register(factoryClazz: C.new.factory.asApplication());
+      DDI.instance.register(factory: C.new.builder.asApplication());
       //This happens because A(await DDI.instance()) transform to A(await DDI.instance<FutureOr<B>>())
       expect(() => DDI.instance.getAsync<A>(),
           throwsA(isA<BeanNotFoundException>()));
@@ -296,23 +295,23 @@ void applicationFactoryFuture() {
     test('Register and retrieve Factory Application bean using FutureOr',
         () async {
       DDI.instance.register(
-        factoryClazz: FactoryClazz.application(
-          clazzFactory: () async {
+        factory: ScopeFactory.application(
+          builder: () async {
             return A(await DDI.instance.getAsync());
-          }.factory,
+          }.builder,
         ),
       );
 
       DDI.instance.register<B>(
-        factoryClazz: FactoryClazz.application(
-          clazzFactory: () async {
+        factory: ScopeFactory.application(
+          builder: () async {
             await Future.delayed(const Duration(milliseconds: 200));
             return B(DDI.instance());
-          }.factory,
+          }.builder,
         ),
       );
 
-      DDI.instance.register(factoryClazz: C.new.factory.asApplication());
+      DDI.instance.register(factory: C.new.builder.asApplication());
 
       final instance1 = await DDI.instance.getAsync<A>();
       final instance2 = await DDI.instance.getAsync<A>();
@@ -330,23 +329,23 @@ void applicationFactoryFuture() {
         'Retrieve Factory Application bean after a "child" bean is disposed using Future',
         () async {
       DDI.instance.register(
-        factoryClazz: FactoryClazz.application(
-          clazzFactory: () async {
+        factory: ScopeFactory.application(
+          builder: () async {
             return A(await DDI.instance.getAsync());
-          }.factory,
+          }.builder,
         ),
       );
 
       DDI.instance.register<B>(
-        factoryClazz: FactoryClazz.application(
-          clazzFactory: () async {
+        factory: ScopeFactory.application(
+          builder: () async {
             await Future.delayed(const Duration(milliseconds: 200));
             return B(DDI.instance());
-          }.factory,
+          }.builder,
         ),
       );
 
-      DDI.instance.register(factoryClazz: C.new.factory.asApplication());
+      DDI.instance.register(factory: C.new.builder.asApplication());
 
       final instance1 = await DDI.instance.getAsync<A>();
 
@@ -364,8 +363,8 @@ void applicationFactoryFuture() {
     });
 
     test('Retrieve Factory Application bean Stream', () async {
-      DDI.instance.register(
-          factoryClazz: StreamController<C>.new.factory.asApplication());
+      DDI.instance
+          .register(factory: StreamController<C>.new.builder.asApplication());
 
       final StreamController<C> streamController = DDI.instance();
 
