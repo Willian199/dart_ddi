@@ -7,7 +7,7 @@ class InstanceFactoryUtil {
     required CustomBuilder<FutureOr<BeanT>> builder,
     ParameterT? parameters,
   }) {
-    return switch (builder.clazzRegister) {
+    return switch (builder.producer) {
       final BeanT Function() s => s.call(),
       final BeanT Function(ParameterT) c when parameters != null =>
         c.call(parameters),
@@ -28,7 +28,7 @@ class InstanceFactoryUtil {
       for (final inject in builder.parametersType) ddi.get(qualifier: inject)
     ];
 
-    return Function.apply(builder.clazzRegister, instances) as BeanT;
+    return Function.apply(builder.producer, instances) as BeanT;
   }
 
   static FutureOr<BeanT>
@@ -36,7 +36,7 @@ class InstanceFactoryUtil {
     required CustomBuilder<FutureOr<BeanT>> builder,
     ParameterT? parameters,
   }) {
-    return switch (builder.clazzRegister) {
+    return switch (builder.producer) {
       final FutureOr<BeanT> Function() s => s.call(),
       final FutureOr<BeanT> Function(ParameterT) c when parameters != null =>
         c.call(parameters),
@@ -60,6 +60,6 @@ class InstanceFactoryUtil {
         await ddi.getAsync(qualifier: inject)
     ];
 
-    return Function.apply(builder.clazzRegister, instances) as BeanT;
+    return Function.apply(builder.producer, instances) as BeanT;
   }
 }

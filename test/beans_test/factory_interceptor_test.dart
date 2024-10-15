@@ -91,7 +91,7 @@ void factoryInterceptor() {
       // Don't use [H.new.factory.asApplication()] with interceptor
       ddi.register(
         factory: ScopeFactory<G>.application(
-          builder: CustomBuilder<H>(() => H(), [], G, false),
+          builder: H.new.builder,
         ),
       );
       final G instance = ddi.get<G>();
