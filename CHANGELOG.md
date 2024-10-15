@@ -1,3 +1,18 @@
+## 0.8.0
+
+* Added support to register custom factories.
+* Added support to auto inject `Beans` into factories.
+* Refactored how `Future` and `FutureOr` is handled.
+
+* Warnings:
+    * When registering a Factory Future and trying to obtain more than one instance simultaneously, it may cause a race condition and will be blocked. Especially if the instance is Dependent Scope.
+
+* Break changes:
+    * `DDIInterceptor.aroundConstruct` renamed to `DDIInterceptor.onCreate`.
+    * `DDIInterceptor.aroundGet` renamed to `DDIInterceptor.onGet`.
+    * `DDIInterceptor.aroundDispose` renamed to `DDIInterceptor.onDispose`.
+    * `DDIInterceptor.aroundDestroy` renamed to `DDIInterceptor.onDestroy`.
+
 ## 0.7.2
 
 * Fix Singleton and Object behavior when registering with the `register` method.

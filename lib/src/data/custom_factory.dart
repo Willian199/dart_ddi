@@ -2,8 +2,7 @@ import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
 
 final class CustomFactory<BeanT extends Object> {
-  const CustomFactory(
-      this.clazzRegister, this.parametersType, this.returnType, this.isFuture);
+  const CustomFactory(this.clazzRegister, this.parametersType, this.returnType, this.isFuture);
   final Function clazzRegister;
   final List<Type> parametersType;
   final Type returnType;
@@ -12,7 +11,6 @@ final class CustomFactory<BeanT extends Object> {
   FactoryClazz<BeanT> asApplication({
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
-    ListDDIInterceptor<BeanT>? interceptors,
     bool destroyable = true,
     Set<Object>? children,
   }) {
@@ -20,7 +18,6 @@ final class CustomFactory<BeanT extends Object> {
       clazzFactory: this,
       postConstruct: postConstruct,
       decorators: decorators,
-      interceptors: interceptors,
       destroyable: destroyable,
       children: children,
     );
@@ -29,7 +26,6 @@ final class CustomFactory<BeanT extends Object> {
   FactoryClazz<BeanT> asSession({
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
-    ListDDIInterceptor<BeanT>? interceptors,
     bool destroyable = true,
     Set<Object>? children,
   }) {
@@ -37,7 +33,6 @@ final class CustomFactory<BeanT extends Object> {
       clazzFactory: this,
       postConstruct: postConstruct,
       decorators: decorators,
-      interceptors: interceptors,
       destroyable: destroyable,
       children: children,
     );
@@ -46,7 +41,6 @@ final class CustomFactory<BeanT extends Object> {
   FactoryClazz<BeanT> asDependent({
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
-    ListDDIInterceptor<BeanT>? interceptors,
     bool destroyable = true,
     Set<Object>? children,
   }) {
@@ -54,7 +48,6 @@ final class CustomFactory<BeanT extends Object> {
       clazzFactory: this,
       postConstruct: postConstruct,
       decorators: decorators,
-      interceptors: interceptors,
       destroyable: destroyable,
       children: children,
     );
@@ -63,7 +56,6 @@ final class CustomFactory<BeanT extends Object> {
   FactoryClazz<BeanT> asSingleton({
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
-    ListDDIInterceptor<BeanT>? interceptors,
     bool destroyable = true,
     Set<Object>? children,
   }) {
@@ -71,7 +63,6 @@ final class CustomFactory<BeanT extends Object> {
       clazzFactory: this,
       postConstruct: postConstruct,
       decorators: decorators,
-      interceptors: interceptors,
       destroyable: destroyable,
       children: children,
     );

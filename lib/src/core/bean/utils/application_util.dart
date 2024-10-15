@@ -29,7 +29,7 @@ final class ApplicationUtils {
 
     if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
-        applicationClazz = interceptor().aroundGet(applicationClazz);
+        applicationClazz = interceptor().onGet(applicationClazz);
       }
     }
 
@@ -61,7 +61,7 @@ final class ApplicationUtils {
 
     if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
-        applicationClazz = interceptor().aroundGet(applicationClazz);
+        applicationClazz = interceptor().onGet(applicationClazz);
       }
     }
 
@@ -74,7 +74,7 @@ final class ApplicationUtils {
   ) {
     if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
-        applicationClazz = interceptor().aroundConstruct(applicationClazz);
+        applicationClazz = interceptor().onCreate(applicationClazz);
       }
     }
 

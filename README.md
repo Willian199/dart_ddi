@@ -93,7 +93,7 @@ The Dart Dependency Injection (DDI) Library supports various scopes for efficien
 `Use Case`: Sharing a configuration manager, a logging service, or a global state manager.
 
 `Note`: 
-        - `Interceptor.aroundDipose` and `PreDispose` mixin are not supported. You can just destroy the instance. 
+        - `Interceptor.onDipose` and `PreDispose` mixin are not supported. You can just destroy the instance. 
         - If you call dispose, only the Application or Session childrens will be disposed.      
 
 ## Application
@@ -122,8 +122,8 @@ The Dart Dependency Injection (DDI) Library supports various scopes for efficien
 `Use Case`: Creating instances of transient objects like data repositories or request handlers.
 
 `Note`: 
-        - `Dispose` functions, `Interceptor.aroundDipose` and `PreDispose` mixin are not supported.
-        - `PreDestroy` mixins are not supported. Use `Interceptor.aroundDestroy` instead. 
+        - `Dispose` functions, `Interceptor.onDipose` and `PreDispose` mixin are not supported.
+        - `PreDestroy` mixins are not supported. Use `Interceptor.onDestroy` instead. 
 
 ## Object
 `Description`: Registers an Object in the Object Scope, ensuring it is created once and shared throughout the entire application, working like Singleton.
@@ -133,7 +133,7 @@ The Dart Dependency Injection (DDI) Library supports various scopes for efficien
 `Use Case`: Application or device properties, like platform or dark mode settings, where the object's state needs to be consistent across the entire application.
 
 `Note`: 
-        - `Interceptor.aroundDipose` and `PreDispose` mixin are not supported. You can just destroy the instance. 
+        - `Interceptor.onDipose` and `PreDispose` mixin are not supported. You can just destroy the instance. 
         - If you call dispose, only the Application or Session childrens will be disposed.
 
 ## Common Considerations:
@@ -244,20 +244,20 @@ The Interceptor is a powerful mechanism that provides fine-grained control over 
 
 ## Interceptor Methods
 
-### aroundConstruct
+### onCreate
 - Invoked during the instance creation process.
 - Customize or replace the instance creation logic by returning a modified instance.
 
-### aroundGet
+### onGet
 - Invoked when retrieving an instance.
 - Customize the behavior of the retrieved instance before it is returned.
 - If you change any value, the next time you get this instance, it will be applied again. Be aware that this can lead to unexpected behavior.
 
-### aroundDestroy
+### onDestroy
 - Invoked when an instance is being destroyed.
 - Allows customization of the instance destruction process.
 
-### aroundDispose
+### onDispose
 - Invoked during the disposal of an instance.
 - Provides an opportunity for customization before releasing resources or performing cleanup.
 
@@ -266,25 +266,25 @@ The Interceptor is a powerful mechanism that provides fine-grained control over 
  ```dart
  class CustomInterceptor<BeanT> extends DDIInterceptor<BeanT> {
    @override
-   BeanT aroundConstruct(BeanT instance) {
+   BeanT onCreate(BeanT instance) {
      // Logic to customize or replace instance creation.
      return CustomizedInstance();
    }
 
    @override
-   BeanT aroundGet(BeanT instance) {
+   BeanT onGet(BeanT instance) {
      // Logic to customize the behavior of the retrieved instance.
      return ModifiedInstance(instance);
    }
 
    @override
-   void aroundDestroy(BeanT instance) {
+   void onDestroy(BeanT instance) {
      // Logic to perform cleanup during instance destruction.
      // This method is optional and can be overridden as needed.
    }
 
    @override
-   void aroundDispose(BeanT instance) {
+   void onDispose(BeanT instance) {
      // Logic to release resources or perform custom cleanup during instance disposal.
      // This method is optional and can be overridden as needed.
    }

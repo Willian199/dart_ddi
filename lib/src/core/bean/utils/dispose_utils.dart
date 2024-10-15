@@ -5,10 +5,10 @@ final class DisposeUtils {
   static Future<void> disposeBean<BeanT extends Object>(
       FactoryClazz<BeanT> factoryClazz) {
     if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
-      // Call aroundDispose before reset the clazzInstance
+      // Call onDispose before reset the clazzInstance
       // Should call interceptors even if the instance is null
       for (final interceptor in inter) {
-        interceptor().aroundDispose(factoryClazz.clazzInstance);
+        interceptor().onDispose(factoryClazz.clazzInstance);
       }
     }
 

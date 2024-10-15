@@ -28,7 +28,7 @@ final class DartDDIUtils {
     if (factoryClazz.clazzInstance case var clazz?) {
       if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
         for (final interceptor in inter) {
-          clazz = interceptor().aroundGet(clazz);
+          clazz = interceptor().onGet(clazz);
         }
       }
 

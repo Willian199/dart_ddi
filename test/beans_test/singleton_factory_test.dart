@@ -27,7 +27,7 @@ void singletonFactory() {
     }
 
     test('Register and retrieve a Factory Singleton bean', () {
-      ///Where is Singleton, should the register in the correct order
+      ///Where is Singleton, should register in the correct order
       registerBeans();
 
       final instance1 = ddi.get<MultiInject>();

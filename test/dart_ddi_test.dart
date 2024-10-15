@@ -8,6 +8,8 @@ import 'beans_test/circular_injection_test.dart';
 import 'beans_test/dependent_future_test.dart';
 import 'beans_test/dependent_test.dart';
 import 'beans_test/dispose_destroy_all_session_test.dart';
+import 'beans_test/factory_circular_injection_test.dart';
+import 'beans_test/factory_interceptor_test.dart';
 import 'beans_test/future_add_decoratos_test.dart';
 import 'beans_test/future_circular_injection_test.dart';
 import 'beans_test/future_post_construct_pre_destroy_test.dart';
@@ -49,7 +51,6 @@ void main() {
   singletonFactoryFuture();
   applicationFactory();
   applicationFactoryFuture();
-  addDecoratorFactory();
 
   runByType();
   disposeDestroyAllSession();
@@ -70,13 +71,16 @@ void main() {
   //Decorators
   addDecorator();
   futureAddDecorator();
+  addDecoratorFactory();
 
   //Interceptor
   interceptor();
+  factoryInterceptor();
 
   //CircularDetection
   circularDetection();
   futureCircularDetection();
+  factoryCircularDetection();
 
   //Modules
   moduleSingletonTest();

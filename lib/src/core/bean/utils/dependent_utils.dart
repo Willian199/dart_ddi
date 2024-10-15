@@ -14,7 +14,7 @@ final class DependentUtils {
 
     if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
-        dependentClazz = interceptor().aroundGet(dependentClazz);
+        dependentClazz = interceptor().onGet(dependentClazz);
       }
     }
 
@@ -53,7 +53,7 @@ final class DependentUtils {
 
     if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
-        dependentClazz = interceptor().aroundGet(dependentClazz);
+        dependentClazz = interceptor().onGet(dependentClazz);
       }
     }
 
@@ -73,7 +73,7 @@ final class DependentUtils {
 
     if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
-        dependentClazz = interceptor().aroundConstruct(dependentClazz);
+        dependentClazz = interceptor().onCreate(dependentClazz);
       }
     }
 

@@ -1,6 +1,6 @@
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/exception/bean_not_found.dart';
-import 'package:dart_ddi/src/exception/circular_detection.dart';
+import 'package:dart_ddi/src/exception/concurrent_creation.dart';
 import 'package:test/test.dart';
 
 import '../clazz_samples/c.dart';
@@ -9,17 +9,12 @@ import '../clazz_samples/mother.dart';
 
 void circularDetection() {
   group('DDI Circular Injection Detection tests', () {
-    test('Inject a Singleton bean depending from a bean that not exists yet',
-        () {
-      expect(
-          () => DDI.instance
-              .registerSingleton(() => Father(mother: DDI.instance())),
-          throwsA(isA<BeanNotFoundException>()));
+    test('Inject a Singleton bean depending from a bean that not exists yet', () {
+      expect(() => DDI.instance.registerSingleton(() => Father(mother: DDI.instance())), throwsA(isA<BeanNotFoundException>()));
     });
 
-    test('Inject a Application bean depending from a bean that not exists yet',
-        () {
-      //Work because just Register
+    test('Inject a Application bean depending from a bean that not exists yet', () {
+      //This works because it was just registered
       DDI.instance.registerApplication(() => Father(mother: DDI.instance()));
       DDI.instance.registerApplication(() => Mother(father: DDI.instance()));
 
@@ -31,8 +26,7 @@ void circularDetection() {
       DDI.instance.registerApplication(() => Father(mother: DDI.instance()));
       DDI.instance.registerApplication(() => Mother(father: DDI.instance()));
 
-      expect(() => DDI.instance<Mother>(),
-          throwsA(isA<CircularDetectionException>()));
+      expect(() => DDI.instance<Mother>(), throwsA(isA<ConcurrentCreationException>()));
 
       DDI.instance.destroy<Mother>();
       DDI.instance.destroy<Father>();
@@ -42,8 +36,7 @@ void circularDetection() {
       DDI.instance.registerDependent(() => Father(mother: DDI.instance()));
       DDI.instance.registerDependent(() => Mother(father: DDI.instance()));
 
-      expect(() => DDI.instance<Mother>(),
-          throwsA(isA<CircularDetectionException>()));
+      expect(() => DDI.instance<Mother>(), throwsA(isA<ConcurrentCreationException>()));
 
       DDI.instance.destroy<Mother>();
       DDI.instance.destroy<Father>();
@@ -53,8 +46,7 @@ void circularDetection() {
       DDI.instance.registerSession(() => Father(mother: DDI.instance()));
       DDI.instance.registerSession(() => Mother(father: DDI.instance()));
 
-      expect(() => DDI.instance<Mother>(),
-          throwsA(isA<CircularDetectionException>()));
+      expect(() => DDI.instance<Mother>(), throwsA(isA<ConcurrentCreationException>()));
 
       DDI.instance.destroy<Mother>();
       DDI.instance.destroy<Father>();

@@ -28,7 +28,8 @@ final class FactoryClazz<BeanT extends Object> {
   final Scopes scopeType;
 
   /// The type of the bean.
-  final Type type = BeanT;
+  Type _type = BeanT;
+  Type get type => _type;
 
   /// Whether the bean can be destroyed.
   final bool destroyable;
@@ -138,5 +139,10 @@ final class FactoryClazz<BeanT extends Object> {
       interceptors: interceptors,
       children: children,
     );
+  }
+
+  FactoryClazz<NewType> cast<NewType extends Object>() {
+    _type = NewType;
+    return this as FactoryClazz<NewType>;
   }
 }

@@ -5,7 +5,7 @@ import 'i.dart';
 
 class J extends DDIInterceptor<G> {
   @override
-  I aroundConstruct(G instance) {
+  I onCreate(G instance) {
     return I();
   }
 }
