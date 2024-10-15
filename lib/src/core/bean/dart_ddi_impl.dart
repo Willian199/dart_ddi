@@ -4,110 +4,12 @@ class _DDIImpl implements DDI {
   final Map<Object, FactoryClazz<Object>> _beans = {};
 
   @override
-  Future<void> registerSingleton<BeanT extends Object>(
-    BeanRegister<BeanT> clazzRegister, {
-    Object? qualifier,
-    VoidCallback? postConstruct,
-    ListDecorator<BeanT>? decorators,
-    ListDDIInterceptor<BeanT>? interceptors,
-    FutureOrBoolCallback? registerIf,
-    bool destroyable = true,
-    Set<Object>? children,
-  }) {
-    return register<BeanT>(
-      factoryClazz: FactoryClazz.singleton(
-        clazzFactory: clazzRegister.factory,
-        children: children,
-        interceptors: interceptors,
-        decorators: decorators,
-        destroyable: destroyable,
-      ),
-      qualifier: qualifier,
-      registerIf: registerIf,
-    );
-  }
-
-  @override
-  Future<void> registerApplication<BeanT extends Object>(
-    BeanRegister<BeanT> clazzRegister, {
-    Object? qualifier,
-    VoidCallback? postConstruct,
-    ListDecorator<BeanT>? decorators,
-    ListDDIInterceptor<BeanT>? interceptors,
-    FutureOrBoolCallback? registerIf,
-    bool destroyable = true,
-    Set<Object>? children,
-  }) {
-    return register<BeanT>(
-      factoryClazz: FactoryClazz.application(
-        clazzFactory: clazzRegister.factory,
-        children: children,
-        interceptors: interceptors,
-        decorators: decorators,
-        destroyable: destroyable,
-      ),
-      qualifier: qualifier,
-      registerIf: registerIf,
-    );
-  }
-
-  @override
-  Future<void> registerSession<BeanT extends Object>(
-    BeanRegister<BeanT> clazzRegister, {
-    Object? qualifier,
-    VoidCallback? postConstruct,
-    ListDecorator<BeanT>? decorators,
-    ListDDIInterceptor<BeanT>? interceptors,
-    FutureOrBoolCallback? registerIf,
-    bool destroyable = true,
-    Set<Object>? children,
-  }) {
-    return register<BeanT>(
-      factoryClazz: FactoryClazz.session(
-        clazzFactory: clazzRegister.factory,
-        children: children,
-        interceptors: interceptors,
-        decorators: decorators,
-        destroyable: destroyable,
-      ),
-      qualifier: qualifier,
-      registerIf: registerIf,
-    );
-  }
-
-  @override
-  Future<void> registerDependent<BeanT extends Object>(
-    BeanRegister<BeanT> clazzRegister, {
-    Object? qualifier,
-    VoidCallback? postConstruct,
-    ListDecorator<BeanT>? decorators,
-    ListDDIInterceptor<BeanT>? interceptors,
-    FutureOrBoolCallback? registerIf,
-    bool destroyable = true,
-    Set<Object>? children,
-  }) {
-    return register<BeanT>(
-      factoryClazz: FactoryClazz.dependent(
-        clazzFactory: clazzRegister.factory,
-        children: children,
-        interceptors: interceptors,
-        decorators: decorators,
-        destroyable: destroyable,
-      ),
-      qualifier: qualifier,
-      registerIf: registerIf,
-    );
-  }
-
-  @override
   Future<void> register<BeanT extends Object>({
     required FactoryClazz<BeanT> factoryClazz,
     Object? qualifier,
     FutureOrBoolCallback? registerIf,
   }) async {
-    if (factoryClazz.scopeType == Scopes.object ||
-        factoryClazz.clazzFactory == null ||
-        BeanT == Object) {
+    if (factoryClazz.scopeType == Scopes.object || factoryClazz.clazzFactory == null || BeanT == Object) {
       throw FactoryNotAllowedException(BeanT.toString());
     }
 
@@ -141,17 +43,14 @@ class _DDIImpl implements DDI {
     }
   }
 
-  Future<void> _applySingleton<BeanT extends Object>(
-      FactoryClazz<BeanT> factoryClazz, Object effectiveQualifierName) async {
+  Future<void> _applySingleton<BeanT extends Object>(FactoryClazz<BeanT> factoryClazz, Object effectiveQualifierName) async {
     late BeanT clazz;
 
     // Prevents a FutureOr<BeanT> being evaluated erronously
     if (factoryClazz.clazzFactory!.isFuture) {
-      clazz = await InstanceFactoryUtil.createAsync(
-          clazzFactory: factoryClazz.clazzFactory!);
+      clazz = await InstanceFactoryUtil.createAsync(clazzFactory: factoryClazz.clazzFactory!);
     } else {
-      clazz =
-          InstanceFactoryUtil.create(clazzFactory: factoryClazz.clazzFactory!);
+      clazz = InstanceFactoryUtil.create(clazzFactory: factoryClazz.clazzFactory!);
     }
 
     if (factoryClazz.interceptors != null) {
@@ -160,8 +59,7 @@ class _DDIImpl implements DDI {
       }
     }
 
-    clazz =
-        DartDDIUtils.executarDecorators<BeanT>(clazz, factoryClazz.decorators);
+    clazz = DartDDIUtils.executarDecorators<BeanT>(clazz, factoryClazz.decorators);
 
     factoryClazz.postConstruct?.call();
 
@@ -253,8 +151,7 @@ class _DDIImpl implements DDI {
     bool destroyable = true,
     Set<Object>? children,
   }) {
-    final Object effectiveQualifierName =
-        '$moduleQualifier${qualifier ?? BeanT}';
+    final Object effectiveQualifierName = '$moduleQualifier${qualifier ?? BeanT}';
 
     if (_beans[moduleQualifier] case final FactoryClazz<DDIModule> _?) {
       final bean = registerApplication<BeanT>(
@@ -268,8 +165,7 @@ class _DDIImpl implements DDI {
         children: children,
       );
 
-      addChildModules(
-          child: effectiveQualifierName, qualifier: moduleQualifier);
+      addChildModules(child: effectiveQualifierName, qualifier: moduleQualifier);
 
       return bean;
     }
@@ -291,8 +187,7 @@ class _DDIImpl implements DDI {
   BeanT get<BeanT extends Object>({Object? qualifier}) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    if (_beans[effectiveQualifierName]
-        case final FactoryClazz<BeanT> factoryClazz?) {
+    if (_beans[effectiveQualifierName] case final FactoryClazz<BeanT> factoryClazz?) {
       if (factoryClazz.scopeType != Scopes.object &&
           factoryClazz.clazzFactory!.isFuture &&
           // If the instance is already created
@@ -314,8 +209,7 @@ class _DDIImpl implements DDI {
   }) {
     final Object effectiveQualifierName = '$module${qualifier ?? BeanT}';
     if (_beans[module] case final FactoryClazz<DDIModule> factoryModuleClazz?
-        when factoryModuleClazz.children?.contains(effectiveQualifierName) ??
-            false) {
+        when factoryModuleClazz.children?.contains(effectiveQualifierName) ?? false) {
       return get<BeanT>(qualifier: effectiveQualifierName);
     }
 
@@ -326,8 +220,7 @@ class _DDIImpl implements DDI {
   Future<BeanT> getAsync<BeanT extends Object>({Object? qualifier}) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    if (_beans[effectiveQualifierName]
-        case final FactoryClazz<BeanT> factory?) {
+    if (_beans[effectiveQualifierName] case final FactoryClazz<BeanT> factory?) {
       return ScopeUtils.executarAsync<BeanT>(factory, effectiveQualifierName);
     }
 
@@ -338,10 +231,7 @@ class _DDIImpl implements DDI {
   List<Object> getByType<BeanT extends Object>() {
     final Type type = BeanT;
 
-    return _beans.entries
-        .where((element) => element.value.type == type)
-        .map((e) => e.key)
-        .toList();
+    return _beans.entries.where((element) => element.value.type == type).map((e) => e.key).toList();
   }
 
   @override
@@ -359,8 +249,7 @@ class _DDIImpl implements DDI {
     }
   }
 
-  Future<void> _destroyChildrenAsync<BeanT extends Object>(
-      Set<Object>? children) async {
+  Future<void> _destroyChildrenAsync<BeanT extends Object>(Set<Object>? children) async {
     if (children?.isNotEmpty ?? false) {
       for (final Object child in children!) {
         await _destroy(child);
@@ -369,8 +258,7 @@ class _DDIImpl implements DDI {
   }
 
   FutureOr<void> _destroy<BeanT extends Object>(Object effectiveQualifierName) {
-    if (_beans[effectiveQualifierName] case final factoryClazz?
-        when factoryClazz.destroyable) {
+    if (_beans[effectiveQualifierName] case final factoryClazz? when factoryClazz.destroyable) {
       // Only destroy if destroyable was registered with true
       // Should call interceptors even if the instance is null
       if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
@@ -379,10 +267,8 @@ class _DDIImpl implements DDI {
         }
       }
 
-      if (factoryClazz.clazzInstance case final clazz?
-          when clazz is PreDestroy) {
-        return _runFutureOrPreDestroy(
-            factoryClazz, clazz, effectiveQualifierName);
+      if (factoryClazz.clazzInstance case final clazz? when clazz is PreDestroy) {
+        return _runFutureOrPreDestroy(factoryClazz, clazz, effectiveQualifierName);
       }
 
       _destroyChildren(factoryClazz.children);
@@ -390,10 +276,7 @@ class _DDIImpl implements DDI {
     }
   }
 
-  Future<void> _runFutureOrPreDestroy<BeanT extends Object>(
-      FactoryClazz<BeanT> factoryClazz,
-      PreDestroy clazz,
-      Object effectiveQualifierName) async {
+  Future<void> _runFutureOrPreDestroy<BeanT extends Object>(FactoryClazz<BeanT> factoryClazz, PreDestroy clazz, Object effectiveQualifierName) async {
     await _destroyChildrenAsync(factoryClazz.children);
 
     await clazz.onPreDestroy();
@@ -405,12 +288,7 @@ class _DDIImpl implements DDI {
 
   @override
   void destroyAllSession() {
-    final keys = _beans.entries
-        .where((element) =>
-            element.value.scopeType == Scopes.session &&
-            element.value.destroyable)
-        .map((e) => e.key)
-        .toList();
+    final keys = _beans.entries.where((element) => element.value.scopeType == Scopes.session && element.value.destroyable).map((e) => e.key).toList();
 
     for (final key in keys) {
       _destroy(key);
@@ -430,8 +308,7 @@ class _DDIImpl implements DDI {
   Future<void> dispose<BeanT extends Object>({Object? qualifier}) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    if (_beans[effectiveQualifierName]
-        case final FactoryClazz<BeanT> factoryClazz?) {
+    if (_beans[effectiveQualifierName] case final FactoryClazz<BeanT> factoryClazz?) {
       //Singleton e Object only can destroy
       //Dependent doesn't have instance
       switch (factoryClazz.scopeType) {
@@ -439,8 +316,7 @@ class _DDIImpl implements DDI {
         case Scopes.session:
           return DisposeUtils.disposeBean<BeanT>(factoryClazz);
         default:
-          return DisposeUtils.disposeChildrenAsync<BeanT>(
-              factoryClazz.children);
+          return DisposeUtils.disposeChildrenAsync<BeanT>(factoryClazz.children);
       }
     }
 
@@ -460,11 +336,7 @@ class _DDIImpl implements DDI {
   void disposeByType<BeanT extends Object>() {
     final List<Scopes> allowedScopes = [Scopes.application, Scopes.session];
 
-    final clazz = _beans.entries
-        .where((element) =>
-            element.value.type is BeanT &&
-            allowedScopes.contains(element.value.scopeType))
-        .toList();
+    final clazz = _beans.entries.where((element) => element.value.type is BeanT && allowedScopes.contains(element.value.scopeType)).toList();
 
     for (final MapEntry(key: _, :value) in clazz) {
       DisposeUtils.disposeBean(value);
@@ -478,8 +350,7 @@ class _DDIImpl implements DDI {
   }) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    final FactoryClazz<BeanT>? factoryClazz =
-        _beans[effectiveQualifierName] as FactoryClazz<BeanT>?;
+    final FactoryClazz<BeanT>? factoryClazz = _beans[effectiveQualifierName] as FactoryClazz<BeanT>?;
 
     if (factoryClazz == null) {
       throw BeanNotFoundException(effectiveQualifierName.toString());
@@ -489,23 +360,18 @@ class _DDIImpl implements DDI {
       //Singleton Scopes already have a instance
       case Scopes.singleton:
       case Scopes.object:
-        factoryClazz.clazzInstance = DartDDIUtils.executarDecorators<BeanT>(
-            factoryClazz.clazzInstance!, decorators);
+        factoryClazz.clazzInstance = DartDDIUtils.executarDecorators<BeanT>(factoryClazz.clazzInstance!, decorators);
         break;
       //Application and Session Scopes may  have a instance created
       case Scopes.application:
       case Scopes.session:
         if (factoryClazz.clazzInstance case final clazz?) {
-          factoryClazz.clazzInstance =
-              DartDDIUtils.executarDecorators<BeanT>(clazz, decorators);
+          factoryClazz.clazzInstance = DartDDIUtils.executarDecorators<BeanT>(clazz, decorators);
         }
 
       //Dependent Scopes always require a new instance
       case Scopes.dependent:
-        factoryClazz.decorators = [
-          ...factoryClazz.decorators ?? [],
-          ...decorators
-        ];
+        factoryClazz.decorators = [...factoryClazz.decorators ?? [], ...decorators];
 
         break;
     }
@@ -518,12 +384,8 @@ class _DDIImpl implements DDI {
   }) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    if (_beans[effectiveQualifierName]
-        case final FactoryClazz<BeanT> factoryClazz?) {
-      factoryClazz.interceptors = [
-        ...factoryClazz.interceptors ?? [],
-        ...interceptors
-      ];
+    if (_beans[effectiveQualifierName] case final FactoryClazz<BeanT> factoryClazz?) {
+      factoryClazz.interceptors = [...factoryClazz.interceptors ?? [], ...interceptors];
     } else {
       throw BeanNotFoundException(effectiveQualifierName.toString());
     }
@@ -536,10 +398,8 @@ class _DDIImpl implements DDI {
   }) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    if (_beans[effectiveQualifierName]
-        case final FactoryClazz<BeanT> factoryClazz?) {
-      factoryClazz.clazzInstance = DartDDIUtils.executarDecorators<BeanT>(
-          register, factoryClazz.decorators);
+    if (_beans[effectiveQualifierName] case final FactoryClazz<BeanT> factoryClazz?) {
+      factoryClazz.clazzInstance = DartDDIUtils.executarDecorators<BeanT>(register, factoryClazz.decorators);
       return;
     }
 
@@ -547,18 +407,15 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  void addChildModules<BeanT extends Object>(
-      {required Object child, Object? qualifier}) {
+  void addChildModules<BeanT extends Object>({required Object child, Object? qualifier}) {
     addChildrenModules<BeanT>(child: {child}, qualifier: qualifier);
   }
 
   @override
-  void addChildrenModules<BeanT extends Object>(
-      {required Set<Object> child, Object? qualifier}) {
+  void addChildrenModules<BeanT extends Object>({required Set<Object> child, Object? qualifier}) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    if (_beans[effectiveQualifierName]
-        case final FactoryClazz<BeanT> factoryClazz?) {
+    if (_beans[effectiveQualifierName] case final FactoryClazz<BeanT> factoryClazz?) {
       factoryClazz.children = {...factoryClazz.children ?? {}, ...child};
     } else {
       throw BeanNotFoundException(effectiveQualifierName.toString());

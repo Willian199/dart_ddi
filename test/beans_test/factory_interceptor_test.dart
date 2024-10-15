@@ -65,8 +65,7 @@ void factoryInterceptor() {
 
       ddi.destroy<G>(qualifier: 'qualifier');
 
-      expect(() => ddi.get<G>(qualifier: 'qualifier'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => ddi.get<G>(qualifier: 'qualifier'), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('ADD Interceptor to a Factory Dependent bean', () {
@@ -101,7 +100,7 @@ void factoryInterceptor() {
 
       ddi.dispose<G>();
 
-      ddi.addInterceptor([
+      ddi.addInterceptor<G>([
         J.new,
       ]);
 
