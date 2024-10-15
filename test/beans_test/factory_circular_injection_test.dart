@@ -8,11 +8,18 @@ import '../clazz_samples/mother.dart';
 
 void factoryCircularDetection() {
   group('DDI Factory Circular Injection Detection tests', () {
-    test('Inject a Factory Singleton bean depending from a bean that not exists yet', () {
-      expect(() => ddi.register(factoryClazz: Father.fromMother.factory.asSingleton()), throwsA(isA<BeanNotFoundException>()));
+    test(
+        'Inject a Factory Singleton bean depending from a bean that not exists yet',
+        () {
+      expect(
+          () => ddi.register(
+              factoryClazz: Father.fromMother.factory.asSingleton()),
+          throwsA(isA<BeanNotFoundException>()));
     });
 
-    test('Inject a Factory Application bean depending from a bean that not exists yet', () {
+    test(
+        'Inject a Factory Application bean depending from a bean that not exists yet',
+        () {
       //This works because it was just registered
 
       ddi.register(factoryClazz: Father.fromMother.factory.asApplication());
@@ -42,24 +49,30 @@ void factoryCircularDetection() {
       ddi.destroy<Father>();
     });
 
-    test('Inject a Factory Singleton bean depending from a bean that not exists yet', () {
+    test(
+        'Inject a Factory Singleton bean depending from a bean that not exists yet',
+        () {
       expect(
           () => ddi.register(
                 factoryClazz: FactoryClazz.singleton(
                   clazzFactory: () {
-                    return Future.delayed(const Duration(milliseconds: 10), () => Father(mother: ddi()));
+                    return Future.delayed(const Duration(milliseconds: 10),
+                        () => Father(mother: ddi()));
                   }.factory,
                 ),
               ),
           throwsA(isA<BeanNotFoundException>()));
     });
 
-    test('Inject a Future Factory Application bean depending from a bean that not exists yet', () {
+    test(
+        'Inject a Future Factory Application bean depending from a bean that not exists yet',
+        () {
       //This works because it was just registered
       ddi.register<Father>(
         factoryClazz: FactoryClazz.application(
           clazzFactory: () async {
-            return Future.delayed(const Duration(milliseconds: 10), () async => Father(mother: await ddi.getAsync<Mother>()));
+            return Future.delayed(const Duration(milliseconds: 10),
+                () async => Father(mother: await ddi.getAsync<Mother>()));
           }.factory,
         ),
       );
@@ -67,7 +80,8 @@ void factoryCircularDetection() {
       ddi.register<Mother>(
         factoryClazz: FactoryClazz.application(
           clazzFactory: () async {
-            return Future.delayed(const Duration(milliseconds: 10), () async => Mother(father: await ddi.getAsync<Father>()));
+            return Future.delayed(const Duration(milliseconds: 10),
+                () async => Mother(father: await ddi.getAsync<Father>()));
           }.factory,
         ),
       );
@@ -76,11 +90,13 @@ void factoryCircularDetection() {
       ddi.destroy<Father>();
     });
 
-    test('Inject a Future Factory Application bean with circular dependency', () async {
+    test('Inject a Future Factory Application bean with circular dependency',
+        () async {
       ddi.register<Father>(
         factoryClazz: FactoryClazz.application(
           clazzFactory: () async {
-            return Future.delayed(const Duration(milliseconds: 10), () async => Father(mother: await ddi.getAsync<Mother>()));
+            return Future.delayed(const Duration(milliseconds: 10),
+                () async => Father(mother: await ddi.getAsync<Mother>()));
           }.factory,
         ),
       );
@@ -88,22 +104,26 @@ void factoryCircularDetection() {
       ddi.register<Mother>(
         factoryClazz: FactoryClazz.application(
           clazzFactory: () async {
-            return Future.delayed(const Duration(milliseconds: 10), () async => Mother(father: await ddi.getAsync<Father>()));
+            return Future.delayed(const Duration(milliseconds: 10),
+                () async => Mother(father: await ddi.getAsync<Father>()));
           }.factory,
         ),
       );
 
-      await expectLater(() async => ddi.getAsync<Mother>(), throwsA(isA<ConcurrentCreationException>()));
+      await expectLater(() async => ddi.getAsync<Mother>(),
+          throwsA(isA<ConcurrentCreationException>()));
 
       ddi.destroy<Mother>();
       ddi.destroy<Father>();
     });
 
-    test('Inject a Future Factory Dependent bean with circular dependency', () async {
+    test('Inject a Future Factory Dependent bean with circular dependency',
+        () async {
       ddi.register<Father>(
         factoryClazz: FactoryClazz.dependent(
           clazzFactory: () async {
-            return Future.delayed(const Duration(milliseconds: 10), () async => Father(mother: await ddi.getAsync<Mother>()));
+            return Future.delayed(const Duration(milliseconds: 10),
+                () async => Father(mother: await ddi.getAsync<Mother>()));
           }.factory,
         ),
       );
@@ -111,12 +131,14 @@ void factoryCircularDetection() {
       ddi.register<Mother>(
         factoryClazz: FactoryClazz.dependent(
           clazzFactory: () async {
-            return Future.delayed(const Duration(milliseconds: 10), () async => Mother(father: await ddi.getAsync<Father>()));
+            return Future.delayed(const Duration(milliseconds: 10),
+                () async => Mother(father: await ddi.getAsync<Father>()));
           }.factory,
         ),
       );
 
-      await expectLater(() async => ddi.getAsync<Mother>(), throwsA(isA<ConcurrentCreationException>()));
+      await expectLater(() async => ddi.getAsync<Mother>(),
+          throwsA(isA<ConcurrentCreationException>()));
 
       ddi.destroy<Mother>();
       ddi.destroy<Father>();

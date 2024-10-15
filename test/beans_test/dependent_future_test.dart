@@ -12,7 +12,8 @@ import '../clazz_samples/undestroyable/future_dependent_destroy_get.dart';
 void dependentFuture() {
   group('DDI Dependent Future Basic Tests', () {
     void registerDependentBeans() {
-      DDI.instance.registerDependent(() async => A(await DDI.instance.getAsync()));
+      DDI.instance
+          .registerDependent(() async => A(await DDI.instance.getAsync()));
       DDI.instance.registerDependent<B>(() => Future.value(B(DDI.instance())));
       DDI.instance.registerDependent(C.new);
     }
@@ -52,7 +53,8 @@ void dependentFuture() {
       removeDependentBeans();
     });
 
-    test('Retrieve Dependent bean after a second "child" bean is diposed', () async {
+    test('Retrieve Dependent bean after a second "child" bean is diposed',
+        () async {
       registerDependentBeans();
 
       final instance = await DDI.instance.getAsync<A>();
@@ -88,11 +90,13 @@ void dependentFuture() {
 
       DDI.instance.destroy<C>();
 
-      expect(() async => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() async => DDI.instance.get<C>(),
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Create, get and remove a qualifier bean', () async {
-      DDI.instance.registerDependent(() => Future.value(C()), qualifier: 'typeC');
+      DDI.instance
+          .registerDependent(() => Future.value(C()), qualifier: 'typeC');
 
       final instance1 = await DDI.instance.getAsync(qualifier: 'typeC');
       final instance2 = DDI.instance.getAsync(qualifier: 'typeC');
@@ -101,17 +105,21 @@ void dependentFuture() {
 
       DDI.instance.destroy(qualifier: 'typeC');
 
-      expect(() => DDI.instance.get(qualifier: 'typeC'), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get(qualifier: 'typeC'),
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Try to destroy a undestroyable Dependent bean', () async {
-      DDI.instance.registerDependent(() => Future.value(FutureDependentDestroyGet()), destroyable: false);
+      DDI.instance.registerDependent(
+          () => Future.value(FutureDependentDestroyGet()),
+          destroyable: false);
 
       final FutureDependentDestroyGet instance1 = await DDI.instance.getAsync();
 
       DDI.instance.destroy<FutureDependentDestroyGet>();
 
-      final instance2 = await DDI.instance.getAsync<FutureDependentDestroyGet>();
+      final instance2 =
+          await DDI.instance.getAsync<FutureDependentDestroyGet>();
 
       expect(instance2, isNotNull);
       expect(false, identical(instance1, instance2));
@@ -130,8 +138,11 @@ void dependentFuture() {
       DDI.instance.destroy<C>();
     });
 
-    test('Retrieve Dependent bean after a "child" bean is disposed using Future', () async {
-      DDI.instance.registerDependent(() async => A(await DDI.instance.getAsync()));
+    test(
+        'Retrieve Dependent bean after a "child" bean is disposed using Future',
+        () async {
+      DDI.instance
+          .registerDependent(() async => A(await DDI.instance.getAsync()));
       DDI.instance.registerDependent<B>(() async => B(DDI.instance()));
       DDI.instance.registerDependent(C.new);
 

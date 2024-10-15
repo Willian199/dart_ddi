@@ -2,7 +2,8 @@ import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
 
 final class CustomFactory<BeanT extends Object> {
-  const CustomFactory(this.clazzRegister, this.parametersType, this.returnType, this.isFuture);
+  const CustomFactory(
+      this.clazzRegister, this.parametersType, this.returnType, this.isFuture);
   final Function clazzRegister;
   final List<Type> parametersType;
   final Type returnType;
