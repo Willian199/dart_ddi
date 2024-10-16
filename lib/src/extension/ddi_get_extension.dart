@@ -90,7 +90,10 @@ extension DDIGetExtension on DDI {
     Object? qualifier,
   }) async {
     if (isRegistered<BeanT>(qualifier: qualifier)) {
-      return getAsyncWith<BeanT, ParameterT>(qualifier: qualifier);
+      return getAsyncWith<BeanT, ParameterT>(
+        qualifier: qualifier,
+        parameter: parameter,
+      );
     }
 
     return null;
