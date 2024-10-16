@@ -1,38 +1,60 @@
 import 'package:dart_ddi/dart_ddi.dart';
 
-/// Extension for [DDI] to get instances
+/// Extension for [DDI] to retrieve instances of registered classes.
+///
+/// This extension provides convenient methods to retrieve instances,
+/// supporting qualifiers, parameters, and asynchronous creation.
 extension DDIGetExtension on DDI {
-  /// Gets an instance of the registered class in [DDI].
+  /// Retrieves an instance of the registered class from [DDI].
   ///
-  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
+  /// - `qualifier`: (Optional) Qualifier to distinguish between different instances
+  ///    of the same type.
+  ///
+  /// This is a standard method to retrieve instances using type inference.
+  /// If multiple instances of the same type exist, the qualifier can be used to
+  /// retrieve the correct instance.
   BeanT get<BeanT extends Object>({Object? qualifier}) {
     return getWith<BeanT, Object>(qualifier: qualifier);
   }
 
-  /// Gets an instance of the registered class in [DDI].
+  /// Retrieves an instance of the registered class in [DDI], supporting parameters.
   ///
-  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
-  /// - `parameter`: Optional parameter to pass during the instance creation.
+  /// - `qualifier`: (Optional) Qualifier to distinguish between different instances.
+  /// - `parameter`: (Optional) Parameter to pass during instance creation.
   ///
-  /// **Note:** The `parameter` will be ignored: If the instance is already created or the constructor doesn't match with the parameter type.
+  /// **Note:** If the instance is already created or the constructor does not match
+  /// with the provided parameter type, the `parameter` will be ignored.
   BeanT call<BeanT extends Object, ParameterT extends Object>(
       {ParameterT? parameter}) {
     return getWith<BeanT, ParameterT>(parameter: parameter);
   }
 
-  /// Gets an instance of the registered class in [DDI].
+  /// Retrieves an instance of the registered class asynchronously.
   ///
-  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
+  /// - `qualifier`: (Optional) Qualifier to distinguish between different instances.
+  ///
+  /// This method is particularly useful when instance creation involves asynchronous operations.
   Future<BeanT> getAsync<BeanT extends Object>({Object? qualifier}) {
     return getAsyncWith<BeanT, Object>(qualifier: qualifier);
   }
 
+  /// Optionally retrieves an instance of the registered class.
+  ///
+  /// - `qualifier`: (Optional) Qualifier to distinguish between different instances.
+  ///
+  /// This method checks if the class is registered before retrieving the instance.
   BeanT? getOptional<BeanT extends Object>({Object? qualifier}) {
     return isRegistered<BeanT>(qualifier: qualifier)
         ? get<BeanT>(qualifier: qualifier)
         : null;
   }
 
+  /// Optionally retrieves an instance with a parameter of the registered class.
+  ///
+  /// - `qualifier`: (Optional) Qualifier to distinguish between different instances.
+  /// - `parameter`: (Optional) Parameter to pass during instance creation.
+  ///
+  /// This method allows optional retrieval of instances with parameters.
   BeanT? getOptionalWith<BeanT extends Object, ParameterT extends Object>({
     ParameterT? parameter,
     Object? qualifier,
@@ -42,6 +64,11 @@ extension DDIGetExtension on DDI {
         : null;
   }
 
+  /// Asynchronously retrieves an optional instance of the registered class.
+  ///
+  /// - `qualifier`: (Optional) Qualifier to distinguish between different instances.
+  ///
+  /// This method performs an asynchronous retrieval if the instance is registered.
   Future<BeanT?> getOptionalAsync<BeanT extends Object>(
       {Object? qualifier}) async {
     if (isRegistered<BeanT>(qualifier: qualifier)) {
@@ -51,13 +78,19 @@ extension DDIGetExtension on DDI {
     return null;
   }
 
+  /// Asynchronously retrieves an optional instance with a parameter.
+  ///
+  /// - `qualifier`: (Optional) Qualifier to distinguish between different instances.
+  /// - `parameter`: (Optional) Parameter to pass during instance creation.
+  ///
+  /// This method supports asynchronous retrieval with a parameter.
   Future<BeanT?>
       getOptionalWithAsync<BeanT extends Object, ParameterT extends Object>({
     ParameterT? parameter,
     Object? qualifier,
   }) async {
     if (isRegistered<BeanT>(qualifier: qualifier)) {
-      return getAsync<BeanT>(qualifier: qualifier);
+      return getAsyncWith<BeanT, ParameterT>(qualifier: qualifier);
     }
 
     return null;

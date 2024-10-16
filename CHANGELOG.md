@@ -2,6 +2,7 @@
 
 * Added support to register custom factories.
 * Added support to auto inject `Beans` into factories.
+* Added support to get Factory `Beans` with custom parameters.
 * Refactored how `Future` and `FutureOr` is handled.
 
 * Warnings:

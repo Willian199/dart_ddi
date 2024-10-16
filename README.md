@@ -145,9 +145,79 @@ The Dart Dependency Injection (DDI) Library supports various scopes for efficien
 
 `const and Modifiers`: Take into account the impact of const and other class modifiers on the behavior of instances within different scopes.
 
+# Factories
+
+Encapsulate the instantiation logic, providing a better way to define how and when objects are created. They use a builder function to manage the creation process, providing flexibility and control over the instances.
+
+## How Factories Work
+
+When you register a factory, you provide a builder function that defines how the instance will be constructed. This builder can take parameters, enabling the factory to customize the creation process based on the specific needs of the application. Depending on the specified scope (e.g., singleton or application), the factory can either create a new instance each time it is requested or return the same instance for subsequent requests.
+
+#### Example Registration with Qualifier
+
+```dart
+MyService.new.builder.asApplication().register();
+```
+
+In this example:
+
+* `MyService.new.` is the default constructor of the class (e.g., `() => MyService()`). 
+* `.builder` defines the parameters for the instance of `MyService`.
+* `.asApplication()` define the scope of the factory to create a new instance of `MyService` only on the first request.
+* `.register()` finalizes the factory registration in the `dart_ddi` system.
+
+## Use Cases for Factories
+
+#### Asynchronous Creation
+Factories support asynchronous creation, which is useful when initialization requires asynchronous tasks, such as data fetching.
+
+```dart
+DDI.instance.register(
+  factory: ScopeFactory.application(
+    builder: () async {
+      final data = await getApiData();
+      return MyApiService(data);
+    },
+  ),
+);
+```
+
+### Custom Parameters
+Factories can define parameters for builders, allowing for more flexible object creation based on runtime conditions. This also enables automatic injection of `Beans` into factories.
+
+```dart
+// Registering the factory
+DDI.instance.register(
+  factory: ScopeFactory.application(
+    builder: (RecordParameter parameter) => ServiceWithParameter(parameter),
+  ),
+);
+
+DDI.instance.register(
+  factory: ScopeFactory.application(
+    builder: (MyDatabase database, UserService userService) => ServiceAutoInject(database, userService),
+  ),
+);
+
+// Retrieving the instances
+ddi.getWith<ServiceWithParameter, RecordParameter>(parameter: parameter);
+ddi.get<ServiceAutoInject>();
+```
+## Considerations
+
+`Object Scope:` The Object Scope is not supported for factories.
+
+`Singleton Scope:` The Singleton Scope can only be created with auto-inject. If you attempt to create a singleton with custom objects, a `BeanNotFoundException` will be thrown.
+
+`Supertypes or Interfaces:` You cannot use the shortcut builder (`MyService.new.builder.asApplication()`) with supertypes or interfaces. This limitation exists because the builder function only recognizes the implementation class, not the supertype or interface.
+
+`Decorators and Interceptors:` It is highly recommended to register the factory using `factory: ScopeFactory.scope(...)`. This approach handles type inference more effectively.
+
+`Lazy vs. Eager Injection:` Eager Injection occurs when you inject beans using auto-inject functionality or manually via constructors. For lazy injection, you can use the `DDIInject` mixin or define the variable as `late`(e.g., `late final ServiceAutoInject serviceAutoInject = ddi.get()`).
+
 # Qualifiers
 
-Qualifiers play a crucial role in the DDI Library by differentiating between instances of the same type, enabling to uniquely identify and retrieve specific instances within a given scope. In scenarios where multiple instances coexist within a single scope, qualifiers serve as optional labels or identifiers associated with the registration and retrieval of instances, ensuring precision in managing dependencies.
+Qualifiers are used to differentiate instances of the same type, enabling to identify and retrieve specific instances. In scenarios where multiple instances coexist, qualifiers serve as optional labels or identifiers associated with the registration and retrieval of instances.
 
 ## How Qualifiers Work
 When registering an instance, can provide a qualifier as part of the registration process. This qualifier acts as metadata associated with the instance and can later be used during retrieval to specify which instance is needed.
@@ -240,7 +310,7 @@ ddi.registerSingleton<MyService>(
 ```
 
 ## Interceptor
-The Interceptor is a powerful mechanism that provides fine-grained control over the instantiation, retrieval, destruction, and disposal of instances managed by the DDI Library. By creating a custom class that extends `DDIInterceptor`, you can inject custom logic at various stages of the instance's lifecycle.
+The Interceptor provides control over the instantiation, retrieval, destruction, and disposal of instances managed by the DDI Library. By creating a custom class that extends `DDIInterceptor`, you can inject custom logic at various stages of the instance's lifecycle.
 
 ## Interceptor Methods
 
@@ -317,7 +387,7 @@ ddi.registerSingleton<MyService>(
 ```
 
 ## Destroyable 
-The destroyable parameter, introduced in various registration methods, is optional and can be set to false if you want to make the registered instance indestructible. When set to false, the instance cannot be removed using the `destroy` or `destroyByType` methods, providing control over the lifecycle and preventing accidental removal.
+The destroyable parameter, is optional and can be set to false if you want to make the registered instance indestructible. When set to false, the instance cannot be removed using the `destroy` or `destroyByType` methods.
 
 #### Example Usage:
 ```dart
@@ -366,7 +436,7 @@ With these methods, you can modularize your dependency injection configuration, 
 
 ### Register With Children Parameter
 
-The `children` parameter is designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module, enhancing the organization and management of your dependency injection configuration.
+The `children` parameter is designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module.
 
 ```dart
 // Adding multiple modules at once.

@@ -12,7 +12,7 @@ import 'package:dart_ddi/dart_ddi.dart';
 /// }
 /// ```
 mixin DDIInject<InjectType extends Object> {
-  final InjectType instance = ddi.get<InjectType>();
+  late final InjectType instance = ddi.get<InjectType>();
 }
 
 /// Helper to make easy to Inject a Component instance
@@ -27,10 +27,11 @@ mixin DDIInject<InjectType extends Object> {
 /// }
 /// ```
 mixin DDIComponentInject<ComponentT extends Object, ModuleT extends DDIModule> {
-  final ComponentT instance = ddi.getComponent<ComponentT>(module: ModuleT);
+  late final ComponentT instance =
+      ddi.getComponent<ComponentT>(module: ModuleT);
 }
 
 /// Helper to make easy to Inject one instance
 mixin DDIInjectAsync<InjectType extends Object> {
-  final Future<InjectType> instance = ddi.getAsync<InjectType>();
+  late final Future<InjectType> instance = ddi.getAsync<InjectType>();
 }

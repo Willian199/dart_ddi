@@ -126,24 +126,24 @@ void main() async {
   await ddi.registerSingleton(MyModule.new);
 
   // Get an instance of MyService with qualifier
-  final MyService myService1 = ddi.get(qualifier: 'MyService1');
+  late final MyService myService1 = ddi.get(qualifier: 'MyService1');
 
   // Call a method on the MyService instance
   myService1.doSomething();
 
   // Get another instance of MyService with different qualifier
-  final myService2 = ddi.get<MyService>(qualifier: 'MyService2');
+  late final myService2 = ddi.get<MyService>(qualifier: 'MyService2');
   myService2.doSomething();
 
   // Get an instance of MyLoggingService with qualifier
-  final MyLoggingService myLoggingSession =
+  late final MyLoggingService myLoggingSession =
       ddi.get(qualifier: 'MyLoggingSession');
 
   // Call a method on the MyLoggingService instance
   myLoggingSession.logSomething();
 
   // Get another instance of MyLoggingService with different qualifier
-  final MyLoggingService myLoggingDependent =
+  late final MyLoggingService myLoggingDependent =
       ddi.get(qualifier: 'MyLoggingDependent');
   myLoggingDependent.logSomething();
 
