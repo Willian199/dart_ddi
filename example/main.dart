@@ -156,7 +156,7 @@ void main() async {
   print(ddi.get(qualifier: 'authored'));
 
   // Dispose of the MyModule instance, will also dispose of MyService.
-  // MyLoggingService will not be disposed. Because it is a Dependent bean
+  // MyLoggingService Won't be disposed. Because it is a Dependent bean
   await ddi.dispose<MyModule>();
 
   // Destroy of the MyModule instance, will also destroy MyService and MyLoggingService

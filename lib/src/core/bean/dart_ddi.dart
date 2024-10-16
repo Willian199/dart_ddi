@@ -185,7 +185,7 @@ abstract class DDI {
   /// When using this method, consider the following:
   ///
   /// - **Scope:** Different scopes may have varying behaviors when adding interceptors.
-  /// - **onCreate:** Will not work with Singletons Scope.
+  /// - **onCreate:** Won't work with Singletons Scope.
   /// - **Order of Execution:** Interceptor are applied in the order they are provided.
   /// - **Instaces Already Gets:** No changes any Instances that have been get.
   void addInterceptor<BeanT extends Object>(

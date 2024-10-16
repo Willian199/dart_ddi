@@ -1,7 +1,7 @@
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
 
-extension DDIExtension on DDI {
+extension DDIRegisterExtension on DDI {
   /// Registers an instance as a Singleton.
   ///
   /// - `clazzRegister`: Factory function to create the instance.

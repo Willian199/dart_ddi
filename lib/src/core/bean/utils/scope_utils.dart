@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:dart_ddi/src/core/bean/utils/application_util.dart';
 import 'package:dart_ddi/src/core/bean/utils/dart_ddi_utils.dart';
 import 'package:dart_ddi/src/core/bean/utils/dependent_utils.dart';
-import 'package:dart_ddi/src/data/factory_clazz.dart';
+import 'package:dart_ddi/src/data/scope_factory.dart';
 import 'package:dart_ddi/src/enum/scopes.dart';
 import 'package:dart_ddi/src/exception/concurrent_creation.dart';
 

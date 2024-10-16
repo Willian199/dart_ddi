@@ -547,7 +547,7 @@ When subscribing to an event, you have the option to choose from three different
 #### subscribe
 The common subscription type, subscribe, functions as a simple callback. It allows you to respond to events in a synchronous manner, making it suitable for most scenarios.
 
-Obs: If you register an event that uses async and await, it will not be possible to wait even using `fireWait`. For this scenario, use `subscribeAsync`.
+Obs: If you register an event that uses async and await, it Won't be possible to wait even using `fireWait`. For this scenario, use `subscribeAsync`.
 
 Parameters:
 

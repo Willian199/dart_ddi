@@ -6,7 +6,7 @@ import 'package:dart_ddi/src/enum/event_mode.dart';
 import 'package:dart_ddi/src/features/event_lock.dart';
 
 /// [Event] is a class that represents an event.
-class Event<EventTypeT> {
+final class Event<EventTypeT> {
   /// The event to be executed
   final FutureOr<void> Function(EventTypeT) event;
 
