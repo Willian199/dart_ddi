@@ -212,7 +212,7 @@ final class ScopeFactory<BeanT extends Object> {
     Object? qualifier,
     FutureOr<bool> Function()? registerIf,
   }) {
-    return DDI.instance.register(
+    return DDI.instance.register<BeanT>(
       factory: this,
       qualifier: qualifier,
       registerIf: registerIf,

@@ -31,7 +31,7 @@ void circularDetection() {
       DDI.instance.registerApplication(() => Father(mother: DDI.instance()));
       DDI.instance.registerApplication(() => Mother(father: DDI.instance()));
 
-      expect(() => DDI.instance<Mother>(),
+      expect(() => DDI.instance.get<Mother>(),
           throwsA(isA<ConcurrentCreationException>()));
 
       DDI.instance.destroy<Mother>();
@@ -42,7 +42,7 @@ void circularDetection() {
       DDI.instance.registerDependent(() => Father(mother: DDI.instance()));
       DDI.instance.registerDependent(() => Mother(father: DDI.instance()));
 
-      expect(() => DDI.instance<Mother>(),
+      expect(() => DDI.instance.get<Mother>(),
           throwsA(isA<ConcurrentCreationException>()));
 
       DDI.instance.destroy<Mother>();
@@ -53,7 +53,7 @@ void circularDetection() {
       DDI.instance.registerSession(() => Father(mother: DDI.instance()));
       DDI.instance.registerSession(() => Mother(father: DDI.instance()));
 
-      expect(() => DDI.instance<Mother>(),
+      expect(() => DDI.instance.get<Mother>(),
           throwsA(isA<ConcurrentCreationException>()));
 
       DDI.instance.destroy<Mother>();
@@ -65,7 +65,7 @@ void circularDetection() {
 
       int count = 0;
       for (int i = 0; i < 100; i++) {
-        count += DDI.instance<C>().value;
+        count += DDI.instance.get<C>().value;
       }
 
       expectLater(count, 100);
@@ -78,7 +78,7 @@ void circularDetection() {
 
       int count = 0;
       for (int i = 0; i < 100; i++) {
-        count += DDI.instance<C>().value;
+        count += DDI.instance.get<C>().value;
       }
 
       expectLater(count, 100);
@@ -91,7 +91,7 @@ void circularDetection() {
 
       int count = 0;
       for (int i = 0; i < 100; i++) {
-        count += DDI.instance<C>().value;
+        count += DDI.instance.get<C>().value;
       }
 
       expectLater(count, 100);
@@ -104,7 +104,7 @@ void circularDetection() {
 
       int count = 0;
       for (int i = 0; i < 100; i++) {
-        count += DDI.instance<C>().value;
+        count += DDI.instance.get<C>().value;
       }
 
       expectLater(count, 100);

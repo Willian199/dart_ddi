@@ -7,6 +7,7 @@ import 'package:test/test.dart';
 import '../clazz_samples/a.dart';
 import '../clazz_samples/b.dart';
 import '../clazz_samples/c.dart';
+import '../clazz_samples/factory_parameter.dart';
 import '../clazz_samples/multi_inject.dart';
 import '../clazz_samples/undestroyable/future_application_factory_destroy_get.dart';
 
@@ -26,7 +27,7 @@ void applicationFactoryFuture() {
       DDI.instance.register<B>(
         factory: ScopeFactory.application(
           builder: () async {
-            await Future.delayed(const Duration(milliseconds: 200));
+            await Future.delayed(const Duration(milliseconds: 20));
             return B(DDI.instance());
           }.builder,
         ),
@@ -226,7 +227,7 @@ void applicationFactoryFuture() {
       DDI.instance.register<B>(
         factory: ScopeFactory.application(
           builder: () async {
-            await Future.delayed(const Duration(milliseconds: 200));
+            await Future.delayed(const Duration(milliseconds: 20));
             return B(DDI.instance());
           }.builder,
         ),
@@ -252,7 +253,7 @@ void applicationFactoryFuture() {
         factory: ScopeFactory.application(
           builder: () async {
             final C value =
-                await Future.delayed(const Duration(seconds: 2), C.new);
+                await Future.delayed(const Duration(seconds: 1), C.new);
             return value;
           }.builder,
         ),
@@ -277,7 +278,7 @@ void applicationFactoryFuture() {
       DDI.instance.register(
         factory: ScopeFactory.application(
           builder: () async {
-            await Future.delayed(const Duration(milliseconds: 200));
+            await Future.delayed(const Duration(milliseconds: 20));
             return B(DDI.instance());
           }.builder,
         ),
@@ -305,7 +306,7 @@ void applicationFactoryFuture() {
       DDI.instance.register<B>(
         factory: ScopeFactory.application(
           builder: () async {
-            await Future.delayed(const Duration(milliseconds: 200));
+            await Future.delayed(const Duration(milliseconds: 20));
             return B(DDI.instance());
           }.builder,
         ),
@@ -339,7 +340,7 @@ void applicationFactoryFuture() {
       DDI.instance.register<B>(
         factory: ScopeFactory.application(
           builder: () async {
-            await Future.delayed(const Duration(milliseconds: 200));
+            await Future.delayed(const Duration(milliseconds: 10));
             return B(DDI.instance());
           }.builder,
         ),
@@ -376,6 +377,28 @@ void applicationFactoryFuture() {
       expect(instance, isA<C>());
 
       DDI.instance.destroy<StreamController<C>>();
+    });
+
+    test('Retrieve Factory Application with Custom Parameter', () async {
+      DDI.instance.register(
+        factory: ScopeFactory.application(
+          builder: (RecordParameter parameter) async {
+            await Future.delayed(const Duration(milliseconds: 10));
+            return FactoryParameter(parameter);
+          }.builder,
+        ),
+      );
+
+      final FactoryParameter instance =
+          await DDI.instance.getAsyncWith(parameter: getRecordParameter);
+
+      expect(instance, isA<FactoryParameter>());
+      expect(instance.parameter, getRecordParameter);
+
+      DDI.instance.destroy<FactoryParameter>();
+
+      expectLater(() => DDI.instance.getAsync<FactoryParameter>(),
+          throwsA(isA<BeanNotFoundException>()));
     });
   });
 }

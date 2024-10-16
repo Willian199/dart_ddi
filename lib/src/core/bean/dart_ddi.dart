@@ -112,7 +112,13 @@ abstract class DDI {
   /// Gets an instance of the registered class in [DDI].
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
-  BeanT get<BeanT extends Object>({Object? qualifier});
+  /// - `parameter`: Optional parameter to pass during the instance creation.
+  ///
+  /// **Note:** The `parameter` will be ignored: If the instance is already created or the constructor doesn't match with the parameter type.
+  BeanT getWith<BeanT extends Object, ParameterT extends Object>({
+    ParameterT? parameter,
+    Object? qualifier,
+  });
 
   /// Gets an instance of the registered class in [DDI] from the specified [module].
   ///
@@ -129,17 +135,18 @@ abstract class DDI {
   /// Gets an instance of the registered class in [DDI].
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
-  Future<BeanT> getAsync<BeanT extends Object>({Object? qualifier});
+  /// - `parameter`: Optional parameter to pass during the instance creation.
+  ///
+  /// **Note:** The `parameter` will be ignored: If the instance is already created or the constructor doesn't match with the parameter type.
+  Future<BeanT> getAsyncWith<BeanT extends Object, ParameterT extends Object>({
+    ParameterT? parameter,
+    Object? qualifier,
+  });
 
   /// Retrieves a list of keys associated with objects of a specific type BeanT`.
   ///
   /// This method allows you to obtain all keys (qualifier names) that have been used to register objects of the specified type `BeanT`.
   List<Object> getByType<BeanT extends Object>();
-
-  /// Gets an instance of the registered class in [DDI].
-  ///
-  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
-  BeanT call<BeanT extends Object>();
 
   /// Removes the instance of the registered class in [DDI].
   ///

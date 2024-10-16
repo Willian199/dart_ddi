@@ -7,6 +7,7 @@ import 'package:test/test.dart';
 import '../clazz_samples/a.dart';
 import '../clazz_samples/b.dart';
 import '../clazz_samples/c.dart';
+import '../clazz_samples/factory_parameter.dart';
 
 void dependentFactoryFuture() {
   group('DDI Dependent Factory Future Basic Tests', () {
@@ -148,6 +149,28 @@ void dependentFactoryFuture() {
       await expectLater(intance.value, 1);
 
       DDI.instance.destroy<C>();
+    });
+
+    test('Retrieve Factory Dependent with Custom Parameter', () async {
+      DDI.instance.register(
+        factory: ScopeFactory.dependent(
+          builder: (RecordParameter parameter) async {
+            await Future.delayed(const Duration(milliseconds: 10));
+            return FactoryParameter(parameter);
+          }.builder,
+        ),
+      );
+
+      final FactoryParameter instance =
+          await DDI.instance.getAsyncWith(parameter: getRecordParameter);
+
+      expect(instance, isA<FactoryParameter>());
+      expect(instance.parameter, getRecordParameter);
+
+      DDI.instance.destroy<FactoryParameter>();
+
+      expectLater(() => DDI.instance.getAsync<FactoryParameter>(),
+          throwsA(isA<BeanNotFoundException>()));
     });
   });
 }

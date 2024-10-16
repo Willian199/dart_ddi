@@ -7,6 +7,7 @@ import 'package:test/test.dart';
 import '../clazz_samples/a.dart';
 import '../clazz_samples/b.dart';
 import '../clazz_samples/c.dart';
+import '../clazz_samples/factory_parameter.dart';
 import '../clazz_samples/multi_inject.dart';
 import '../clazz_samples/undestroyable/future_singleton_factory_destroy_get.dart';
 
@@ -156,6 +157,19 @@ void singletonFactoryFuture() {
           await DDI.instance.getAsync<FutureSingletonFactoryDestroyGet>();
 
       expect(instance1, same(instance2));
+    });
+
+    test('Retrieve Factory Singleton with Custom Parameter', () async {
+      expectLater(
+          () => DDI.instance.register(
+                factory: ScopeFactory.singleton(
+                  builder: (RecordParameter parameter) async {
+                    await Future.delayed(const Duration(milliseconds: 10));
+                    return FactoryParameter(parameter);
+                  }.builder,
+                ),
+              ),
+          throwsA(isA<BeanNotFoundException>()));
     });
   });
 }

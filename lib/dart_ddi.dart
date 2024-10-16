@@ -5,7 +5,7 @@ export 'src/core/event/dart_ddi_event.dart' show DDIEvent, ddiEvent;
 export 'src/core/stream/dart_ddi_stream.dart' show DDIStream, ddiStream;
 export 'src/data/custom_factory.dart';
 export 'src/data/factory_clazz.dart';
-export 'src/extension/ddi_optional_extension.dart';
+export 'src/extension/ddi_get_extension.dart';
 export 'src/extension/ddi_register_extension.dart';
 export 'src/extension/function_extension.dart';
 export 'src/features/ddi_interceptor.dart';

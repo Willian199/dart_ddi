@@ -6,6 +6,7 @@ import 'package:test/test.dart';
 import '../clazz_samples/a.dart';
 import '../clazz_samples/b.dart';
 import '../clazz_samples/c.dart';
+import '../clazz_samples/factory_parameter.dart';
 import '../clazz_samples/multi_inject.dart';
 import '../clazz_samples/undestroyable/singleton_factory_destroy_get.dart';
 import '../clazz_samples/undestroyable/singleton_factory_destroy_register.dart';
@@ -127,6 +128,11 @@ void singletonFactory() {
               factory:
                   SingletonFactoryDestroyRegister.new.builder.asSingleton()),
           throwsA(isA<DuplicatedBeanException>()));
+    });
+
+    test('Retrieve Factory Singleton with Custom Parameter', () {
+      expect(() => FactoryParameter.new.builder.asSingleton().register(),
+          throwsA(isA<BeanNotFoundException>()));
     });
   });
 }

@@ -6,6 +6,7 @@ import 'package:test/test.dart';
 import '../clazz_samples/a.dart';
 import '../clazz_samples/b.dart';
 import '../clazz_samples/c.dart';
+import '../clazz_samples/factory_parameter.dart';
 import '../clazz_samples/multi_inject.dart';
 import '../clazz_samples/undestroyable/application_factory_destroy_get.dart';
 import '../clazz_samples/undestroyable/application_factory_destroy_register.dart';
@@ -204,6 +205,21 @@ void applicationFactory() {
                 ),
               ),
           throwsA(isA<DuplicatedBeanException>()));
+    });
+
+    test('Retrieve Factory Application with Custom Parameter', () {
+      FactoryParameter.new.builder.asApplication().register();
+
+      final FactoryParameter instance =
+          DDI.instance(parameter: getRecordParameter);
+
+      expect(instance, isA<FactoryParameter>());
+      expect(instance.parameter, getRecordParameter);
+
+      DDI.instance.destroy<FactoryParameter>();
+
+      expect(() => DDI.instance.get<FactoryParameter>(),
+          throwsA(isA<BeanNotFoundException>()));
     });
   });
 }

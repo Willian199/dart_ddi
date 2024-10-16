@@ -32,7 +32,8 @@ void factoryCircularDetection() {
       ddi.register(factory: Father.fromMother.builder.asApplication());
       ddi.register(factory: Mother.fromFather.builder.asApplication());
 
-      expect(() => ddi<Mother>(), throwsA(isA<ConcurrentCreationException>()));
+      expect(
+          () => ddi.get<Mother>(), throwsA(isA<ConcurrentCreationException>()));
 
       ddi.destroy<Mother>();
       ddi.destroy<Father>();
@@ -42,7 +43,8 @@ void factoryCircularDetection() {
       ddi.register(factory: Father.fromMother.builder.asDependent());
       ddi.register(factory: Mother.fromFather.builder.asDependent());
 
-      expect(() => ddi<Mother>(), throwsA(isA<ConcurrentCreationException>()));
+      expect(
+          () => ddi.get<Mother>(), throwsA(isA<ConcurrentCreationException>()));
 
       ddi.destroy<Mother>();
       ddi.destroy<Father>();

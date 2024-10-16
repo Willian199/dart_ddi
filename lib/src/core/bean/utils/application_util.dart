@@ -3,14 +3,21 @@ import 'package:dart_ddi/src/core/bean/utils/dart_ddi_utils.dart';
 import 'package:dart_ddi/src/core/bean/utils/instance_factory_util.dart';
 
 final class ApplicationUtils {
-  static Future<BeanT> getAplicationAsync<BeanT extends Object>(
-      ScopeFactory<BeanT> factory, Object effectiveQualifierName) async {
+  static Future<BeanT>
+      getAplicationAsync<BeanT extends Object, ParameterT extends Object>({
+    required ScopeFactory<BeanT> factory,
+    required Object effectiveQualifierName,
+    ParameterT? parameter,
+  }) async {
     late BeanT applicationClazz;
 
     if (factory.instanceHolder == null) {
       applicationClazz = _applyApplication<BeanT>(
         factory,
-        await InstanceFactoryUtil.createAsync(builder: factory.builder!),
+        await InstanceFactoryUtil.createAsync<BeanT, ParameterT>(
+          builder: factory.builder!,
+          parameter: parameter,
+        ),
       );
 
       if (applicationClazz is DDIModule) {
@@ -35,15 +42,21 @@ final class ApplicationUtils {
     return applicationClazz;
   }
 
-  static BeanT getAplication<BeanT extends Object>(
-    ScopeFactory<BeanT> factory,
-    Object effectiveQualifierName,
-  ) {
+  static BeanT getAplication<BeanT extends Object, ParameterT extends Object>({
+    required ScopeFactory<BeanT> factory,
+    required Object effectiveQualifierName,
+    ParameterT? parameter,
+  }) {
     late BeanT applicationClazz;
 
     if (factory.instanceHolder == null) {
       applicationClazz = _applyApplication<BeanT>(
-          factory, InstanceFactoryUtil.create(builder: factory.builder!));
+        factory,
+        InstanceFactoryUtil.create<BeanT, ParameterT>(
+          builder: factory.builder!,
+          parameter: parameter,
+        ),
+      );
 
       if (applicationClazz is DDIModule) {
         applicationClazz.moduleQualifier = effectiveQualifierName;

@@ -184,12 +184,10 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  BeanT call<BeanT extends Object>() {
-    return get<BeanT>();
-  }
-
-  @override
-  BeanT get<BeanT extends Object>({Object? qualifier}) {
+  BeanT getWith<BeanT extends Object, ParameterT extends Object>({
+    ParameterT? parameter,
+    Object? qualifier,
+  }) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
     if (_beans[effectiveQualifierName]
@@ -202,7 +200,11 @@ class _DDIImpl implements DDI {
         throw const FutureNotAcceptException();
       }
 
-      return ScopeUtils.executar<BeanT>(factory, effectiveQualifierName);
+      return ScopeUtils.executar<BeanT, ParameterT>(
+        factory: factory,
+        effectiveQualifierName: effectiveQualifierName,
+        parameter: parameter,
+      );
     }
 
     throw BeanNotFoundException(effectiveQualifierName.toString());
@@ -224,12 +226,19 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  Future<BeanT> getAsync<BeanT extends Object>({Object? qualifier}) {
+  Future<BeanT> getAsyncWith<BeanT extends Object, ParameterT extends Object>({
+    ParameterT? parameter,
+    Object? qualifier,
+  }) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
     if (_beans[effectiveQualifierName]
         case final ScopeFactory<BeanT> factory?) {
-      return ScopeUtils.executarAsync<BeanT>(factory, effectiveQualifierName);
+      return ScopeUtils.executarAsync<BeanT, ParameterT>(
+        factory: factory,
+        effectiveQualifierName: effectiveQualifierName,
+        parameter: parameter,
+      );
     }
 
     throw BeanNotFoundException(effectiveQualifierName.toString());

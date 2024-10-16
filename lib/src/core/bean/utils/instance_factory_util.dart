@@ -1,25 +1,23 @@
 import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
-import 'package:dart_ddi/src/exception/bean_creation.dart';
 
 class InstanceFactoryUtil {
   static BeanT create<BeanT extends Object, ParameterT extends Object>({
     required CustomBuilder<FutureOr<BeanT>> builder,
-    ParameterT? parameters,
+    ParameterT? parameter,
   }) {
     return switch (builder.producer) {
       final BeanT Function() s => s.call(),
-      final BeanT Function(ParameterT) c when parameters != null =>
-        c.call(parameters),
-      final BeanT Function(ParameterT) c when parameters == null =>
-        c.call(ddi.get<ParameterT>()),
-      final Function f when parameters != null && parameters is List =>
-        Function.apply(f, [...parameters]) as BeanT,
-      final Function f when parameters != null =>
-        Function.apply(f, [parameters]) as BeanT,
-      final Function _ when parameters == null => _autoInject(builder),
-      _ => throw BeanCreationException(BeanT.toString())
+      final BeanT Function(ParameterT) c =>
+        c.call(parameter ?? ddi.get<ParameterT>()),
+      final Function f when parameter != null && parameter is List =>
+        Function.apply(f, parameter) as BeanT,
+      final Function f when parameter != null && parameter is Map =>
+        Function.apply(f, null, parameter as Map<Symbol, dynamic>) as BeanT,
+      final Function f when parameter != null =>
+        Function.apply(f, [parameter]) as BeanT,
+      final _ => _autoInject(builder),
     };
   }
 
@@ -35,20 +33,19 @@ class InstanceFactoryUtil {
   static FutureOr<BeanT>
       createAsync<BeanT extends Object, ParameterT extends Object>({
     required CustomBuilder<FutureOr<BeanT>> builder,
-    ParameterT? parameters,
+    ParameterT? parameter,
   }) async {
     return switch (builder.producer) {
       final FutureOr<BeanT> Function() s => s.call(),
-      final FutureOr<BeanT> Function(ParameterT) c when parameters != null =>
-        c.call(parameters),
-      final FutureOr<BeanT> Function(ParameterT) c when parameters == null =>
-        c.call(await ddi.getAsync<ParameterT>()),
-      final Function f when parameters != null && parameters is List =>
-        Function.apply(f, [...parameters]) as FutureOr<BeanT>,
-      final Function f when parameters != null =>
-        Function.apply(f, [parameters]) as FutureOr<BeanT>,
-      final Function _ when parameters == null => _autoInjectAsync(builder),
-      _ => throw BeanCreationException(BeanT.toString())
+      final FutureOr<BeanT> Function(ParameterT) c =>
+        c.call(parameter ?? await ddi.getAsync<ParameterT>()),
+      final Function f when parameter != null && parameter is List =>
+        Function.apply(f, [...parameter]) as FutureOr<BeanT>,
+      final Function f when parameter != null && parameter is Map =>
+        Function.apply(f, null, parameter as Map<Symbol, dynamic>) as BeanT,
+      final Function f when parameter != null =>
+        Function.apply(f, [parameter]) as FutureOr<BeanT>,
+      final _ => _autoInjectAsync(builder),
     };
   }
 

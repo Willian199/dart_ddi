@@ -12,8 +12,11 @@ final class ScopeUtils {
 
   static final Set<Object> _resolutionMap =
       Zone.current[_resolutionKey] as Set<Object>? ?? {};
-  static BeanT _getScoped<BeanT extends Object>(
-      ScopeFactory<BeanT> factory, Object effectiveQualifierName) {
+  static BeanT _getScoped<BeanT extends Object, ParameterT extends Object>({
+    required ScopeFactory<BeanT> factory,
+    required Object effectiveQualifierName,
+    ParameterT? parameter,
+  }) {
     if (_resolutionMap.contains(effectiveQualifierName)) {
       throw ConcurrentCreationException(effectiveQualifierName.toString());
     }
@@ -23,18 +26,20 @@ final class ScopeUtils {
     try {
       return switch (factory.scopeType) {
         Scopes.singleton || Scopes.object => DartDDIUtils.getSingleton<BeanT>(
-            factory,
-            effectiveQualifierName,
+            factory: factory,
+            effectiveQualifierName: effectiveQualifierName,
           ),
-        Scopes.dependent => DependentUtils.getDependent<BeanT>(
-            factory,
-            effectiveQualifierName,
+        Scopes.dependent => DependentUtils.getDependent<BeanT, ParameterT>(
+            factory: factory,
+            effectiveQualifierName: effectiveQualifierName,
+            parameter: parameter,
           ),
         Scopes.application ||
         Scopes.session =>
-          ApplicationUtils.getAplication<BeanT>(
-            factory,
-            effectiveQualifierName,
+          ApplicationUtils.getAplication<BeanT, ParameterT>(
+            factory: factory,
+            effectiveQualifierName: effectiveQualifierName,
+            parameter: parameter,
           )
       };
     } finally {
@@ -42,8 +47,12 @@ final class ScopeUtils {
     }
   }
 
-  static Future<BeanT> _getScopedAsync<BeanT extends Object>(
-      ScopeFactory<BeanT> factory, Object effectiveQualifierName) async {
+  static Future<BeanT>
+      _getScopedAsync<BeanT extends Object, ParameterT extends Object>({
+    required ScopeFactory<BeanT> factory,
+    required Object effectiveQualifierName,
+    ParameterT? parameter,
+  }) async {
     if (_resolutionMap.contains(effectiveQualifierName)) {
       throw ConcurrentCreationException(effectiveQualifierName.toString());
     }
@@ -55,18 +64,21 @@ final class ScopeUtils {
         Scopes.singleton ||
         Scopes.object =>
           await Future.value(DartDDIUtils.getSingleton<BeanT>(
-            factory,
-            effectiveQualifierName,
+            factory: factory,
+            effectiveQualifierName: effectiveQualifierName,
           )),
-        Scopes.dependent => await DependentUtils.getDependentAsync<BeanT>(
-            factory,
-            effectiveQualifierName,
+        Scopes.dependent =>
+          await DependentUtils.getDependentAsync<BeanT, ParameterT>(
+            factory: factory,
+            effectiveQualifierName: effectiveQualifierName,
+            parameter: parameter,
           ),
         Scopes.application ||
         Scopes.session =>
-          await ApplicationUtils.getAplicationAsync<BeanT>(
-            factory,
-            effectiveQualifierName,
+          await ApplicationUtils.getAplicationAsync<BeanT, ParameterT>(
+            factory: factory,
+            effectiveQualifierName: effectiveQualifierName,
+            parameter: parameter,
           )
       };
     } finally {
@@ -74,21 +86,36 @@ final class ScopeUtils {
     }
   }
 
-  static BeanT executar<BeanT extends Object>(
-      ScopeFactory<BeanT> factory, Object effectiveQualifierName) {
+  static BeanT executar<BeanT extends Object, ParameterT extends Object>({
+    required ScopeFactory<BeanT> factory,
+    required Object effectiveQualifierName,
+    ParameterT? parameter,
+  }) {
     return runZoned(
       () {
-        return _getScoped<BeanT>(factory, effectiveQualifierName);
+        return _getScoped<BeanT, ParameterT>(
+          factory: factory,
+          effectiveQualifierName: effectiveQualifierName,
+          parameter: parameter,
+        );
       },
       zoneValues: {_resolutionKey: <Object>{}},
     );
   }
 
-  static Future<BeanT> executarAsync<BeanT extends Object>(
-      ScopeFactory<BeanT> factory, Object effectiveQualifierName) {
+  static Future<BeanT>
+      executarAsync<BeanT extends Object, ParameterT extends Object>({
+    required ScopeFactory<BeanT> factory,
+    required Object effectiveQualifierName,
+    ParameterT? parameter,
+  }) {
     return runZoned(
       () {
-        return _getScopedAsync<BeanT>(factory, effectiveQualifierName);
+        return _getScopedAsync<BeanT, ParameterT>(
+          factory: factory,
+          effectiveQualifierName: effectiveQualifierName,
+          parameter: parameter,
+        );
       },
       zoneValues: {_resolutionKey: <Object>{}},
     );
