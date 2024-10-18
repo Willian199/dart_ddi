@@ -1,6 +1,6 @@
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/exception/bean_not_found.dart';
-import 'package:dart_ddi/src/exception/circular_detection.dart';
+import 'package:dart_ddi/src/exception/concurrent_creation.dart';
 import 'package:test/test.dart';
 
 import '../clazz_samples/c.dart';
@@ -19,7 +19,7 @@ void circularDetection() {
 
     test('Inject a Application bean depending from a bean that not exists yet',
         () {
-      //Work because just Register
+      //This works because it was just registered
       DDI.instance.registerApplication(() => Father(mother: DDI.instance()));
       DDI.instance.registerApplication(() => Mother(father: DDI.instance()));
 
@@ -31,8 +31,8 @@ void circularDetection() {
       DDI.instance.registerApplication(() => Father(mother: DDI.instance()));
       DDI.instance.registerApplication(() => Mother(father: DDI.instance()));
 
-      expect(() => DDI.instance<Mother>(),
-          throwsA(isA<CircularDetectionException>()));
+      expect(() => DDI.instance.get<Mother>(),
+          throwsA(isA<ConcurrentCreationException>()));
 
       DDI.instance.destroy<Mother>();
       DDI.instance.destroy<Father>();
@@ -42,8 +42,8 @@ void circularDetection() {
       DDI.instance.registerDependent(() => Father(mother: DDI.instance()));
       DDI.instance.registerDependent(() => Mother(father: DDI.instance()));
 
-      expect(() => DDI.instance<Mother>(),
-          throwsA(isA<CircularDetectionException>()));
+      expect(() => DDI.instance.get<Mother>(),
+          throwsA(isA<ConcurrentCreationException>()));
 
       DDI.instance.destroy<Mother>();
       DDI.instance.destroy<Father>();
@@ -53,8 +53,8 @@ void circularDetection() {
       DDI.instance.registerSession(() => Father(mother: DDI.instance()));
       DDI.instance.registerSession(() => Mother(father: DDI.instance()));
 
-      expect(() => DDI.instance<Mother>(),
-          throwsA(isA<CircularDetectionException>()));
+      expect(() => DDI.instance.get<Mother>(),
+          throwsA(isA<ConcurrentCreationException>()));
 
       DDI.instance.destroy<Mother>();
       DDI.instance.destroy<Father>();
@@ -65,7 +65,7 @@ void circularDetection() {
 
       int count = 0;
       for (int i = 0; i < 100; i++) {
-        count += DDI.instance<C>().value;
+        count += DDI.instance.get<C>().value;
       }
 
       expectLater(count, 100);
@@ -78,7 +78,7 @@ void circularDetection() {
 
       int count = 0;
       for (int i = 0; i < 100; i++) {
-        count += DDI.instance<C>().value;
+        count += DDI.instance.get<C>().value;
       }
 
       expectLater(count, 100);
@@ -91,7 +91,7 @@ void circularDetection() {
 
       int count = 0;
       for (int i = 0; i < 100; i++) {
-        count += DDI.instance<C>().value;
+        count += DDI.instance.get<C>().value;
       }
 
       expectLater(count, 100);
@@ -104,7 +104,7 @@ void circularDetection() {
 
       int count = 0;
       for (int i = 0; i < 100; i++) {
-        count += DDI.instance<C>().value;
+        count += DDI.instance.get<C>().value;
       }
 
       expectLater(count, 100);

@@ -4,13 +4,13 @@ import 'd.dart';
 
 class K extends DDIInterceptor<D> {
   @override
-  D aroundConstruct(D instance) {
+  D onCreate(D instance) {
     instance.value = '${instance.value}cons';
     return instance;
   }
 
   @override
-  D aroundGet(D instance) {
+  D onGet(D instance) {
     instance.value = '${instance.value}GET';
     return instance;
   }

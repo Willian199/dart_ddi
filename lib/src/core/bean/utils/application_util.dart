@@ -1,15 +1,23 @@
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/core/bean/utils/dart_ddi_utils.dart';
+import 'package:dart_ddi/src/core/bean/utils/instance_factory_util.dart';
 
 final class ApplicationUtils {
-  static Future<BeanT> getAplicationAsync<BeanT extends Object>(
-      FactoryClazz<BeanT> factoryClazz, Object effectiveQualifierName) async {
+  static Future<BeanT>
+      getAplicationAsync<BeanT extends Object, ParameterT extends Object>({
+    required ScopeFactory<BeanT> factory,
+    required Object effectiveQualifierName,
+    ParameterT? parameter,
+  }) async {
     late BeanT applicationClazz;
 
-    if (factoryClazz.clazzInstance == null) {
+    if (factory.instanceHolder == null) {
       applicationClazz = _applyApplication<BeanT>(
-        factoryClazz,
-        (await factoryClazz.clazzRegister!.call()) as BeanT,
+        factory,
+        await InstanceFactoryUtil.createAsync<BeanT, ParameterT>(
+          builder: factory.builder!,
+          parameter: parameter,
+        ),
       );
 
       if (applicationClazz is DDIModule) {
@@ -22,27 +30,33 @@ final class ApplicationUtils {
         await DartDDIUtils.runFutureOrPostConstruct(applicationClazz);
       }
     } else {
-      applicationClazz = factoryClazz.clazzInstance!;
+      applicationClazz = factory.instanceHolder!;
     }
 
-    if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
+    if (factory.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
-        applicationClazz = interceptor().aroundGet(applicationClazz);
+        applicationClazz = interceptor().onGet(applicationClazz);
       }
     }
 
     return applicationClazz;
   }
 
-  static BeanT getAplication<BeanT extends Object>(
-    FactoryClazz<BeanT> factoryClazz,
-    Object effectiveQualifierName,
-  ) {
+  static BeanT getAplication<BeanT extends Object, ParameterT extends Object>({
+    required ScopeFactory<BeanT> factory,
+    required Object effectiveQualifierName,
+    ParameterT? parameter,
+  }) {
     late BeanT applicationClazz;
 
-    if (factoryClazz.clazzInstance == null) {
+    if (factory.instanceHolder == null) {
       applicationClazz = _applyApplication<BeanT>(
-          factoryClazz, (factoryClazz.clazzRegister as BeanT Function())());
+        factory,
+        InstanceFactoryUtil.create<BeanT, ParameterT>(
+          builder: factory.builder!,
+          parameter: parameter,
+        ),
+      );
 
       if (applicationClazz is DDIModule) {
         applicationClazz.moduleQualifier = effectiveQualifierName;
@@ -54,12 +68,12 @@ final class ApplicationUtils {
         DartDDIUtils.runFutureOrPostConstruct(applicationClazz);
       }
     } else {
-      applicationClazz = factoryClazz.clazzInstance!;
+      applicationClazz = factory.instanceHolder!;
     }
 
-    if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
+    if (factory.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
-        applicationClazz = interceptor().aroundGet(applicationClazz);
+        applicationClazz = interceptor().onGet(applicationClazz);
       }
     }
 
@@ -67,21 +81,21 @@ final class ApplicationUtils {
   }
 
   static BeanT _applyApplication<BeanT extends Object>(
-    FactoryClazz<BeanT> factoryClazz,
+    ScopeFactory<BeanT> factory,
     BeanT applicationClazz,
   ) {
-    if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
+    if (factory.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
-        applicationClazz = interceptor().aroundConstruct(applicationClazz);
+        applicationClazz = interceptor().onCreate(applicationClazz);
       }
     }
 
     applicationClazz = DartDDIUtils.executarDecorators<BeanT>(
-        applicationClazz, factoryClazz.decorators);
+        applicationClazz, factory.decorators);
 
-    factoryClazz.postConstruct?.call();
+    factory.postConstruct?.call();
 
-    factoryClazz.clazzInstance = applicationClazz;
+    factory.instanceHolder = applicationClazz;
 
     return applicationClazz;
   }

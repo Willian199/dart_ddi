@@ -94,7 +94,7 @@ class MyModule with DDIModule, PreDestroy {
 
 class CustomInterceptor extends DDIInterceptor<MyLoggingService> {
   @override
-  MyLoggingService aroundConstruct(MyLoggingService instance) {
+  MyLoggingService onCreate(MyLoggingService instance) {
     ddiEvent.fire<String>(
       'Construct Intercepted: $instance',
       qualifier: 'EventService',
@@ -104,7 +104,7 @@ class CustomInterceptor extends DDIInterceptor<MyLoggingService> {
   }
 
   @override
-  void aroundDispose(MyLoggingService? instance) {
+  void onDispose(MyLoggingService? instance) {
     ddiEvent.fire<String>(
       'Disposing: $instance',
       qualifier: 'EventService',
@@ -112,7 +112,7 @@ class CustomInterceptor extends DDIInterceptor<MyLoggingService> {
   }
 
   @override
-  void aroundDestroy(MyLoggingService? instance) {
+  void onDestroy(MyLoggingService? instance) {
     ddiEvent.fire<String>(
       'Destroyed: $instance',
       qualifier: 'EventService',
@@ -126,24 +126,24 @@ void main() async {
   await ddi.registerSingleton(MyModule.new);
 
   // Get an instance of MyService with qualifier
-  final MyService myService1 = ddi.get(qualifier: 'MyService1');
+  late final MyService myService1 = ddi.get(qualifier: 'MyService1');
 
   // Call a method on the MyService instance
   myService1.doSomething();
 
   // Get another instance of MyService with different qualifier
-  final myService2 = ddi.get<MyService>(qualifier: 'MyService2');
+  late final myService2 = ddi.get<MyService>(qualifier: 'MyService2');
   myService2.doSomething();
 
   // Get an instance of MyLoggingService with qualifier
-  final MyLoggingService myLoggingSession =
+  late final MyLoggingService myLoggingSession =
       ddi.get(qualifier: 'MyLoggingSession');
 
   // Call a method on the MyLoggingService instance
   myLoggingSession.logSomething();
 
   // Get another instance of MyLoggingService with different qualifier
-  final MyLoggingService myLoggingDependent =
+  late final MyLoggingService myLoggingDependent =
       ddi.get(qualifier: 'MyLoggingDependent');
   myLoggingDependent.logSomething();
 
@@ -156,7 +156,7 @@ void main() async {
   print(ddi.get(qualifier: 'authored'));
 
   // Dispose of the MyModule instance, will also dispose of MyService.
-  // MyLoggingService will not be disposed. Because it is a Dependent bean
+  // MyLoggingService Won't be disposed. Because it is a Dependent bean
   await ddi.dispose<MyModule>();
 
   // Destroy of the MyModule instance, will also destroy MyService and MyLoggingService

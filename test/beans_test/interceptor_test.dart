@@ -95,7 +95,7 @@ void interceptor() {
 
       DDI.instance.dispose<G>();
 
-      DDI.instance.addInterceptor([
+      DDI.instance.addInterceptor<G>([
         () => J(),
       ]);
 

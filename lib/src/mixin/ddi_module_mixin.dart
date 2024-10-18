@@ -254,4 +254,26 @@ mixin DDIModule implements PostConstruct {
       children: children,
     );
   }
+
+  /// Registers a factory to create an instance of the class [BeanT].
+  ///
+  /// - `factory`: Factory to create the instance.
+  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
+  /// - `registerIf`: Optional function to conditionally register the instance.
+  ///
+  Future<void> register<BeanT extends Object>({
+    required ScopeFactory<BeanT> factory,
+    Object? qualifier,
+    FutureOrBoolCallback? registerIf,
+  }) {
+    final bean = ddi.register(
+      factory: factory,
+      qualifier: qualifier,
+      registerIf: registerIf,
+    );
+
+    ddi.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
+
+    return bean;
+  }
 }

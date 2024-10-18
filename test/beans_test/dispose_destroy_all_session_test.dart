@@ -31,6 +31,23 @@ void disposeDestroyAllSession() {
           () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
     });
 
+    test('Register and retrieve Factory Session bean', () {
+      DDI.instance.register(factory: A.new.builder.asSession());
+      DDI.instance.register(factory: B.new.builder.asSession());
+      DDI.instance.register(factory: C.new.builder.asSession());
+
+      DDI.instance.get<A>();
+
+      DDI.instance.destroyAllSession();
+
+      expect(
+          () => DDI.instance.get<A>(), throwsA(isA<BeanNotFoundException>()));
+      expect(
+          () => DDI.instance.get<B>(), throwsA(isA<BeanNotFoundException>()));
+      expect(
+          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
+    });
+
     test('Register, get, dispose and destroy Session bean', () {
       registerSessionBeans();
 

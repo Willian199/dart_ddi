@@ -1,6 +1,6 @@
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/exception/bean_not_found.dart';
-import 'package:dart_ddi/src/exception/circular_detection.dart';
+import 'package:dart_ddi/src/exception/concurrent_creation.dart';
 import 'package:test/test.dart';
 
 import '../clazz_samples/c.dart';
@@ -19,7 +19,7 @@ void futureCircularDetection() {
 
     test('Inject a Application bean depending from a bean that not exists yet',
         () {
-      //Work because just Register
+      //This works because it was just registered
       DDI.instance.registerApplication<Father>(() async =>
           Future.value(Father(mother: await DDI.instance.getAsync<Mother>())));
       DDI.instance.registerApplication<Mother>(() async =>
@@ -36,7 +36,7 @@ void futureCircularDetection() {
           Future.value(Mother(father: await DDI.instance.getAsync<Father>())));
 
       expectLater(() async => DDI.instance.getAsync<Mother>(),
-          throwsA(isA<CircularDetectionException>()));
+          throwsA(isA<ConcurrentCreationException>()));
 
       DDI.instance.destroy<Mother>();
       DDI.instance.destroy<Father>();
@@ -50,7 +50,7 @@ void futureCircularDetection() {
           Future.value(Mother(father: await DDI.instance.getAsync<Father>())));
 
       expectLater(() async => DDI.instance.getAsync<Mother>(),
-          throwsA(isA<CircularDetectionException>()));
+          throwsA(isA<ConcurrentCreationException>()));
 
       DDI.instance.destroy<Mother>();
       DDI.instance.destroy<Father>();
@@ -64,7 +64,7 @@ void futureCircularDetection() {
           Future.value(Mother(father: await DDI.instance.getAsync<Father>())));
 
       expectLater(() => DDI.instance.getAsync<Mother>(),
-          throwsA(isA<CircularDetectionException>()));
+          throwsA(isA<ConcurrentCreationException>()));
 
       DDI.instance.destroy<Mother>();
       DDI.instance.destroy<Father>();

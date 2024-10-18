@@ -1,11 +1,10 @@
 import 'package:dart_ddi/src/features/ddi_interceptor.dart';
 
-import 'g.dart';
 import 'i.dart';
 
-class J extends DDIInterceptor<G> {
+class J<T extends Object> extends DDIInterceptor<T> {
   @override
-  I aroundConstruct(G instance) {
-    return I();
+  T onCreate(T instance) {
+    return I() as T;
   }
 }

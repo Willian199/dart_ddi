@@ -14,8 +14,9 @@ typedef BeanDecorator<BeanT> = BeanT Function(BeanT);
 
 typedef ListDecorator<BeanT> = List<BeanDecorator<BeanT>>;
 
-typedef BeanInterceptor<BeanT> = DDIInterceptor<BeanT> Function();
+typedef BeanInterceptor<BeanT extends Object> = DDIInterceptor<BeanT>
+    Function();
 
-typedef ListDDIInterceptor<BeanT> = List<BeanInterceptor<BeanT>>;
+typedef ListDDIInterceptor<BeanT extends Object> = List<BeanInterceptor<BeanT>>;
 
 typedef BeanRegister<BeanT> = FutureOr<BeanT> Function();

@@ -1,17 +1,24 @@
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/core/bean/utils/dart_ddi_utils.dart';
+import 'package:dart_ddi/src/core/bean/utils/instance_factory_util.dart';
 
 final class DependentUtils {
-  static BeanT getDependent<BeanT extends Object>(
-    FactoryClazz<BeanT> factoryClazz,
-    Object effectiveQualifierName,
-  ) {
+  static BeanT getDependent<BeanT extends Object, ParameterT extends Object>({
+    required ScopeFactory<BeanT> factory,
+    required Object effectiveQualifierName,
+    ParameterT? parameter,
+  }) {
     BeanT dependentClazz = _applyDependent<BeanT>(
-        factoryClazz, (factoryClazz.clazzRegister as BeanT Function())());
+      factory,
+      InstanceFactoryUtil.create<BeanT, ParameterT>(
+        builder: factory.builder!,
+        parameter: parameter,
+      ),
+    );
 
-    if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
+    if (factory.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
-        dependentClazz = interceptor().aroundGet(dependentClazz);
+        dependentClazz = interceptor().onGet(dependentClazz);
       }
     }
 
@@ -28,13 +35,18 @@ final class DependentUtils {
     return dependentClazz;
   }
 
-  static Future<BeanT> getDependentAsync<BeanT extends Object>(
-    FactoryClazz<BeanT> factoryClazz,
-    Object effectiveQualifierName,
-  ) async {
+  static Future<BeanT>
+      getDependentAsync<BeanT extends Object, ParameterT extends Object>({
+    required ScopeFactory<BeanT> factory,
+    required Object effectiveQualifierName,
+    ParameterT? parameter,
+  }) async {
     BeanT dependentClazz = _applyDependent<BeanT>(
-      factoryClazz,
-      (await factoryClazz.clazzRegister!.call()) as BeanT,
+      factory,
+      await InstanceFactoryUtil.createAsync<BeanT, ParameterT>(
+        builder: factory.builder!,
+        parameter: parameter,
+      ),
     );
 
     if (dependentClazz is DDIModule) {
@@ -47,9 +59,9 @@ final class DependentUtils {
       await DartDDIUtils.runFutureOrPostConstruct(dependentClazz);
     }
 
-    if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
+    if (factory.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
-        dependentClazz = interceptor().aroundGet(dependentClazz);
+        dependentClazz = interceptor().onGet(dependentClazz);
       }
     }
 
@@ -57,7 +69,7 @@ final class DependentUtils {
   }
 
   static BeanT _applyDependent<BeanT extends Object>(
-    FactoryClazz<BeanT> factoryClazz,
+    ScopeFactory<BeanT> factory,
     BeanT dependentClazz,
   ) {
     assert(
@@ -67,16 +79,16 @@ final class DependentUtils {
         dependentClazz is! PreDestroy || dependentClazz is! Future<PreDestroy>,
         'Dependent instances dont support PreDestroy. Use Interceptors instead.');
 
-    if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
+    if (factory.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
-        dependentClazz = interceptor().aroundConstruct(dependentClazz);
+        dependentClazz = interceptor().onCreate(dependentClazz);
       }
     }
 
     dependentClazz = DartDDIUtils.executarDecorators<BeanT>(
-        dependentClazz, factoryClazz.decorators);
+        dependentClazz, factory.decorators);
 
-    factoryClazz.postConstruct?.call();
+    factory.postConstruct?.call();
 
     return dependentClazz;
   }

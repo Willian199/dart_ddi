@@ -23,12 +23,14 @@ final class DartDDIUtils {
     return clazz.onPostConstruct();
   }
 
-  static BeanT getSingleton<BeanT extends Object>(
-      FactoryClazz<BeanT> factoryClazz, Object effectiveQualifierName) {
-    if (factoryClazz.clazzInstance case var clazz?) {
-      if (factoryClazz.interceptors case final inter? when inter.isNotEmpty) {
+  static BeanT getSingleton<BeanT extends Object>({
+    required ScopeFactory<BeanT> factory,
+    required Object effectiveQualifierName,
+  }) {
+    if (factory.instanceHolder case var clazz?) {
+      if (factory.interceptors case final inter? when inter.isNotEmpty) {
         for (final interceptor in inter) {
-          clazz = interceptor().aroundGet(clazz);
+          clazz = interceptor().onGet(clazz);
         }
       }
 

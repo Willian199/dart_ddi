@@ -124,10 +124,10 @@ void applicationFuture() {
       removeApplicationBeans();
     });
 
-    test('Try to retrieve Application bean after disposed', () {
+    test('Try to retrieve Application bean after disposed', () async {
       DDI.instance.registerApplication(() => Future.value(C()));
 
-      final instance1 = DDI.instance.getAsync<C>();
+      final instance1 = await DDI.instance.getAsync<C>();
 
       DDI.instance.dispose<C>();
 
