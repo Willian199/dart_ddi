@@ -6,7 +6,7 @@
 * Refactored how `Future` and `FutureOr` is handled.
 
 * Warnings:
-    * When registering a Factory Future and trying to obtain more than one instance simultaneously, it may cause a race condition and will be blocked. Especially if the instance is Dependent Scope.
+    * When registering a Factory Future and trying to obtain more than one instance simultaneously, it may cause a race condition and will be blocked. Especially if the instance is Application Scope.
     * When using Interceptors and Factories, you must register your Factory with `ddi.register(factory: factory.application(builder: ..., interceptors: [...]))`
 
 * Break changes:
