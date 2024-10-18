@@ -47,34 +47,38 @@ Summary
    4. [Dependent](#dependent)
    5. [Object](#object)
    6. [Common Considerations](#common-considerations)
-2. [Qualifiers](#qualifiers)
+2. [Factories ](#factories)
+   1. [How Factories Work](#how-factories-work)
+   2. [Use Cases for Factories](#use-cases-for-factories)
+   3. [Considerations](#considerations)
+3. [Qualifiers](#qualifiers)
    1. [How Qualifiers Work](#how-qualifiers-work)
    2. [Use Cases for Qualifiers](#use-cases-for-qualifiers)
    3. [Considerations](#considerations)
-3. [Extra Customization](#extra-customization)
+4. [Extra Customization](#extra-customization)
    1. [PostConstruct](#postconstruct)
    2. [Decorators](#decorators)
    3. [Interceptor](#interceptor)
    4. [RegisterIf](#registerif)
    5. [Destroyable](#destroyable)
-4. [Modules](#modules)
+5. [Modules](#modules)
    1. [Adding a Class](#adding-a-class)
    2. [Adding Multiple Class](#adding-multiple-class)
-5. [Mixins](#mixins)
+6. [Mixins](#mixins)
    1. [Post Construct](#post-construct-mixin)
    2. [Pre Destroy](#pre-destroy-mixin)
    3. [Pre Dispose](#pre-dispose-mixin)
    4. [DDIModule Mixin](#ddimodule-mixin)
    5. [DDIInject, DDIInjectAsync and DDIComponentInject Mixins](#ddiinject-ddiinjectasync-and-ddicomponentinject-mixins)
    6. [DDIEventSender and DDIStreamSender Mixins](#ddieventsender-and-ddistreamsender-mixins)
-6. [Events](#events)
+7. [Events](#events)
    1. [Creating and Managing Events](#creating-and-managing-events)
    2. [Subscribing an Event](#subscribing-an-event)
    3. [Unsubscribing an Event](#unsubscribing-an-event)
    4. [Firing an Event](#firing-an-event)
    5. [Events Considerations](#events-considerations)
    6. [Use Cases](#use-cases)
-7. [Stream](#stream)
+8. [Stream](#stream)
    1. [Subscription](#subscription)
    2. [Closing Stream](#closing-stream)
    3. [Firing Events](#firing-events)
@@ -177,7 +181,7 @@ DDI.instance.register(
     builder: () async {
       final data = await getApiData();
       return MyApiService(data);
-    },
+    }.builder,
   ),
 );
 ```
@@ -189,13 +193,17 @@ Factories can define parameters for builders, allowing for more flexible object 
 // Registering the factory
 DDI.instance.register(
   factory: ScopeFactory.application(
-    builder: (RecordParameter parameter) => ServiceWithParameter(parameter),
+    builder: (RecordParameter parameter) { 
+      return ServiceWithParameter(parameter);
+    }.builder,
   ),
 );
 
 DDI.instance.register(
   factory: ScopeFactory.application(
-    builder: (MyDatabase database, UserService userService) => ServiceAutoInject(database, userService),
+    builder: (MyDatabase database, UserService userService) {
+      return ServiceAutoInject(database, userService);
+    }.builder,
   ),
 );
 
