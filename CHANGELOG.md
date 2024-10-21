@@ -1,3 +1,7 @@
+## 0.8.1
+
+* Fixed Dependent instances where `DDIInterceptor.onGet` was running before `PostConstruct` mixin.
+
 ## 0.8.0
 
 * Added support to register custom factories.

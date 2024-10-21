@@ -16,12 +16,6 @@ final class DependentUtils {
       ),
     );
 
-    if (factory.interceptors case final inter? when inter.isNotEmpty) {
-      for (final interceptor in inter) {
-        dependentClazz = interceptor().onGet(dependentClazz);
-      }
-    }
-
     if (dependentClazz is DDIModule) {
       dependentClazz.moduleQualifier = effectiveQualifierName;
     }
@@ -30,6 +24,12 @@ final class DependentUtils {
       dependentClazz.onPostConstruct();
     } else if (dependentClazz is Future<PostConstruct>) {
       DartDDIUtils.runFutureOrPostConstruct(dependentClazz);
+    }
+
+    if (factory.interceptors case final inter? when inter.isNotEmpty) {
+      for (final interceptor in inter) {
+        dependentClazz = interceptor().onGet(dependentClazz);
+      }
     }
 
     return dependentClazz;

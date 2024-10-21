@@ -330,8 +330,8 @@ The Interceptor provides control over the instantiation, retrieval, destruction,
 ## Interceptor Methods
 
 ### onCreate
-- Invoked during the instance creation process.
-- Customize or replace the instance creation logic by returning a modified instance.
+- Invoked after instance creation and before Decorators and PostConstruct mixin.
+- Execute custom logic, Customize or replace the instance by returning a modified instance.
 
 ### onGet
 - Invoked when retrieving an instance.
