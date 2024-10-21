@@ -27,7 +27,7 @@ The Dart Dependency Injection (DDI) library is a robust and flexible dependency 
 
 🚀 Contribute to the DDI by sharing your ideas, feedback, or practical examples.
 
-See this basic [example](https://github.com/Willian199/dart_ddi/blob/master/example/main.dart) to get started with DDI.
+See this [example](https://github.com/Willian199/dart_ddi/blob/master/example/main.dart) to get started with DDI.
 
 ## Packages
 
@@ -35,8 +35,9 @@ See this basic [example](https://github.com/Willian199/dart_ddi/blob/master/exam
 
 ## Projects
 
+- [Budgetopia](https://github.com/Willian199/budgetopia) - An intuitive personal finance app that helps users track expenses.
 - [Perfumei](https://github.com/Willian199/Perfumei) - A simple mobile app about perfumes. Built using DDI and Cubit.
-- [Clinicas](https://github.com/Willian199/lab_clinicas_fe) - A mobile, desktop and web application about Attendance Rank. Built using Signal and Flutter DDI to enable route-based dependency injection management.
+- [Clinicas](https://github.com/Willian199/lab_clinicas_fe) - A project for a mobile, desktop and web application about Attendance Rank. Built using Signal and Flutter DDI to enable route-based dependency injection management.
 
 Summary
 
@@ -90,14 +91,16 @@ Summary
 The Dart Dependency Injection (DDI) Library supports various scopes for efficient management of object instances. Each scope determines how instances are created, reused, and destroyed throughout the application lifecycle. Below are detailed characteristics of each scope, along with recommendations, use cases, and considerations for potential issues.
 
 ## Singleton
-`Description`: This scope creates a single instance during registration and reuses it in all subsequent requests.
+`Description`: This scope creates an unique instance during registration and reuses it in all subsequent requests.
 
 `Recommendation`: Suitable for objects that need to be globally shared across the application, maintaining a single instance.
 
 `Use Case`: Sharing a configuration manager, a logging service, or a global state manager.
 
 `Note`: 
+
         - `Interceptor.onDipose` and `PreDispose` mixin are not supported. You can just destroy the instance. 
+
         - If you call dispose, only the Application or Session childrens will be disposed.      
 
 ## Application
@@ -125,8 +128,10 @@ The Dart Dependency Injection (DDI) Library supports various scopes for efficien
 
 `Use Case`: Creating instances of transient objects like data repositories or request handlers.
 
-`Note`: 
+`Note`:
+
         - `Dispose` functions, `Interceptor.onDipose` and `PreDispose` mixin are not supported.
+
         - `PreDestroy` mixins are not supported. Use `Interceptor.onDestroy` instead. 
 
 ## Object
@@ -136,12 +141,14 @@ The Dart Dependency Injection (DDI) Library supports various scopes for efficien
 
 `Use Case`: Application or device properties, like platform or dark mode settings, where the object's state needs to be consistent across the entire application.
 
-`Note`: 
-        - `Interceptor.onDipose` and `PreDispose` mixin are not supported. You can just destroy the instance. 
+`Note`:
+
+        - `Interceptor.onDipose` and `PreDispose` mixin are not supported. You can just destroy the instance.
+
         - If you call dispose, only the Application or Session childrens will be disposed.
 
 ## Common Considerations:
-`Single Registration`: Ensure that the instance to be registered is unique for a specific type or use qualifiers to enable the registration of multiple instances of the same type.
+`Unique Registration`: Ensure that the instance to be registered is unique for a specific type or use qualifiers to enable the registration of multiple instances of the same type.
 
 `Memory Management`: Be aware of memory implications for long-lived objects, especially in the Singleton and Object scopes.
 
