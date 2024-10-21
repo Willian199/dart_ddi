@@ -164,7 +164,7 @@ Encapsulate the instantiation logic, providing a better way to define how and wh
 
 When you register a factory, you provide a builder function that defines how the instance will be constructed. This builder can take parameters, enabling the factory to customize the creation process based on the specific needs of the application. Depending on the specified scope (e.g., singleton or application), the factory can either create a new instance each time it is requested or return the same instance for subsequent requests.
 
-#### Example Registration with Qualifier
+#### Example Registration
 
 ```dart
 MyService.new.builder.asApplication().register();
