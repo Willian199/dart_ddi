@@ -9,12 +9,18 @@ final class DisposeUtils {
 
     if (factory.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
-        final DDIInterceptor<BeanT> instance =
-            await ddi.getAsync<DDIInterceptor<BeanT>>(qualifier: interceptor);
+        if (ddi.isFuture(qualifier: interceptor)) {
+          final instance =
+              (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
 
-        final exec = instance.onDispose(factory.instanceHolder);
-        if (exec is Future) {
-          await exec;
+          final exec = instance.onDispose(factory.instanceHolder);
+          if (exec is Future) {
+            await exec;
+          }
+        } else {
+          final instance = ddi.get(qualifier: interceptor) as DDIInterceptor;
+
+          instance.onDispose(factory.instanceHolder);
         }
       }
     }

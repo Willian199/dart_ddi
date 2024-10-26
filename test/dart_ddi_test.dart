@@ -17,6 +17,7 @@ import 'beans_test/future_circular_injection_test.dart';
 import 'beans_test/future_post_construct_pre_destroy_test.dart';
 import 'beans_test/get_by_future_type_test.dart';
 import 'beans_test/get_by_type_test.dart';
+import 'beans_test/interceptor_feature_test.dart';
 import 'beans_test/interceptor_test.dart';
 import 'beans_test/module_application_test.dart';
 import 'beans_test/module_component_test.dart';
@@ -81,6 +82,7 @@ void main() {
   //Interceptor
   interceptor();
   factoryInterceptor();
+  interceptorFeatures();
 
   //CircularDetection
   circularDetection();

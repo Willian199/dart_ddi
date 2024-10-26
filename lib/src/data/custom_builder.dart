@@ -17,6 +17,21 @@ final class CustomBuilder<BeanT extends Object> {
     required this.isFuture,
   });
 
+  factory CustomBuilder.of(BeanT Function() producer) => CustomBuilder<BeanT>(
+        producer: producer,
+        parametersType: [],
+        returnType: BeanT,
+        isFuture: false,
+      );
+
+  factory CustomBuilder.ofFuture(Future<BeanT> Function() producer) =>
+      CustomBuilder<BeanT>(
+        producer: producer,
+        parametersType: [],
+        returnType: BeanT,
+        isFuture: true,
+      );
+
   /// The function that will be used to create the Bean.
   final Function producer;
 

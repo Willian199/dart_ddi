@@ -34,12 +34,12 @@ final class InterceptorUtil {
   ) async {
     if (factory.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
-        final DDIInterceptor<BeanT> instance =
-            await ddi.getAsync<DDIInterceptor<BeanT>>(qualifier: interceptor);
+        final instance =
+            (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
 
-        final FutureOr<BeanT> exec = instance.onCreate(applicationClazz);
+        final exec = instance.onCreate(applicationClazz);
 
-        applicationClazz = exec is Future ? await exec : exec;
+        applicationClazz = (exec is Future ? await exec : exec) as BeanT;
       }
     }
 
@@ -67,12 +67,12 @@ final class InterceptorUtil {
   ) async {
     if (factory.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
-        final DDIInterceptor<BeanT> instance =
-            await ddi.getAsync<DDIInterceptor<BeanT>>(qualifier: interceptor);
+        final instance =
+            (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
 
-        final FutureOr<BeanT> exec = instance.onGet(applicationClazz);
+        final exec = instance.onGet(applicationClazz);
 
-        applicationClazz = exec is Future ? await exec : exec;
+        applicationClazz = (exec is Future ? await exec : exec) as BeanT;
       }
     }
 
@@ -85,8 +85,8 @@ final class InterceptorUtil {
   ) async {
     if (factory.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
-        final DDIInterceptor<BeanT> instance =
-            await ddi.getAsync<DDIInterceptor<BeanT>>(qualifier: interceptor);
+        final instance =
+            (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
 
         final exec = instance.onDispose(applicationClazz);
         if (exec is Future) {
