@@ -2,13 +2,15 @@ import 'package:dart_ddi/dart_ddi.dart';
 
 final class DisposeUtils {
   /// Dispose only clean the class Instance
-  static Future<void> disposeBean<BeanT extends Object>(ScopeFactory<BeanT> factory) async {
+  static Future<void> disposeBean<BeanT extends Object>(
+      ScopeFactory<BeanT> factory) async {
     // Call onDispose before reset the instanceHolder
     // Should call interceptors even if the instance is null
 
     if (factory.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
-        final DDIInterceptor<BeanT> instance = await ddi.getAsync<DDIInterceptor<BeanT>>(qualifier: interceptor);
+        final DDIInterceptor<BeanT> instance =
+            await ddi.getAsync<DDIInterceptor<BeanT>>(qualifier: interceptor);
 
         final exec = instance.onDispose(factory.instanceHolder);
         if (exec is Future) {
@@ -26,7 +28,8 @@ final class DisposeUtils {
     return Future.value();
   }
 
-  static Future<void> _runFutureOrPreDispose<BeanT extends Object>(ScopeFactory<BeanT> factory, PreDispose clazz) async {
+  static Future<void> _runFutureOrPreDispose<BeanT extends Object>(
+      ScopeFactory<BeanT> factory, PreDispose clazz) async {
     disposeChildrenAsync<BeanT>(factory.children);
 
     await clazz.onPreDispose();
@@ -44,7 +47,8 @@ final class DisposeUtils {
     }
   }
 
-  static Future<void> disposeChildrenAsync<BeanT extends Object>(Set<Object>? children) async {
+  static Future<void> disposeChildrenAsync<BeanT extends Object>(
+      Set<Object>? children) async {
     if (children?.isNotEmpty ?? false) {
       for (final Object child in children!) {
         await ddi.dispose(qualifier: child);

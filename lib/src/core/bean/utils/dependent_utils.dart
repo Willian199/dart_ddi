@@ -31,17 +31,20 @@ final class DependentUtils {
     return InterceptorUtil.get<BeanT>(factory, dependentClazz);
   }
 
-  static Future<BeanT> getDependentAsync<BeanT extends Object, ParameterT extends Object>({
+  static Future<BeanT>
+      getDependentAsync<BeanT extends Object, ParameterT extends Object>({
     required ScopeFactory<BeanT> factory,
     required Object effectiveQualifierName,
     ParameterT? parameter,
   }) async {
-    BeanT dependentClazz = await InstanceFactoryUtil.createAsync<BeanT, ParameterT>(
+    BeanT dependentClazz =
+        await InstanceFactoryUtil.createAsync<BeanT, ParameterT>(
       builder: factory.builder!,
       parameter: parameter,
     );
 
-    dependentClazz = await InterceptorUtil.createAsync<BeanT>(factory, dependentClazz);
+    dependentClazz =
+        await InterceptorUtil.createAsync<BeanT>(factory, dependentClazz);
 
     dependentClazz = _applyDependent<BeanT>(factory, dependentClazz);
 
@@ -62,12 +65,15 @@ final class DependentUtils {
     ScopeFactory<BeanT> factory,
     BeanT dependentClazz,
   ) {
-    assert(dependentClazz is! PreDispose || dependentClazz is! Future<PreDispose>,
+    assert(
+        dependentClazz is! PreDispose || dependentClazz is! Future<PreDispose>,
         'Dependent instances dont support PreDispose. Use Interceptors instead.');
-    assert(dependentClazz is! PreDestroy || dependentClazz is! Future<PreDestroy>,
+    assert(
+        dependentClazz is! PreDestroy || dependentClazz is! Future<PreDestroy>,
         'Dependent instances dont support PreDestroy. Use Interceptors instead.');
 
-    dependentClazz = DartDDIUtils.executarDecorators<BeanT>(dependentClazz, factory.decorators);
+    dependentClazz = DartDDIUtils.executarDecorators<BeanT>(
+        dependentClazz, factory.decorators);
 
     factory.postConstruct?.call();
 

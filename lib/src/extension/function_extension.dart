@@ -92,7 +92,8 @@ extension P3<BeanT extends Object, A, B, C> on BeanT Function(A, B, C) {
       );
 }
 
-extension PF3<BeanT extends Object, A, B, C> on Future<BeanT> Function(A, B, C) {
+extension PF3<BeanT extends Object, A, B, C> on Future<BeanT> Function(
+    A, B, C) {
   List<Type> get parameters => [A, B, C];
   Type get returnType => BeanT;
   CustomBuilder<BeanT> get builder => CustomBuilder<BeanT>(
@@ -114,7 +115,8 @@ extension P4<BeanT extends Object, A, B, C, D> on BeanT Function(A, B, C, D) {
       );
 }
 
-extension PF4<BeanT extends Object, A, B, C, D> on Future<BeanT> Function(A, B, C, D) {
+extension PF4<BeanT extends Object, A, B, C, D> on Future<BeanT> Function(
+    A, B, C, D) {
   List<Type> get parameters => [A, B, C, D];
   Type get returnType => BeanT;
   CustomBuilder<BeanT> get builder => CustomBuilder<BeanT>(
@@ -125,7 +127,8 @@ extension PF4<BeanT extends Object, A, B, C, D> on Future<BeanT> Function(A, B, 
       );
 }
 
-extension P5<BeanT extends Object, A, B, C, D, E> on BeanT Function(A, B, C, D, E) {
+extension P5<BeanT extends Object, A, B, C, D, E> on BeanT Function(
+    A, B, C, D, E) {
   List<Type> get parameters => [A, B, C, D, E];
   Type get returnType => BeanT;
   CustomBuilder<BeanT> get builder => CustomBuilder<BeanT>(
@@ -136,7 +139,8 @@ extension P5<BeanT extends Object, A, B, C, D, E> on BeanT Function(A, B, C, D, 
       );
 }
 
-extension PF5<BeanT extends Object, A, B, C, D, E> on Future<BeanT> Function(A, B, C, D, E) {
+extension PF5<BeanT extends Object, A, B, C, D, E> on Future<BeanT> Function(
+    A, B, C, D, E) {
   List<Type> get parameters => [A, B, C, D, E];
   Type get returnType => BeanT;
   CustomBuilder<BeanT> get builder => CustomBuilder<BeanT>(
@@ -147,7 +151,8 @@ extension PF5<BeanT extends Object, A, B, C, D, E> on Future<BeanT> Function(A, 
       );
 }
 
-extension P6<BeanT extends Object, A, B, C, D, E, F> on BeanT Function(A, B, C, D, E, F) {
+extension P6<BeanT extends Object, A, B, C, D, E, F> on BeanT Function(
+    A, B, C, D, E, F) {
   List<Type> get parameters => [A, B, C, D, E, F];
   Type get returnType => BeanT;
   CustomBuilder<BeanT> get builder => CustomBuilder<BeanT>(
@@ -158,7 +163,8 @@ extension P6<BeanT extends Object, A, B, C, D, E, F> on BeanT Function(A, B, C, 
       );
 }
 
-extension PF6<BeanT extends Object, A, B, C, D, E, F> on BeanT Function(A, B, C, D, E, F) {
+extension PF6<BeanT extends Object, A, B, C, D, E, F> on BeanT Function(
+    A, B, C, D, E, F) {
   List<Type> get parameters => [A, B, C, D, E, F];
   Type get returnType => BeanT;
   CustomBuilder<BeanT> get builder => CustomBuilder<BeanT>(
@@ -169,7 +175,8 @@ extension PF6<BeanT extends Object, A, B, C, D, E, F> on BeanT Function(A, B, C,
       );
 }
 
-extension P7<BeanT extends Object, A, B, C, D, E, F, G> on BeanT Function(A, B, C, D, E, F, G) {
+extension P7<BeanT extends Object, A, B, C, D, E, F, G> on BeanT Function(
+    A, B, C, D, E, F, G) {
   List<Type> get parameters => [A, B, C, D, E, F, G];
   Type get returnType => BeanT;
   CustomBuilder<BeanT> get builder => CustomBuilder<BeanT>(
@@ -180,7 +187,8 @@ extension P7<BeanT extends Object, A, B, C, D, E, F, G> on BeanT Function(A, B, 
       );
 }
 
-extension PF7<BeanT extends Object, A, B, C, D, E, F, G> on Future<BeanT> Function(A, B, C, D, E, F, G) {
+extension PF7<BeanT extends Object, A, B, C, D, E, F, G> on Future<BeanT>
+    Function(A, B, C, D, E, F, G) {
   List<Type> get parameters => [A, B, C, D, E, F, G];
   Type get returnType => BeanT;
   CustomBuilder<BeanT> get builder => CustomBuilder<BeanT>(
@@ -191,7 +199,8 @@ extension PF7<BeanT extends Object, A, B, C, D, E, F, G> on Future<BeanT> Functi
       );
 }
 
-extension P8<BeanT extends Object, A, B, C, D, E, F, G, H> on BeanT Function(A, B, C, D, E, F, G, H) {
+extension P8<BeanT extends Object, A, B, C, D, E, F, G, H> on BeanT Function(
+    A, B, C, D, E, F, G, H) {
   List<Type> get parameters => [A, B, C, D, E, F, G, H];
   Type get returnType => BeanT;
   CustomBuilder<BeanT> get builder => CustomBuilder<BeanT>(
@@ -202,7 +211,8 @@ extension P8<BeanT extends Object, A, B, C, D, E, F, G, H> on BeanT Function(A, 
       );
 }
 
-extension PF8<BeanT extends Object, A, B, C, D, E, F, G, H> on Future<BeanT> Function(A, B, C, D, E, F, G, H) {
+extension PF8<BeanT extends Object, A, B, C, D, E, F, G, H> on Future<BeanT>
+    Function(A, B, C, D, E, F, G, H) {
   List<Type> get parameters => [A, B, C, D, E, F, G, H];
   Type get returnType => BeanT;
   CustomBuilder<BeanT> get builder => CustomBuilder<BeanT>(
@@ -213,7 +223,8 @@ extension PF8<BeanT extends Object, A, B, C, D, E, F, G, H> on Future<BeanT> Fun
       );
 }
 
-extension P9<BeanT extends Object, A, B, C, D, E, F, G, H, I> on BeanT Function(A, B, C, D, E, F, G, H, I) {
+extension P9<BeanT extends Object, A, B, C, D, E, F, G, H, I> on BeanT Function(
+    A, B, C, D, E, F, G, H, I) {
   List<Type> get parameters => [A, B, C, D, E, F, G, H, I];
   Type get returnType => BeanT;
   CustomBuilder<BeanT> get builder => CustomBuilder<BeanT>(
@@ -224,7 +235,8 @@ extension P9<BeanT extends Object, A, B, C, D, E, F, G, H, I> on BeanT Function(
       );
 }
 
-extension PF9<BeanT extends Object, A, B, C, D, E, F, G, H, I> on Future<BeanT> Function(A, B, C, D, E, F, G, H, I) {
+extension PF9<BeanT extends Object, A, B, C, D, E, F, G, H, I> on Future<BeanT>
+    Function(A, B, C, D, E, F, G, H, I) {
   List<Type> get parameters => [A, B, C, D, E, F, G, H, I];
   Type get returnType => BeanT;
   CustomBuilder<BeanT> get builder => CustomBuilder<BeanT>(
@@ -235,7 +247,8 @@ extension PF9<BeanT extends Object, A, B, C, D, E, F, G, H, I> on Future<BeanT> 
       );
 }
 
-extension P10<BeanT extends Object, A, B, C, D, E, F, G, H, I, J> on BeanT Function(A, B, C, D, E, F, G, H, I, J) {
+extension P10<BeanT extends Object, A, B, C, D, E, F, G, H, I, J> on BeanT
+    Function(A, B, C, D, E, F, G, H, I, J) {
   List<Type> get parameters => [A, B, C, D, E, F, G, H, I, J];
   Type get returnType => BeanT;
   CustomBuilder<BeanT> get builder => CustomBuilder<BeanT>(
@@ -246,7 +259,8 @@ extension P10<BeanT extends Object, A, B, C, D, E, F, G, H, I, J> on BeanT Funct
       );
 }
 
-extension PF10<BeanT extends Object, A, B, C, D, E, F, G, H, I, J> on Future<BeanT> Function(A, B, C, D, E, F, G, H, I, J) {
+extension PF10<BeanT extends Object, A, B, C, D, E, F, G, H, I, J>
+    on Future<BeanT> Function(A, B, C, D, E, F, G, H, I, J) {
   List<Type> get parameters => [A, B, C, D, E, F, G, H, I, J];
   Type get returnType => BeanT;
   CustomBuilder<BeanT> get builder => CustomBuilder<BeanT>(
