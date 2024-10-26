@@ -16,7 +16,7 @@ final class ScopeFactory<BeanT extends Object> {
   ListDecorator<BeanT>? decorators;
 
   /// A list of interceptors that are called at various stages of the Bean usage.
-  ListDDIInterceptor<BeanT>? interceptors;
+  Set<Object>? interceptors;
 
   /// The factory builder responsible for creating the Bean.
   final CustomBuilder<FutureOr<BeanT>>? builder;
@@ -66,7 +66,7 @@ final class ScopeFactory<BeanT extends Object> {
   factory ScopeFactory.singleton({
     BeanT? instanceHolder,
     CustomBuilder<FutureOr<BeanT>>? builder,
-    ListDDIInterceptor<BeanT>? interceptors,
+    Set<Object>? interceptors,
     bool destroyable = true,
     Set<Object>? children,
     ListDecorator<BeanT>? decorators,
@@ -98,7 +98,7 @@ final class ScopeFactory<BeanT extends Object> {
     required CustomBuilder<FutureOr<BeanT>> builder,
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
-    ListDDIInterceptor<BeanT>? interceptors,
+    Set<Object>? interceptors,
     bool destroyable = true,
     Set<Object>? children,
   }) {
@@ -127,7 +127,7 @@ final class ScopeFactory<BeanT extends Object> {
     required CustomBuilder<FutureOr<BeanT>> builder,
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
-    ListDDIInterceptor<BeanT>? interceptors,
+    Set<Object>? interceptors,
     bool destroyable = true,
     Set<Object>? children,
   }) {
@@ -157,7 +157,7 @@ final class ScopeFactory<BeanT extends Object> {
     required CustomBuilder<FutureOr<BeanT>> builder,
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
-    ListDDIInterceptor<BeanT>? interceptors,
+    Set<Object>? interceptors,
     bool destroyable = true,
     Set<Object>? children,
   }) {
@@ -183,7 +183,7 @@ final class ScopeFactory<BeanT extends Object> {
   /// - [children]: Optional set of child objects that are part of the Bean's module.
   factory ScopeFactory.object({
     required BeanT instanceHolder,
-    ListDDIInterceptor<BeanT>? interceptors,
+    Set<Object>? interceptors,
     ListDecorator<BeanT>? decorators,
     bool destroyable = true,
     Set<Object>? children,

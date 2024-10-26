@@ -4,6 +4,7 @@ import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/core/bean/utils/dart_ddi_utils.dart';
 import 'package:dart_ddi/src/core/bean/utils/dispose_utils.dart';
 import 'package:dart_ddi/src/core/bean/utils/instance_factory_util.dart';
+import 'package:dart_ddi/src/core/bean/utils/interceptor_util.dart';
 import 'package:dart_ddi/src/core/bean/utils/scope_utils.dart';
 import 'package:dart_ddi/src/enum/scopes.dart';
 import 'package:dart_ddi/src/exception/bean_not_found.dart';
@@ -52,7 +53,7 @@ abstract class DDI {
     Object? qualifier,
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
-    ListDDIInterceptor<BeanT>? interceptors,
+    Set<Object>? interceptors,
     FutureOrBoolCallback? registerIf,
     bool destroyable = true,
     Set<Object>? children,
@@ -86,7 +87,7 @@ abstract class DDI {
     Object? qualifier,
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
-    ListDDIInterceptor<BeanT>? interceptors,
+    Set<Object>? interceptors,
     FutureOrBoolCallback? registerIf,
     bool destroyable = true,
     Set<Object>? children,
@@ -109,6 +110,11 @@ abstract class DDI {
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
   bool isRegistered<BeanT extends Object>({Object? qualifier});
 
+  /// Verify if the factory is a Future in [DDI].
+  ///
+  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
+  bool isFuture<BeanT extends Object>({Object? qualifier});
+
   /// Gets an instance of the registered class in [DDI].
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
@@ -129,8 +135,7 @@ abstract class DDI {
   /// Also the [module] class could be the qualifier from the Module Bean.
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
-  BeanT getComponent<BeanT extends Object>(
-      {required Object module, Object? qualifier});
+  BeanT getComponent<BeanT extends Object>({required Object module, Object? qualifier});
 
   /// Gets an instance of the registered class in [DDI].
   ///
@@ -176,9 +181,7 @@ abstract class DDI {
   ///
   /// - **Order of Execution:** Decorators are applied in the order they are provided.
   /// - **Instaces Already Gets:** No changes any Instances that have been get.
-  FutureOr<void> addDecorator<BeanT extends Object>(
-      ListDecorator<BeanT> decorators,
-      {Object? qualifier});
+  FutureOr<void> addDecorator<BeanT extends Object>(ListDecorator<BeanT> decorators, {Object? qualifier});
 
   /// Allows to dynamically add a Interceptor.
   ///
@@ -188,9 +191,7 @@ abstract class DDI {
   /// - **onCreate:** Won't work with Singletons Scope.
   /// - **Order of Execution:** Interceptor are applied in the order they are provided.
   /// - **Instaces Already Gets:** No changes any Instances that have been get.
-  void addInterceptor<BeanT extends Object>(
-      ListDDIInterceptor<BeanT> interceptors,
-      {Object? qualifier});
+  void addInterceptor<BeanT extends Object>(Set<Object>? interceptors, {Object? qualifier});
 
   /// Allows to dynamically refresh the Object.
   ///
@@ -204,13 +205,11 @@ abstract class DDI {
 
   /// This function adds multiple child modules to a parent module.
   /// It takes a list of 'child' objects and an optional 'qualifier' for the parent module.
-  void addChildrenModules<BeanT extends Object>(
-      {required Set<Object> child, Object? qualifier});
+  void addChildrenModules<BeanT extends Object>({required Set<Object> child, Object? qualifier});
 
   /// This function adds a single child module to a parent module.
   /// It takes a 'child' object and an optional 'qualifier' for the parent module.
-  void addChildModules<BeanT extends Object>(
-      {required Object child, Object? qualifier});
+  void addChildModules<BeanT extends Object>({required Object child, Object? qualifier});
 
   Set<Object> getChildren<BeanT extends Object>({Object? qualifier});
 }

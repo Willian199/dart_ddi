@@ -64,14 +64,14 @@ class MyModule with DDIModule, PreDestroy {
     registerSession<MyLoggingService>(
       () => MyLoggingService(ddi.get(qualifier: 'MyService1')),
       qualifier: 'MyLoggingSession',
-      interceptors: [CustomInterceptor.new],
+      interceptors: {CustomInterceptor},
     );
 
     // Register MyLoggingService with dependency on MyService2
     registerDependent<MyLoggingService>(
       () => MyLoggingService(ddi.get(qualifier: 'MyService2')),
       qualifier: 'MyLoggingDependent',
-      interceptors: [CustomInterceptor.new],
+      interceptors: {CustomInterceptor},
     );
 
     // For events and streams, use the `ddiEvent` and `ddiStream` respectively
@@ -79,6 +79,8 @@ class MyModule with DDIModule, PreDestroy {
       executar,
       qualifier: 'EventService',
     );
+
+    registerApplication<CustomInterceptor>(CustomInterceptor.new);
 
     await Future.delayed(const Duration(seconds: 1));
   }
@@ -136,21 +138,18 @@ void main() async {
   myService2.doSomething();
 
   // Get an instance of MyLoggingService with qualifier
-  late final MyLoggingService myLoggingSession =
-      ddi.get(qualifier: 'MyLoggingSession');
+  late final MyLoggingService myLoggingSession = ddi.get(qualifier: 'MyLoggingSession');
 
   // Call a method on the MyLoggingService instance
   myLoggingSession.logSomething();
 
   // Get another instance of MyLoggingService with different qualifier
-  late final MyLoggingService myLoggingDependent =
-      ddi.get(qualifier: 'MyLoggingDependent');
+  late final MyLoggingService myLoggingDependent = ddi.get(qualifier: 'MyLoggingDependent');
   myLoggingDependent.logSomething();
 
   // Add a decorator to uppercase strings
   String uppercaseDecorator(String str) => str.toUpperCase();
-  ddi.registerObject('Hello World',
-      qualifier: 'authored', decorators: [uppercaseDecorator]);
+  ddi.registerObject('Hello World', qualifier: 'authored', decorators: [uppercaseDecorator]);
 
   // Will return HELLO WORLD
   print(ddi.get(qualifier: 'authored'));
