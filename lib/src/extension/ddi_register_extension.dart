@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
 
@@ -11,7 +13,8 @@ extension DDIRegisterExtension on DDI {
   /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
   /// - `registerIf`: Optional function to conditionally register the instance.
   /// - `destroyable`: Optional parameter to make the instance indestructible.
-  /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module
+  /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module.
+  /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
   ///
   /// **Singleton Scope:**
   /// - Ensures that only one instance of the registered class is created and shared throughout the entire application.
@@ -29,6 +32,7 @@ extension DDIRegisterExtension on DDI {
     FutureOrBoolCallback? registerIf,
     bool destroyable = true,
     Set<Object>? children,
+    FutureOr<bool> Function(Object)? selector,
   }) {
     return register<BeanT>(
       factory: ScopeFactory.singleton(
@@ -37,6 +41,7 @@ extension DDIRegisterExtension on DDI {
         interceptors: interceptors,
         decorators: decorators,
         destroyable: destroyable,
+        selector: selector,
       ),
       qualifier: qualifier,
       registerIf: registerIf,
@@ -52,7 +57,8 @@ extension DDIRegisterExtension on DDI {
   /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
   /// - `registerIf`: Optional function to conditionally register the instance.
   /// - `destroyable`: Optional parameter to make the instance indestructible.
-  /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module
+  /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module.
+  /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
   ///
   /// **Application Scope:**
   /// - Ensures that only one instance of the registered class is created and shared throughout the entire application.
@@ -71,6 +77,7 @@ extension DDIRegisterExtension on DDI {
     FutureOrBoolCallback? registerIf,
     bool destroyable = true,
     Set<Object>? children,
+    FutureOr<bool> Function(Object)? selector,
   }) {
     return register<BeanT>(
       factory: ScopeFactory.application(
@@ -79,6 +86,7 @@ extension DDIRegisterExtension on DDI {
         interceptors: interceptors,
         decorators: decorators,
         destroyable: destroyable,
+        selector: selector,
       ),
       qualifier: qualifier,
       registerIf: registerIf,
@@ -94,7 +102,8 @@ extension DDIRegisterExtension on DDI {
   /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
   /// - `registerIf`: Optional function to conditionally register the instance.
   /// - `destroyable`: Optional parameter to make the instance indestructible.
-  /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module
+  /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module.
+  /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
   ///
   /// **Session Scope:**
   /// - Ensures that only one instance of the registered class is created and shared throughout the entire application.
@@ -113,6 +122,7 @@ extension DDIRegisterExtension on DDI {
     FutureOrBoolCallback? registerIf,
     bool destroyable = true,
     Set<Object>? children,
+    FutureOr<bool> Function(Object)? selector,
   }) {
     return register<BeanT>(
       factory: ScopeFactory.session(
@@ -121,6 +131,7 @@ extension DDIRegisterExtension on DDI {
         interceptors: interceptors,
         decorators: decorators,
         destroyable: destroyable,
+        selector: selector,
       ),
       qualifier: qualifier,
       registerIf: registerIf,
@@ -137,6 +148,7 @@ extension DDIRegisterExtension on DDI {
   /// - `registerIf`: Optional function to conditionally register the instance.
   /// - `destroyable`: Optional parameter to make the instance indestructible.
   /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module
+  /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
   ///
   /// **Dependent Scope:**
   /// - Creates a new instance every time it is requested.
@@ -154,6 +166,7 @@ extension DDIRegisterExtension on DDI {
     FutureOrBoolCallback? registerIf,
     bool destroyable = true,
     Set<Object>? children,
+    FutureOr<bool> Function(Object)? selector,
   }) {
     return register<BeanT>(
       factory: ScopeFactory.dependent(
@@ -162,6 +175,7 @@ extension DDIRegisterExtension on DDI {
         interceptors: interceptors,
         decorators: decorators,
         destroyable: destroyable,
+        selector: selector,
       ),
       qualifier: qualifier,
       registerIf: registerIf,

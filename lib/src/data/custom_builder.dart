@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
 
@@ -24,7 +26,7 @@ final class CustomBuilder<BeanT extends Object> {
         isFuture: false,
       );
 
-  factory CustomBuilder.ofFuture(Future<BeanT> Function() producer) =>
+  factory CustomBuilder.ofFuture(FutureOr<BeanT> Function() producer) =>
       CustomBuilder<BeanT>(
         producer: producer,
         parametersType: [],
@@ -50,11 +52,13 @@ final class CustomBuilder<BeanT extends Object> {
   /// - `decorators`: A list of decorators to modify the Bean before it is returned.
   /// - `destroyable`: Optional parameter to make the instance indestructible.
   /// - `children`: A set of child objects associated with the Bean.
+  /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
   ScopeFactory<BeanT> asApplication({
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
     bool destroyable = true,
     Set<Object>? children,
+    FutureOr<bool> Function(Object)? selector,
   }) {
     return ScopeFactory<BeanT>.application(
       builder: this,
@@ -62,6 +66,7 @@ final class CustomBuilder<BeanT extends Object> {
       decorators: decorators,
       destroyable: destroyable,
       children: children,
+      selector: selector,
     );
   }
 
@@ -71,11 +76,13 @@ final class CustomBuilder<BeanT extends Object> {
   /// - `decorators`: A list of decorators to modify the Bean before it is returned.
   /// - `destroyable`: Optional parameter to make the instance indestructible.
   /// - `children`: A set of child objects associated with the Bean.
+  /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
   ScopeFactory<BeanT> asSession({
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
     bool destroyable = true,
     Set<Object>? children,
+    FutureOr<bool> Function(Object)? selector,
   }) {
     return ScopeFactory<BeanT>.session(
       builder: this,
@@ -83,6 +90,7 @@ final class CustomBuilder<BeanT extends Object> {
       decorators: decorators,
       destroyable: destroyable,
       children: children,
+      selector: selector,
     );
   }
 
@@ -92,11 +100,13 @@ final class CustomBuilder<BeanT extends Object> {
   /// - `decorators`: A list of decorators to modify the Bean before it is returned.
   /// - `destroyable`: Optional parameter to make the instance indestructible.
   /// - `children`: A set of child objects associated with the Bean.
+  /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
   ScopeFactory<BeanT> asDependent({
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
     bool destroyable = true,
     Set<Object>? children,
+    FutureOr<bool> Function(Object)? selector,
   }) {
     return ScopeFactory<BeanT>.dependent(
       builder: this,
@@ -104,6 +114,7 @@ final class CustomBuilder<BeanT extends Object> {
       decorators: decorators,
       destroyable: destroyable,
       children: children,
+      selector: selector,
     );
   }
 
@@ -113,11 +124,13 @@ final class CustomBuilder<BeanT extends Object> {
   /// - `decorators`: A list of decorators to modify the Bean before it is returned.
   /// - `destroyable`: Optional parameter to make the instance indestructible.
   /// - `children`: A set of child objects associated with the Bean.
+  /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
   ScopeFactory<BeanT> asSingleton({
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
     bool destroyable = true,
     Set<Object>? children,
+    FutureOr<bool> Function(Object)? selector,
   }) {
     return ScopeFactory<BeanT>.singleton(
       builder: this,
@@ -125,6 +138,7 @@ final class CustomBuilder<BeanT extends Object> {
       decorators: decorators,
       destroyable: destroyable,
       children: children,
+      selector: selector,
     );
   }
 }

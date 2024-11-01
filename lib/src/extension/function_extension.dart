@@ -13,19 +13,6 @@ extension P0<BeanT extends Object> on BeanT Function() {
       );
 }
 
-/*typedef Teste<I extends DDIInterceptor> = DDIInterceptor<B> Function<B extends Object>();
-
-extension PI0<InterceptorT extends Object> on Teste<InterceptorT> {
-  List<Type> get parameters => [];
-  Type get returnType => InterceptorT;
-  CustomBuilder<InterceptorT> get builder => CustomBuilder<InterceptorT>(
-        producer: this,
-        parametersType: parameters,
-        returnType: returnType,
-        isFuture: this is Future<Object> Function(),
-      );
-}*/
-
 extension PF0<BeanT extends Object> on Future<BeanT> Function() {
   List<Type> get parameters => [];
   Type get returnType => BeanT;

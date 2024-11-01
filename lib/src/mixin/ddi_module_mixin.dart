@@ -12,9 +12,9 @@ import 'package:dart_ddi/src/typedef/typedef.dart';
 ///   FutureOr<void> onPostConstruct(){
 ///     print('do something after construct or register the childrens beans');
 ///
-///     registerApplication<MyEvent>(() => MyEvent());
-///     registerSingleton<OtherEvent>(() => OtherEvent());
-///     registerDependent<SimpleEvent>(() => SimpleEvent());
+///     registerApplication<MyEvent>(MyEvent.new);
+///     registerSingleton<OtherEvent>(OtherEvent.new);
+///     registerDependent<SimpleEvent>(SimpleEvent.new);
 ///   }
 /// }
 /// ```
@@ -40,6 +40,8 @@ mixin DDIModule implements PostConstruct {
   /// - `registerIf`: Optional function to conditionally register the instance.
   /// - `destroyable`: Optional parameter to make the instance indestructible.
   /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to vinculate multiple classes under a single parent module.
+  /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
+  ///
   Future<void> registerSingleton<BeanT extends Object>(
     BeanRegister<BeanT> clazzRegister, {
     Object? qualifier,
@@ -49,6 +51,7 @@ mixin DDIModule implements PostConstruct {
     FutureOrBoolCallback? registerIf,
     bool destroyable = true,
     Set<Object>? children,
+    FutureOr<bool> Function(Object)? selector,
   }) {
     final bean = ddi.registerSingleton<BeanT>(
       clazzRegister,
@@ -59,6 +62,7 @@ mixin DDIModule implements PostConstruct {
       destroyable: destroyable,
       registerIf: registerIf,
       children: children,
+      selector: selector,
     );
 
     ddi.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
@@ -76,6 +80,8 @@ mixin DDIModule implements PostConstruct {
   /// - `registerIf`: Optional function to conditionally register the instance.
   /// - `destroyable`: Optional parameter to make the instance indestructible.
   /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to vinculate multiple classes under a single parent module.
+  /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
+  ///
   Future<void> registerApplication<BeanT extends Object>(
     BeanRegister<BeanT> clazzRegister, {
     Object? qualifier,
@@ -85,6 +91,7 @@ mixin DDIModule implements PostConstruct {
     FutureOrBoolCallback? registerIf,
     bool destroyable = true,
     Set<Object>? children,
+    FutureOr<bool> Function(Object)? selector,
   }) {
     final bean = ddi.registerApplication<BeanT>(
       clazzRegister,
@@ -95,6 +102,7 @@ mixin DDIModule implements PostConstruct {
       destroyable: destroyable,
       registerIf: registerIf,
       children: children,
+      selector: selector,
     );
 
     ddi.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
@@ -112,6 +120,8 @@ mixin DDIModule implements PostConstruct {
   /// - `registerIf`: Optional function to conditionally register the instance.
   /// - `destroyable`: Optional parameter to make the instance indestructible.
   /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to vinculate multiple classes under a single parent module.
+  /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
+  ///
   Future<void> registerSession<BeanT extends Object>(
     BeanRegister<BeanT> clazzRegister, {
     Object? qualifier,
@@ -121,6 +131,7 @@ mixin DDIModule implements PostConstruct {
     FutureOrBoolCallback? registerIf,
     bool destroyable = true,
     Set<Object>? children,
+    FutureOr<bool> Function(Object)? selector,
   }) {
     final bean = ddi.registerSession<BeanT>(
       clazzRegister,
@@ -131,6 +142,7 @@ mixin DDIModule implements PostConstruct {
       destroyable: destroyable,
       registerIf: registerIf,
       children: children,
+      selector: selector,
     );
 
     ddi.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
@@ -148,6 +160,8 @@ mixin DDIModule implements PostConstruct {
   /// - `registerIf`: Optional function to conditionally register the instance.
   /// - `destroyable`: Optional parameter to make the instance indestructible.
   /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to vinculate multiple classes under a single parent module.
+  /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
+  ///
   Future<void> registerDependent<BeanT extends Object>(
     BeanRegister<BeanT> clazzRegister, {
     Object? qualifier,
@@ -157,6 +171,7 @@ mixin DDIModule implements PostConstruct {
     FutureOrBoolCallback? registerIf,
     bool destroyable = true,
     Set<Object>? children,
+    FutureOr<bool> Function(Object)? selector,
   }) {
     final bean = ddi.registerDependent<BeanT>(
       clazzRegister,
@@ -167,6 +182,7 @@ mixin DDIModule implements PostConstruct {
       destroyable: destroyable,
       registerIf: registerIf,
       children: children,
+      selector: selector,
     );
 
     ddi.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
@@ -184,6 +200,8 @@ mixin DDIModule implements PostConstruct {
   /// - `registerIf`: Optional function to conditionally register the instance.
   /// - `destroyable`: Optional parameter to make the instance indestructible.
   /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to vinculate multiple classes under a single parent module.
+  /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
+  ///
   Future<void> registerObject<BeanT extends Object>(
     BeanT register, {
     Object? qualifier,
@@ -193,6 +211,7 @@ mixin DDIModule implements PostConstruct {
     FutureOrBoolCallback? registerIf,
     bool destroyable = true,
     Set<Object>? children,
+    FutureOr<bool> Function(Object)? selector,
   }) {
     final bean = ddi.registerObject<BeanT>(
       register,
@@ -203,6 +222,7 @@ mixin DDIModule implements PostConstruct {
       destroyable: destroyable,
       registerIf: registerIf,
       children: children,
+      selector: selector,
     );
 
     ddi.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
@@ -232,6 +252,8 @@ mixin DDIModule implements PostConstruct {
   /// - `registerIf`: Optional function to conditionally register the instance.
   /// - `destroyable`: Optional parameter to make the instance indestructible.
   /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to vinculate multiple classes under a single parent module.
+  /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
+  ///
   Future<void> registerComponent<BeanT extends Object>(
     BeanRegister<BeanT> clazzRegister, {
     Object? qualifier,
@@ -241,6 +263,7 @@ mixin DDIModule implements PostConstruct {
     FutureOrBoolCallback? registerIf,
     bool destroyable = true,
     Set<Object>? children,
+    FutureOr<bool> Function(Object)? selector,
   }) {
     return ddi.registerComponent<BeanT>(
       clazzRegister: clazzRegister,
@@ -252,6 +275,7 @@ mixin DDIModule implements PostConstruct {
       destroyable: destroyable,
       registerIf: registerIf,
       children: children,
+      selector: selector,
     );
   }
 

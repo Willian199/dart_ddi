@@ -38,7 +38,8 @@ abstract class DDI {
   /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
   /// - `registerIf`: Optional function to conditionally register the instance.
   /// - `destroyable`: Optional parameter to make the instance indestructible.
-  /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module
+  /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module.
+  /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
   ///
   /// **Object Scope:**
   /// - Ensures that the registered Object is created and shared throughout the entire application.
@@ -57,6 +58,7 @@ abstract class DDI {
     FutureOrBoolCallback? registerIf,
     bool destroyable = true,
     Set<Object>? children,
+    FutureOr<bool> Function(Object)? selector,
   });
 
   /// Registers an instance as a Component.
@@ -81,6 +83,8 @@ abstract class DDI {
   /// - `registerIf`: Optional function to conditionally register the instance.
   /// - `destroyable`: Optional parameter to make the instance indestructible.
   /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to vinculate multiple classes under a single parent module.
+  /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
+  ///
   Future<void> registerComponent<BeanT extends Object>({
     required BeanRegister<BeanT> clazzRegister,
     required Object moduleQualifier,
@@ -91,6 +95,7 @@ abstract class DDI {
     FutureOrBoolCallback? registerIf,
     bool destroyable = true,
     Set<Object>? children,
+    FutureOr<bool> Function(Object)? selector,
   });
 
   /// Registers a factory to create an instance of the class [BeanT].
@@ -119,11 +124,13 @@ abstract class DDI {
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
   /// - `parameter`: Optional parameter to pass during the instance creation.
+  /// - `select`: Optional value to pass to distinguish between different instances of the same type.
   ///
   /// **Note:** The `parameter` will be ignored: If the instance is already created or the constructor doesn't match with the parameter type.
   BeanT getWith<BeanT extends Object, ParameterT extends Object>({
     ParameterT? parameter,
     Object? qualifier,
+    Object? select,
   });
 
   /// Gets an instance of the registered class in [DDI] from the specified [module].
@@ -135,18 +142,23 @@ abstract class DDI {
   /// Also the [module] class could be the qualifier from the Module Bean.
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
-  BeanT getComponent<BeanT extends Object>(
-      {required Object module, Object? qualifier});
+  ///
+  BeanT getComponent<BeanT extends Object>({
+    required Object module,
+    Object? qualifier,
+  });
 
   /// Gets an instance of the registered class in [DDI].
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
   /// - `parameter`: Optional parameter to pass during the instance creation.
+  /// - `select`: Optional value to pass to distinguish between different instances of the same type.
   ///
   /// **Note:** The `parameter` will be ignored: If the instance is already created or the constructor doesn't match with the parameter type.
   Future<BeanT> getAsyncWith<BeanT extends Object, ParameterT extends Object>({
     ParameterT? parameter,
     Object? qualifier,
+    Object? select,
   });
 
   /// Retrieves a list of keys associated with objects of a specific type BeanT`.

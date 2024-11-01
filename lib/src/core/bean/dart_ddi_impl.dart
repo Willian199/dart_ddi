@@ -99,6 +99,7 @@ class _DDIImpl implements DDI {
     FutureOrBoolCallback? registerIf,
     bool destroyable = true,
     Set<Object>? children,
+    FutureOr<bool> Function(Object)? selector,
   }) async {
     bool shouldRegister = true;
 
@@ -147,6 +148,7 @@ class _DDIImpl implements DDI {
         interceptors: interceptors,
         destroyable: destroyable,
         children: children,
+        selector: selector,
       );
 
       if (register is PostConstruct) {
@@ -168,6 +170,7 @@ class _DDIImpl implements DDI {
     FutureOrBoolCallback? registerIf,
     bool destroyable = true,
     Set<Object>? children,
+    FutureOr<bool> Function(Object)? selector,
   }) {
     final Object effectiveQualifierName =
         '$moduleQualifier${qualifier ?? BeanT}';
@@ -182,6 +185,7 @@ class _DDIImpl implements DDI {
         destroyable: destroyable,
         registerIf: registerIf,
         children: children,
+        selector: selector,
       );
 
       addChildModules(
@@ -213,6 +217,7 @@ class _DDIImpl implements DDI {
   BeanT getWith<BeanT extends Object, ParameterT extends Object>({
     ParameterT? parameter,
     Object? qualifier,
+    Object? select,
   }) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
@@ -231,6 +236,18 @@ class _DDIImpl implements DDI {
         effectiveQualifierName: effectiveQualifierName,
         parameter: parameter,
       );
+    } else if (select != null && BeanT != Object) {
+      // Try to find a bean with the selector
+      for (final element in _beans.entries) {
+        if (element.value.type == BeanT &&
+            (element.value.selector?.call(select) ?? false) as bool) {
+          return ScopeUtils.executar<BeanT, ParameterT>(
+            factory: element.value as ScopeFactory<BeanT>,
+            effectiveQualifierName: effectiveQualifierName,
+            parameter: parameter,
+          );
+        }
+      }
     }
 
     throw BeanNotFoundException(effectiveQualifierName.toString());
@@ -252,10 +269,8 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  Future<BeanT> getAsyncWith<BeanT extends Object, ParameterT extends Object>({
-    ParameterT? parameter,
-    Object? qualifier,
-  }) {
+  Future<BeanT> getAsyncWith<BeanT extends Object, ParameterT extends Object>(
+      {ParameterT? parameter, Object? qualifier, Object? select}) async {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
     if (_beans[effectiveQualifierName]
@@ -265,6 +280,19 @@ class _DDIImpl implements DDI {
         effectiveQualifierName: effectiveQualifierName,
         parameter: parameter,
       );
+    } else if (select != null && BeanT != Object) {
+      // Try to find a bean with the selector
+      for (final element in _beans.entries) {
+        if (element.value.type == BeanT &&
+            element.value.selector != null &&
+            await (element.value.selector?.call(select) ?? false)) {
+          return ScopeUtils.executarAsync<BeanT, ParameterT>(
+            factory: element.value as ScopeFactory<BeanT>,
+            effectiveQualifierName: effectiveQualifierName,
+            parameter: parameter,
+          );
+        }
+      }
     }
 
     throw BeanNotFoundException(effectiveQualifierName.toString());
