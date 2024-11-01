@@ -62,6 +62,7 @@ Summary
    3. [Interceptor](#interceptor)
    4. [RegisterIf](#registerif)
    5. [Destroyable](#destroyable)
+   6. [Selectors](#selector)
 5. [Modules](#modules)
    1. [Adding a Class](#adding-a-class)
    2. [Adding Multiple Class](#adding-multiple-class)
