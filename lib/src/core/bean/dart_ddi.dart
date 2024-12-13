@@ -18,7 +18,7 @@ part 'dart_ddi_impl.dart';
 
 /// Shortcut for getting the shared instance of the [DDI] class.
 /// The [DDI] class provides methods for managing beans.
-DDI ddi = DDI.instance;
+final DDI ddi = DDI.instance;
 
 /// [DDI] is an abstract class representing a Dependency Injection system.
 /// It provides methods for managing beans.
@@ -28,6 +28,9 @@ abstract class DDI {
 
   /// Gets the shared instance of the [DDI] class.
   static DDI get instance => _instance;
+
+  /// Get a new instance of the [DDI] class.
+  static DDI get newInstance => _DDIImpl();
 
   /// Registers an Object.
   ///
@@ -119,6 +122,11 @@ abstract class DDI {
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
   bool isFuture<BeanT extends Object>({Object? qualifier});
+
+  /// Verify if the factory is ready in [DDI].
+  ///
+  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
+  bool isReady<BeanT extends Object>({Object? qualifier});
 
   /// Gets an instance of the registered class in [DDI].
   ///

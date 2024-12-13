@@ -214,6 +214,17 @@ class _DDIImpl implements DDI {
   }
 
   @override
+  bool isReady<BeanT extends Object>({Object? qualifier}) {
+    final Object effectiveQualifierName = qualifier ?? BeanT;
+    if (_beans[effectiveQualifierName]
+        case final ScopeFactory<BeanT> factory?) {
+      return factory.instanceHolder != null;
+    }
+
+    throw BeanNotFoundException(effectiveQualifierName.toString());
+  }
+
+  @override
   BeanT getWith<BeanT extends Object, ParameterT extends Object>({
     ParameterT? parameter,
     Object? qualifier,
@@ -238,11 +249,11 @@ class _DDIImpl implements DDI {
       );
     } else if (select != null && BeanT != Object) {
       // Try to find a bean with the selector
-      for (final element in _beans.entries) {
-        if (element.value.type == BeanT &&
-            (element.value.selector?.call(select) ?? false) as bool) {
+      for (final MapEntry(key: _, :value) in _beans.entries) {
+        if (value.type == BeanT &&
+            (value.selector?.call(select) ?? false) as bool) {
           return ScopeUtils.executar<BeanT, ParameterT>(
-            factory: element.value as ScopeFactory<BeanT>,
+            factory: value as ScopeFactory<BeanT>,
             effectiveQualifierName: effectiveQualifierName,
             parameter: parameter,
           );
@@ -282,12 +293,12 @@ class _DDIImpl implements DDI {
       );
     } else if (select != null && BeanT != Object) {
       // Try to find a bean with the selector
-      for (final element in _beans.entries) {
-        if (element.value.type == BeanT &&
-            element.value.selector != null &&
-            await (element.value.selector?.call(select) ?? false)) {
+      for (final MapEntry(key: _, :value) in _beans.entries) {
+        if (value.type == BeanT &&
+            value.selector != null &&
+            await (value.selector?.call(select) ?? false)) {
           return ScopeUtils.executarAsync<BeanT, ParameterT>(
-            factory: element.value as ScopeFactory<BeanT>,
+            factory: value as ScopeFactory<BeanT>,
             effectiveQualifierName: effectiveQualifierName,
             parameter: parameter,
           );
