@@ -127,18 +127,13 @@ class _DDIImpl implements DDI {
 
       if (interceptors != null) {
         for (final interceptor in interceptors) {
-          if (ddi.isFuture(qualifier: interceptor)) {
-            final instance =
-                (await getAsync(qualifier: interceptor)) as DDIInterceptor;
+          final instance = (ddi.isFuture(qualifier: interceptor)
+              ? (await getAsync(qualifier: interceptor))
+              : ddi.get(qualifier: interceptor)) as DDIInterceptor;
 
-            final exec = instance.onCreate(register);
+          final exec = instance.onCreate(register);
 
-            register = (exec is Future ? await exec : exec) as BeanT;
-          } else {
-            final instance = ddi.get(qualifier: interceptor) as DDIInterceptor;
-
-            register = instance.onCreate(register) as BeanT;
-          }
+          register = (exec is Future ? await exec : exec) as BeanT;
         }
       }
 
