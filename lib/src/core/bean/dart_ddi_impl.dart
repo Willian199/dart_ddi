@@ -47,18 +47,29 @@ class _DDIImpl implements DDI {
 
   Future<void> _applySingleton<BeanT extends Object>(
       ScopeFactory<BeanT> factory, Object effectiveQualifierName) async {
-    late BeanT clazz;
+    final FutureOr<BeanT> execInstance =
+        InstanceFactoryUtil.create(builder: factory.builder!);
 
-    // Prevents a FutureOr<BeanT> being evaluated erronously
-    if (factory.builder!.isFuture) {
-      clazz = await InstanceFactoryUtil.createAsync(builder: factory.builder!);
-    } else {
-      clazz = InstanceFactoryUtil.create(builder: factory.builder!);
-    }
+    BeanT clazz = /*factory.builder!.isFuture &&*/
+        execInstance is Future ? await execInstance : execInstance;
 
-    if (factory.interceptors != null) {
-      for (final interceptor in factory.interceptors!) {
-        clazz = interceptor().onCreate(clazz);
+    if (factory.interceptors case final inter? when inter.isNotEmpty) {
+      for (final interceptor in inter) {
+        if (isFuture(qualifier: interceptor)) {
+          final instance =
+              await ddi.getAsync(qualifier: interceptor) as DDIInterceptor;
+
+          clazz = (await instance.onCreate(clazz)) as BeanT;
+        } else {
+          final instance = ddi.get(qualifier: interceptor) as DDIInterceptor;
+
+          final newInstance = instance.onCreate(clazz);
+          if (newInstance is Future) {
+            clazz = (await newInstance) as BeanT;
+          } else {
+            clazz = newInstance as BeanT;
+          }
+        }
       }
     }
 
@@ -91,10 +102,11 @@ class _DDIImpl implements DDI {
     Object? qualifier,
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
-    ListDDIInterceptor<BeanT>? interceptors,
+    Set<Object>? interceptors,
     FutureOrBoolCallback? registerIf,
     bool destroyable = true,
     Set<Object>? children,
+    FutureOr<bool> Function(Object)? selector,
   }) async {
     bool shouldRegister = true;
 
@@ -115,7 +127,13 @@ class _DDIImpl implements DDI {
 
       if (interceptors != null) {
         for (final interceptor in interceptors) {
-          register = interceptor().onCreate(register);
+          final instance = (ddi.isFuture(qualifier: interceptor)
+              ? (await getAsync(qualifier: interceptor))
+              : ddi.get(qualifier: interceptor)) as DDIInterceptor;
+
+          final exec = instance.onCreate(register);
+
+          register = (exec is Future ? await exec : exec) as BeanT;
         }
       }
 
@@ -132,6 +150,7 @@ class _DDIImpl implements DDI {
         interceptors: interceptors,
         destroyable: destroyable,
         children: children,
+        selector: selector,
       );
 
       if (register is PostConstruct) {
@@ -149,10 +168,11 @@ class _DDIImpl implements DDI {
     Object? qualifier,
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
-    ListDDIInterceptor<BeanT>? interceptors,
+    Set<Object>? interceptors,
     FutureOrBoolCallback? registerIf,
     bool destroyable = true,
     Set<Object>? children,
+    FutureOr<bool> Function(Object)? selector,
   }) {
     final Object effectiveQualifierName =
         '$moduleQualifier${qualifier ?? BeanT}';
@@ -167,6 +187,7 @@ class _DDIImpl implements DDI {
         destroyable: destroyable,
         registerIf: registerIf,
         children: children,
+        selector: selector,
       );
 
       addChildModules(
@@ -184,9 +205,32 @@ class _DDIImpl implements DDI {
   }
 
   @override
+  bool isFuture<BeanT extends Object>({Object? qualifier}) {
+    final Object effectiveQualifierName = qualifier ?? BeanT;
+    if (_beans[effectiveQualifierName]
+        case final ScopeFactory<BeanT> factory?) {
+      return factory.builder?.isFuture ?? false;
+    }
+
+    throw BeanNotFoundException(effectiveQualifierName.toString());
+  }
+
+  @override
+  bool isReady<BeanT extends Object>({Object? qualifier}) {
+    final Object effectiveQualifierName = qualifier ?? BeanT;
+    if (_beans[effectiveQualifierName]
+        case final ScopeFactory<BeanT> factory?) {
+      return factory.instanceHolder != null;
+    }
+
+    throw BeanNotFoundException(effectiveQualifierName.toString());
+  }
+
+  @override
   BeanT getWith<BeanT extends Object, ParameterT extends Object>({
     ParameterT? parameter,
     Object? qualifier,
+    Object? select,
   }) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
@@ -205,6 +249,18 @@ class _DDIImpl implements DDI {
         effectiveQualifierName: effectiveQualifierName,
         parameter: parameter,
       );
+    } else if (select != null && BeanT != Object) {
+      // Try to find a bean with the selector
+      for (final MapEntry(key: _, :value) in _beans.entries) {
+        if (value.type == BeanT &&
+            (value.selector?.call(select) ?? false) as bool) {
+          return ScopeUtils.executar<BeanT, ParameterT>(
+            factory: value as ScopeFactory<BeanT>,
+            effectiveQualifierName: effectiveQualifierName,
+            parameter: parameter,
+          );
+        }
+      }
     }
 
     throw BeanNotFoundException(effectiveQualifierName.toString());
@@ -226,10 +282,8 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  Future<BeanT> getAsyncWith<BeanT extends Object, ParameterT extends Object>({
-    ParameterT? parameter,
-    Object? qualifier,
-  }) {
+  Future<BeanT> getAsyncWith<BeanT extends Object, ParameterT extends Object>(
+      {ParameterT? parameter, Object? qualifier, Object? select}) async {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
     if (_beans[effectiveQualifierName]
@@ -239,6 +293,19 @@ class _DDIImpl implements DDI {
         effectiveQualifierName: effectiveQualifierName,
         parameter: parameter,
       );
+    } else if (select != null && BeanT != Object) {
+      // Try to find a bean with the selector
+      for (final MapEntry(key: _, :value) in _beans.entries) {
+        if (value.type == BeanT &&
+            value.selector != null &&
+            await (value.selector?.call(select) ?? false)) {
+          return ScopeUtils.executarAsync<BeanT, ParameterT>(
+            factory: value as ScopeFactory<BeanT>,
+            effectiveQualifierName: effectiveQualifierName,
+            parameter: parameter,
+          );
+        }
+      }
     }
 
     throw BeanNotFoundException(effectiveQualifierName.toString());
@@ -278,14 +345,24 @@ class _DDIImpl implements DDI {
     }
   }
 
-  FutureOr<void> _destroy<BeanT extends Object>(Object effectiveQualifierName) {
+  FutureOr<void> _destroy<BeanT extends Object>(
+      Object effectiveQualifierName) async {
     if (_beans[effectiveQualifierName] case final factory?
         when factory.destroyable) {
       // Only destroy if destroyable was registered with true
       // Should call interceptors even if the instance is null
       if (factory.interceptors case final inter? when inter.isNotEmpty) {
         for (final interceptor in inter) {
-          interceptor().onDestroy(factory.instanceHolder);
+          if (isFuture(qualifier: interceptor)) {
+            final instance =
+                (await getAsync(qualifier: interceptor)) as DDIInterceptor;
+
+            await instance.onDestroy(factory.instanceHolder);
+          } else {
+            final instance = ddi.get(qualifier: interceptor) as DDIInterceptor;
+
+            instance.onDestroy(factory.instanceHolder as BeanT?);
+          }
         }
       }
 
@@ -417,14 +494,17 @@ class _DDIImpl implements DDI {
 
   @override
   void addInterceptor<BeanT extends Object>(
-    List<DDIInterceptor<BeanT> Function()> interceptors, {
+    Set<Object>? interceptors, {
     Object? qualifier,
   }) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
     if (_beans[effectiveQualifierName]
         case final ScopeFactory<BeanT> factory?) {
-      factory.interceptors = [...factory.interceptors ?? [], ...interceptors];
+      factory.interceptors = {
+        ...factory.interceptors ?? {},
+        ...interceptors ?? {}
+      };
     } else {
       throw BeanNotFoundException(effectiveQualifierName.toString());
     }

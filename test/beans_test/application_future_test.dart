@@ -8,6 +8,7 @@ import '../clazz_samples/a.dart';
 import '../clazz_samples/b.dart';
 import '../clazz_samples/c.dart';
 import '../clazz_samples/undestroyable/future_application_destroy_get.dart';
+import 'payment_service.dart';
 
 void applicationFuture() {
   group('DDI Application Future Basic Tests', () {
@@ -276,6 +277,47 @@ void applicationFuture() {
       expect(instance, isA<C>());
 
       DDI.instance.destroy<StreamController<C>>();
+    });
+
+    test('Select an Application bean', () async {
+      // Registering CreditCardPaymentService with a selector condition
+      ddi.registerApplication<PaymentService>(
+        () async {
+          await Future.delayed(const Duration(milliseconds: 100));
+          return CreditCardPaymentService();
+        },
+        qualifier: 'creditCard',
+        selector: (paymentMethod) => paymentMethod == 'creditCard',
+      );
+
+      // Registering PayPalPaymentService with a selector condition
+      ddi.registerApplication<PaymentService>(
+        () async {
+          await Future.delayed(const Duration(milliseconds: 100));
+          return PayPalPaymentService();
+        },
+        qualifier: 'paypal',
+        selector: (paymentMethod) => paymentMethod == 'paypal',
+      );
+
+      expect(true, ddi.isRegistered(qualifier: 'creditCard'));
+      expect(true, ddi.isRegistered(qualifier: 'paypal'));
+
+      // Runtime value to determine the payment method
+      const selectedPaymentMethod = 'creditCard'; // Could also be 'paypal'
+
+      // Retrieve the appropriate PaymentService based on the selector condition
+      final paymentService = await ddi.getAsync<PaymentService>(
+        select: selectedPaymentMethod,
+      );
+
+      // Process a payment with the selected service
+      expect(100, paymentService.value);
+
+      ddi.destroyByType<PaymentService>();
+
+      expect(false, ddi.isRegistered(qualifier: 'creditCard'));
+      expect(false, ddi.isRegistered(qualifier: 'paypal'));
     });
   });
 }

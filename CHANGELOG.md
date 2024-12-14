@@ -1,3 +1,7 @@
+## 0.9.0
+* Interceptors reworked to behave like Beans. With now includes support to Decorators, Mixins, Futures and also "Intercept Interceptors".
+* Added support to use selectors when getting a Bean.
+
 ## 0.8.1
 
 * Fixed Dependent instances where `DDIInterceptor.onGet` was running before `PostConstruct` mixin.

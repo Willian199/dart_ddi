@@ -8,6 +8,7 @@ import '../clazz_samples/b.dart';
 import '../clazz_samples/c.dart';
 import '../clazz_samples/undestroyable/application_destroy_get.dart';
 import '../clazz_samples/undestroyable/application_destroy_register.dart';
+import 'payment_service.dart';
 
 void application() {
   group('DDI Application Basic Tests', () {
@@ -181,6 +182,41 @@ void application() {
           () => DDI.instance
               .registerApplication(() => ApplicationDestroyRegister()),
           throwsA(isA<DuplicatedBeanException>()));
+    });
+
+    test('Select an Application bean', () {
+      // Registering CreditCardPaymentService with a selector condition
+      ddi.registerApplication<PaymentService>(
+        CreditCardPaymentService.new,
+        qualifier: 'creditCard',
+        selector: (paymentMethod) => paymentMethod == 'creditCard',
+      );
+
+      // Registering PayPalPaymentService with a selector condition
+      ddi.registerApplication<PaymentService>(
+        PayPalPaymentService.new,
+        qualifier: 'paypal',
+        selector: (paymentMethod) => paymentMethod == 'paypal',
+      );
+
+      // Runtime value to determine the payment method
+      const selectedPaymentMethod = 'paypal'; // Could also be 'creditCard'
+
+      expect(true, ddi.isRegistered(qualifier: 'creditCard'));
+      expect(true, ddi.isRegistered(qualifier: 'paypal'));
+
+      // Retrieve the appropriate PaymentService based on the selector condition
+      late final paymentService = ddi.get<PaymentService>(
+        select: selectedPaymentMethod,
+      );
+
+      // Process a payment with the selected service
+      expect(200, paymentService.value);
+
+      ddi.destroyByType<PaymentService>();
+
+      expect(false, ddi.isRegistered(qualifier: 'creditCard'));
+      expect(false, ddi.isRegistered(qualifier: 'paypal'));
     });
   });
 }

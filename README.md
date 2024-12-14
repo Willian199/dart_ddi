@@ -62,6 +62,7 @@ Summary
    3. [Interceptor](#interceptor)
    4. [RegisterIf](#registerif)
    5. [Destroyable](#destroyable)
+   6. [Selectors](#selector)
 5. [Modules](#modules)
    1. [Adding a Class](#adding-a-class)
    2. [Adding Multiple Class](#adding-multiple-class)
@@ -411,6 +412,40 @@ ddi.registerApplication<MyService>(
   MyService.new,
   destroyable: false,
 );
+```
+
+## Selector
+The `selector` parameter allows for conditional selection when retrieving an instance, providing a way to determine which instance should be used based on specific criteria. The first instance that matches `true` will be selected; if no instance matches, a `BeanNotFoundException` will be thrown. The selector requires registration with an interface type, making it particularly useful in scenarios where multiple instances of the same type are registered, but only one needs to be chosen dynamically at runtime based on context.`
+
+#### Example Usage:
+```dart
+void main() {
+
+   // Registering CreditCardPaymentService with a selector condition
+  ddi.registerApplication<PaymentService>(
+    CreditCardPaymentService.new,
+    qualifier: 'creditCard',
+    selector: (paymentMethod) => paymentMethod == 'creditCard',
+  );
+
+  // Registering PayPalPaymentService with a selector condition
+  ddi.registerApplication<PaymentService>(
+    PayPalPaymentService.new,
+    qualifier: 'paypal',
+    selector: (paymentMethod) => paymentMethod == 'paypal',
+  );
+
+  // Runtime value to determine the payment method
+  const selectedPaymentMethod = 'paypal'; // Could also be 'creditCard'
+
+  // Retrieve the appropriate PaymentService based on the selector condition
+  late final paymentService = ddi.get<PaymentService>(
+    select: selectedPaymentMethod,
+  );
+
+  // Process a payment with the selected service
+  paymentService.processPayment(100.0);
+}
 ```
 
 ## Modules

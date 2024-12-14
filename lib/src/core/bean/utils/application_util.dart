@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/core/bean/utils/dart_ddi_utils.dart';
 import 'package:dart_ddi/src/core/bean/utils/instance_factory_util.dart';
+import 'package:dart_ddi/src/core/bean/utils/interceptor_util.dart';
 
 final class ApplicationUtils {
   static Future<BeanT>
@@ -12,13 +15,18 @@ final class ApplicationUtils {
     late BeanT applicationClazz;
 
     if (factory.instanceHolder == null) {
-      applicationClazz = _applyApplication<BeanT>(
-        factory,
-        await InstanceFactoryUtil.createAsync<BeanT, ParameterT>(
-          builder: factory.builder!,
-          parameter: parameter,
-        ),
+      final execInstance = InstanceFactoryUtil.createAsync<BeanT, ParameterT>(
+        builder: factory.builder!,
+        parameter: parameter,
       );
+
+      applicationClazz =
+          execInstance is Future ? await execInstance : execInstance;
+
+      applicationClazz =
+          await InterceptorUtil.createAsync<BeanT>(factory, applicationClazz);
+
+      applicationClazz = _applyApplication<BeanT>(factory, applicationClazz);
 
       if (applicationClazz is DDIModule) {
         applicationClazz.moduleQualifier = effectiveQualifierName;
@@ -33,13 +41,9 @@ final class ApplicationUtils {
       applicationClazz = factory.instanceHolder!;
     }
 
-    if (factory.interceptors case final inter? when inter.isNotEmpty) {
-      for (final interceptor in inter) {
-        applicationClazz = interceptor().onGet(applicationClazz);
-      }
-    }
+    final exec = InterceptorUtil.getAsync<BeanT>(factory, applicationClazz);
 
-    return applicationClazz;
+    return exec is Future ? await exec : exec;
   }
 
   static BeanT getAplication<BeanT extends Object, ParameterT extends Object>({
@@ -50,13 +54,15 @@ final class ApplicationUtils {
     late BeanT applicationClazz;
 
     if (factory.instanceHolder == null) {
-      applicationClazz = _applyApplication<BeanT>(
-        factory,
-        InstanceFactoryUtil.create<BeanT, ParameterT>(
-          builder: factory.builder!,
-          parameter: parameter,
-        ),
+      applicationClazz = InstanceFactoryUtil.create<BeanT, ParameterT>(
+        builder: factory.builder!,
+        parameter: parameter,
       );
+
+      applicationClazz =
+          InterceptorUtil.create<BeanT>(factory, applicationClazz);
+
+      applicationClazz = _applyApplication<BeanT>(factory, applicationClazz);
 
       if (applicationClazz is DDIModule) {
         applicationClazz.moduleQualifier = effectiveQualifierName;
@@ -71,25 +77,13 @@ final class ApplicationUtils {
       applicationClazz = factory.instanceHolder!;
     }
 
-    if (factory.interceptors case final inter? when inter.isNotEmpty) {
-      for (final interceptor in inter) {
-        applicationClazz = interceptor().onGet(applicationClazz);
-      }
-    }
-
-    return applicationClazz;
+    return InterceptorUtil.get<BeanT>(factory, applicationClazz);
   }
 
   static BeanT _applyApplication<BeanT extends Object>(
     ScopeFactory<BeanT> factory,
     BeanT applicationClazz,
   ) {
-    if (factory.interceptors case final inter? when inter.isNotEmpty) {
-      for (final interceptor in inter) {
-        applicationClazz = interceptor().onCreate(applicationClazz);
-      }
-    }
-
     applicationClazz = DartDDIUtils.executarDecorators<BeanT>(
         applicationClazz, factory.decorators);
 

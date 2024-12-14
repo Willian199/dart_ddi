@@ -3,12 +3,25 @@ import 'package:dart_ddi/dart_ddi.dart';
 final class DisposeUtils {
   /// Dispose only clean the class Instance
   static Future<void> disposeBean<BeanT extends Object>(
-      ScopeFactory<BeanT> factory) {
+      ScopeFactory<BeanT> factory) async {
+    // Call onDispose before reset the instanceHolder
+    // Should call interceptors even if the instance is null
+
     if (factory.interceptors case final inter? when inter.isNotEmpty) {
-      // Call onDispose before reset the instanceHolder
-      // Should call interceptors even if the instance is null
       for (final interceptor in inter) {
-        interceptor().onDispose(factory.instanceHolder);
+        if (ddi.isFuture(qualifier: interceptor)) {
+          final instance =
+              (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
+
+          final exec = instance.onDispose(factory.instanceHolder);
+          if (exec is Future) {
+            await exec;
+          }
+        } else {
+          final instance = ddi.get(qualifier: interceptor) as DDIInterceptor;
+
+          instance.onDispose(factory.instanceHolder);
+        }
       }
     }
 

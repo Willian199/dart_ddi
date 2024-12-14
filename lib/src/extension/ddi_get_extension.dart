@@ -9,12 +9,16 @@ extension DDIGetExtension on DDI {
   ///
   /// - `qualifier`: (Optional) Qualifier to distinguish between different instances
   ///    of the same type.
+  /// - `select`: Optional value to pass to distinguish between different instances of the same type.
   ///
   /// This is a standard method to retrieve instances using type inference.
   /// If multiple instances of the same type exist, the qualifier can be used to
   /// retrieve the correct instance.
-  BeanT get<BeanT extends Object>({Object? qualifier}) {
-    return getWith<BeanT, Object>(qualifier: qualifier);
+  BeanT get<BeanT extends Object>({
+    Object? qualifier,
+    Object? select,
+  }) {
+    return getWith<BeanT, Object>(qualifier: qualifier, select: select);
   }
 
   /// Retrieves an instance of the registered class in [DDI], supporting parameters.
@@ -32,10 +36,14 @@ extension DDIGetExtension on DDI {
   /// Retrieves an instance of the registered class asynchronously.
   ///
   /// - `qualifier`: (Optional) Qualifier to distinguish between different instances.
+  /// - `select`: Optional value to pass to distinguish between different instances of the same type.
   ///
   /// This method is particularly useful when instance creation involves asynchronous operations.
-  Future<BeanT> getAsync<BeanT extends Object>({Object? qualifier}) {
-    return getAsyncWith<BeanT, Object>(qualifier: qualifier);
+  Future<BeanT> getAsync<BeanT extends Object>({
+    Object? qualifier,
+    Object? select,
+  }) {
+    return getAsyncWith<BeanT, Object>(qualifier: qualifier, select: select);
   }
 
   /// Optionally retrieves an instance of the registered class.

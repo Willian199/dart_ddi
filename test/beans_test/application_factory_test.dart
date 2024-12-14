@@ -10,6 +10,7 @@ import '../clazz_samples/factory_parameter.dart';
 import '../clazz_samples/multi_inject.dart';
 import '../clazz_samples/undestroyable/application_factory_destroy_get.dart';
 import '../clazz_samples/undestroyable/application_factory_destroy_register.dart';
+import 'payment_service.dart';
 
 void applicationFactory() {
   group('DDI Factory Application Basic Tests', () {
@@ -220,6 +221,46 @@ void applicationFactory() {
 
       expect(() => DDI.instance.get<FactoryParameter>(),
           throwsA(isA<BeanNotFoundException>()));
+    });
+
+    test('Select an Application bean', () async {
+      // Registering CreditCardPaymentService with a selector condition
+
+      ddi.register<PaymentService>(
+        factory: ScopeFactory.application(
+          builder: CreditCardPaymentService.new.builder,
+          selector: (paymentMethod) => paymentMethod == 'creditCard',
+        ),
+        qualifier: 'creditCard',
+      );
+
+      // Registering PayPalPaymentService with a selector condition
+      ddi.register<PaymentService>(
+        factory: ScopeFactory.application(
+          builder: PayPalPaymentService.new.builder,
+          selector: (paymentMethod) => paymentMethod == 'paypal',
+        ),
+        qualifier: 'paypal',
+      );
+
+      expect(true, ddi.isRegistered(qualifier: 'creditCard'));
+      expect(true, ddi.isRegistered(qualifier: 'paypal'));
+
+      // Runtime value to determine the payment method
+      const selectedPaymentMethod = 'creditCard'; // Could also be 'paypal'
+
+      // Retrieve the appropriate PaymentService based on the selector condition
+      final paymentService = await ddi.getAsync<PaymentService>(
+        select: selectedPaymentMethod,
+      );
+
+      // Process a payment with the selected service
+      expect(100, paymentService.value);
+
+      ddi.destroyByType<PaymentService>();
+
+      expect(false, ddi.isRegistered(qualifier: 'creditCard'));
+      expect(false, ddi.isRegistered(qualifier: 'paypal'));
     });
   });
 }

@@ -64,14 +64,14 @@ class MyModule with DDIModule, PreDestroy {
     registerSession<MyLoggingService>(
       () => MyLoggingService(ddi.get(qualifier: 'MyService1')),
       qualifier: 'MyLoggingSession',
-      interceptors: [CustomInterceptor.new],
+      interceptors: {CustomInterceptor},
     );
 
     // Register MyLoggingService with dependency on MyService2
     registerDependent<MyLoggingService>(
       () => MyLoggingService(ddi.get(qualifier: 'MyService2')),
       qualifier: 'MyLoggingDependent',
-      interceptors: [CustomInterceptor.new],
+      interceptors: {CustomInterceptor},
     );
 
     // For events and streams, use the `ddiEvent` and `ddiStream` respectively
@@ -79,6 +79,8 @@ class MyModule with DDIModule, PreDestroy {
       executar,
       qualifier: 'EventService',
     );
+
+    registerApplication<CustomInterceptor>(CustomInterceptor.new);
 
     await Future.delayed(const Duration(seconds: 1));
   }

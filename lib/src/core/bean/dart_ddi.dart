@@ -17,7 +17,7 @@ part 'dart_ddi_impl.dart';
 
 /// Shortcut for getting the shared instance of the [DDI] class.
 /// The [DDI] class provides methods for managing beans.
-DDI ddi = DDI.instance;
+final DDI ddi = DDI.instance;
 
 /// [DDI] is an abstract class representing a Dependency Injection system.
 /// It provides methods for managing beans.
@@ -28,6 +28,9 @@ abstract class DDI {
   /// Gets the shared instance of the [DDI] class.
   static DDI get instance => _instance;
 
+  /// Get a new instance of the [DDI] class.
+  static DDI get newInstance => _DDIImpl();
+
   /// Registers an Object.
   ///
   /// - `register`: The Object to be registered.
@@ -37,7 +40,8 @@ abstract class DDI {
   /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
   /// - `registerIf`: Optional function to conditionally register the instance.
   /// - `destroyable`: Optional parameter to make the instance indestructible.
-  /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module
+  /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module.
+  /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
   ///
   /// **Object Scope:**
   /// - Ensures that the registered Object is created and shared throughout the entire application.
@@ -52,10 +56,11 @@ abstract class DDI {
     Object? qualifier,
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
-    ListDDIInterceptor<BeanT>? interceptors,
+    Set<Object>? interceptors,
     FutureOrBoolCallback? registerIf,
     bool destroyable = true,
     Set<Object>? children,
+    FutureOr<bool> Function(Object)? selector,
   });
 
   /// Registers an instance as a Component.
@@ -80,16 +85,19 @@ abstract class DDI {
   /// - `registerIf`: Optional function to conditionally register the instance.
   /// - `destroyable`: Optional parameter to make the instance indestructible.
   /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to vinculate multiple classes under a single parent module.
+  /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
+  ///
   Future<void> registerComponent<BeanT extends Object>({
     required BeanRegister<BeanT> clazzRegister,
     required Object moduleQualifier,
     Object? qualifier,
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
-    ListDDIInterceptor<BeanT>? interceptors,
+    Set<Object>? interceptors,
     FutureOrBoolCallback? registerIf,
     bool destroyable = true,
     Set<Object>? children,
+    FutureOr<bool> Function(Object)? selector,
   });
 
   /// Registers a factory to create an instance of the class [BeanT].
@@ -109,15 +117,27 @@ abstract class DDI {
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
   bool isRegistered<BeanT extends Object>({Object? qualifier});
 
+  /// Verify if the factory is a Future in [DDI].
+  ///
+  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
+  bool isFuture<BeanT extends Object>({Object? qualifier});
+
+  /// Verify if the factory is ready in [DDI].
+  ///
+  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
+  bool isReady<BeanT extends Object>({Object? qualifier});
+
   /// Gets an instance of the registered class in [DDI].
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
   /// - `parameter`: Optional parameter to pass during the instance creation.
+  /// - `select`: Optional value to pass to distinguish between different instances of the same type.
   ///
   /// **Note:** The `parameter` will be ignored: If the instance is already created or the constructor doesn't match with the parameter type.
   BeanT getWith<BeanT extends Object, ParameterT extends Object>({
     ParameterT? parameter,
     Object? qualifier,
+    Object? select,
   });
 
   /// Gets an instance of the registered class in [DDI] from the specified [module].
@@ -129,18 +149,23 @@ abstract class DDI {
   /// Also the [module] class could be the qualifier from the Module Bean.
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
-  BeanT getComponent<BeanT extends Object>(
-      {required Object module, Object? qualifier});
+  ///
+  BeanT getComponent<BeanT extends Object>({
+    required Object module,
+    Object? qualifier,
+  });
 
   /// Gets an instance of the registered class in [DDI].
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
   /// - `parameter`: Optional parameter to pass during the instance creation.
+  /// - `select`: Optional value to pass to distinguish between different instances of the same type.
   ///
   /// **Note:** The `parameter` will be ignored: If the instance is already created or the constructor doesn't match with the parameter type.
   Future<BeanT> getAsyncWith<BeanT extends Object, ParameterT extends Object>({
     ParameterT? parameter,
     Object? qualifier,
+    Object? select,
   });
 
   /// Retrieves a list of keys associated with objects of a specific type BeanT`.
@@ -188,8 +213,7 @@ abstract class DDI {
   /// - **onCreate:** Won't work with Singletons Scope.
   /// - **Order of Execution:** Interceptor are applied in the order they are provided.
   /// - **Instaces Already Gets:** No changes any Instances that have been get.
-  void addInterceptor<BeanT extends Object>(
-      ListDDIInterceptor<BeanT> interceptors,
+  void addInterceptor<BeanT extends Object>(Set<Object>? interceptors,
       {Object? qualifier});
 
   /// Allows to dynamically refresh the Object.

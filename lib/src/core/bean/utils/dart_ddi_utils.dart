@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:dart_ddi/dart_ddi.dart';
+import 'package:dart_ddi/src/core/bean/utils/interceptor_util.dart';
 import 'package:dart_ddi/src/exception/bean_destroyed.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
 
@@ -27,14 +30,21 @@ final class DartDDIUtils {
     required ScopeFactory<BeanT> factory,
     required Object effectiveQualifierName,
   }) {
-    if (factory.instanceHolder case var clazz?) {
-      if (factory.interceptors case final inter? when inter.isNotEmpty) {
-        for (final interceptor in inter) {
-          clazz = interceptor().onGet(clazz);
-        }
-      }
+    if (factory.instanceHolder case final clazz?) {
+      return InterceptorUtil.get<BeanT>(factory, clazz);
+    }
 
-      return clazz;
+    throw BeanDestroyedException(effectiveQualifierName.toString());
+  }
+
+  static FutureOr<BeanT> getSingletonAsync<BeanT extends Object>({
+    required ScopeFactory<BeanT> factory,
+    required Object effectiveQualifierName,
+  }) async {
+    if (factory.instanceHolder case final clazz?) {
+      final exec = InterceptorUtil.getAsync<BeanT>(factory, clazz);
+
+      return exec is Future ? await exec : exec;
     }
 
     throw BeanDestroyedException(effectiveQualifierName.toString());

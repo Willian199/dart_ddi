@@ -63,10 +63,10 @@ final class ScopeUtils {
       return switch (factory.scopeType) {
         Scopes.singleton ||
         Scopes.object =>
-          await Future.value(DartDDIUtils.getSingleton<BeanT>(
+          await DartDDIUtils.getSingletonAsync<BeanT>(
             factory: factory,
             effectiveQualifierName: effectiveQualifierName,
-          )),
+          ),
         Scopes.dependent =>
           await DependentUtils.getDependentAsync<BeanT, ParameterT>(
             factory: factory,
