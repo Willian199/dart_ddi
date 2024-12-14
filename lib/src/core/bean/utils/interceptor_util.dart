@@ -19,15 +19,6 @@ final class InterceptorUtil {
     return applicationClazz;
   }
 
-  static BeanT onCreate<BeanT extends Object>(
-    Object interceptor,
-    BeanT clazz,
-  ) {
-    final instance = ddi.get(qualifier: interceptor) as DDIInterceptor;
-
-    return instance.onCreate(clazz) as BeanT;
-  }
-
   static FutureOr<BeanT> createAsync<BeanT extends Object>(
     ScopeFactory<BeanT> factory,
     BeanT applicationClazz,

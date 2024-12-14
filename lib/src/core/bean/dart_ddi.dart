@@ -4,7 +4,6 @@ import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/core/bean/utils/dart_ddi_utils.dart';
 import 'package:dart_ddi/src/core/bean/utils/dispose_utils.dart';
 import 'package:dart_ddi/src/core/bean/utils/instance_factory_util.dart';
-import 'package:dart_ddi/src/core/bean/utils/interceptor_util.dart';
 import 'package:dart_ddi/src/core/bean/utils/scope_utils.dart';
 import 'package:dart_ddi/src/enum/scopes.dart';
 import 'package:dart_ddi/src/exception/bean_not_found.dart';

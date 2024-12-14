@@ -61,7 +61,14 @@ class _DDIImpl implements DDI {
 
           clazz = (await instance.onCreate(clazz)) as BeanT;
         } else {
-          clazz = InterceptorUtil.onCreate(interceptor, clazz);
+          final instance = ddi.get(qualifier: interceptor) as DDIInterceptor;
+
+          final newInstance = instance.onCreate(clazz);
+          if (newInstance is Future) {
+            clazz = (await newInstance) as BeanT;
+          } else {
+            clazz = newInstance as BeanT;
+          }
         }
       }
     }
