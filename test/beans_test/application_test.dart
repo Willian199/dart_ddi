@@ -159,7 +159,7 @@ void application() {
 
     test('Try to destroy a undestroyable Application bean', () {
       DDI.instance
-          .registerApplication(ApplicationDestroyGet.new, destroyable: false);
+          .registerApplication(ApplicationDestroyGet.new, canDestroy: false);
 
       final instance1 = DDI.instance.get<ApplicationDestroyGet>();
 
@@ -172,7 +172,7 @@ void application() {
 
     test('Try to register again a undestroyable Application bean', () {
       DDI.instance.registerApplication(ApplicationDestroyRegister.new,
-          destroyable: false);
+          canDestroy: false);
 
       DDI.instance.get<ApplicationDestroyRegister>();
 

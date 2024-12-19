@@ -61,7 +61,7 @@ void main() {
 
   runByType();
   disposeDestroyAllSession();
-  registerIf();
+  canRegister();
   postConstructPreDestroyTest();
 
   //Futures
@@ -72,7 +72,7 @@ void main() {
   objectFuture();
 
   runByFutureType();
-  registerIf();
+  canRegister();
   futurePostConstructPreDestroyTest();
 
   //Decorators

@@ -160,7 +160,7 @@ void sessionFuture() {
     test('Try to destroy a undestroyable Session bean', () async {
       DDI.instance.registerSession(
           () => Future.value(FutureSessionDestroyGet()),
-          destroyable: false);
+          canDestroy: false);
 
       final instance1 = await DDI.instance.getAsync<FutureSessionDestroyGet>();
 

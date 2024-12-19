@@ -18,6 +18,7 @@ class EventLock {
   /// that no event is in progress, and the Completer is completed to allow
   /// future events to execute.
   Future<void> lock(Future<void> Function() event) async {
+    final currentZone = Zone.current;
     final aux = _lastEvent;
     final completer = Completer<void>();
 
@@ -30,7 +31,7 @@ class EventLock {
 
     try {
       // Execute the event passed as a parameter.
-      await event();
+      await currentZone.run(event);
     } finally {
       // Clear the reference to the last Future, indicating the current event has ended.
       _lastEvent = null;

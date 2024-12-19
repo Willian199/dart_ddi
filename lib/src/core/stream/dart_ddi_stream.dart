@@ -24,12 +24,12 @@ abstract final class DDIStream {
   ///
   /// - `callback`: A callback function to be invoked when the stream emits a value.
   /// - `qualifier`: An optional qualifier to distinguish between different streams of the same type.
-  /// - `registerIf`: An optional function to conditionally register the subscription.
+  /// - `canRegister`: An optional function to conditionally register the subscription.
   /// - `unsubscribeAfterFire`: If set to true, unsubscribes the callback after it is invoked once.
   void subscribe<StreamTypeT extends Object>({
     required void Function(StreamTypeT) callback,
     Object? qualifier,
-    bool Function()? registerIf,
+    bool Function()? canRegister,
     bool unsubscribeAfterFire = false,
   });
 

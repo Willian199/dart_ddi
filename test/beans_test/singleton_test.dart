@@ -93,7 +93,7 @@ void singleton() {
     });
 
     test('Try to destroy a undestroyable Singleton bean', () {
-      ddi.registerSingleton(() => SingletonDestroyGet(), destroyable: false);
+      ddi.registerSingleton(() => SingletonDestroyGet(), canDestroy: false);
 
       final instance1 = ddi.get<SingletonDestroyGet>();
 
@@ -106,7 +106,7 @@ void singleton() {
 
     test('Try to register again a undestroyable Singleton bean', () {
       ddi.registerSingleton(() => SingletonDestroyRegister(),
-          destroyable: false);
+          canDestroy: false);
 
       ddi.get<SingletonDestroyRegister>();
 

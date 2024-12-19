@@ -165,7 +165,7 @@ void applicationFuture() {
     test('Try to destroy a undestroyable Application bean', () async {
       DDI.instance.registerApplication(
           () => Future.value(FutureApplicationDestroyGet()),
-          destroyable: false);
+          canDestroy: false);
 
       final instance1 =
           await DDI.instance.getAsync<FutureApplicationDestroyGet>();

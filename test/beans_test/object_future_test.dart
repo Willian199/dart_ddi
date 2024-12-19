@@ -35,7 +35,7 @@ void objectFuture() {
       DDI.instance.registerObject(
         Future.value('Willian Marchesan'),
         qualifier: 'futureAuthor',
-        destroyable: false,
+        canDestroy: false,
       );
 
       final instance1 =

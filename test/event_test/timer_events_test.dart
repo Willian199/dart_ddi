@@ -252,7 +252,9 @@ void eventDurationTests() {
       // Wait longer than expirationDuration
       await Future.delayed(const Duration(milliseconds: 400));
 
-      expect(() => DDIEvent.instance.fire<int>(1, qualifier: 'duration_test'),
+      expect(
+          () => DDIEvent.instance
+              .fire<int>(1, qualifier: 'duration_test', canReplay: false),
           throwsA(isA<EventNotFoundException>()));
 
       // After expiration, the event should be removed
@@ -279,7 +281,9 @@ void eventDurationTests() {
       // Wait longer than expirationDuration
       await Future.delayed(const Duration(milliseconds: 400));
 
-      expect(() => DDIEvent.instance.fire<int>(1, qualifier: 'duration_test'),
+      expect(
+          () => DDIEvent.instance
+              .fire<int>(1, qualifier: 'duration_test', canReplay: false),
           throwsA(isA<EventNotFoundException>()));
 
       // After expiration, the event should be removed
@@ -307,7 +311,9 @@ void eventDurationTests() {
       // Wait longer than expirationDuration
       await Future.delayed(const Duration(milliseconds: 400));
 
-      expect(() => DDIEvent.instance.fire<int>(1, qualifier: 'duration_test'),
+      expect(
+          () => DDIEvent.instance
+              .fire<int>(1, qualifier: 'duration_test', canReplay: false),
           throwsA(isA<EventNotFoundException>()));
 
       // After expiration, the event should be removed
