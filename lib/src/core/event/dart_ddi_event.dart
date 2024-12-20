@@ -267,4 +267,9 @@ abstract class DDIEvent {
   ///
   /// Returns `true` if the event is already registered.
   bool isRegistered<EventTypeT extends Object>({Object? qualifier});
+
+  /// Clear the history of an event.
+  ///
+  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
+  void clearHistory<EventTypeT extends Object>({Object? qualifier});
 }

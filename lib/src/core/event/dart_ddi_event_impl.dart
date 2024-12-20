@@ -426,6 +426,10 @@ class _DDIEventImpl implements DDIEvent {
 
       history.redoStack.add(lastValue);
 
+      if (!isRegistered<EventTypeT>(qualifier: effectiveQualifierName)) {
+        return;
+      }
+
       // Get the previous value
       final previousValue = history.undoStack.last as EventTypeT;
 
@@ -449,6 +453,10 @@ class _DDIEventImpl implements DDIEvent {
       // Push the value to the undo stack
       history.undoStack.add(redoValue);
 
+      if (!isRegistered<EventTypeT>(qualifier: effectiveQualifierName)) {
+        return;
+      }
+
       return fireWait<EventTypeT>(
         redoValue as EventTypeT,
         qualifier: effectiveQualifierName,
@@ -464,5 +472,14 @@ class _DDIEventImpl implements DDIEvent {
       return history!.last as EventTypeT?;
     }
     return null;
+  }
+
+  @override
+  void clearHistory<EventTypeT extends Object>({Object? qualifier}) {
+    final effectiveQualifierName = qualifier ?? EventTypeT;
+
+    if (_valueHistory.containsKey(effectiveQualifierName)) {
+      _valueHistory.remove(effectiveQualifierName);
+    }
   }
 }

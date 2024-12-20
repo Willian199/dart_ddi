@@ -1,5 +1,5 @@
 ## 0.10.0
-* Added support to `undo` and `redo` on events.
+* Added support to `undo`, `redo` and clear history on events.
 * Added parameter `canReplay` to `fire` and `fireWait` methods. This controls if can `undo` or `redo`.
 * Added support to get the last value fired, ignoring the filters.
 

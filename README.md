@@ -797,10 +797,48 @@ DDIEvent.instance.unsubscribe<String>(
 
 To fire an event, use the `fire` or `fireWait` function. Using `fireWait` makes it possible to wait for all events to complete.
 
-```dart
-DDIEvent.instance.fire('Hello, Dart DDI!', qualifier: 'exampleEvent');
+- `qualifier:` Optional qualifier name to distinguish between different events of the same type.
+- `canReplay:` A boolean that indicates if the value can `undo`. The max history allowed is 5 events.
 
-await DDIEvent.instance.fireWait('Hello, Dart DDI!', qualifier: 'exampleEvent');
+```dart
+DDIEvent.instance.fire('Hello, Dart DDI!', qualifier: 'exampleEvent', canReplay: false);
+
+await DDIEvent.instance.fireWait('Hello, Dart DDI!', qualifier: 'exampleEvent', canReplay: true);
+```
+
+### Undo an Event
+
+The `undo` method reverts the last fired event if it was marked with canReplay: true. The max history allowed is 5 events.
+
+```dart
+DDIEvent.instance.undo<EventType>(qualifier: 'exampleEvent');
+```
+
+### Redo an Event
+
+The `redo` method re-executes the last `undone` event if it exists. This allows users to redo actions that were previously undone.
+
+- Requires to call `undo` first.
+- After `fire` or `fireWait`, the `redo` history is cleared.
+
+```dart
+DDIEvent.instance.redo<EventType>(qualifier: 'exampleEvent');
+```
+
+### Clear Event History
+
+The `clearHistory` method clears the entire history of fired events, removing the ability to `undo` or `redo` any prior events.
+
+```dart
+DDIEvent.instance.clearHistory<EventType>(qualifier: 'exampleEvent');
+```
+
+### Get Current Value
+
+The `getValue` method retrieves the current value of the last event fired. This can be helpful for accessing the state of the last event without firing it again.`
+
+```dart
+final EventType value = DDIEvent.instance.getValue<EventType>(qualifier: 'exampleEvent');
 ```
 
 ## Events Considerations
