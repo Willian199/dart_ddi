@@ -40,7 +40,7 @@ import 'beans_test/singleton_test.dart';
 import 'event_test/event_filter_test.dart';
 import 'event_test/event_lock_test.dart';
 import 'event_test/event_test.dart';
-import 'event_test/event_undo_redo.dart';
+import 'event_test/event_undo_redo_test.dart';
 import 'event_test/timer_events_test.dart';
 import 'stream_test/stream_test.dart';
 
