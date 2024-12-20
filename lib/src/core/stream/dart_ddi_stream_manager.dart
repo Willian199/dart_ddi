@@ -28,12 +28,12 @@ final class _DDIStreamManager implements DDIStream {
   void subscribe<StreamTypeT extends Object>({
     required void Function(StreamTypeT) callback,
     Object? qualifier,
-    bool Function()? registerIf,
+    bool Function()? canRegister,
     bool unsubscribeAfterFire = false,
   }) {
     final Object effectiveQualifierName = qualifier ?? StreamTypeT;
 
-    if (registerIf?.call() ?? true) {
+    if (canRegister?.call() ?? true) {
       if (!_streamMap.containsKey(effectiveQualifierName)) {
         _streamMap[effectiveQualifierName] = DDIStreamCore<StreamTypeT>();
       }

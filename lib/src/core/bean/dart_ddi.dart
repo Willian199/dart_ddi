@@ -38,8 +38,8 @@ abstract class DDI {
   /// - `postConstruct`: Optional function to be executed after the instance is constructed.
   /// - `decorators`: List of decoration functions to apply to the instance.
   /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
-  /// - `registerIf`: Optional function to conditionally register the instance.
-  /// - `destroyable`: Optional parameter to make the instance indestructible.
+  /// - `canRegister`: Optional function to conditionally register the instance.
+  /// - `canDestroy`: Optional parameter to make the instance indestructible.
   /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module.
   /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
   ///
@@ -57,8 +57,8 @@ abstract class DDI {
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
     Set<Object>? interceptors,
-    FutureOrBoolCallback? registerIf,
-    bool destroyable = true,
+    FutureOrBoolCallback? canRegister,
+    bool canDestroy = true,
     Set<Object>? children,
     FutureOr<bool> Function(Object)? selector,
   });
@@ -82,8 +82,8 @@ abstract class DDI {
   /// - `postConstruct`: Optional function to be executed after the instance is constructed.
   /// - `decorators`: List of decoration functions to apply to the instance.
   /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
-  /// - `registerIf`: Optional function to conditionally register the instance.
-  /// - `destroyable`: Optional parameter to make the instance indestructible.
+  /// - `canRegister`: Optional function to conditionally register the instance.
+  /// - `canDestroy`: Optional parameter to make the instance indestructible.
   /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to vinculate multiple classes under a single parent module.
   /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
   ///
@@ -94,8 +94,8 @@ abstract class DDI {
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
     Set<Object>? interceptors,
-    FutureOrBoolCallback? registerIf,
-    bool destroyable = true,
+    FutureOrBoolCallback? canRegister,
+    bool canDestroy = true,
     Set<Object>? children,
     FutureOr<bool> Function(Object)? selector,
   });
@@ -104,12 +104,12 @@ abstract class DDI {
   ///
   /// - `factory`: Factory to create the instance.
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
-  /// - `registerIf`: Optional function to conditionally register the instance.
+  /// - `canRegister`: Optional function to conditionally register the instance.
   ///
   Future<void> register<BeanT extends Object>({
     required ScopeFactory<BeanT> factory,
     Object? qualifier,
-    FutureOrBoolCallback? registerIf,
+    FutureOrBoolCallback? canRegister,
   });
 
   /// Verify if an instance is already registered in [DDI].

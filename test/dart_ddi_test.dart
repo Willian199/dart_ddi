@@ -40,6 +40,7 @@ import 'beans_test/singleton_test.dart';
 import 'event_test/event_filter_test.dart';
 import 'event_test/event_lock_test.dart';
 import 'event_test/event_test.dart';
+import 'event_test/event_undo_redo_test.dart';
 import 'event_test/timer_events_test.dart';
 import 'stream_test/stream_test.dart';
 
@@ -61,7 +62,7 @@ void main() {
 
   runByType();
   disposeDestroyAllSession();
-  registerIf();
+  canRegister();
   postConstructPreDestroyTest();
 
   //Futures
@@ -72,7 +73,7 @@ void main() {
   objectFuture();
 
   runByFutureType();
-  registerIf();
+  canRegister();
   futurePostConstructPreDestroyTest();
 
   //Decorators
@@ -105,6 +106,7 @@ void main() {
   eventFilterTest();
   eventLockTest();
   eventDurationTests();
+  eventUndoRedoTest();
 
   //Streams
   streamTest();

@@ -4,11 +4,11 @@ import 'package:test/test.dart';
 
 import '../clazz_samples/c.dart';
 
-void registerIf() {
+void canRegister() {
   group('DDI Register If tests', () {
-    test('Regsiter a Singleton bean with registerIf true', () {
+    test('Regsiter a Singleton bean with canRegister true', () {
       DDI.instance.registerSingleton(() => C(),
-          registerIf: () => true, qualifier: 'typeC');
+          canRegister: () => true, qualifier: 'typeC');
 
       DDI.instance.get(qualifier: 'typeC');
 
@@ -18,17 +18,17 @@ void registerIf() {
           throwsA(isA<BeanNotFoundException>()));
     });
 
-    test('Regsiter a Singleton bean with registerIf false', () {
+    test('Regsiter a Singleton bean with canRegister false', () {
       DDI.instance.registerSingleton(() => C(),
-          registerIf: () => false, qualifier: 'typeC');
+          canRegister: () => false, qualifier: 'typeC');
 
       expect(() => DDI.instance.get(qualifier: 'typeC'),
           throwsA(isA<BeanNotFoundException>()));
     });
 
-    test('Regsiter a Application bean with registerIf true', () {
+    test('Regsiter a Application bean with canRegister true', () {
       DDI.instance.registerApplication(() => C(),
-          registerIf: () => true, qualifier: 'typeC');
+          canRegister: () => true, qualifier: 'typeC');
 
       DDI.instance.get(qualifier: 'typeC');
 
@@ -38,17 +38,17 @@ void registerIf() {
           throwsA(isA<BeanNotFoundException>()));
     });
 
-    test('Regsiter a Application bean with registerIf false', () {
+    test('Regsiter a Application bean with canRegister false', () {
       DDI.instance.registerApplication(() => C(),
-          registerIf: () => false, qualifier: 'typeC');
+          canRegister: () => false, qualifier: 'typeC');
 
       expect(() => DDI.instance.get(qualifier: 'typeC'),
           throwsA(isA<BeanNotFoundException>()));
     });
 
-    test('Regsiter a Session bean with registerIf true', () {
+    test('Regsiter a Session bean with canRegister true', () {
       DDI.instance.registerSession(() => C(),
-          registerIf: () => true, qualifier: 'typeC');
+          canRegister: () => true, qualifier: 'typeC');
 
       DDI.instance.get(qualifier: 'typeC');
 
@@ -58,17 +58,17 @@ void registerIf() {
           throwsA(isA<BeanNotFoundException>()));
     });
 
-    test('Regsiter a Session bean with registerIf false', () {
+    test('Regsiter a Session bean with canRegister false', () {
       DDI.instance.registerSession(() => C(),
-          registerIf: () => false, qualifier: 'typeC');
+          canRegister: () => false, qualifier: 'typeC');
 
       expect(() => DDI.instance.get(qualifier: 'typeC'),
           throwsA(isA<BeanNotFoundException>()));
     });
 
-    test('Regsiter a Dependent bean with registerIf true', () {
+    test('Regsiter a Dependent bean with canRegister true', () {
       DDI.instance.registerDependent(() => C(),
-          registerIf: () => true, qualifier: 'typeC');
+          canRegister: () => true, qualifier: 'typeC');
 
       DDI.instance.get(qualifier: 'typeC');
 
@@ -78,9 +78,9 @@ void registerIf() {
           throwsA(isA<BeanNotFoundException>()));
     });
 
-    test('Regsiter a Dependent bean with registerIf false', () {
+    test('Regsiter a Dependent bean with canRegister false', () {
       DDI.instance.registerDependent(() => C(),
-          registerIf: () => false, qualifier: 'typeC');
+          canRegister: () => false, qualifier: 'typeC');
 
       expect(() => DDI.instance.get(qualifier: 'typeC'),
           throwsA(isA<BeanNotFoundException>()));

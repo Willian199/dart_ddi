@@ -99,7 +99,7 @@ void singletonFuture() {
     test('Try to destroy a undestroyable Singleton bean', () async {
       await DDI.instance.registerSingleton(
           () => Future.value(FutureSingletonDestroyGet()),
-          destroyable: false);
+          canDestroy: false);
 
       final instance1 =
           await DDI.instance.getAsync<FutureSingletonDestroyGet>();

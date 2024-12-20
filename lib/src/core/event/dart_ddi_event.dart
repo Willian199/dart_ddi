@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dart_ddi/src/data/event.dart';
+import 'package:dart_ddi/src/data/history.dart';
 import 'package:dart_ddi/src/enum/event_mode.dart';
 import 'package:dart_ddi/src/exception/event_not_allowed.dart';
 import 'package:dart_ddi/src/exception/event_not_found.dart';
@@ -29,9 +30,9 @@ abstract class DDIEvent {
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different events of the same type.
   ///
-  /// - `registerIf`: A bool function that if returns true, allows the subscription to proceed.
+  /// - `canRegister`: A bool function that if returns true, allows the subscription to proceed.
   ///
-  /// - `allowUnsubscribe:` Indicates if the event can be unsubscribe. Ignored if `autoRun` is used.
+  /// - `canUnsubscribe:` Indicates if the event can be unsubscribe. Ignored if `autoRun` is used.
   ///
   /// - `priority:` Priority of the subscription relative to other subscriptions (lower values indicate higher priority). Ignored if `autoRun` is used.
   ///
@@ -56,7 +57,7 @@ abstract class DDIEvent {
   ///
   /// - `autoRun`: If true, the event will be automatically run when the subscription is created.
   ///   * Only one event is allowed.
-  ///   * `allowUnsubscribe` is ignored.
+  ///   * `canUnsubscribe` is ignored.
   ///   * `unsubscribeAfterFire` is ignored.
   ///   * `priority` is ignored.
   ///   * Cannot be used in combination with `lock`.
@@ -68,8 +69,8 @@ abstract class DDIEvent {
   Future<void> subscribe<EventTypeT extends Object>(
     FutureOr<void> Function(EventTypeT) event, {
     Object? qualifier,
-    FutureOrBoolCallback? registerIf,
-    bool allowUnsubscribe = true,
+    FutureOrBoolCallback? canRegister,
+    bool canUnsubscribe = true,
     int priority = 0,
     bool unsubscribeAfterFire = false,
     bool lock = false,
@@ -89,9 +90,9 @@ abstract class DDIEvent {
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different events of the same type.
   ///
-  /// - `registerIf`: A bool function that if returns true, allows the subscription to proceed.
+  /// - `canRegister`: A bool function that if returns true, allows the subscription to proceed.
   ///
-  /// - `allowUnsubscribe:` Indicates if the event can be unsubscribe. Ignored if `autoRun` is used.
+  /// - `canUnsubscribe:` Indicates if the event can be unsubscribe. Ignored if `autoRun` is used.
   ///
   /// - `priority:` Priority of the subscription relative to other subscriptions (lower values indicate higher priority). Ignored if `autoRun` is used.
   ///
@@ -118,7 +119,7 @@ abstract class DDIEvent {
   ///
   /// - `autoRun`: If true, the event will be automatically run when the subscription is created.
   ///   * Only one event is allowed.
-  ///   * `allowUnsubscribe` is ignored.
+  ///   * `canUnsubscribe` is ignored.
   ///   * `unsubscribeAfterFire` is ignored.
   ///   * `priority` is ignored.
   ///   * Cannot be used in combination with `lock`.
@@ -130,8 +131,8 @@ abstract class DDIEvent {
   Future<void> subscribeAsync<EventTypeT extends Object>(
     FutureOr<void> Function(EventTypeT) event, {
     Object? qualifier,
-    FutureOrBoolCallback? registerIf,
-    bool allowUnsubscribe = true,
+    FutureOrBoolCallback? canRegister,
+    bool canUnsubscribe = true,
     int priority = 0,
     bool unsubscribeAfterFire = false,
     bool lock = false,
@@ -151,9 +152,9 @@ abstract class DDIEvent {
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different events of the same type.
   ///
-  /// - `registerIf`: A bool function that if returns true, allows the subscription to proceed.
+  /// - `canRegister`: A bool function that if returns true, allows the subscription to proceed.
   ///
-  /// - `allowUnsubscribe:` Indicates if the event can be unsubscribe. Ignored if `autoRun` is used.
+  /// - `canUnsubscribe:` Indicates if the event can be unsubscribe. Ignored if `autoRun` is used.
   ///
   /// - `priority:` Priority of the subscription relative to other subscriptions (lower values indicate higher priority). Ignored if `autoRun` is used.
   ///
@@ -178,7 +179,7 @@ abstract class DDIEvent {
   ///
   /// - `autoRun`: If true, the event will be automatically run when the subscription is created.
   ///   * Only one event is allowed.
-  ///   * `allowUnsubscribe` is ignored.
+  ///   * `canUnsubscribe` is ignored.
   ///   * `unsubscribeAfterFire` is ignored.
   ///   * `priority` is ignored.
   ///   * Cannot be used in combination with `lock`.
@@ -190,8 +191,8 @@ abstract class DDIEvent {
   Future<void> subscribeIsolate<EventTypeT extends Object>(
     FutureOr<void> Function(EventTypeT) event, {
     Object? qualifier,
-    FutureOrBoolCallback? registerIf,
-    bool allowUnsubscribe = true,
+    FutureOrBoolCallback? canRegister,
+    bool canUnsubscribe = true,
     int priority = 0,
     bool unsubscribeAfterFire = false,
     bool lock = false,
@@ -218,15 +219,47 @@ abstract class DDIEvent {
   /// - `value`: The value to be passed to the subscribed callback functions.
   ///
   /// - `qualifier`: Optional qualifier name used to distinguish between different events of the same type.
-  void fire<EventTypeT extends Object>(EventTypeT value, {Object? qualifier});
+  ///
+  /// - `canReplay`: If true, the value can be used to undo and redo.
+  void fire<EventTypeT extends Object>(
+    EventTypeT value, {
+    Object? qualifier,
+    bool canReplay = true,
+  });
 
   /// Fires an event with the specified value with the ability to await conclusion.
   ///
   /// - `value`: The value to be passed to the subscribed callback functions.
   ///
   /// - `qualifier`: Optional qualifier name used to distinguish between different events of the same type.
-  Future<void> fireWait<EventTypeT extends Object>(EventTypeT value,
-      {Object? qualifier});
+  ///
+  /// - `canReplay`: If true, the value can be used to undo and redo.
+  Future<void> fireWait<EventTypeT extends Object>(
+    EventTypeT value, {
+    Object? qualifier,
+    bool canReplay = true,
+  });
+
+  /// Rollback the event to the previous value.
+  /// Only works if the event has been fired.
+  ///
+  /// - `qualifier`: Optional qualifier name used to distinguish between different events of the same type.
+  Future<void> undo<EventTypeT extends Object>({Object? qualifier});
+
+  /// Redo the event to the next value.
+  /// Only works if the event has been undone.
+  ///
+  /// - `qualifier`: Optional qualifier name used to distinguish between different events of the same type.
+  Future<void> redo<EventTypeT extends Object>({Object? qualifier});
+
+  /// Get the value from an event that matches the [EventTypeT] or qualifier.
+  ///
+  /// Will try to get the last value fired. If no value is found, it will return null.
+  ///
+  /// Be aware, this will ignore any other filter or configurations.
+  ///
+  /// - `qualifier`: Optional qualifier name used to distinguish between different events of the same type.
+  EventTypeT? getValue<EventTypeT extends Object>({Object? qualifier});
 
   /// Verify if an event is already registered.
   ///
@@ -234,4 +267,9 @@ abstract class DDIEvent {
   ///
   /// Returns `true` if the event is already registered.
   bool isRegistered<EventTypeT extends Object>({Object? qualifier});
+
+  /// Clear the history of an event.
+  ///
+  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
+  void clearHistory<EventTypeT extends Object>({Object? qualifier});
 }

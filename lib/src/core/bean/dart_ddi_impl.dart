@@ -7,7 +7,7 @@ class _DDIImpl implements DDI {
   Future<void> register<BeanT extends Object>({
     required ScopeFactory<BeanT> factory,
     Object? qualifier,
-    FutureOrBoolCallback? registerIf,
+    FutureOrBoolCallback? canRegister,
   }) async {
     if (factory.scopeType == Scopes.object ||
         factory.builder == null ||
@@ -17,11 +17,11 @@ class _DDIImpl implements DDI {
 
     bool shouldRegister = true;
 
-    if (registerIf != null) {
-      if (registerIf is BoolCallback) {
-        shouldRegister = registerIf();
+    if (canRegister != null) {
+      if (canRegister is BoolCallback) {
+        shouldRegister = canRegister();
       } else {
-        shouldRegister = await registerIf();
+        shouldRegister = await canRegister();
       }
     }
 
@@ -85,7 +85,7 @@ class _DDIImpl implements DDI {
       instanceHolder: clazz,
       builder: factory.builder,
       interceptors: factory.interceptors,
-      destroyable: factory.destroyable,
+      canDestroy: factory.canDestroy,
       children: factory.children,
     );
 
@@ -103,18 +103,18 @@ class _DDIImpl implements DDI {
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
     Set<Object>? interceptors,
-    FutureOrBoolCallback? registerIf,
-    bool destroyable = true,
+    FutureOrBoolCallback? canRegister,
+    bool canDestroy = true,
     Set<Object>? children,
     FutureOr<bool> Function(Object)? selector,
   }) async {
     bool shouldRegister = true;
 
-    if (registerIf != null) {
-      if (registerIf is BoolCallback) {
-        shouldRegister = registerIf();
+    if (canRegister != null) {
+      if (canRegister is BoolCallback) {
+        shouldRegister = canRegister();
       } else {
-        shouldRegister = await registerIf();
+        shouldRegister = await canRegister();
       }
     }
 
@@ -148,7 +148,7 @@ class _DDIImpl implements DDI {
       _beans[effectiveQualifierName] = ScopeFactory<BeanT>.object(
         instanceHolder: register,
         interceptors: interceptors,
-        destroyable: destroyable,
+        canDestroy: canDestroy,
         children: children,
         selector: selector,
       );
@@ -169,8 +169,8 @@ class _DDIImpl implements DDI {
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
     Set<Object>? interceptors,
-    FutureOrBoolCallback? registerIf,
-    bool destroyable = true,
+    FutureOrBoolCallback? canRegister,
+    bool canDestroy = true,
     Set<Object>? children,
     FutureOr<bool> Function(Object)? selector,
   }) {
@@ -184,8 +184,8 @@ class _DDIImpl implements DDI {
         postConstruct: postConstruct,
         decorators: decorators,
         interceptors: interceptors,
-        destroyable: destroyable,
-        registerIf: registerIf,
+        canDestroy: canDestroy,
+        canRegister: canRegister,
         children: children,
         selector: selector,
       );
@@ -348,8 +348,8 @@ class _DDIImpl implements DDI {
   FutureOr<void> _destroy<BeanT extends Object>(
       Object effectiveQualifierName) async {
     if (_beans[effectiveQualifierName] case final factory?
-        when factory.destroyable) {
-      // Only destroy if destroyable was registered with true
+        when factory.canDestroy) {
+      // Only destroy if canDestroy was registered with true
       // Should call interceptors even if the instance is null
       if (factory.interceptors case final inter? when inter.isNotEmpty) {
         for (final interceptor in inter) {
@@ -393,7 +393,7 @@ class _DDIImpl implements DDI {
     final keys = _beans.entries
         .where((element) =>
             element.value.scopeType == Scopes.session &&
-            element.value.destroyable)
+            element.value.canDestroy)
         .map((e) => e.key)
         .toList();
 

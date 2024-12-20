@@ -152,7 +152,7 @@ void session() {
 
     test('Try to destroy a undestroyable Session bean', () {
       DDI.instance
-          .registerSession(() => SessionDestroyGet(), destroyable: false);
+          .registerSession(() => SessionDestroyGet(), canDestroy: false);
 
       final instance1 = DDI.instance.get<SessionDestroyGet>();
 
@@ -165,7 +165,7 @@ void session() {
 
     test('Try to register again a undestroyable Session bean', () {
       DDI.instance
-          .registerSession(() => SessionDestroyRegister(), destroyable: false);
+          .registerSession(() => SessionDestroyRegister(), canDestroy: false);
 
       DDI.instance.get<SessionDestroyRegister>();
 

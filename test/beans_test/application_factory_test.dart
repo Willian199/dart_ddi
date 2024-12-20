@@ -174,7 +174,7 @@ void applicationFactory() {
       DDI.instance.register(
         factory: ScopeFactory.application(
           builder: ApplicationFactoryDestroyGet.new.builder,
-          destroyable: false,
+          canDestroy: false,
         ),
       );
 
@@ -191,7 +191,7 @@ void applicationFactory() {
       DDI.instance.register(
           factory: ScopeFactory.application(
         builder: ApplicationFactoryDestroyRegister.new.builder,
-        destroyable: false,
+        canDestroy: false,
       ));
 
       DDI.instance.get<ApplicationFactoryDestroyRegister>();
@@ -202,7 +202,7 @@ void applicationFactory() {
           () => DDI.instance.register(
                 factory: ScopeFactory.application(
                   builder: ApplicationFactoryDestroyRegister.new.builder,
-                  destroyable: false,
+                  canDestroy: false,
                 ),
               ),
           throwsA(isA<DuplicatedBeanException>()));

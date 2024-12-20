@@ -112,7 +112,7 @@ void dependentFactory() {
 
     test('Try to destroy a undestroyable Dependent bean', () {
       DependentFactoryDestroyGet.new.builder
-          .asDependent(destroyable: false)
+          .asDependent(canDestroy: false)
           .register();
 
       final instance1 = DDI.instance.get<DependentFactoryDestroyGet>();
@@ -127,7 +127,7 @@ void dependentFactory() {
 
     test('Try to register again a undestroyable Dependent bean', () {
       DependentFactoryDestroyRegister.new.builder
-          .asDependent(destroyable: false)
+          .asDependent(canDestroy: false)
           .register();
 
       DDI.instance.get<DependentFactoryDestroyRegister>();

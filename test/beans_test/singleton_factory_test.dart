@@ -103,7 +103,7 @@ void singletonFactory() {
     test('Try to destroy a undestroyable Factory Singleton bean', () {
       ddi.register(
           factory: SingletonFactoryDestroyGet.new.builder
-              .asSingleton(destroyable: false));
+              .asSingleton(canDestroy: false));
 
       final instance1 = ddi.get<SingletonFactoryDestroyGet>();
 
@@ -117,7 +117,7 @@ void singletonFactory() {
     test('Try to register again a undestroyable Factory Singleton bean', () {
       ddi.register(
           factory: SingletonFactoryDestroyRegister.new.builder
-              .asSingleton(destroyable: false));
+              .asSingleton(canDestroy: false));
 
       ddi.get<SingletonFactoryDestroyRegister>();
 

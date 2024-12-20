@@ -11,8 +11,8 @@ extension DDIRegisterExtension on DDI {
   /// - `postConstruct`: Optional function to be executed after the instance is constructed.
   /// - `decorators`: List of decoration functions to apply to the instance.
   /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
-  /// - `registerIf`: Optional function to conditionally register the instance.
-  /// - `destroyable`: Optional parameter to make the instance indestructible.
+  /// - `canRegister`: Optional function to conditionally register the instance.
+  /// - `canDestroy`: Optional parameter to make the instance indestructible.
   /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module.
   /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
   ///
@@ -29,8 +29,8 @@ extension DDIRegisterExtension on DDI {
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
     Set<Object>? interceptors,
-    FutureOrBoolCallback? registerIf,
-    bool destroyable = true,
+    FutureOrBoolCallback? canRegister,
+    bool canDestroy = true,
     Set<Object>? children,
     FutureOr<bool> Function(Object)? selector,
   }) {
@@ -40,11 +40,11 @@ extension DDIRegisterExtension on DDI {
         children: children,
         interceptors: interceptors,
         decorators: decorators,
-        destroyable: destroyable,
+        canDestroy: canDestroy,
         selector: selector,
       ),
       qualifier: qualifier,
-      registerIf: registerIf,
+      canRegister: canRegister,
     );
   }
 
@@ -55,8 +55,8 @@ extension DDIRegisterExtension on DDI {
   /// - `postConstruct`: Optional function to be executed after the instance is constructed.
   /// - `decorators`: List of decoration functions to apply to the instance.
   /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
-  /// - `registerIf`: Optional function to conditionally register the instance.
-  /// - `destroyable`: Optional parameter to make the instance indestructible.
+  /// - `canRegister`: Optional function to conditionally register the instance.
+  /// - `canDestroy`: Optional parameter to make the instance indestructible.
   /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module.
   /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
   ///
@@ -74,8 +74,8 @@ extension DDIRegisterExtension on DDI {
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
     Set<Object>? interceptors,
-    FutureOrBoolCallback? registerIf,
-    bool destroyable = true,
+    FutureOrBoolCallback? canRegister,
+    bool canDestroy = true,
     Set<Object>? children,
     FutureOr<bool> Function(Object)? selector,
   }) {
@@ -85,11 +85,11 @@ extension DDIRegisterExtension on DDI {
         children: children,
         interceptors: interceptors,
         decorators: decorators,
-        destroyable: destroyable,
+        canDestroy: canDestroy,
         selector: selector,
       ),
       qualifier: qualifier,
-      registerIf: registerIf,
+      canRegister: canRegister,
     );
   }
 
@@ -100,8 +100,8 @@ extension DDIRegisterExtension on DDI {
   /// - `postConstruct`: Optional function to be executed after the instance is constructed.
   /// - `decorators`: List of decoration functions to apply to the instance.
   /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
-  /// - `registerIf`: Optional function to conditionally register the instance.
-  /// - `destroyable`: Optional parameter to make the instance indestructible.
+  /// - `canRegister`: Optional function to conditionally register the instance.
+  /// - `canDestroy`: Optional parameter to make the instance indestructible.
   /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module.
   /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
   ///
@@ -119,8 +119,8 @@ extension DDIRegisterExtension on DDI {
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
     Set<Object>? interceptors,
-    FutureOrBoolCallback? registerIf,
-    bool destroyable = true,
+    FutureOrBoolCallback? canRegister,
+    bool canDestroy = true,
     Set<Object>? children,
     FutureOr<bool> Function(Object)? selector,
   }) {
@@ -130,11 +130,11 @@ extension DDIRegisterExtension on DDI {
         children: children,
         interceptors: interceptors,
         decorators: decorators,
-        destroyable: destroyable,
+        canDestroy: canDestroy,
         selector: selector,
       ),
       qualifier: qualifier,
-      registerIf: registerIf,
+      canRegister: canRegister,
     );
   }
 
@@ -145,8 +145,8 @@ extension DDIRegisterExtension on DDI {
   /// - `postConstruct`: Optional function to be executed after the instance is constructed.
   /// - `decorators`: List of decoration functions to apply to the instance.
   /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
-  /// - `registerIf`: Optional function to conditionally register the instance.
-  /// - `destroyable`: Optional parameter to make the instance indestructible.
+  /// - `canRegister`: Optional function to conditionally register the instance.
+  /// - `canDestroy`: Optional parameter to make the instance indestructible.
   /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module
   /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
   ///
@@ -163,8 +163,8 @@ extension DDIRegisterExtension on DDI {
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
     Set<Object>? interceptors,
-    FutureOrBoolCallback? registerIf,
-    bool destroyable = true,
+    FutureOrBoolCallback? canRegister,
+    bool canDestroy = true,
     Set<Object>? children,
     FutureOr<bool> Function(Object)? selector,
   }) {
@@ -174,11 +174,11 @@ extension DDIRegisterExtension on DDI {
         children: children,
         interceptors: interceptors,
         decorators: decorators,
-        destroyable: destroyable,
+        canDestroy: canDestroy,
         selector: selector,
       ),
       qualifier: qualifier,
-      registerIf: registerIf,
+      canRegister: canRegister,
     );
   }
 }

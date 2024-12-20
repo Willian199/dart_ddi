@@ -31,7 +31,7 @@ void object() {
       DDI.instance.registerObject(
         'Willian Marchesan',
         qualifier: 'author',
-        destroyable: false,
+        canDestroy: false,
       );
 
       final instance1 = DDI.instance.get(qualifier: 'author');
@@ -48,7 +48,7 @@ void object() {
       DDI.instance.registerObject(
         'Willian Marchesan',
         qualifier: 'owner',
-        destroyable: false,
+        canDestroy: false,
       );
 
       DDI.instance.get(qualifier: 'owner');

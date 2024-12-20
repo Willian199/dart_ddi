@@ -96,7 +96,7 @@ void streamTest() {
       ddiStream.close(qualifier: qualifier);
     });
 
-    test('Subscribe with RegisterIf', () async {
+    test('Subscribe with CanRegister', () async {
       final completer = Completer<String>();
       const testValue = 'TestValue';
 
@@ -104,10 +104,10 @@ void streamTest() {
         completer.complete(value);
       }
 
-      // Use registerIf to conditionally subscribe.
+      // Use canRegister to conditionally subscribe.
       ddiStream.subscribe<String>(
         callback: callback,
-        registerIf: () => true,
+        canRegister: () => true,
       );
 
       ddiStream.fire<String>(
@@ -118,17 +118,17 @@ void streamTest() {
       ddiStream.close<String>();
     });
 
-    test('Subscribe with RegisterIf (Do Not Register)', () async {
+    test('Subscribe with CanRegister (Do Not Register)', () async {
       final completer = Completer<String>();
 
       void callback(String value) {
         completer.complete(value);
       }
 
-      // Use registerIf to conditionally subscribe, but return false.
+      // Use canRegister to conditionally subscribe, but return false.
       ddiStream.subscribe<String>(
         callback: callback,
-        registerIf: () => false,
+        canRegister: () => false,
       );
 
       // Ensure the callback is not called as it was not registered.

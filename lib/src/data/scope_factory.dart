@@ -34,7 +34,7 @@ final class ScopeFactory<BeanT extends Object> {
   Type get type => _type;
 
   /// A flag that indicates whether the Bean can be destroyed after its usage.
-  final bool destroyable;
+  final bool canDestroy;
 
   /// The child objects associated with the Bean, acting as a module.
   Set<Object>? children;
@@ -44,7 +44,7 @@ final class ScopeFactory<BeanT extends Object> {
   /// Private constructor for [ScopeFactory].
   ScopeFactory._({
     required this.scopeType,
-    required this.destroyable,
+    required this.canDestroy,
     this.instanceHolder,
     this.builder,
     this.decorators,
@@ -62,7 +62,7 @@ final class ScopeFactory<BeanT extends Object> {
   /// - `instanceHolder`: Don't provide this parameter. Used by the package internally.
   /// - `builder`: A [CustomBuilder] responsible for creating the Bean if no instance is provided.
   /// - `interceptors`: Optional list of interceptors that will be applied to the Bean at various stages.
-  /// - `destroyable`: Optional parameter to make the instance indestructible.
+  /// - `canDestroy`: Optional parameter to make the instance indestructible.
   /// - `children`: Optional set of child objects that are part of the Bean's module.
   /// - `decorators`: Optional list of decorators to apply additional logic during Bean creation.
   /// - `postConstruct`: A callback function invoked after the Bean is constructed.
@@ -71,7 +71,7 @@ final class ScopeFactory<BeanT extends Object> {
     BeanT? instanceHolder,
     CustomBuilder<FutureOr<BeanT>>? builder,
     Set<Object>? interceptors,
-    bool destroyable = true,
+    bool canDestroy = true,
     Set<Object>? children,
     ListDecorator<BeanT>? decorators,
     VoidCallback? postConstruct,
@@ -79,7 +79,7 @@ final class ScopeFactory<BeanT extends Object> {
   }) {
     return ScopeFactory<BeanT>._(
       scopeType: Scopes.singleton,
-      destroyable: destroyable,
+      canDestroy: canDestroy,
       instanceHolder: instanceHolder,
       interceptors: interceptors,
       children: children,
@@ -98,7 +98,7 @@ final class ScopeFactory<BeanT extends Object> {
   /// - `postConstruct`: A callback function invoked after the Bean is constructed.
   /// - `decorators`: Optional list of decorators to apply additional logic during Bean creation.
   /// - `interceptors`: Optional list of interceptors that will be applied to the Bean.
-  /// - `destroyable`: Optional parameter to make the instance indestructible.
+  /// - `canDestroy`: Optional parameter to make the instance indestructible.
   /// - `children`: Optional set of child objects that are part of the Bean's module.
   /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
   factory ScopeFactory.application({
@@ -106,13 +106,13 @@ final class ScopeFactory<BeanT extends Object> {
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
     Set<Object>? interceptors,
-    bool destroyable = true,
+    bool canDestroy = true,
     Set<Object>? children,
     FutureOr<bool> Function(Object)? selector,
   }) {
     return ScopeFactory<BeanT>._(
       scopeType: Scopes.application,
-      destroyable: destroyable,
+      canDestroy: canDestroy,
       builder: builder,
       postConstruct: postConstruct,
       decorators: decorators,
@@ -130,7 +130,7 @@ final class ScopeFactory<BeanT extends Object> {
   /// - `postConstruct`: A callback function invoked after the Bean is constructed.
   /// - `decorators`: Optional list of decorators to apply additional logic during Bean creation.
   /// - `interceptors`: Optional list of interceptors that will be applied to the Bean.
-  /// - `destroyable`: Optional parameter to make the instance indestructible.
+  /// - `canDestroy`: Optional parameter to make the instance indestructible.
   /// - `children`: Optional set of child objects that are part of the Bean's module.
   /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
   factory ScopeFactory.session({
@@ -138,13 +138,13 @@ final class ScopeFactory<BeanT extends Object> {
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
     Set<Object>? interceptors,
-    bool destroyable = true,
+    bool canDestroy = true,
     Set<Object>? children,
     FutureOr<bool> Function(Object)? selector,
   }) {
     return ScopeFactory<BeanT>._(
       scopeType: Scopes.session,
-      destroyable: destroyable,
+      canDestroy: canDestroy,
       builder: builder,
       postConstruct: postConstruct,
       decorators: decorators,
@@ -163,7 +163,7 @@ final class ScopeFactory<BeanT extends Object> {
   /// - `postConstruct`: A callback function invoked after the Bean is constructed.
   /// - `decorators`: Optional list of decorators to apply additional logic during Bean creation.
   /// - `interceptors`: Optional list of interceptors that will be applied to the Bean.
-  /// - `destroyable`: Optional parameter to make the instance indestructible.
+  /// - `canDestroy`: Optional parameter to make the instance indestructible.
   /// - `children`: Optional set of child objects that are part of the Bean's module.
   /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
   factory ScopeFactory.dependent({
@@ -171,13 +171,13 @@ final class ScopeFactory<BeanT extends Object> {
     VoidCallback? postConstruct,
     ListDecorator<BeanT>? decorators,
     Set<Object>? interceptors,
-    bool destroyable = true,
+    bool canDestroy = true,
     Set<Object>? children,
     FutureOr<bool> Function(Object)? selector,
   }) {
     return ScopeFactory<BeanT>._(
       scopeType: Scopes.dependent,
-      destroyable: destroyable,
+      canDestroy: canDestroy,
       builder: builder,
       postConstruct: postConstruct,
       decorators: decorators,
@@ -194,20 +194,20 @@ final class ScopeFactory<BeanT extends Object> {
   ///
   /// - `instanceHolder`: The existing instance that will be registered as a Bean.
   /// - `interceptors: Optional list of interceptors that will be applied to the Bean.
-  /// - `destroyable`: If true, the Bean can be destroyed when no longer needed (default is true).
+  /// - `canDestroy`: If true, the Bean can be destroyed when no longer needed (default is true).
   /// - `children`: Optional set of child objects that are part of the Bean's module.
   /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
   factory ScopeFactory.object({
     required BeanT instanceHolder,
     Set<Object>? interceptors,
     ListDecorator<BeanT>? decorators,
-    bool destroyable = true,
+    bool canDestroy = true,
     Set<Object>? children,
     FutureOr<bool> Function(Object)? selector,
   }) {
     return ScopeFactory<BeanT>._(
       scopeType: Scopes.object,
-      destroyable: destroyable,
+      canDestroy: canDestroy,
       instanceHolder: instanceHolder,
       decorators: decorators,
       interceptors: interceptors,
@@ -225,15 +225,15 @@ final class ScopeFactory<BeanT extends Object> {
   /// Registers the current [ScopeFactory] in the DDI system.
   ///
   /// - `qualifier`: An optional object to qualify the Bean.
-  /// - `registerIf`: A condition function that determines if the registration should occur.
+  /// - `canRegister`: A condition function that determines if the registration should occur.
   Future<void> register({
     Object? qualifier,
-    FutureOr<bool> Function()? registerIf,
+    FutureOr<bool> Function()? canRegister,
   }) {
     return DDI.instance.register<BeanT>(
       factory: this,
       qualifier: qualifier,
-      registerIf: registerIf,
+      canRegister: canRegister,
     );
   }
 }

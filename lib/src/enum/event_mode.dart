@@ -51,12 +51,16 @@ extension EventModeExecution on EventMode {
   FutureOr<void> _runIsolate<EventTypeT extends Object>(
       Event<EventTypeT> clazz, EventTypeT value,
       {int currentTry = 1}) {
-    final Future<void> run = Isolate.run(() => clazz.event(value));
+    try {
+      final Future<void> run = Isolate.run(() => clazz.event(value));
 
-    return run
-        .onError((error, stackTrace) =>
-            _onError(clazz, value, error, stackTrace, currentTry))
-        .whenComplete(() => clazz.onComplete?.call());
+      return run
+          .onError((error, stackTrace) =>
+              _onError(clazz, value, error, stackTrace, currentTry))
+          .whenComplete(() => clazz.onComplete?.call());
+    } catch (e, stackTrace) {
+      _onError(clazz, value, e, stackTrace, currentTry);
+    }
   }
 
   FutureOr<void> _onError<EventTypeT extends Object>(

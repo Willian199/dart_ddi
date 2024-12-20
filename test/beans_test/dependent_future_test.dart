@@ -112,7 +112,7 @@ void dependentFuture() {
     test('Try to destroy a undestroyable Dependent bean', () async {
       DDI.instance.registerDependent(
           () => Future.value(FutureDependentDestroyGet()),
-          destroyable: false);
+          canDestroy: false);
 
       final FutureDependentDestroyGet instance1 = await DDI.instance.getAsync();
 
