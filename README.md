@@ -559,7 +559,7 @@ void main() {
 }
 ```
 
-### Pre Dipose Mixin
+### Pre Dispose Mixin
 
 The `PreDispose` mixin extends the lifecycle management capabilities, allowing custom logic to be executed before an instance is disposed.
 
