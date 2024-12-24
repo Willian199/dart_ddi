@@ -100,9 +100,9 @@ The Dart Dependency Injection (DDI) Library supports various scopes for efficien
 
 `Note`: 
 
-    * `Interceptor.onDipose` and `PreDispose` mixin are not supported. You can just destroy the instance. 
+ * `Interceptor.onDipose` and `PreDispose` mixin are not supported. You can just destroy the instance. 
 
-    * If you call dispose, only the Application or Session childrens will be disposed.      
+ * If you call dispose, only the Application or Session childrens will be disposed.      
 
 ## Application
 `Description`: Generates an instance when first used and reuses it for all subsequent requests during the application's execution.
@@ -131,9 +131,9 @@ The Dart Dependency Injection (DDI) Library supports various scopes for efficien
 
 `Note`:
 
-    * `Dispose` functions, `Interceptor.onDipose` and `PreDispose` mixin are not supported.
+ * `Dispose` functions, `Interceptor.onDipose` and `PreDispose` mixin are not supported.
 
-    * `PreDestroy` mixins are not supported. Use `Interceptor.onDestroy` instead. 
+ * `PreDestroy` mixins are not supported. Use `Interceptor.onDestroy` instead. 
 
 ## Object
 `Description`: Registers an Object in the Object Scope, ensuring it is created once and shared throughout the entire application, working like Singleton.
@@ -144,9 +144,9 @@ The Dart Dependency Injection (DDI) Library supports various scopes for efficien
 
 `Note`:
 
-    * `Interceptor.onDipose` and `PreDispose` mixin are not supported. You can just destroy the instance.
+ * `Interceptor.onDipose` and `PreDispose` mixin are not supported. You can just destroy the instance.
 
-    * If you call dispose, only the Application or Session childrens will be disposed.
+ * If you call dispose, only the Application or Session childrens will be disposed.
 
 ## Common Considerations:
 `Unique Registration`: Ensure that the instance to be registered is unique for a specific type or use qualifiers to enable the registration of multiple instances of the same type.
