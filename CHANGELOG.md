@@ -14,7 +14,7 @@
 * Added support to use selectors when getting a Bean.
 
 * Break changes:
-    * Everything relateded to Interceptors.
+    * Everything related to Interceptors.
 
 ## 0.8.1
 
