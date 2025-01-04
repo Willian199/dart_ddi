@@ -199,7 +199,7 @@ void applicationFactoryFuture() {
     test('Try to destroy a undestroyable Factory Application bean', () async {
       DDI.instance.register(
         factory: ScopeFactory.application(
-          destroyable: false,
+          canDestroy: false,
           builder: () {
             return Future.value(FutureApplicationFactoryDestroyGet());
           }.builder,

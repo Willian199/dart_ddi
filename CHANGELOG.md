@@ -1,6 +1,20 @@
+## 0.10.0
+* Added support to `undo`, `redo` and clear history on events.
+* Added parameter `canReplay` to `fire` and `fireWait` methods. This controls if can `undo` or `redo`.
+* Added support to get the last value fired, ignoring the filters.
+
+* Break changes:
+    * If the events isn't registered and `canReplay` is true, the `fire` and `fireWait` methods won't throw EventNotFoundException anymore.
+    * All `registerIf` parameters have been renamed to `canRegister`.
+    * All `destroyable` parameters have been renamed to `canDestroy`.
+    * All `allowUnsubscribe` parameters have been renamed to `canUnsubscribe`.
+
 ## 0.9.0
 * Interceptors reworked to behave like Beans. With now includes support to Decorators, Mixins, Futures and also "Intercept Interceptors".
 * Added support to use selectors when getting a Bean.
+
+* Break changes:
+    * Everything related to Interceptors.
 
 ## 0.8.1
 

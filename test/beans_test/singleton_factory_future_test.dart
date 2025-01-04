@@ -138,7 +138,7 @@ void singletonFactoryFuture() {
     test('Try to destroy a undestroyable Factory Singleton bean', () async {
       await DDI.instance.register<FutureSingletonFactoryDestroyGet>(
         factory: ScopeFactory.singleton(
-          destroyable: false,
+          canDestroy: false,
           builder: () async {
             final FutureSingletonFactoryDestroyGet value = await Future.delayed(
                 const Duration(seconds: 2),

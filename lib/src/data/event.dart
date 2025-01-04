@@ -14,7 +14,7 @@ final class Event<EventTypeT> {
   final Type type;
 
   /// Whether the event can be unsubscribed
-  final bool allowUnsubscribe;
+  final bool canUnsubscribe;
 
   /// The priority of the event. Less priority events will be executed first
   final int priority;
@@ -46,7 +46,7 @@ final class Event<EventTypeT> {
   Event({
     required this.event,
     required this.type,
-    required this.allowUnsubscribe,
+    required this.canUnsubscribe,
     required this.priority,
     required this.mode,
     this.unsubscribeAfterFire = false,
@@ -64,7 +64,7 @@ final class Event<EventTypeT> {
 
     return other.event == event &&
         other.type == type &&
-        other.allowUnsubscribe == allowUnsubscribe &&
+        other.canUnsubscribe == canUnsubscribe &&
         other.priority == priority &&
         other.mode == mode &&
         other.unsubscribeAfterFire == unsubscribeAfterFire &&
@@ -80,7 +80,7 @@ final class Event<EventTypeT> {
   int get hashCode {
     return event.hashCode ^
         type.hashCode ^
-        allowUnsubscribe.hashCode ^
+        canUnsubscribe.hashCode ^
         priority.hashCode ^
         mode.hashCode ^
         unsubscribeAfterFire.hashCode ^

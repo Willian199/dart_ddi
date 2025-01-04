@@ -140,7 +140,7 @@ void intecertorCases() {
 
     test('Registro condicional de interceptores', () async {
       await ddi.register<int>(
-        registerIf: () => Future.value(true), // Registro condicional
+        canRegister: () => Future.value(true), // Registro condicional
         factory: ScopeFactory.singleton(
           builder: CustomBuilder<int>(
             producer: () => 15,

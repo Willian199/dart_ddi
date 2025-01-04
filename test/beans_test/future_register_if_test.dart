@@ -4,10 +4,10 @@ import 'package:test/test.dart';
 
 import '../clazz_samples/c.dart';
 
-void registerIf() {
+void canRegister() {
   group('DDI Register If tests', () {
-    test('Try to register a bean with registerIf false', () async {
-      await DDI.instance.registerSingleton(C.new, registerIf: () async {
+    test('Try to register a bean with canRegister false', () async {
+      await DDI.instance.registerSingleton(C.new, canRegister: () async {
         await Future.delayed(const Duration(milliseconds: 200));
 
         return false;
@@ -19,8 +19,8 @@ void registerIf() {
       DDI.instance.destroy<C>();
     });
 
-    test('Try to register a bean with registerIf true', () async {
-      await DDI.instance.registerSingleton(C.new, registerIf: () async {
+    test('Try to register a bean with canRegister true', () async {
+      await DDI.instance.registerSingleton(C.new, canRegister: () async {
         await Future.delayed(const Duration(milliseconds: 200));
 
         return true;
@@ -32,12 +32,12 @@ void registerIf() {
 
       await expectLater(intance.value, 1);
     });
-    test('Register a Singleton bean with registerIf true and qualifier',
+    test('Register a Singleton bean with canRegister true and qualifier',
         () async {
       await DDI.instance.registerSingleton(
         C.new,
         qualifier: 'typeC',
-        registerIf: () async {
+        canRegister: () async {
           await Future.delayed(const Duration(milliseconds: 200));
 
           return true;
@@ -52,12 +52,12 @@ void registerIf() {
           throwsA(isA<BeanNotFoundException>()));
     });
 
-    test('Register a Singleton bean with registerIf false and qualifier',
+    test('Register a Singleton bean with canRegister false and qualifier',
         () async {
       await DDI.instance.registerSingleton(
         C.new,
         qualifier: 'typeC',
-        registerIf: () async {
+        canRegister: () async {
           await Future.delayed(const Duration(milliseconds: 200));
 
           return false;
@@ -68,11 +68,11 @@ void registerIf() {
           throwsA(isA<BeanNotFoundException>()));
     });
 
-    test('Register a Application bean with registerIf true', () async {
+    test('Register a Application bean with canRegister true', () async {
       await DDI.instance.registerApplication(
         C.new,
         qualifier: 'typeC',
-        registerIf: () async {
+        canRegister: () async {
           await Future.delayed(const Duration(milliseconds: 200));
 
           return true;
@@ -87,11 +87,11 @@ void registerIf() {
           throwsA(isA<BeanNotFoundException>()));
     });
 
-    test('Register a Application bean with registerIf false', () async {
+    test('Register a Application bean with canRegister false', () async {
       await DDI.instance.registerApplication(
         C.new,
         qualifier: 'typeC',
-        registerIf: () async {
+        canRegister: () async {
           await Future.delayed(const Duration(milliseconds: 200));
 
           return false;
@@ -102,11 +102,11 @@ void registerIf() {
           throwsA(isA<BeanNotFoundException>()));
     });
 
-    test('Register a Session bean with registerIf true', () async {
+    test('Register a Session bean with canRegister true', () async {
       await DDI.instance.registerSession(
         C.new,
         qualifier: 'typeC',
-        registerIf: () async {
+        canRegister: () async {
           await Future.delayed(const Duration(milliseconds: 200));
 
           return true;
@@ -121,11 +121,11 @@ void registerIf() {
           throwsA(isA<BeanNotFoundException>()));
     });
 
-    test('Register a Session bean with registerIf false', () async {
+    test('Register a Session bean with canRegister false', () async {
       await DDI.instance.registerSession(
         C.new,
         qualifier: 'typeC',
-        registerIf: () async {
+        canRegister: () async {
           await Future.delayed(const Duration(milliseconds: 200));
 
           return false;
@@ -136,11 +136,11 @@ void registerIf() {
           throwsA(isA<BeanNotFoundException>()));
     });
 
-    test('Register a Dependent bean with registerIf true', () async {
+    test('Register a Dependent bean with canRegister true', () async {
       await DDI.instance.registerDependent(
         C.new,
         qualifier: 'typeC',
-        registerIf: () async {
+        canRegister: () async {
           await Future.delayed(const Duration(milliseconds: 200));
 
           return true;
@@ -155,11 +155,11 @@ void registerIf() {
           throwsA(isA<BeanNotFoundException>()));
     });
 
-    test('Register a Dependent bean with registerIf false', () async {
+    test('Register a Dependent bean with canRegister false', () async {
       await DDI.instance.registerDependent(
         C.new,
         qualifier: 'typeC',
-        registerIf: () async {
+        canRegister: () async {
           await Future.delayed(const Duration(milliseconds: 200));
 
           return false;

@@ -103,7 +103,7 @@ void dependent() {
 
     test('Try to destroy a undestroyable Dependent bean', () {
       DDI.instance
-          .registerDependent(() => DependentDestroyGet(), destroyable: false);
+          .registerDependent(() => DependentDestroyGet(), canDestroy: false);
 
       final instance1 = DDI.instance.get<DependentDestroyGet>();
 
@@ -117,7 +117,7 @@ void dependent() {
 
     test('Try to register again a undestroyable Dependent bean', () {
       DDI.instance.registerDependent(() => DependentDestroyRegister(),
-          destroyable: false);
+          canDestroy: false);
 
       DDI.instance.get<DependentDestroyRegister>();
 

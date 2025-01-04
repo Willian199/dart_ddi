@@ -60,8 +60,8 @@ Summary
    1. [PostConstruct](#postconstruct)
    2. [Decorators](#decorators)
    3. [Interceptor](#interceptor)
-   4. [RegisterIf](#registerif)
-   5. [Destroyable](#destroyable)
+   4. [CanRegister](#canregister)
+   5. [CanDestroy](#candestroy)
    6. [Selectors](#selector)
 5. [Modules](#modules)
    1. [Adding a Class](#adding-a-class)
@@ -100,9 +100,9 @@ The Dart Dependency Injection (DDI) Library supports various scopes for efficien
 
 `Note`: 
 
-        - `Interceptor.onDipose` and `PreDispose` mixin are not supported. You can just destroy the instance. 
+ * `Interceptor.onDipose` and `PreDispose` mixin are not supported. You can just destroy the instance. 
 
-        - If you call dispose, only the Application or Session childrens will be disposed.      
+ * If you call dispose, only the Application or Session childrens will be disposed.      
 
 ## Application
 `Description`: Generates an instance when first used and reuses it for all subsequent requests during the application's execution.
@@ -131,9 +131,9 @@ The Dart Dependency Injection (DDI) Library supports various scopes for efficien
 
 `Note`:
 
-        - `Dispose` functions, `Interceptor.onDipose` and `PreDispose` mixin are not supported.
+ * `Dispose` functions, `Interceptor.onDipose` and `PreDispose` mixin are not supported.
 
-        - `PreDestroy` mixins are not supported. Use `Interceptor.onDestroy` instead. 
+ * `PreDestroy` mixins are not supported. Use `Interceptor.onDestroy` instead. 
 
 ## Object
 `Description`: Registers an Object in the Object Scope, ensuring it is created once and shared throughout the entire application, working like Singleton.
@@ -144,9 +144,9 @@ The Dart Dependency Injection (DDI) Library supports various scopes for efficien
 
 `Note`:
 
-        - `Interceptor.onDipose` and `PreDispose` mixin are not supported. You can just destroy the instance.
+ * `Interceptor.onDipose` and `PreDispose` mixin are not supported. You can just destroy the instance.
 
-        - If you call dispose, only the Application or Session childrens will be disposed.
+ * If you call dispose, only the Application or Session childrens will be disposed.
 
 ## Common Considerations:
 `Unique Registration`: Ensure that the instance to be registered is unique for a specific type or use qualifiers to enable the registration of multiple instances of the same type.
@@ -288,7 +288,7 @@ ddi.registerSingleton<PlatformService>(iOSService.new, qualifier: "ios");
 `Type Identifiers:` Qualifiers are often implemented using string-based identifiers, which may introduce issues such as typos or potential naming conflicts. To mitigate these concerns, it is highly recommended to utilize enums or constants.
 
 # Extra Customization
-The DDI Library provides features for customizing the lifecycle of registered instances. These features include `postConstruct`, `decorators`, `interceptor`, `registerIf` and `destroyable`.
+The DDI Library provides features for customizing the lifecycle of registered instances. These features include `postConstruct`, `decorators`, `interceptor`, `canRegister` and `canDestroy`.
 
 ## PostConstruct
 The `postConstruct` callback allows to perform additional setup or initialization after an instance is created. This is particularly useful for executing logic that should run once the instance is ready for use.
@@ -377,40 +377,40 @@ The Interceptor provides control over the instantiation, retrieval, destruction,
  }
  ```
 
-## RegisterIf
-The registerIf parameter is a boolean function that determines whether an instance should be registered. It provides conditional registration based on a specified condition. This is particularly useful for ensuring that only a single instance is registered, preventing issues with duplicated instances.
+## CanRegister
+The canRegister parameter is a boolean function that determines whether an instance should be registered. It provides conditional registration based on a specified condition. This is particularly useful for ensuring that only a single instance is registered, preventing issues with duplicated instances.
 
 #### Example Usage:
 ```dart
 ddi.registerSingleton<MyService>(
   MyServiceAndroid.new,
-  registerIf: () {
+  canRegister: () {
     return Platform.isAndroid && MyUserService.isAdmin();
   },
 );
 ddi.registerSingleton<MyService>(
   MyServiceIos.new,
-  registerIf: () {
+  canRegister: () {
     return Platform.isIOS && MyUserService.isAdmin();
   },
 );
 ddi.registerSingleton<MyService>(
   MyServiceDefault.new,
-  registerIf: () {
+  canRegister: () {
     return !MyUserService.isAdmin();
   },
 );
 ```
 
-## Destroyable 
-The destroyable parameter, is optional and can be set to false if you want to make the registered instance indestructible. When set to false, the instance cannot be removed using the `destroy` or `destroyByType` methods.
+## CanDestroy 
+The canDestroy parameter, is optional and can be set to false if you want to make the registered instance indestructible. When set to false, the instance cannot be removed using the `destroy` or `destroyByType` methods.
 
 #### Example Usage:
 ```dart
 // Register an Application instance that is indestructible
 ddi.registerApplication<MyService>(
   MyService.new,
-  destroyable: false,
+  canDestroy: false,
 );
 ```
 
@@ -559,7 +559,7 @@ void main() {
 }
 ```
 
-### Pre Dipose Mixin
+### Pre Dispose Mixin
 
 The `PreDispose` mixin extends the lifecycle management capabilities, allowing custom logic to be executed before an instance is disposed.
 
@@ -673,8 +673,8 @@ Parameters:
 
 - `event:` The callback function to be executed when the event is fired.
 - `qualifier:` Optional qualifier name to distinguish between different events of the same type.
-- `registerIf:` A FutureOr<bool> function that if returns true, allows the subscription to proceed.
-- `allowUnsubscribe:` Indicates if the event can be unsubscribe. Ignored if `autoRun` is used.
+- `canRegister:` A FutureOr<bool> function that if returns true, allows the subscription to proceed.
+- `canUnsubscribe:` Indicates if the event can be unsubscribe. Ignored if `autoRun` is used.
 - `priority:` Priority of the subscription relative to other subscriptions (lower values indicate higher priority). Ignored if `autoRun` is used.
 - `unsubscribeAfterFire:` If true, the subscription will be automatically removed after the first time the event is fired. Ignored if `autoRun` is used.
 - `lock`: Indicates if the event should be locked. Running only one event simultaneously. Cannot be used in combination with `autoRun`.
@@ -691,7 +691,7 @@ Parameters:
      * If `expirationDuration` is used, the subscription will be removed when the first rule is met, either when the expiration duration is reached or when the maximum number of retries is reached.
 - `autoRun`: If true, the event will run automatically when the subscription is created.
      * Only one event is allowed.
-     * `allowUnsubscribe` is ignored.
+     * `canUnsubscribe` is ignored.
      * `unsubscribeAfterFire` is ignored.
      * `priority` is ignored.
      * Cannot be used in combination with `lock`.
@@ -707,8 +707,8 @@ void myEvent(String message) {
 DDIEvent.instance.subscribe<String>(
   myEvent,
   qualifier: 'exampleEvent',
-  registerIf: () => true,
-  allowUnsubscribe: true,
+  canRegister: () => true,
+  canUnsubscribe: true,
   priority: 0
   unsubscribeAfterFire: false,
   lock: false,
@@ -739,8 +739,8 @@ void myEvent(String message) {
 DDIEvent.instance.subscribeAsync<String>(
   myEvent,
   qualifier: 'exampleEvent',
-  registerIf: () => true,
-  allowUnsubscribe: true,
+  canRegister: () => true,
+  canUnsubscribe: true,
   unsubscribeAfterFire: false,
   lock: false,
   onError: (Object? error, StackTrace stacktrace, String valor){},
@@ -767,8 +767,8 @@ void myEvent(String message) {
 DDIEvent.instance.subscribeIsolate<String>(
   myEvent,
   qualifier: 'exampleEvent',
-  registerIf: () => true,
-  allowUnsubscribe: true,
+  canRegister: () => true,
+  canUnsubscribe: true,
   unsubscribeAfterFire: false,
   lock: false,
   onError: (Object? error, StackTrace stacktrace, String valor){},
@@ -797,10 +797,48 @@ DDIEvent.instance.unsubscribe<String>(
 
 To fire an event, use the `fire` or `fireWait` function. Using `fireWait` makes it possible to wait for all events to complete.
 
-```dart
-DDIEvent.instance.fire('Hello, Dart DDI!', qualifier: 'exampleEvent');
+- `qualifier:` Optional qualifier name to distinguish between different events of the same type.
+- `canReplay:` A boolean that indicates if the value can `undo`. The max history allowed is 5 events.
 
-await DDIEvent.instance.fireWait('Hello, Dart DDI!', qualifier: 'exampleEvent');
+```dart
+DDIEvent.instance.fire('Hello, Dart DDI!', qualifier: 'exampleEvent', canReplay: false);
+
+await DDIEvent.instance.fireWait('Hello, Dart DDI!', qualifier: 'exampleEvent', canReplay: true);
+```
+
+### Undo an Event
+
+The `undo` method reverts the last fired event if it was marked with canReplay: true. The max history allowed is 5 events.
+
+```dart
+DDIEvent.instance.undo<EventType>(qualifier: 'exampleEvent');
+```
+
+### Redo an Event
+
+The `redo` method re-executes the last `undone` event if it exists. This allows users to redo actions that were previously undone.
+
+- Requires to call `undo` first.
+- After `fire` or `fireWait`, the `redo` history is cleared.
+
+```dart
+DDIEvent.instance.redo<EventType>(qualifier: 'exampleEvent');
+```
+
+### Clear Event History
+
+The `clearHistory` method clears the entire history of fired events, removing the ability to `undo` or `redo` any prior events.
+
+```dart
+DDIEvent.instance.clearHistory<EventType>(qualifier: 'exampleEvent');
+```
+
+### Get Current Value
+
+The `getValue` method retrieves the current value of the last event fired. This can be helpful for accessing the state of the last event without firing it again.`
+
+```dart
+final EventType value = DDIEvent.instance.getValue<EventType>(qualifier: 'exampleEvent');
 ```
 
 ## Events Considerations
@@ -845,14 +883,14 @@ Subscribes to a stream of type `StreamTypeT`.
 
 - `callback`: A function to be invoked when the stream emits a value.
 - `qualifier`: An optional qualifier to distinguish between different streams of the same type.
-- `registerIf`: An optional function to conditionally register the subscription.
+- `canRegister`: An optional function to conditionally register the subscription.
 - `unsubscribeAfterFire`: If true, unsubscribes the callback after it is invoked once.
 
 ```dart
 void subscribe<StreamTypeT extends Object>({
   required void Function(StreamTypeT) callback,
   Object? qualifier,
-  bool Function()? registerIf,
+  bool Function()? canRegister,
   bool unsubscribeAfterFire = false,
 });
 ```
