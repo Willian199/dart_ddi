@@ -7,6 +7,8 @@ export 'src/data/custom_builder.dart';
 export 'src/data/scope_factory.dart';
 export 'src/extension/ddi_get_extension.dart';
 export 'src/extension/ddi_register_extension.dart';
+export 'src/extension/event_mode_extension.dart'
+    if (dart.library.js_interop) 'src/extension/event_mode_extension_web.dart';
 export 'src/extension/function_extension.dart';
 export 'src/features/ddi_interceptor.dart';
 export 'src/features/event_lock.dart';
