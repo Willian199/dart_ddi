@@ -1,11 +1,11 @@
 import 'dart:async';
 
+import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/data/event.dart';
 import 'package:dart_ddi/src/data/history.dart';
 import 'package:dart_ddi/src/enum/event_mode.dart';
 import 'package:dart_ddi/src/exception/event_not_allowed.dart';
 import 'package:dart_ddi/src/exception/event_not_found.dart';
-import 'package:dart_ddi/src/features/event_lock.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
 
 part 'dart_ddi_event_impl.dart';
