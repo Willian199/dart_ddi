@@ -11,7 +11,7 @@ and the Flutter guide for
 [developing packages and plugins](https://flutter.dev/developing-packages).
 -->
 
-# Dart Dependency Injection (DDI) Library
+# Dart Dependency Injection (DDI) Package
 
 [![pub package](https://img.shields.io/pub/v/dart_ddi.svg?logo=dart&logoColor=00b9fc)](https://pub.dartlang.org/packages/dart_ddi)
 [![CI](https://img.shields.io/github/actions/workflow/status/Willian199/dart_ddi/dart.yml?branch=master&logo=github-actions&logoColor=white)](https://github.com/Willian199/dart_ddi/actions)
@@ -23,7 +23,7 @@ and the Flutter guide for
 
 ## Overview
 
-The Dart Dependency Injection (DDI) library is a robust and flexible dependency injection mechanism inspired by the Contexts and Dependency Injection (CDI) framework in Java and by Get_It dart package. DDI facilitates the management of object instances and their lifecycles by introducing different scopes and customization options. This documentation aims to provide an in-depth understanding of DDI's core concepts, usage, and features.
+The package Dart Dependency Injection (DDI) is a robust and flexible dependency injection mechanism. Facilitates the management of object instances and their lifecycles by introducing different scopes and customization options. This documentation aims to provide an in-depth understanding of DDI's core concepts, usage, and features.
 
 🚀 Contribute to the DDI by sharing your ideas, feedback, or practical examples.
 
@@ -76,7 +76,7 @@ Summary
 # Core Concepts
 ## Scopes
 
-The Dart Dependency Injection (DDI) Library supports various scopes for efficient management of object instances. Each scope determines how instances are created, reused, and destroyed throughout the application lifecycle. Below are detailed characteristics of each scope, along with recommendations, use cases, and considerations for potential issues.
+The Dart Dependency Injection (DDI) package supports various scopes for efficient management of object instances. Each scope determines how instances are created, reused, and destroyed throughout the application lifecycle. Below are detailed characteristics of each scope, along with recommendations, use cases, and considerations for potential issues.
 
 ## Singleton
 `Description`: This scope creates an unique instance during registration and reuses it in all subsequent requests.
@@ -275,7 +275,7 @@ ddi.registerSingleton<PlatformService>(iOSService.new, qualifier: "ios");
 `Type Identifiers:` Qualifiers are often implemented using string-based identifiers, which may introduce issues such as typos or potential naming conflicts. To mitigate these concerns, it is highly recommended to utilize enums or constants.
 
 # Extra Customization
-The DDI Library provides features for customizing the lifecycle of registered instances. These features include `postConstruct`, `decorators`, `interceptor`, `canRegister` and `canDestroy`.
+The DDI package provides features for customizing the lifecycle of registered instances. These features include `postConstruct`, `decorators`, `interceptor`, `canRegister` and `canDestroy`.
 
 ## PostConstruct
 The `postConstruct` callback allows to perform additional setup or initialization after an instance is created. This is particularly useful for executing logic that should run once the instance is ready for use.
@@ -313,7 +313,7 @@ ddi.registerSingleton<MyService>(
 ```
 
 ## Interceptor
-The Interceptor provides control over the instantiation, retrieval, destruction, and disposal of instances managed by the DDI Library. By creating a custom class that extends `DDIInterceptor`, you can inject custom logic at various stages of the instance's lifecycle.
+The Interceptor provides control over the instantiation, retrieval, destruction, and disposal of instances managed by the DDI package. By creating a custom class that extends `DDIInterceptor`, you can inject custom logic at various stages of the instance's lifecycle.
 
 ## Interceptor Methods
 
