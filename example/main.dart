@@ -74,52 +74,26 @@ class MyModule with DDIModule, PreDestroy {
       interceptors: {CustomInterceptor},
     );
 
-    // For events and streams, use the `ddiEvent` and `ddiStream` respectively
-    ddiEvent.subscribe<String>(
-      executar,
-      qualifier: 'EventService',
-    );
-
     registerApplication<CustomInterceptor>(CustomInterceptor.new);
 
     await Future.delayed(const Duration(seconds: 1));
   }
 
   @override
-  FutureOr<void> onPreDestroy() {
-    ddiEvent.unsubscribe(
-      executar,
-      qualifier: 'EventService',
-    );
-  }
+  FutureOr<void> onPreDestroy() {}
 }
 
 class CustomInterceptor extends DDIInterceptor<MyLoggingService> {
   @override
   MyLoggingService onCreate(MyLoggingService instance) {
-    ddiEvent.fire<String>(
-      'Construct Intercepted: $instance',
-      qualifier: 'EventService',
-    );
-
     return instance;
   }
 
   @override
-  void onDispose(MyLoggingService? instance) {
-    ddiEvent.fire<String>(
-      'Disposing: $instance',
-      qualifier: 'EventService',
-    );
-  }
+  void onDispose(MyLoggingService? instance) {}
 
   @override
-  void onDestroy(MyLoggingService? instance) {
-    ddiEvent.fire<String>(
-      'Destroyed: $instance',
-      qualifier: 'EventService',
-    );
-  }
+  void onDestroy(MyLoggingService? instance) {}
 }
 
 // Main function where the code execution starts
@@ -138,21 +112,18 @@ void main() async {
   myService2.doSomething();
 
   // Get an instance of MyLoggingService with qualifier
-  late final MyLoggingService myLoggingSession =
-      ddi.get(qualifier: 'MyLoggingSession');
+  late final MyLoggingService myLoggingSession = ddi.get(qualifier: 'MyLoggingSession');
 
   // Call a method on the MyLoggingService instance
   myLoggingSession.logSomething();
 
   // Get another instance of MyLoggingService with different qualifier
-  late final MyLoggingService myLoggingDependent =
-      ddi.get(qualifier: 'MyLoggingDependent');
+  late final MyLoggingService myLoggingDependent = ddi.get(qualifier: 'MyLoggingDependent');
   myLoggingDependent.logSomething();
 
   // Add a decorator to uppercase strings
   String uppercaseDecorator(String str) => str.toUpperCase();
-  ddi.registerObject('Hello World',
-      qualifier: 'authored', decorators: [uppercaseDecorator]);
+  ddi.registerObject('Hello World', qualifier: 'authored', decorators: [uppercaseDecorator]);
 
   // Will return HELLO WORLD
   print(ddi.get(qualifier: 'authored'));

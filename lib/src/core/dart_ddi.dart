@@ -1,10 +1,6 @@
 import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
-import 'package:dart_ddi/src/core/bean/utils/dart_ddi_utils.dart';
-import 'package:dart_ddi/src/core/bean/utils/dispose_utils.dart';
-import 'package:dart_ddi/src/core/bean/utils/instance_factory_util.dart';
-import 'package:dart_ddi/src/core/bean/utils/scope_utils.dart';
 import 'package:dart_ddi/src/enum/scopes.dart';
 import 'package:dart_ddi/src/exception/bean_not_found.dart';
 import 'package:dart_ddi/src/exception/duplicated_bean.dart';
@@ -12,6 +8,10 @@ import 'package:dart_ddi/src/exception/factory_not_allowed.dart';
 import 'package:dart_ddi/src/exception/future_not_accept.dart';
 import 'package:dart_ddi/src/exception/module_not_found.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
+import 'package:dart_ddi/src/utils/dart_ddi_utils.dart';
+import 'package:dart_ddi/src/utils/dispose_utils.dart';
+import 'package:dart_ddi/src/utils/instance_factory_util.dart';
+import 'package:dart_ddi/src/utils/scope_utils.dart';
 
 part 'dart_ddi_impl.dart';
 
@@ -201,9 +201,7 @@ abstract class DDI {
   ///
   /// - **Order of Execution:** Decorators are applied in the order they are provided.
   /// - **Instaces Already Gets:** No changes any Instances that have been get.
-  FutureOr<void> addDecorator<BeanT extends Object>(
-      ListDecorator<BeanT> decorators,
-      {Object? qualifier});
+  FutureOr<void> addDecorator<BeanT extends Object>(ListDecorator<BeanT> decorators, {Object? qualifier});
 
   /// Allows to dynamically add a Interceptor.
   ///
@@ -213,8 +211,7 @@ abstract class DDI {
   /// - **onCreate:** Won't work with Singletons Scope.
   /// - **Order of Execution:** Interceptor are applied in the order they are provided.
   /// - **Instaces Already Gets:** No changes any Instances that have been get.
-  void addInterceptor<BeanT extends Object>(Set<Object>? interceptors,
-      {Object? qualifier});
+  void addInterceptor<BeanT extends Object>(Set<Object>? interceptors, {Object? qualifier});
 
   /// Allows to dynamically refresh the Object.
   ///
@@ -228,13 +225,11 @@ abstract class DDI {
 
   /// This function adds multiple child modules to a parent module.
   /// It takes a list of 'child' objects and an optional 'qualifier' for the parent module.
-  void addChildrenModules<BeanT extends Object>(
-      {required Set<Object> child, Object? qualifier});
+  void addChildrenModules<BeanT extends Object>({required Set<Object> child, Object? qualifier});
 
   /// This function adds a single child module to a parent module.
   /// It takes a 'child' object and an optional 'qualifier' for the parent module.
-  void addChildModules<BeanT extends Object>(
-      {required Object child, Object? qualifier});
+  void addChildModules<BeanT extends Object>({required Object child, Object? qualifier});
 
   Set<Object> getChildren<BeanT extends Object>({Object? qualifier});
 }

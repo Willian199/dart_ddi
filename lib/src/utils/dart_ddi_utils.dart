@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
-import 'package:dart_ddi/src/core/bean/utils/interceptor_util.dart';
 import 'package:dart_ddi/src/exception/bean_destroyed.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
+import 'package:dart_ddi/src/utils/interceptor_util.dart';
 
 final class DartDDIUtils {
   static BeanT executarDecorators<BeanT extends Object>(
@@ -19,8 +19,7 @@ final class DartDDIUtils {
     return clazz;
   }
 
-  static Future<void> runFutureOrPostConstruct(
-      Future<PostConstruct> register) async {
+  static Future<void> runFutureOrPostConstruct(Future<PostConstruct> register) async {
     final PostConstruct clazz = await register;
 
     return clazz.onPostConstruct();

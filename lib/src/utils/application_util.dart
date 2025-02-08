@@ -1,13 +1,12 @@
 import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
-import 'package:dart_ddi/src/core/bean/utils/dart_ddi_utils.dart';
-import 'package:dart_ddi/src/core/bean/utils/instance_factory_util.dart';
-import 'package:dart_ddi/src/core/bean/utils/interceptor_util.dart';
+import 'package:dart_ddi/src/utils/dart_ddi_utils.dart';
+import 'package:dart_ddi/src/utils/instance_factory_util.dart';
+import 'package:dart_ddi/src/utils/interceptor_util.dart';
 
 final class ApplicationUtils {
-  static Future<BeanT>
-      getAplicationAsync<BeanT extends Object, ParameterT extends Object>({
+  static Future<BeanT> getAplicationAsync<BeanT extends Object, ParameterT extends Object>({
     required ScopeFactory<BeanT> factory,
     required Object effectiveQualifierName,
     ParameterT? parameter,
@@ -20,11 +19,9 @@ final class ApplicationUtils {
         parameter: parameter,
       );
 
-      applicationClazz =
-          execInstance is Future ? await execInstance : execInstance;
+      applicationClazz = execInstance is Future ? await execInstance : execInstance;
 
-      applicationClazz =
-          await InterceptorUtil.createAsync<BeanT>(factory, applicationClazz);
+      applicationClazz = await InterceptorUtil.createAsync<BeanT>(factory, applicationClazz);
 
       applicationClazz = _applyApplication<BeanT>(factory, applicationClazz);
 
@@ -59,8 +56,7 @@ final class ApplicationUtils {
         parameter: parameter,
       );
 
-      applicationClazz =
-          InterceptorUtil.create<BeanT>(factory, applicationClazz);
+      applicationClazz = InterceptorUtil.create<BeanT>(factory, applicationClazz);
 
       applicationClazz = _applyApplication<BeanT>(factory, applicationClazz);
 
@@ -84,8 +80,7 @@ final class ApplicationUtils {
     ScopeFactory<BeanT> factory,
     BeanT applicationClazz,
   ) {
-    applicationClazz = DartDDIUtils.executarDecorators<BeanT>(
-        applicationClazz, factory.decorators);
+    applicationClazz = DartDDIUtils.executarDecorators<BeanT>(applicationClazz, factory.decorators);
 
     factory.postConstruct?.call();
 
