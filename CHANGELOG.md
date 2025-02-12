@@ -1,3 +1,8 @@
+
+
+## 0.10.1
+* Fixed web and wasm support.
+
 ## 0.10.0
 * Added support to `undo`, `redo` and clear history on events.
 * Added parameter `canReplay` to `fire` and `fireWait` methods. This controls if can `undo` or `redo`.
