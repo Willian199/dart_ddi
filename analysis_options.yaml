@@ -40,9 +40,6 @@ analyzer:
     avoid_annotating_with_dynamic: warning
     avoid_empty_else: error
     void_checks: error
-    unnecessary_async: warning
-    strict_top_level_inference: error
-    unnecessary_underscores: error
 
 linter:
   # The lint rules applied to this project can be customized in the
@@ -125,8 +122,5 @@ linter:
     unreachable_from_main: true
     use_function_type_syntax_for_parameters: true
     void_checks: true
-    unnecessary_async: true
-    strict_top_level_inference: true
-    unnecessary_underscores: true
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options
