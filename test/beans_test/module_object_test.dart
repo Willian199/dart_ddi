@@ -17,8 +17,7 @@ void moduleObjectTest() {
 
       DDI.instance.destroy<ModuleObject>();
 
-      expect(() => DDI.instance.get(qualifier: 'authored'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get(qualifier: 'authored'), throwsA(isA<BeanNotFoundException>()));
     });
   });
 }

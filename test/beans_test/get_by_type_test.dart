@@ -28,10 +28,8 @@ void runByType() {
       ddi.disposeByType<G>();
       ddi.destroyByType<G>();
 
-      expect(() => ddi.get(qualifier: keys2[0]),
-          throwsA(isA<BeanNotFoundException>()));
-      expect(() => ddi.get(qualifier: keys2[1]),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => ddi.get(qualifier: keys2[0]), throwsA(isA<BeanNotFoundException>()));
+      expect(() => ddi.get(qualifier: keys2[1]), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Dependent Get bean by Type that have registered and dispose', () {
@@ -54,10 +52,8 @@ void runByType() {
       ddi.disposeByType<G>();
       ddi.destroyByType<G>();
 
-      expect(() => ddi.get(qualifier: keys2[0]),
-          throwsA(isA<BeanNotFoundException>()));
-      expect(() => ddi.get(qualifier: keys2[1]),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => ddi.get(qualifier: keys2[0]), throwsA(isA<BeanNotFoundException>()));
+      expect(() => ddi.get(qualifier: keys2[1]), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Session Get bean by Type that have registered and dispose', () {
@@ -80,10 +76,8 @@ void runByType() {
       ddi.disposeByType<G>();
       ddi.destroyByType<G>();
 
-      expect(() => ddi.get(qualifier: keys2[0]),
-          throwsA(isA<BeanNotFoundException>()));
-      expect(() => ddi.get(qualifier: keys2[1]),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => ddi.get(qualifier: keys2[0]), throwsA(isA<BeanNotFoundException>()));
+      expect(() => ddi.get(qualifier: keys2[1]), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Get bean by Type that have registered and dispose', () {
@@ -106,22 +100,17 @@ void runByType() {
       ddi.disposeByType<G>();
       ddi.destroyByType<G>();
 
-      expect(() => ddi.get(qualifier: keys2[0]),
-          throwsA(isA<BeanNotFoundException>()));
-      expect(() => ddi.get(qualifier: keys2[1]),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => ddi.get(qualifier: keys2[0]), throwsA(isA<BeanNotFoundException>()));
+      expect(() => ddi.get(qualifier: keys2[1]), throwsA(isA<BeanNotFoundException>()));
     });
 
-    test('Factory Singleton Get bean by Type that have registered and dispose',
-        () {
-      ddi.register<G>(
-          factory: H.new.builder.asSingleton(), qualifier: 'firtsClass');
+    test('Factory Singleton Get bean by Type that have registered and dispose', () {
+      ddi.register<G>(factory: H.new.builder.asSingleton(), qualifier: 'firtsClass');
 
       final List<Object> keys1 = ddi.getByType<G>();
 
       expect(keys1.length, 1);
-      ddi.register<G>(
-          factory: I.new.builder.asSingleton(), qualifier: 'secondClass');
+      ddi.register<G>(factory: I.new.builder.asSingleton(), qualifier: 'secondClass');
 
       final List<Object> keys2 = ddi.getByType<G>();
 
@@ -135,23 +124,17 @@ void runByType() {
       ddi.disposeByType<G>();
       ddi.destroyByType<G>();
 
-      expect(() => ddi.get(qualifier: keys2[0]),
-          throwsA(isA<BeanNotFoundException>()));
-      expect(() => ddi.get(qualifier: keys2[1]),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => ddi.get(qualifier: keys2[0]), throwsA(isA<BeanNotFoundException>()));
+      expect(() => ddi.get(qualifier: keys2[1]), throwsA(isA<BeanNotFoundException>()));
     });
 
-    test(
-        'Factory Application Get bean by Type that have registered and dispose',
-        () {
-      ddi.register<G>(
-          factory: H.new.builder.asApplication(), qualifier: 'firtsClass');
+    test('Factory Application Get bean by Type that have registered and dispose', () {
+      ddi.register<G>(factory: H.new.builder.asApplication(), qualifier: 'firtsClass');
 
       final List<Object> keys1 = ddi.getByType<G>();
 
       expect(keys1.length, 1);
-      ddi.register<G>(
-          factory: I.new.builder.asApplication(), qualifier: 'secondClass');
+      ddi.register<G>(factory: I.new.builder.asApplication(), qualifier: 'secondClass');
 
       final List<Object> keys2 = ddi.getByType<G>();
 
@@ -165,17 +148,12 @@ void runByType() {
       ddi.disposeByType<G>();
       ddi.destroyByType<G>();
 
-      expect(() => ddi.get(qualifier: keys2[0]),
-          throwsA(isA<BeanNotFoundException>()));
-      expect(() => ddi.get(qualifier: keys2[1]),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => ddi.get(qualifier: keys2[0]), throwsA(isA<BeanNotFoundException>()));
+      expect(() => ddi.get(qualifier: keys2[1]), throwsA(isA<BeanNotFoundException>()));
     });
 
-    test(
-        'Factory and Non Factory Application Get bean by Type that have registered and dispose',
-        () {
-      ddi.register<G>(
-          factory: H.new.builder.asApplication(), qualifier: 'firtsClass');
+    test('Factory and Non Factory Application Get bean by Type that have registered and dispose', () {
+      ddi.register<G>(factory: H.new.builder.asApplication(), qualifier: 'firtsClass');
 
       final List<Object> keys1 = ddi.getByType<G>();
 
@@ -194,15 +172,11 @@ void runByType() {
       ddi.disposeByType<G>();
       ddi.destroyByType<G>();
 
-      expect(() => ddi.get(qualifier: keys2[0]),
-          throwsA(isA<BeanNotFoundException>()));
-      expect(() => ddi.get(qualifier: keys2[1]),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => ddi.get(qualifier: keys2[0]), throwsA(isA<BeanNotFoundException>()));
+      expect(() => ddi.get(qualifier: keys2[1]), throwsA(isA<BeanNotFoundException>()));
     });
 
-    test(
-        'Future Factory Application Get bean by Type that have registered and dispose',
-        () async {
+    test('Future Factory Application Get bean by Type that have registered and dispose', () async {
       ddi.register<G>(
         qualifier: 'firtsClass',
         factory: ScopeFactory.application(
@@ -238,15 +212,11 @@ void runByType() {
       ddi.disposeByType<G>();
       ddi.destroyByType<G>();
 
-      expect(() => ddi.get(qualifier: keys2[0]),
-          throwsA(isA<BeanNotFoundException>()));
-      expect(() => ddi.get(qualifier: keys2[1]),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => ddi.get(qualifier: keys2[0]), throwsA(isA<BeanNotFoundException>()));
+      expect(() => ddi.get(qualifier: keys2[1]), throwsA(isA<BeanNotFoundException>()));
     });
 
-    test(
-        'Future Factory Singleton Get bean by Type that have registered and dispose',
-        () async {
+    test('Future Factory Singleton Get bean by Type that have registered and dispose', () async {
       await ddi.register<G>(
         qualifier: 'firtsClass',
         factory: ScopeFactory.singleton(
@@ -282,15 +252,11 @@ void runByType() {
       ddi.disposeByType<G>();
       ddi.destroyByType<G>();
 
-      expect(() => ddi.get(qualifier: keys2[0]),
-          throwsA(isA<BeanNotFoundException>()));
-      expect(() => ddi.get(qualifier: keys2[1]),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => ddi.get(qualifier: keys2[0]), throwsA(isA<BeanNotFoundException>()));
+      expect(() => ddi.get(qualifier: keys2[1]), throwsA(isA<BeanNotFoundException>()));
     });
 
-    test(
-        'Future Factory Dependent Get bean by Type that have registered and dispose',
-        () async {
+    test('Future Factory Dependent Get bean by Type that have registered and dispose', () async {
       ddi.register<G>(
         qualifier: 'firtsClass',
         factory: ScopeFactory.dependent(
@@ -326,10 +292,8 @@ void runByType() {
       ddi.disposeByType<G>();
       ddi.destroyByType<G>();
 
-      expect(() => ddi.get(qualifier: keys2[0]),
-          throwsA(isA<BeanNotFoundException>()));
-      expect(() => ddi.get(qualifier: keys2[1]),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => ddi.get(qualifier: keys2[0]), throwsA(isA<BeanNotFoundException>()));
+      expect(() => ddi.get(qualifier: keys2[1]), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Future Factory and Non Future Singleton getByType', () async {
@@ -346,8 +310,7 @@ void runByType() {
       final List<Object> keys1 = ddi.getByType<G>();
 
       expect(keys1.length, 1);
-      ddi.register<G>(
-          factory: I.new.builder.asSingleton(), qualifier: 'secondClass');
+      ddi.register<G>(factory: I.new.builder.asSingleton(), qualifier: 'secondClass');
 
       final List<Object> keys2 = ddi.getByType<G>();
 
@@ -361,10 +324,8 @@ void runByType() {
       ddi.disposeByType<G>();
       ddi.destroyByType<G>();
 
-      expect(() => ddi.get(qualifier: keys2[0]),
-          throwsA(isA<BeanNotFoundException>()));
-      expect(() => ddi.get(qualifier: keys2[1]),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => ddi.get(qualifier: keys2[0]), throwsA(isA<BeanNotFoundException>()));
+      expect(() => ddi.get(qualifier: keys2[1]), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Future Factory and Non Future Application getByType', () async {
@@ -381,8 +342,7 @@ void runByType() {
       final List<Object> keys1 = ddi.getByType<G>();
 
       expect(keys1.length, 1);
-      ddi.register<G>(
-          factory: I.new.builder.asApplication(), qualifier: 'secondClass');
+      ddi.register<G>(factory: I.new.builder.asApplication(), qualifier: 'secondClass');
 
       final List<Object> keys2 = ddi.getByType<G>();
 
@@ -396,10 +356,8 @@ void runByType() {
       ddi.disposeByType<G>();
       ddi.destroyByType<G>();
 
-      expect(() => ddi.get(qualifier: keys2[0]),
-          throwsA(isA<BeanNotFoundException>()));
-      expect(() => ddi.get(qualifier: keys2[1]),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => ddi.get(qualifier: keys2[0]), throwsA(isA<BeanNotFoundException>()));
+      expect(() => ddi.get(qualifier: keys2[1]), throwsA(isA<BeanNotFoundException>()));
     });
   });
 }

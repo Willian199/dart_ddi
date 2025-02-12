@@ -15,8 +15,7 @@ void moduleComponentTest() {
       final Component parent = DDI.instance.getComponent(module: ParentModule);
       expect(parent.value, same('parent'));
 
-      expect(() => DDI.instance.getComponent(module: ChildModule),
-          throwsA(isA<ModuleNotFoundException>()));
+      expect(() => DDI.instance.getComponent(module: ChildModule), throwsA(isA<ModuleNotFoundException>()));
 
       // Load the subModule
       DDI.instance.get<ChildModule>();
@@ -27,19 +26,14 @@ void moduleComponentTest() {
       expect(child.value, same('child'));
       expect(false, identical(parent.value, child.value));
 
-      expect(child,
-          same(DDI.instance.getComponent<Component>(module: ChildModule)));
+      expect(child, same(DDI.instance.getComponent<Component>(module: ChildModule)));
 
       DDI.instance.destroy<ParentModule>();
 
-      expect(() => DDI.instance.getComponent<Component>(module: ChildModule),
-          throwsA(isA<ModuleNotFoundException>()));
-      expect(() => DDI.instance.getComponent<Component>(module: ParentModule),
-          throwsA(isA<ModuleNotFoundException>()));
-      expect(() => DDI.instance.get<ChildModule>(),
-          throwsA(isA<BeanNotFoundException>()));
-      expect(() => DDI.instance.get<ParentModule>(),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.getComponent<Component>(module: ChildModule), throwsA(isA<ModuleNotFoundException>()));
+      expect(() => DDI.instance.getComponent<Component>(module: ParentModule), throwsA(isA<ModuleNotFoundException>()));
+      expect(() => DDI.instance.get<ChildModule>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<ParentModule>(), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Register a Component Module with Qualifier', () {
@@ -48,8 +42,7 @@ void moduleComponentTest() {
       final Component parent = DDI.instance.getComponent(module: 'first');
       expect(parent.value, same('parent'));
 
-      expect(() => DDI.instance.getComponent(module: ChildModule),
-          throwsA(isA<ModuleNotFoundException>()));
+      expect(() => DDI.instance.getComponent(module: ChildModule), throwsA(isA<ModuleNotFoundException>()));
 
       // Load the subModule
       DDI.instance.get<ChildModule>();
@@ -60,19 +53,14 @@ void moduleComponentTest() {
       expect(child.value, same('child'));
       expect(false, identical(parent.value, child.value));
 
-      expect(child,
-          same(DDI.instance.getComponent<Component>(module: ChildModule)));
+      expect(child, same(DDI.instance.getComponent<Component>(module: ChildModule)));
 
       DDI.instance.destroy(qualifier: 'first');
 
-      expect(() => DDI.instance.getComponent<Component>(module: ChildModule),
-          throwsA(isA<ModuleNotFoundException>()));
-      expect(() => DDI.instance.getComponent<Component>(module: 'first'),
-          throwsA(isA<ModuleNotFoundException>()));
-      expect(() => DDI.instance.get<ChildModule>(),
-          throwsA(isA<BeanNotFoundException>()));
-      expect(() => DDI.instance.get(qualifier: 'first'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.getComponent<Component>(module: ChildModule), throwsA(isA<ModuleNotFoundException>()));
+      expect(() => DDI.instance.getComponent<Component>(module: 'first'), throwsA(isA<ModuleNotFoundException>()));
+      expect(() => DDI.instance.get<ChildModule>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get(qualifier: 'first'), throwsA(isA<BeanNotFoundException>()));
     });
   });
 }

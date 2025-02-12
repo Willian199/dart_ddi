@@ -8,17 +8,11 @@ import '../clazz_samples/mother.dart';
 
 void factoryCircularDetection() {
   group('DDI Factory Circular Injection Detection tests', () {
-    test(
-        'Inject a Factory Singleton bean depending from a bean that not exists yet',
-        () {
-      expect(
-          () => ddi.register(factory: Father.fromMother.builder.asSingleton()),
-          throwsA(isA<BeanNotFoundException>()));
+    test('Inject a Factory Singleton bean depending from a bean that not exists yet', () {
+      expect(() => ddi.register(factory: Father.fromMother.builder.asSingleton()), throwsA(isA<BeanNotFoundException>()));
     });
 
-    test(
-        'Inject a Factory Application bean depending from a bean that not exists yet',
-        () {
+    test('Inject a Factory Application bean depending from a bean that not exists yet', () {
       //This works because it was just registered
 
       ddi.register(factory: Father.fromMother.builder.asApplication());
@@ -32,8 +26,7 @@ void factoryCircularDetection() {
       ddi.register(factory: Father.fromMother.builder.asApplication());
       ddi.register(factory: Mother.fromFather.builder.asApplication());
 
-      expect(
-          () => ddi.get<Mother>(), throwsA(isA<ConcurrentCreationException>()));
+      expect(() => ddi.get<Mother>(), throwsA(isA<ConcurrentCreationException>()));
 
       ddi.destroy<Mother>();
       ddi.destroy<Father>();
@@ -43,46 +36,38 @@ void factoryCircularDetection() {
       ddi.register(factory: Father.fromMother.builder.asDependent());
       ddi.register(factory: Mother.fromFather.builder.asDependent());
 
-      expect(
-          () => ddi.get<Mother>(), throwsA(isA<ConcurrentCreationException>()));
+      expect(() => ddi.get<Mother>(), throwsA(isA<ConcurrentCreationException>()));
 
       ddi.destroy<Mother>();
       ddi.destroy<Father>();
     });
 
-    test(
-        'Inject a Factory Singleton bean depending from a bean that not exists yet',
-        () {
+    test('Inject a Factory Singleton bean depending from a bean that not exists yet', () {
       expect(
           () => ddi.register(
                 factory: ScopeFactory.singleton(
                   builder: () {
-                    return Future.delayed(const Duration(milliseconds: 10),
-                        () => Father(mother: ddi()));
+                    return Future.delayed(const Duration(milliseconds: 10), () => Father(mother: ddi()));
                   }.builder,
                 ),
               ),
           throwsA(isA<BeanNotFoundException>()));
     });
 
-    test(
-        'Inject a Future Factory Application bean depending from a bean that not exists yet',
-        () {
+    test('Inject a Future Factory Application bean depending from a bean that not exists yet', () {
       //This works because it was just registered
       ddi.register<Father>(
         factory: ScopeFactory.application(
-          builder: () async {
-            return Future.delayed(const Duration(milliseconds: 10),
-                () async => Father(mother: await ddi.getAsync<Mother>()));
+          builder: () {
+            return Future.delayed(const Duration(milliseconds: 10), () async => Father(mother: await ddi.getAsync<Mother>()));
           }.builder,
         ),
       );
 
       ddi.register<Mother>(
         factory: ScopeFactory.application(
-          builder: () async {
-            return Future.delayed(const Duration(milliseconds: 10),
-                () async => Mother(father: await ddi.getAsync<Father>()));
+          builder: () {
+            return Future.delayed(const Duration(milliseconds: 10), () async => Mother(father: await ddi.getAsync<Father>()));
           }.builder,
         ),
       );
@@ -91,55 +76,47 @@ void factoryCircularDetection() {
       ddi.destroy<Father>();
     });
 
-    test('Inject a Future Factory Application bean with circular dependency',
-        () async {
+    test('Inject a Future Factory Application bean with circular dependency', () async {
       ddi.register<Father>(
         factory: ScopeFactory.application(
-          builder: () async {
-            return Future.delayed(const Duration(milliseconds: 10),
-                () async => Father(mother: await ddi.getAsync<Mother>()));
+          builder: () {
+            return Future.delayed(const Duration(milliseconds: 10), () async => Father(mother: await ddi.getAsync<Mother>()));
           }.builder,
         ),
       );
 
       ddi.register<Mother>(
         factory: ScopeFactory.application(
-          builder: () async {
-            return Future.delayed(const Duration(milliseconds: 10),
-                () async => Mother(father: await ddi.getAsync<Father>()));
+          builder: () {
+            return Future.delayed(const Duration(milliseconds: 10), () async => Mother(father: await ddi.getAsync<Father>()));
           }.builder,
         ),
       );
 
-      await expectLater(() async => ddi.getAsync<Mother>(),
-          throwsA(isA<ConcurrentCreationException>()));
+      await expectLater(() => ddi.getAsync<Mother>(), throwsA(isA<ConcurrentCreationException>()));
 
       ddi.destroy<Mother>();
       ddi.destroy<Father>();
     });
 
-    test('Inject a Future Factory Dependent bean with circular dependency',
-        () async {
+    test('Inject a Future Factory Dependent bean with circular dependency', () async {
       ddi.register<Father>(
         factory: ScopeFactory.dependent(
-          builder: () async {
-            return Future.delayed(const Duration(milliseconds: 10),
-                () async => Father(mother: await ddi.getAsync<Mother>()));
+          builder: () {
+            return Future.delayed(const Duration(milliseconds: 10), () async => Father(mother: await ddi.getAsync<Mother>()));
           }.builder,
         ),
       );
 
       ddi.register<Mother>(
         factory: ScopeFactory.dependent(
-          builder: () async {
-            return Future.delayed(const Duration(milliseconds: 10),
-                () async => Mother(father: await ddi.getAsync<Father>()));
+          builder: () {
+            return Future.delayed(const Duration(milliseconds: 10), () async => Mother(father: await ddi.getAsync<Father>()));
           }.builder,
         ),
       );
 
-      await expectLater(() async => ddi.getAsync<Mother>(),
-          throwsA(isA<ConcurrentCreationException>()));
+      await expectLater(() => ddi.getAsync<Mother>(), throwsA(isA<ConcurrentCreationException>()));
 
       ddi.destroy<Mother>();
       ddi.destroy<Father>();

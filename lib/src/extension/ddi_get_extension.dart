@@ -28,8 +28,7 @@ extension DDIGetExtension on DDI {
   ///
   /// **Note:** If the instance is already created or the constructor does not match
   /// with the provided parameter type, the `parameter` will be ignored.
-  BeanT call<BeanT extends Object, ParameterT extends Object>(
-      {ParameterT? parameter}) {
+  BeanT call<BeanT extends Object, ParameterT extends Object>({ParameterT? parameter}) {
     return getWith<BeanT, ParameterT>(parameter: parameter);
   }
 
@@ -52,9 +51,7 @@ extension DDIGetExtension on DDI {
   ///
   /// This method checks if the class is registered before retrieving the instance.
   BeanT? getOptional<BeanT extends Object>({Object? qualifier}) {
-    return isRegistered<BeanT>(qualifier: qualifier)
-        ? get<BeanT>(qualifier: qualifier)
-        : null;
+    return isRegistered<BeanT>(qualifier: qualifier) ? get<BeanT>(qualifier: qualifier) : null;
   }
 
   /// Optionally retrieves an instance with a parameter of the registered class.
@@ -67,9 +64,7 @@ extension DDIGetExtension on DDI {
     ParameterT? parameter,
     Object? qualifier,
   }) {
-    return isRegistered<BeanT>(qualifier: qualifier)
-        ? getWith<BeanT, ParameterT>(qualifier: qualifier, parameter: parameter)
-        : null;
+    return isRegistered<BeanT>(qualifier: qualifier) ? getWith<BeanT, ParameterT>(qualifier: qualifier, parameter: parameter) : null;
   }
 
   /// Asynchronously retrieves an optional instance of the registered class.
@@ -77,8 +72,7 @@ extension DDIGetExtension on DDI {
   /// - `qualifier`: (Optional) Qualifier to distinguish between different instances.
   ///
   /// This method performs an asynchronous retrieval if the instance is registered.
-  Future<BeanT?> getOptionalAsync<BeanT extends Object>(
-      {Object? qualifier}) async {
+  Future<BeanT?> getOptionalAsync<BeanT extends Object>({Object? qualifier}) async {
     if (isRegistered<BeanT>(qualifier: qualifier)) {
       return getAsync<BeanT>(qualifier: qualifier);
     }
@@ -92,8 +86,7 @@ extension DDIGetExtension on DDI {
   /// - `parameter`: (Optional) Parameter to pass during instance creation.
   ///
   /// This method supports asynchronous retrieval with a parameter.
-  Future<BeanT?>
-      getOptionalWithAsync<BeanT extends Object, ParameterT extends Object>({
+  Future<BeanT?> getOptionalWithAsync<BeanT extends Object, ParameterT extends Object>({
     ParameterT? parameter,
     Object? qualifier,
   }) async {

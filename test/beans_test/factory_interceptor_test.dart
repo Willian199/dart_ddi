@@ -86,8 +86,7 @@ void factoryInterceptor() {
       ddi.destroy<G>(qualifier: 'qualifier');
       ddi.destroy<J>();
 
-      expect(() => ddi.get<G>(qualifier: 'qualifier'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => ddi.get<G>(qualifier: 'qualifier'), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('ADD Interceptor to a Factory Dependent bean', () {
@@ -159,8 +158,8 @@ void factoryInterceptor() {
         factory: ScopeFactory.singleton(
           builder: D.new.builder,
           decorators: [
-            (instance) => E(instance),
-            (instance) => F(instance),
+            (D instance) => E(instance),
+            (D instance) => F(instance),
           ],
           interceptors: {K},
         ),
@@ -195,8 +194,8 @@ void factoryInterceptor() {
         factory: ScopeFactory.application(
           builder: D.new.builder,
           decorators: [
-            (instance) => E(instance),
-            (instance) => F(instance),
+            (D instance) => E(instance),
+            (D instance) => F(instance),
           ],
           interceptors: {K},
         ),

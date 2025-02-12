@@ -1,4 +1,4 @@
-library dart_ddi;
+library;
 
 export 'src/core/dart_ddi.dart' show DDI, ddi;
 export 'src/data/custom_builder.dart';

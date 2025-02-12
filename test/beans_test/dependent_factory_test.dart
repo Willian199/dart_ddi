@@ -92,8 +92,7 @@ void dependentFactory() {
 
       DDI.instance.destroy<C>();
 
-      expect(
-          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Create, get and remove a qualifier bean', () {
@@ -106,14 +105,11 @@ void dependentFactory() {
 
       DDI.instance.destroy(qualifier: 'typeC');
 
-      expect(() => DDI.instance.get(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get(qualifier: 'typeC'), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Try to destroy a undestroyable Dependent bean', () {
-      DependentFactoryDestroyGet.new.builder
-          .asDependent(canDestroy: false)
-          .register();
+      DependentFactoryDestroyGet.new.builder.asDependent(canDestroy: false).register();
 
       final instance1 = DDI.instance.get<DependentFactoryDestroyGet>();
 
@@ -126,33 +122,26 @@ void dependentFactory() {
     });
 
     test('Try to register again a undestroyable Dependent bean', () {
-      DependentFactoryDestroyRegister.new.builder
-          .asDependent(canDestroy: false)
-          .register();
+      DependentFactoryDestroyRegister.new.builder.asDependent(canDestroy: false).register();
 
       DDI.instance.get<DependentFactoryDestroyRegister>();
 
       DDI.instance.destroy<DependentFactoryDestroyRegister>();
 
-      expect(
-          () => DDI.instance
-              .registerDependent(() => DependentFactoryDestroyRegister()),
-          throwsA(isA<DuplicatedBeanException>()));
+      expect(() => DDI.instance.registerDependent(() => DependentFactoryDestroyRegister()), throwsA(isA<DuplicatedBeanException>()));
     });
 
     test('Retrieve Factory Dependent with Custom Parameter', () {
       FactoryParameter.new.builder.asDependent().register();
 
-      final FactoryParameter instance =
-          DDI.instance(parameter: getRecordParameter);
+      final FactoryParameter instance = DDI.instance(parameter: getRecordParameter);
 
       expect(instance, isA<FactoryParameter>());
       expect(instance.parameter, getRecordParameter);
 
       DDI.instance.destroy<FactoryParameter>();
 
-      expect(() => DDI.instance.get<FactoryParameter>(),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<FactoryParameter>(), throwsA(isA<BeanNotFoundException>()));
     });
   });
 }

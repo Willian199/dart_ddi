@@ -135,8 +135,7 @@ void session() {
 
       DDI.instance.destroy<C>();
 
-      expect(
-          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Create, get and remove a qualifier bean', () {
@@ -146,13 +145,11 @@ void session() {
 
       DDI.instance.destroy(qualifier: 'typeC');
 
-      expect(() => DDI.instance.get(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get(qualifier: 'typeC'), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Try to destroy a undestroyable Session bean', () {
-      DDI.instance
-          .registerSession(() => SessionDestroyGet(), canDestroy: false);
+      DDI.instance.registerSession(() => SessionDestroyGet(), canDestroy: false);
 
       final instance1 = DDI.instance.get<SessionDestroyGet>();
 
@@ -164,8 +161,7 @@ void session() {
     });
 
     test('Try to register again a undestroyable Session bean', () {
-      DDI.instance
-          .registerSession(() => SessionDestroyRegister(), canDestroy: false);
+      DDI.instance.registerSession(() => SessionDestroyRegister(), canDestroy: false);
 
       DDI.instance.get<SessionDestroyRegister>();
 

@@ -42,8 +42,7 @@ void applicationFactory() {
       removeApplicationBeans();
     });
 
-    test('Retrieve Factory Application bean after a "child" bean is diposed',
-        () {
+    test('Retrieve Factory Application bean after a "child" bean is diposed', () {
       registerApplicationBeans();
 
       final instance = DDI.instance.get<MultiInject>();
@@ -58,9 +57,7 @@ void applicationFactory() {
       removeApplicationBeans();
     });
 
-    test(
-        'Retrieve Factory Application bean after a second "child" bean is diposed',
-        () {
+    test('Retrieve Factory Application bean after a second "child" bean is diposed', () {
       registerApplicationBeans();
 
       final instance = DDI.instance.get<MultiInject>();
@@ -75,9 +72,7 @@ void applicationFactory() {
       removeApplicationBeans();
     });
 
-    test(
-        'Retrieve Factory Application bean after the last "child" bean is diposed',
-        () {
+    test('Retrieve Factory Application bean after the last "child" bean is diposed', () {
       registerApplicationBeans();
 
       final instance1 = DDI.instance.get<MultiInject>();
@@ -93,8 +88,7 @@ void applicationFactory() {
       removeApplicationBeans();
     });
 
-    test('Retrieve Factory Application bean after 2 "child" bean is diposed',
-        () {
+    test('Retrieve Factory Application bean after 2 "child" bean is diposed', () {
       registerApplicationBeans();
 
       final instance1 = DDI.instance.get<MultiInject>();
@@ -111,8 +105,7 @@ void applicationFactory() {
       removeApplicationBeans();
     });
 
-    test('Retrieve Factory Application bean after 3 "child" bean is diposed',
-        () {
+    test('Retrieve Factory Application bean after 3 "child" bean is diposed', () {
       registerApplicationBeans();
 
       final instance1 = DDI.instance.get<MultiInject>();
@@ -131,8 +124,7 @@ void applicationFactory() {
     });
 
     test('Try to retrieve a Factory Application bean after disposed', () {
-      DDI.instance
-          .register(factory: ScopeFactory.application(builder: C.new.builder));
+      DDI.instance.register(factory: ScopeFactory.application(builder: C.new.builder));
 
       final instance1 = DDI.instance.get<C>();
 
@@ -146,28 +138,23 @@ void applicationFactory() {
     });
 
     test('Try to retrieve Application bean after removed', () {
-      DDI.instance
-          .register(factory: ScopeFactory.application(builder: C.new.builder));
+      DDI.instance.register(factory: ScopeFactory.application(builder: C.new.builder));
 
       DDI.instance.get<C>();
 
       DDI.instance.destroy<C>();
 
-      expect(
-          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Create, get and remove a qualifier bean', () {
-      DDI.instance.register(
-          factory: ScopeFactory.application(builder: C.new.builder),
-          qualifier: 'typeC');
+      DDI.instance.register(factory: ScopeFactory.application(builder: C.new.builder), qualifier: 'typeC');
 
       DDI.instance.get(qualifier: 'typeC');
 
       DDI.instance.destroy(qualifier: 'typeC');
 
-      expect(() => DDI.instance.get(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get(qualifier: 'typeC'), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Try to destroy a undestroyable Application bean', () {
@@ -211,16 +198,14 @@ void applicationFactory() {
     test('Retrieve Factory Application with Custom Parameter', () {
       FactoryParameter.new.builder.asApplication().register();
 
-      final FactoryParameter instance =
-          DDI.instance(parameter: getRecordParameter);
+      final FactoryParameter instance = DDI.instance(parameter: getRecordParameter);
 
       expect(instance, isA<FactoryParameter>());
       expect(instance.parameter, getRecordParameter);
 
       DDI.instance.destroy<FactoryParameter>();
 
-      expect(() => DDI.instance.get<FactoryParameter>(),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<FactoryParameter>(), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Select an Application bean', () async {

@@ -27,8 +27,7 @@ mixin DDIInject<InjectType extends Object> {
 /// }
 /// ```
 mixin DDIComponentInject<ComponentT extends Object, ModuleT extends DDIModule> {
-  late final ComponentT instance =
-      ddi.getComponent<ComponentT>(module: ModuleT);
+  late final ComponentT instance = ddi.getComponent<ComponentT>(module: ModuleT);
 }
 
 /// Helper to make easy to Inject one instance

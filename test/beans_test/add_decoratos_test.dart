@@ -27,8 +27,8 @@ void addDecorator() {
       DDI.instance.registerSingleton(
         () => D(),
         decorators: [
-          (instance) => E(instance),
-          (instance) => F(instance),
+          (D instance) => E(instance),
+          (D instance) => F(instance),
         ],
       );
 
@@ -42,8 +42,8 @@ void addDecorator() {
       DDI.instance.registerApplication(
         () => D(),
         decorators: [
-          (instance) => E(instance),
-          (instance) => F(instance),
+          (D instance) => E(instance),
+          (D instance) => F(instance),
         ],
       );
 
@@ -57,8 +57,8 @@ void addDecorator() {
       DDI.instance.registerSession(
         () => D(),
         decorators: [
-          (instance) => E(instance),
-          (instance) => F(instance),
+          (D instance) => E(instance),
+          (D instance) => F(instance),
         ],
       );
 
@@ -72,8 +72,8 @@ void addDecorator() {
       DDI.instance.registerDependent(
         () => D(),
         decorators: [
-          (instance) => E(instance),
-          (instance) => F(instance),
+          (D instance) => E(instance),
+          (D instance) => F(instance),
         ],
       );
 

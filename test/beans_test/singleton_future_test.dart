@@ -13,10 +13,8 @@ void singletonFuture() {
   group('DDI Singleton Future Basic Tests', () {
     void registerSingletonBeans() {
       DDI.instance.registerApplication(C.new);
-      DDI.instance
-          .registerApplication<B>(() => Future.value(B(DDI.instance())));
-      DDI.instance
-          .registerApplication(() async => A(await DDI.instance.getAsync()));
+      DDI.instance.registerApplication<B>(() => Future.value(B(DDI.instance())));
+      DDI.instance.registerApplication(() async => A(await DDI.instance.getAsync()));
     }
 
     void removeSingletonBeans() {
@@ -56,8 +54,7 @@ void singletonFuture() {
       DDI.instance.destroy<B>();
     });
 
-    test('Retrieve singleton bean after a second "child" bean is diposed',
-        () async {
+    test('Retrieve singleton bean after a second "child" bean is diposed', () async {
       registerSingletonBeans();
 
       final instance = await DDI.instance.getAsync<A>();
@@ -80,34 +77,27 @@ void singletonFuture() {
 
       DDI.instance.destroy<C>();
 
-      expect(() => DDI.instance.getAsync<C>(),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.getAsync<C>(), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Create, get and remove a qualifier bean', () async {
-      await DDI.instance
-          .registerSingleton(() => Future.value(C()), qualifier: 'typeC');
+      await DDI.instance.registerSingleton(() => Future.value(C()), qualifier: 'typeC');
 
       DDI.instance.getAsync(qualifier: 'typeC');
 
       DDI.instance.destroy(qualifier: 'typeC');
 
-      expect(() => DDI.instance.getAsync(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.getAsync(qualifier: 'typeC'), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Try to destroy a undestroyable Singleton bean', () async {
-      await DDI.instance.registerSingleton(
-          () => Future.value(FutureSingletonDestroyGet()),
-          canDestroy: false);
+      await DDI.instance.registerSingleton(() => Future.value(FutureSingletonDestroyGet()), canDestroy: false);
 
-      final instance1 =
-          await DDI.instance.getAsync<FutureSingletonDestroyGet>();
+      final instance1 = await DDI.instance.getAsync<FutureSingletonDestroyGet>();
 
       DDI.instance.destroy<FutureSingletonDestroyGet>();
 
-      final instance2 =
-          await DDI.instance.getAsync<FutureSingletonDestroyGet>();
+      final instance2 = await DDI.instance.getAsync<FutureSingletonDestroyGet>();
 
       expect(instance1, same(instance2));
     });
@@ -125,13 +115,10 @@ void singletonFuture() {
       await expectLater(intance.value, 1);
     });
 
-    test(
-        'Retrieve Singleton bean after a "child" bean is disposed using Future',
-        () async {
+    test('Retrieve Singleton bean after a "child" bean is disposed using Future', () async {
       DDI.instance.registerSingleton(C.new);
-      await DDI.instance.registerSingleton<B>(() async => B(DDI.instance()));
-      await DDI.instance
-          .registerSingleton(() async => A(await DDI.instance.getAsync()));
+      await DDI.instance.registerSingleton<B>(() => B(DDI.instance()));
+      await DDI.instance.registerSingleton(() async => A(await DDI.instance.getAsync()));
 
       final instance1 = await DDI.instance.getAsync<A>();
 

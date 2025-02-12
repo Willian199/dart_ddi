@@ -9,8 +9,7 @@ final class InterceptorUtil {
   ) {
     if (factory.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
-        final instance =
-            ddi.get(qualifier: interceptor) as DDIInterceptor<BeanT>;
+        final instance = ddi.get(qualifier: interceptor) as DDIInterceptor<BeanT>;
 
         applicationClazz = instance.onCreate(applicationClazz) as BeanT;
       }
@@ -25,8 +24,7 @@ final class InterceptorUtil {
   ) async {
     if (factory.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
-        final instance =
-            (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
+        final instance = (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
 
         final exec = instance.onCreate(applicationClazz);
 
@@ -58,8 +56,7 @@ final class InterceptorUtil {
   ) async {
     if (factory.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
-        final instance =
-            (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
+        final instance = (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
 
         final exec = instance.onGet(applicationClazz);
 
@@ -76,8 +73,7 @@ final class InterceptorUtil {
   ) async {
     if (factory.interceptors case final inter? when inter.isNotEmpty) {
       for (final interceptor in inter) {
-        final instance =
-            (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
+        final instance = (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
 
         final exec = instance.onDispose(applicationClazz);
         if (exec is Future) {

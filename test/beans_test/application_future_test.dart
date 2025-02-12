@@ -13,8 +13,7 @@ import 'payment_service.dart';
 void applicationFuture() {
   group('DDI Application Future Basic Tests', () {
     void registerApplicationBeans() {
-      DDI.instance.registerApplication<A>(
-          () async => A(await DDI.instance.getAsync<B>()));
+      DDI.instance.registerApplication<A>(() async => A(await DDI.instance.getAsync<B>()));
       DDI.instance.registerApplication<B>(() async {
         await Future.delayed(const Duration(milliseconds: 200));
         return B(DDI.instance());
@@ -57,8 +56,7 @@ void applicationFuture() {
       removeApplicationBeans();
     });
 
-    test('Retrieve Application bean after a second "child" bean is diposed',
-        () async {
+    test('Retrieve Application bean after a second "child" bean is diposed', () async {
       registerApplicationBeans();
 
       final instance = await DDI.instance.getAsync<A>();
@@ -73,8 +71,7 @@ void applicationFuture() {
       removeApplicationBeans();
     });
 
-    test('Retrieve Application bean after the last "child" bean is diposed',
-        () async {
+    test('Retrieve Application bean after the last "child" bean is diposed', () async {
       registerApplicationBeans();
 
       final instance1 = await DDI.instance.getAsync<A>();
@@ -146,41 +143,33 @@ void applicationFuture() {
 
       DDI.instance.destroy<C>();
 
-      expect(() => DDI.instance.getAsync<C>(),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.getAsync<C>(), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Create, get and remove a qualifier bean', () {
-      DDI.instance
-          .registerApplication(() => Future.value(C()), qualifier: 'typeC');
+      DDI.instance.registerApplication(() => Future.value(C()), qualifier: 'typeC');
 
       DDI.instance.getAsync(qualifier: 'typeC');
 
       DDI.instance.destroy(qualifier: 'typeC');
 
-      expect(() => DDI.instance.getAsync(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.getAsync(qualifier: 'typeC'), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Try to destroy a undestroyable Application bean', () async {
-      DDI.instance.registerApplication(
-          () => Future.value(FutureApplicationDestroyGet()),
-          canDestroy: false);
+      DDI.instance.registerApplication(() => Future.value(FutureApplicationDestroyGet()), canDestroy: false);
 
-      final instance1 =
-          await DDI.instance.getAsync<FutureApplicationDestroyGet>();
+      final instance1 = await DDI.instance.getAsync<FutureApplicationDestroyGet>();
 
       DDI.instance.destroy<FutureApplicationDestroyGet>();
 
-      final instance2 =
-          await DDI.instance.getAsync<FutureApplicationDestroyGet>();
+      final instance2 = await DDI.instance.getAsync<FutureApplicationDestroyGet>();
 
       expect(instance1, same(instance2));
     });
     test('Register and retrieve Future Application', () async {
-      DDI.instance
-          .registerApplication(() async => A(await DDI.instance.getAsync<B>()));
-      DDI.instance.registerApplication(() async => B(DDI.instance()));
+      DDI.instance.registerApplication(() async => A(await DDI.instance.getAsync<B>()));
+      DDI.instance.registerApplication(() => B(DDI.instance()));
       DDI.instance.registerApplication(C.new);
 
       final instance1 = await DDI.instance.getAsync<A>();
@@ -209,14 +198,13 @@ void applicationFuture() {
       await expectLater(intance.value, 1);
     });
 
-    test('Try to retrieve Application bean using Future', () async {
+    test('Try to retrieve Application bean using Future', () {
       DDI.instance.registerApplication(() async => A(await DDI.instance()));
-      DDI.instance.registerApplication(() async => B(DDI.instance()));
+      DDI.instance.registerApplication(() => B(DDI.instance()));
       DDI.instance.registerApplication(C.new);
 
       //This happens because A(await DDI.instance()) transform to A(await DDI.instance<FutureOr<B>>())
-      expect(() => DDI.instance.getAsync<A>(),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.getAsync<A>(), throwsA(isA<BeanNotFoundException>()));
 
       DDI.instance.destroy<A>();
       DDI.instance.destroy<B>();
@@ -224,9 +212,8 @@ void applicationFuture() {
     });
 
     test('Register and retrieve Application bean using FutureOr', () async {
-      DDI.instance
-          .registerApplication(() async => A(await DDI.instance.getAsync()));
-      DDI.instance.registerApplication<B>(() async => B(DDI.instance()));
+      DDI.instance.registerApplication(() async => A(await DDI.instance.getAsync()));
+      DDI.instance.registerApplication<B>(() => B(DDI.instance()));
       DDI.instance.registerApplication(C.new);
 
       final instance1 = await DDI.instance.getAsync<A>();
@@ -241,12 +228,9 @@ void applicationFuture() {
       DDI.instance.destroy<B>();
       DDI.instance.destroy<C>();
     });
-    test(
-        'Retrieve Application bean after a "child" bean is disposed using Future',
-        () async {
-      DDI.instance
-          .registerApplication(() async => A(await DDI.instance.getAsync<B>()));
-      DDI.instance.registerApplication<B>(() async => B(DDI.instance()));
+    test('Retrieve Application bean after a "child" bean is disposed using Future', () async {
+      DDI.instance.registerApplication(() async => A(await DDI.instance.getAsync<B>()));
+      DDI.instance.registerApplication<B>(() => B(DDI.instance()));
       DDI.instance.registerApplication(C.new);
 
       final instance1 = await DDI.instance.getAsync<A>();

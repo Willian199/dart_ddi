@@ -23,12 +23,9 @@ void disposeDestroyAllSession() {
 
       DDI.instance.destroyAllSession();
 
-      expect(
-          () => DDI.instance.get<A>(), throwsA(isA<BeanNotFoundException>()));
-      expect(
-          () => DDI.instance.get<B>(), throwsA(isA<BeanNotFoundException>()));
-      expect(
-          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<A>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<B>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Register and retrieve Factory Session bean', () {
@@ -40,12 +37,9 @@ void disposeDestroyAllSession() {
 
       DDI.instance.destroyAllSession();
 
-      expect(
-          () => DDI.instance.get<A>(), throwsA(isA<BeanNotFoundException>()));
-      expect(
-          () => DDI.instance.get<B>(), throwsA(isA<BeanNotFoundException>()));
-      expect(
-          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<A>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<B>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Register, get, dispose and destroy Session bean', () {
@@ -70,17 +64,13 @@ void disposeDestroyAllSession() {
 
       DDI.instance.destroyAllSession();
 
-      expect(
-          () => DDI.instance.get<A>(), throwsA(isA<BeanNotFoundException>()));
-      expect(
-          () => DDI.instance.get<B>(), throwsA(isA<BeanNotFoundException>()));
-      expect(
-          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<A>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<B>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Register, get, dispose and destroy Session bean', () async {
-      DDI.instance
-          .registerSession(() async => A(await DDI.instance.getAsync()));
+      DDI.instance.registerSession(() async => A(await DDI.instance.getAsync()));
       DDI.instance.registerSession<B>(() => Future.value(B(DDI.instance())));
       DDI.instance.registerSession(C.new);
 
@@ -103,12 +93,9 @@ void disposeDestroyAllSession() {
 
       DDI.instance.destroyAllSession();
 
-      expect(() async => DDI.instance.getAsync<A>(),
-          throwsA(isA<BeanNotFoundException>()));
-      expect(() async => DDI.instance.getAsync<B>(),
-          throwsA(isA<BeanNotFoundException>()));
-      expect(() async => DDI.instance.getAsync<C>(),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.getAsync<A>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.getAsync<B>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.getAsync<C>(), throwsA(isA<BeanNotFoundException>()));
     });
   });
 }

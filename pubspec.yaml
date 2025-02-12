@@ -10,9 +10,10 @@ tags:
   - management
 
 topics:
+  - dependency
   - dependency-injection
-  - di
-  - inject
+  - dependency-injector
+  - dependency-management
   - cdi
 
 environment:
@@ -20,4 +21,4 @@ environment:
 
 dev_dependencies:
   test: ">=1.25.8 <2.0.0"
-  lints: ^4.0.0
+  lints: ^5.1.1

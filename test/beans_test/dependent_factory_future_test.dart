@@ -67,8 +67,7 @@ void dependentFactoryFuture() {
       removeDependentBeans();
     });
 
-    test('Retrieve Dependent bean after a second "child" bean is diposed',
-        () async {
+    test('Retrieve Dependent bean after a second "child" bean is diposed', () async {
       registerDependentBeans();
 
       final instance = await DDI.instance.getAsync<A>();
@@ -112,8 +111,7 @@ void dependentFactoryFuture() {
 
       DDI.instance.destroy<C>();
 
-      expect(() async => DDI.instance.get<C>(),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Create, get and remove a qualifier bean', () async {
@@ -131,15 +129,13 @@ void dependentFactoryFuture() {
 
       DDI.instance.destroy(qualifier: 'typeC');
 
-      expect(() => DDI.instance.get(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get(qualifier: 'typeC'), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Register and retrieve Future delayed Dependent bean', () async {
       DDI.instance.register(
         factory: () async {
-          final C value =
-              await Future.delayed(const Duration(seconds: 2), C.new);
+          final C value = await Future.delayed(const Duration(seconds: 2), C.new);
           return value;
         }.builder.asDependent(),
       );
@@ -161,16 +157,14 @@ void dependentFactoryFuture() {
         ),
       );
 
-      final FactoryParameter instance =
-          await DDI.instance.getAsyncWith(parameter: getRecordParameter);
+      final FactoryParameter instance = await DDI.instance.getAsyncWith(parameter: getRecordParameter);
 
       expect(instance, isA<FactoryParameter>());
       expect(instance.parameter, getRecordParameter);
 
       DDI.instance.destroy<FactoryParameter>();
 
-      expectLater(() => DDI.instance.getAsync<FactoryParameter>(),
-          throwsA(isA<BeanNotFoundException>()));
+      expectLater(() => DDI.instance.getAsync<FactoryParameter>(), throwsA(isA<BeanNotFoundException>()));
     });
   });
 }

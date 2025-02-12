@@ -54,8 +54,7 @@ void singleton() {
       ddi.destroy<B>();
     });
 
-    test('Retrieve singleton bean after a second "child" bean is destroyed',
-        () {
+    test('Retrieve singleton bean after a second "child" bean is destroyed', () {
       registerSingletonBeans();
 
       final instance = ddi.get<A>();
@@ -88,8 +87,7 @@ void singleton() {
 
       ddi.destroy(qualifier: 'typeC');
 
-      expect(() => ddi.get(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => ddi.get(qualifier: 'typeC'), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Try to destroy a undestroyable Singleton bean', () {
@@ -105,15 +103,13 @@ void singleton() {
     });
 
     test('Try to register again a undestroyable Singleton bean', () {
-      ddi.registerSingleton(() => SingletonDestroyRegister(),
-          canDestroy: false);
+      ddi.registerSingleton(() => SingletonDestroyRegister(), canDestroy: false);
 
       ddi.get<SingletonDestroyRegister>();
 
       ddi.destroy<SingletonDestroyRegister>();
 
-      expect(() => ddi.registerSingleton(() => SingletonDestroyRegister()),
-          throwsA(isA<DuplicatedBeanException>()));
+      expect(() => ddi.registerSingleton(() => SingletonDestroyRegister()), throwsA(isA<DuplicatedBeanException>()));
     });
   });
 }
