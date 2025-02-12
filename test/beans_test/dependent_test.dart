@@ -83,7 +83,8 @@ void dependent() {
 
       DDI.instance.destroy<C>();
 
-      expect(() => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
+      expect(
+          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Create, get and remove a qualifier bean', () {
@@ -96,11 +97,13 @@ void dependent() {
 
       DDI.instance.destroy(qualifier: 'typeC');
 
-      expect(() => DDI.instance.get(qualifier: 'typeC'), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get(qualifier: 'typeC'),
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Try to destroy a undestroyable Dependent bean', () {
-      DDI.instance.registerDependent(() => DependentDestroyGet(), canDestroy: false);
+      DDI.instance
+          .registerDependent(() => DependentDestroyGet(), canDestroy: false);
 
       final instance1 = DDI.instance.get<DependentDestroyGet>();
 
@@ -113,7 +116,8 @@ void dependent() {
     });
 
     test('Try to register again a undestroyable Dependent bean', () {
-      DDI.instance.registerDependent(() => DependentDestroyRegister(), canDestroy: false);
+      DDI.instance.registerDependent(() => DependentDestroyRegister(),
+          canDestroy: false);
 
       DDI.instance.get<DependentDestroyRegister>();
 

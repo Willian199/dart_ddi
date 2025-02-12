@@ -24,7 +24,8 @@ void moduleFactoryApplicationTest() {
 
       DDI.instance.destroy<ModuleFactoryApplication>();
 
-      expect(() => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
+      expect(
+          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Register a Factory Dependent Module', () {
@@ -41,7 +42,8 @@ void moduleFactoryApplicationTest() {
 
       DDI.instance.destroy<ModuleFactoryDependent>();
 
-      expect(() => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
+      expect(
+          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Register a Factory Singleton Module', () {
@@ -57,7 +59,8 @@ void moduleFactoryApplicationTest() {
 
       DDI.instance.destroy<ModuleFactorySingleton>();
 
-      expect(() => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
+      expect(
+          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
     });
   });
 }

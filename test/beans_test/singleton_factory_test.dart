@@ -42,7 +42,8 @@ void singletonFactory() {
       removeSingletonBeans();
     });
 
-    test('Retrieve a Factory singleton bean after a "child" bean is destroyed', () {
+    test('Retrieve a Factory singleton bean after a "child" bean is destroyed',
+        () {
       registerBeans();
 
       final instance = ddi.get<MultiInject>();
@@ -59,7 +60,9 @@ void singletonFactory() {
       ddi.destroy<MultiInject>();
     });
 
-    test('Retrieve a Factory singleton bean after a second "child" bean is destroyed', () {
+    test(
+        'Retrieve a Factory singleton bean after a second "child" bean is destroyed',
+        () {
       registerBeans();
 
       final instance = ddi.get<MultiInject>();
@@ -93,11 +96,14 @@ void singletonFactory() {
 
       ddi.destroy(qualifier: 'typeC');
 
-      expect(() => ddi.get(qualifier: 'typeC'), throwsA(isA<BeanNotFoundException>()));
+      expect(() => ddi.get(qualifier: 'typeC'),
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Try to destroy a undestroyable Factory Singleton bean', () {
-      ddi.register(factory: SingletonFactoryDestroyGet.new.builder.asSingleton(canDestroy: false));
+      ddi.register(
+          factory: SingletonFactoryDestroyGet.new.builder
+              .asSingleton(canDestroy: false));
 
       final instance1 = ddi.get<SingletonFactoryDestroyGet>();
 
@@ -109,17 +115,24 @@ void singletonFactory() {
     });
 
     test('Try to register again a undestroyable Factory Singleton bean', () {
-      ddi.register(factory: SingletonFactoryDestroyRegister.new.builder.asSingleton(canDestroy: false));
+      ddi.register(
+          factory: SingletonFactoryDestroyRegister.new.builder
+              .asSingleton(canDestroy: false));
 
       ddi.get<SingletonFactoryDestroyRegister>();
 
       ddi.destroy<SingletonFactoryDestroyRegister>();
 
-      expect(() => ddi.register(factory: SingletonFactoryDestroyRegister.new.builder.asSingleton()), throwsA(isA<DuplicatedBeanException>()));
+      expect(
+          () => ddi.register(
+              factory:
+                  SingletonFactoryDestroyRegister.new.builder.asSingleton()),
+          throwsA(isA<DuplicatedBeanException>()));
     });
 
     test('Retrieve Factory Singleton with Custom Parameter', () {
-      expect(() => FactoryParameter.new.builder.asSingleton().register(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => FactoryParameter.new.builder.asSingleton().register(),
+          throwsA(isA<BeanNotFoundException>()));
     });
   });
 }

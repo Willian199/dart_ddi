@@ -59,7 +59,8 @@ void singletonFactoryFuture() {
       removeSingletonBeans();
     });
 
-    test('Retrieve a Factory singleton bean after a "child" bean is diposed', () async {
+    test('Retrieve a Factory singleton bean after a "child" bean is diposed',
+        () async {
       await registerBeans();
 
       final instance = await DDI.instance.getAsync<MultiInject>();
@@ -76,7 +77,9 @@ void singletonFactoryFuture() {
       DDI.instance.destroy<MultiInject>();
     });
 
-    test('Retrieve a Factory singleton bean after a second "child" bean is diposed', () async {
+    test(
+        'Retrieve a Factory singleton bean after a second "child" bean is diposed',
+        () async {
       await registerBeans();
 
       final instance = await DDI.instance.getAsync<MultiInject>();
@@ -97,7 +100,8 @@ void singletonFactoryFuture() {
       await DDI.instance.register<C>(
         factory: ScopeFactory.singleton(
           builder: () async {
-            final C value = await Future.delayed(const Duration(seconds: 2), C.new);
+            final C value =
+                await Future.delayed(const Duration(seconds: 2), C.new);
             return value;
           }.builder,
         ),
@@ -107,14 +111,16 @@ void singletonFactoryFuture() {
 
       DDI.instance.destroy<C>();
 
-      expect(() => DDI.instance.getAsync<C>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.getAsync<C>(),
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Create, get and remove a Factory qualifier bean', () async {
       await DDI.instance.register<C>(
         factory: ScopeFactory.singleton(
           builder: () async {
-            final C value = await Future.delayed(const Duration(seconds: 2), C.new);
+            final C value =
+                await Future.delayed(const Duration(seconds: 2), C.new);
             return value;
           }.builder,
         ),
@@ -125,7 +131,8 @@ void singletonFactoryFuture() {
 
       DDI.instance.destroy(qualifier: 'typeC');
 
-      expect(() => DDI.instance.getAsync(qualifier: 'typeC'), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.getAsync(qualifier: 'typeC'),
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Try to destroy a undestroyable Factory Singleton bean', () async {
@@ -133,17 +140,21 @@ void singletonFactoryFuture() {
         factory: ScopeFactory.singleton(
           canDestroy: false,
           builder: () async {
-            final FutureSingletonFactoryDestroyGet value = await Future.delayed(const Duration(seconds: 2), FutureSingletonFactoryDestroyGet.new);
+            final FutureSingletonFactoryDestroyGet value = await Future.delayed(
+                const Duration(seconds: 2),
+                FutureSingletonFactoryDestroyGet.new);
             return value;
           }.builder,
         ),
       );
 
-      final instance1 = await DDI.instance.getAsync<FutureSingletonFactoryDestroyGet>();
+      final instance1 =
+          await DDI.instance.getAsync<FutureSingletonFactoryDestroyGet>();
 
       DDI.instance.destroy<FutureSingletonFactoryDestroyGet>();
 
-      final instance2 = await DDI.instance.getAsync<FutureSingletonFactoryDestroyGet>();
+      final instance2 =
+          await DDI.instance.getAsync<FutureSingletonFactoryDestroyGet>();
 
       expect(instance1, same(instance2));
     });

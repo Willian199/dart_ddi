@@ -47,7 +47,8 @@ void interceptor() {
       DDI.instance.destroy<G>();
       ddi.destroy<J>();
 
-      expect(() => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
+      expect(
+          () => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
       expect(DDI.instance.isRegistered<J>(), false);
     });
 
@@ -67,7 +68,8 @@ void interceptor() {
       DDI.instance.destroy<G>();
       ddi.destroy<J>();
 
-      expect(() => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
+      expect(
+          () => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
       expect(DDI.instance.isRegistered<J>(), false);
     });
 
@@ -77,7 +79,8 @@ void interceptor() {
           builder: J<G>.new.builder,
         ),
       );
-      DDI.instance.registerApplication<G>(() => H(), qualifier: 'qualifier', interceptors: {J});
+      DDI.instance.registerApplication<G>(() => H(),
+          qualifier: 'qualifier', interceptors: {J});
 
       final G instance = DDI.instance.get<G>(qualifier: 'qualifier');
 
@@ -87,7 +90,8 @@ void interceptor() {
       DDI.instance.destroy<G>(qualifier: 'qualifier');
       ddi.destroy<J>();
 
-      expect(() => DDI.instance.get<G>(qualifier: 'qualifier'), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<G>(qualifier: 'qualifier'),
+          throwsA(isA<BeanNotFoundException>()));
       expect(DDI.instance.isRegistered<J>(), false);
     });
 
@@ -107,7 +111,8 @@ void interceptor() {
       DDI.instance.destroy<G>();
       ddi.destroy<J>();
 
-      expect(() => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
+      expect(
+          () => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
       expect(DDI.instance.isRegistered<J>(), false);
     });
 
@@ -127,7 +132,8 @@ void interceptor() {
       DDI.instance.destroy<G>();
       ddi.destroy<J>();
 
-      expect(() => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
+      expect(
+          () => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
       expect(DDI.instance.isRegistered<J>(), false);
     });
 
@@ -156,7 +162,8 @@ void interceptor() {
       DDI.instance.destroy<G>();
       ddi.destroy<J>();
 
-      expect(() => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
+      expect(
+          () => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
       expect(DDI.instance.isRegistered<J>(), false);
     });
 

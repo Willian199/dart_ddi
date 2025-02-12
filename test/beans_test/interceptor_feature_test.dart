@@ -48,7 +48,8 @@ void interceptorFeatures() {
       expect(ddi.isRegistered<LoggerInterceptor>(), false);
     });
 
-    test('ADD Future variation Interceptor with Logs Interceptors and Beans', () async {
+    test('ADD Future variation Interceptor with Logs Interceptors and Beans',
+        () async {
       DatabaseLog.new.builder.asApplication().register();
 
       ddi.register(

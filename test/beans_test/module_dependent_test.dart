@@ -22,7 +22,8 @@ void moduleDependentTest() {
 
       DDI.instance.destroy<ModuleDependent>();
 
-      expect(() => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
+      expect(
+          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
     });
   });
 }

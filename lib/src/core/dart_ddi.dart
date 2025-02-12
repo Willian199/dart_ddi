@@ -201,7 +201,9 @@ abstract class DDI {
   ///
   /// - **Order of Execution:** Decorators are applied in the order they are provided.
   /// - **Instaces Already Gets:** No changes any Instances that have been get.
-  FutureOr<void> addDecorator<BeanT extends Object>(ListDecorator<BeanT> decorators, {Object? qualifier});
+  FutureOr<void> addDecorator<BeanT extends Object>(
+      ListDecorator<BeanT> decorators,
+      {Object? qualifier});
 
   /// Allows to dynamically add a Interceptor.
   ///
@@ -211,7 +213,8 @@ abstract class DDI {
   /// - **onCreate:** Won't work with Singletons Scope.
   /// - **Order of Execution:** Interceptor are applied in the order they are provided.
   /// - **Instaces Already Gets:** No changes any Instances that have been get.
-  void addInterceptor<BeanT extends Object>(Set<Object>? interceptors, {Object? qualifier});
+  void addInterceptor<BeanT extends Object>(Set<Object>? interceptors,
+      {Object? qualifier});
 
   /// Allows to dynamically refresh the Object.
   ///
@@ -225,11 +228,13 @@ abstract class DDI {
 
   /// This function adds multiple child modules to a parent module.
   /// It takes a list of 'child' objects and an optional 'qualifier' for the parent module.
-  void addChildrenModules<BeanT extends Object>({required Set<Object> child, Object? qualifier});
+  void addChildrenModules<BeanT extends Object>(
+      {required Set<Object> child, Object? qualifier});
 
   /// This function adds a single child module to a parent module.
   /// It takes a 'child' object and an optional 'qualifier' for the parent module.
-  void addChildModules<BeanT extends Object>({required Object child, Object? qualifier});
+  void addChildModules<BeanT extends Object>(
+      {required Object child, Object? qualifier});
 
   Set<Object> getChildren<BeanT extends Object>({Object? qualifier});
 }

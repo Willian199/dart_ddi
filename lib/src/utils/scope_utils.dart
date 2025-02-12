@@ -10,7 +10,8 @@ import 'package:dart_ddi/src/utils/dependent_utils.dart';
 final class ScopeUtils {
   static const _resolutionKey = #_resolutionKey;
 
-  static final Set<Object> _resolutionMap = Zone.current[_resolutionKey] as Set<Object>? ?? {};
+  static final Set<Object> _resolutionMap =
+      Zone.current[_resolutionKey] as Set<Object>? ?? {};
   static BeanT _getScoped<BeanT extends Object, ParameterT extends Object>({
     required ScopeFactory<BeanT> factory,
     required Object effectiveQualifierName,
@@ -33,7 +34,9 @@ final class ScopeUtils {
             effectiveQualifierName: effectiveQualifierName,
             parameter: parameter,
           ),
-        Scopes.application || Scopes.session => ApplicationUtils.getAplication<BeanT, ParameterT>(
+        Scopes.application ||
+        Scopes.session =>
+          ApplicationUtils.getAplication<BeanT, ParameterT>(
             factory: factory,
             effectiveQualifierName: effectiveQualifierName,
             parameter: parameter,
@@ -44,7 +47,8 @@ final class ScopeUtils {
     }
   }
 
-  static Future<BeanT> _getScopedAsync<BeanT extends Object, ParameterT extends Object>({
+  static Future<BeanT>
+      _getScopedAsync<BeanT extends Object, ParameterT extends Object>({
     required ScopeFactory<BeanT> factory,
     required Object effectiveQualifierName,
     ParameterT? parameter,
@@ -57,16 +61,21 @@ final class ScopeUtils {
 
     try {
       return switch (factory.scopeType) {
-        Scopes.singleton || Scopes.object => await DartDDIUtils.getSingletonAsync<BeanT>(
+        Scopes.singleton ||
+        Scopes.object =>
+          await DartDDIUtils.getSingletonAsync<BeanT>(
             factory: factory,
             effectiveQualifierName: effectiveQualifierName,
           ),
-        Scopes.dependent => await DependentUtils.getDependentAsync<BeanT, ParameterT>(
+        Scopes.dependent =>
+          await DependentUtils.getDependentAsync<BeanT, ParameterT>(
             factory: factory,
             effectiveQualifierName: effectiveQualifierName,
             parameter: parameter,
           ),
-        Scopes.application || Scopes.session => await ApplicationUtils.getAplicationAsync<BeanT, ParameterT>(
+        Scopes.application ||
+        Scopes.session =>
+          await ApplicationUtils.getAplicationAsync<BeanT, ParameterT>(
             factory: factory,
             effectiveQualifierName: effectiveQualifierName,
             parameter: parameter,
@@ -94,7 +103,8 @@ final class ScopeUtils {
     );
   }
 
-  static Future<BeanT> executarAsync<BeanT extends Object, ParameterT extends Object>({
+  static Future<BeanT>
+      executarAsync<BeanT extends Object, ParameterT extends Object>({
     required ScopeFactory<BeanT> factory,
     required Object effectiveQualifierName,
     ParameterT? parameter,

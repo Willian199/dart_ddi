@@ -21,7 +21,8 @@ void moduleSingletonTest() {
 
       DDI.instance.destroy<ModuleSingleton>();
 
-      expect(() => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
+      expect(
+          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
     });
   });
 }
