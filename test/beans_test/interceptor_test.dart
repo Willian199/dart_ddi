@@ -204,5 +204,10 @@ void interceptor() {
       expect(DDI.instance.isRegistered<D>(), false);
       expect(DDI.instance.isRegistered<J>(), false);
     });
+
+    test('ADD Interceptor to a Bean not registered', () {
+      expect(() => ddi.addInterceptor<D>({}),
+          throwsA(isA<BeanNotFoundException>()));
+    });
   });
 }
