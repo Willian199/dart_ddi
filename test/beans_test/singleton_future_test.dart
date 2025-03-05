@@ -7,6 +7,7 @@ import 'package:test/test.dart';
 import '../clazz_samples/a.dart';
 import '../clazz_samples/b.dart';
 import '../clazz_samples/c.dart';
+import '../clazz_samples/future_post_construct.dart';
 import '../clazz_samples/undestroyable/future_singleton_destroy_get.dart';
 
 void singletonFuture() {
@@ -114,7 +115,7 @@ void singletonFuture() {
 
     test('Register and retrieve Future delayed Singleton bean', () async {
       await DDI.instance.registerSingleton<C>(() async {
-        final C value = await Future.delayed(const Duration(seconds: 2), C.new);
+        final C value = await Future.delayed(const Duration(seconds: 1), C.new);
         return value;
       });
 
@@ -161,6 +162,42 @@ void singletonFuture() {
       expect(instance, isA<C>());
 
       DDI.instance.destroy<StreamController<C>>();
+    });
+
+    test('Register a Singleton bean with Future Post Construct', () async {
+      await ddi.registerSingleton<FuturePostConstruct>(() async {
+        await Future.delayed(const Duration(milliseconds: 10));
+
+        return Future.value(FuturePostConstruct());
+      });
+
+      final FuturePostConstruct instance = ddi.get();
+
+      expect(instance.value, 10);
+
+      ddi.destroy<FuturePostConstruct>();
+    });
+
+    test('Register a Singleton class with PostConstruct mixin', () async {
+      Future<FuturePostConstruct> test() async {
+        await Future.delayed(const Duration(milliseconds: 10));
+        return FuturePostConstruct();
+      }
+
+      await DDI.instance.register<FuturePostConstruct>(
+        factory: ScopeFactory.singleton(builder: test.builder),
+        qualifier: 'FuturePostConstruct',
+      );
+
+      final FuturePostConstruct instance =
+          await DDI.instance.getAsync(qualifier: 'FuturePostConstruct');
+
+      expect(instance.value, 10);
+
+      DDI.instance.destroy(qualifier: 'FuturePostConstruct');
+
+      expect(() => DDI.instance.get(qualifier: 'FuturePostConstruct'),
+          throwsA(isA<BeanNotFoundException>()));
     });
   });
 }

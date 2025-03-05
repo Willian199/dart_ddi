@@ -26,6 +26,9 @@ void runByType() {
       expect(instance1.area(), instance2.area() / 2);
 
       ddi.disposeByType<G>();
+      expect(ddi.isReady(qualifier: 'firtsClass'), false);
+      expect(ddi.isReady(qualifier: 'secondClass'), false);
+
       ddi.destroyByType<G>();
 
       expect(() => ddi.get(qualifier: keys2[0]),
@@ -52,6 +55,9 @@ void runByType() {
       expect(instance1.area(), instance2.area() / 2);
 
       ddi.disposeByType<G>();
+      expect(ddi.isReady(qualifier: 'firtsClass'), false);
+      expect(ddi.isReady(qualifier: 'secondClass'), false);
+
       ddi.destroyByType<G>();
 
       expect(() => ddi.get(qualifier: keys2[0]),
@@ -78,6 +84,9 @@ void runByType() {
       expect(instance1.area(), instance2.area() / 2);
 
       ddi.disposeByType<G>();
+      expect(ddi.isReady(qualifier: 'firtsClass'), false);
+      expect(ddi.isReady(qualifier: 'secondClass'), false);
+
       ddi.destroyByType<G>();
 
       expect(() => ddi.get(qualifier: keys2[0]),
@@ -104,6 +113,9 @@ void runByType() {
       expect(instance1.area(), instance2.area() / 2);
 
       ddi.disposeByType<G>();
+      expect(ddi.isReady(qualifier: 'firtsClass'), false);
+      expect(ddi.isReady(qualifier: 'secondClass'), false);
+
       ddi.destroyByType<G>();
 
       expect(() => ddi.get(qualifier: keys2[0]),
@@ -133,6 +145,10 @@ void runByType() {
       expect(instance1.area(), instance2.area() / 2);
 
       ddi.disposeByType<G>();
+      // Singleton are not allow to dispose
+      expect(ddi.isReady(qualifier: 'firtsClass'), true);
+      expect(ddi.isReady(qualifier: 'secondClass'), true);
+
       ddi.destroyByType<G>();
 
       expect(() => ddi.get(qualifier: keys2[0]),
@@ -163,6 +179,9 @@ void runByType() {
       expect(instance1.area(), instance2.area() / 2);
 
       ddi.disposeByType<G>();
+      expect(ddi.isReady(qualifier: 'firtsClass'), false);
+      expect(ddi.isReady(qualifier: 'secondClass'), false);
+
       ddi.destroyByType<G>();
 
       expect(() => ddi.get(qualifier: keys2[0]),
@@ -192,6 +211,10 @@ void runByType() {
       expect(instance1.area(), instance2.area() / 2);
 
       ddi.disposeByType<G>();
+
+      expect(ddi.isReady(qualifier: 'firtsClass'), false);
+      expect(ddi.isReady(qualifier: 'secondClass'), false);
+
       ddi.destroyByType<G>();
 
       expect(() => ddi.get(qualifier: keys2[0]),
@@ -236,6 +259,10 @@ void runByType() {
       expect(instance1.area(), instance2.area() / 2);
 
       ddi.disposeByType<G>();
+
+      expect(ddi.isReady(qualifier: 'firtsClass'), false);
+      expect(ddi.isReady(qualifier: 'secondClass'), false);
+
       ddi.destroyByType<G>();
 
       expect(() => ddi.get(qualifier: keys2[0]),
@@ -280,6 +307,10 @@ void runByType() {
       expect(instance1.area(), instance2.area() / 2);
 
       ddi.disposeByType<G>();
+
+      expect(ddi.isReady(qualifier: 'firtsClass'), true);
+      expect(ddi.isReady(qualifier: 'secondClass'), true);
+
       ddi.destroyByType<G>();
 
       expect(() => ddi.get(qualifier: keys2[0]),
@@ -324,6 +355,9 @@ void runByType() {
       expect(instance1.area(), instance2.area() / 2);
 
       ddi.disposeByType<G>();
+      expect(ddi.isReady(qualifier: 'firtsClass'), false);
+      expect(ddi.isReady(qualifier: 'secondClass'), false);
+
       ddi.destroyByType<G>();
 
       expect(() => ddi.get(qualifier: keys2[0]),
@@ -359,6 +393,9 @@ void runByType() {
       expect(instance1.area(), instance2.area() / 2);
 
       ddi.disposeByType<G>();
+      expect(ddi.isReady(qualifier: 'firtsClass'), true);
+      expect(ddi.isReady(qualifier: 'secondClass'), true);
+
       ddi.destroyByType<G>();
 
       expect(() => ddi.get(qualifier: keys2[0]),
@@ -394,6 +431,9 @@ void runByType() {
       expect(instance1.area(), instance2.area() / 2);
 
       ddi.disposeByType<G>();
+      expect(ddi.isReady(qualifier: 'firtsClass'), false);
+      expect(ddi.isReady(qualifier: 'secondClass'), false);
+
       ddi.destroyByType<G>();
 
       expect(() => ddi.get(qualifier: keys2[0]),

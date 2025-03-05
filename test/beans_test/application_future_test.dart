@@ -7,6 +7,7 @@ import 'package:test/test.dart';
 import '../clazz_samples/a.dart';
 import '../clazz_samples/b.dart';
 import '../clazz_samples/c.dart';
+import '../clazz_samples/future_post_construct.dart';
 import '../clazz_samples/undestroyable/future_application_destroy_get.dart';
 import 'payment_service.dart';
 
@@ -318,6 +319,28 @@ void applicationFuture() {
 
       expect(false, ddi.isRegistered(qualifier: 'creditCard'));
       expect(false, ddi.isRegistered(qualifier: 'paypal'));
+    });
+
+    test('Register an Application class with PostConstruct mixin', () async {
+      Future<FuturePostConstruct> test() async {
+        await Future.delayed(const Duration(milliseconds: 10));
+        return FuturePostConstruct();
+      }
+
+      await DDI.instance.register<FuturePostConstruct>(
+        factory: ScopeFactory.application(builder: test.builder),
+        qualifier: 'FuturePostConstruct',
+      );
+
+      final FuturePostConstruct instance =
+          await DDI.instance.getAsync(qualifier: 'FuturePostConstruct');
+
+      expect(instance.value, 10);
+
+      DDI.instance.destroy(qualifier: 'FuturePostConstruct');
+
+      expect(() => DDI.instance.get(qualifier: 'FuturePostConstruct'),
+          throwsA(isA<BeanNotFoundException>()));
     });
   });
 }

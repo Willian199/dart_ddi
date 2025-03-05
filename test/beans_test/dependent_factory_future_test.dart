@@ -8,6 +8,7 @@ import '../clazz_samples/a.dart';
 import '../clazz_samples/b.dart';
 import '../clazz_samples/c.dart';
 import '../clazz_samples/factory_parameter.dart';
+import '../clazz_samples/future_post_construct.dart';
 
 void dependentFactoryFuture() {
   group('DDI Dependent Factory Future Basic Tests', () {
@@ -139,7 +140,7 @@ void dependentFactoryFuture() {
       DDI.instance.register(
         factory: () async {
           final C value =
-              await Future.delayed(const Duration(seconds: 2), C.new);
+              await Future.delayed(const Duration(seconds: 1), C.new);
           return value;
         }.builder.asDependent(),
       );
@@ -170,6 +171,28 @@ void dependentFactoryFuture() {
       DDI.instance.destroy<FactoryParameter>();
 
       expectLater(() => DDI.instance.getAsync<FactoryParameter>(),
+          throwsA(isA<BeanNotFoundException>()));
+    });
+
+    test('Register a Dependent class with PostConstruct mixin', () async {
+      Future<FuturePostConstruct> test() async {
+        await Future.delayed(const Duration(milliseconds: 10));
+        return FuturePostConstruct();
+      }
+
+      await DDI.instance.register<FuturePostConstruct>(
+        factory: ScopeFactory.dependent(builder: test.builder),
+        qualifier: 'FuturePostConstruct',
+      );
+
+      final FuturePostConstruct instance =
+          await DDI.instance.getAsync(qualifier: 'FuturePostConstruct');
+
+      expect(instance.value, 10);
+
+      DDI.instance.destroy(qualifier: 'FuturePostConstruct');
+
+      expect(() => DDI.instance.get(qualifier: 'FuturePostConstruct'),
           throwsA(isA<BeanNotFoundException>()));
     });
   });

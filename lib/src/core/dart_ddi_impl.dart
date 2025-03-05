@@ -91,9 +91,9 @@ class _DDIImpl implements DDI {
 
     if (clazz is PostConstruct) {
       return clazz.onPostConstruct();
-    } else if (clazz is Future<PostConstruct>) {
+    } /*else if (clazz is Future<PostConstruct>) {
       return DartDDIUtils.runFutureOrPostConstruct(clazz);
-    }
+    }*/
   }
 
   @override
@@ -282,13 +282,25 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  Future<BeanT> getAsyncWith<BeanT extends Object, ParameterT extends Object>(
-      {ParameterT? parameter, Object? qualifier, Object? select}) async {
+  Future<BeanT> getAsyncWith<BeanT extends Object, ParameterT extends Object>({
+    ParameterT? parameter,
+    Object? qualifier,
+    Object? select,
+  }) async {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    if (_beans[effectiveQualifierName]
-        case final ScopeFactory<BeanT> factory?) {
+    final f = _beans[effectiveQualifierName];
+
+    if (f case final ScopeFactory<BeanT> factory?) {
       return ScopeUtils.executarAsync<BeanT, ParameterT>(
+        factory: factory,
+        effectiveQualifierName: effectiveQualifierName,
+        parameter: parameter,
+      );
+    } else if (f case final ScopeFactory<Future<BeanT>> factory?) {
+      // This prevents to return a Future<Future<BeanT>>
+      // This was find with the Object Scope
+      return await ScopeUtils.executarAsync<Future<BeanT>, ParameterT>(
         factory: factory,
         effectiveQualifierName: effectiveQualifierName,
         parameter: parameter,
@@ -368,6 +380,19 @@ class _DDIImpl implements DDI {
 
       if (factory.instanceHolder case final clazz? when clazz is PreDestroy) {
         return _runFutureOrPreDestroy(factory, clazz, effectiveQualifierName);
+      } else if (factory.instanceHolder is DDIModule) {
+        if (factory.children?.isNotEmpty ?? false) {
+          final List<Future<void>> futures = [];
+          for (final Object child in factory.children!) {
+            futures.add(_destroy(child) as Future<void>);
+          }
+          return Future.wait(
+            futures,
+            eagerError: true,
+          ).then(
+            (value) => _beans.remove(effectiveQualifierName),
+          );
+        }
       }
 
       _destroyChildren(factory.children);
@@ -384,8 +409,6 @@ class _DDIImpl implements DDI {
     await clazz.onPreDestroy();
 
     _beans.remove(effectiveQualifierName);
-
-    return Future.value();
   }
 
   @override
@@ -446,7 +469,7 @@ class _DDIImpl implements DDI {
 
     final clazz = _beans.entries
         .where((element) =>
-            element.value.type is BeanT &&
+            element.value.type == BeanT &&
             allowedScopes.contains(element.value.scopeType))
         .toList();
 

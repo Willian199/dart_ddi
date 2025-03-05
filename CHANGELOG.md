@@ -1,4 +1,5 @@
 ## 0.11.0
+* Fixed DDIModule not waiting for all children to be destroyed in `destroy`.
 
 * Break changes:
     * Moved events to it's own package `event_ddi`.
