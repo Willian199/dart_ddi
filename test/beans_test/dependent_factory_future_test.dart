@@ -175,13 +175,13 @@ void dependentFactoryFuture() {
     });
 
     test('Register a Dependent class with PostConstruct mixin', () async {
-      Future<FuturePostConstruct> test() async {
+      Future<FuturePostConstruct> localTest() async {
         await Future.delayed(const Duration(milliseconds: 10));
         return FuturePostConstruct();
       }
 
       await DDI.instance.register<FuturePostConstruct>(
-        factory: ScopeFactory.dependent(builder: test.builder),
+        factory: ScopeFactory.dependent(builder: localTest.builder),
         qualifier: 'FuturePostConstruct',
       );
 
@@ -192,8 +192,8 @@ void dependentFactoryFuture() {
 
       DDI.instance.destroy(qualifier: 'FuturePostConstruct');
 
-      expect(() => DDI.instance.get(qualifier: 'FuturePostConstruct'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(
+          DDI.instance.isRegistered(qualifier: 'FuturePostConstruct'), false);
     });
   });
 }

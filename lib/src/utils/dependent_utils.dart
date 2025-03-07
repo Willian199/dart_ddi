@@ -25,6 +25,7 @@ final class DependentUtils {
     if (dependentClazz is PostConstruct) {
       dependentClazz.onPostConstruct();
     } else if (dependentClazz is Future<PostConstruct>) {
+      // Should be impossible to pass here, but I will keep it
       DartDDIUtils.runFutureOrPostConstruct(dependentClazz);
     }
 

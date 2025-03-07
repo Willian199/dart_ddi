@@ -179,13 +179,13 @@ void singletonFuture() {
     });
 
     test('Register a Singleton class with PostConstruct mixin', () async {
-      Future<FuturePostConstruct> test() async {
+      Future<FuturePostConstruct> localTest() async {
         await Future.delayed(const Duration(milliseconds: 10));
         return FuturePostConstruct();
       }
 
       await DDI.instance.register<FuturePostConstruct>(
-        factory: ScopeFactory.singleton(builder: test.builder),
+        factory: ScopeFactory.singleton(builder: localTest.builder),
         qualifier: 'FuturePostConstruct',
       );
 
@@ -198,6 +198,113 @@ void singletonFuture() {
 
       expect(() => DDI.instance.get(qualifier: 'FuturePostConstruct'),
           throwsA(isA<BeanNotFoundException>()));
+    });
+
+    test('Register a Singleton class with Future PostConstruct mixin',
+        () async {
+      Future<FuturePostConstruct> localTest() async {
+        await Future.delayed(const Duration(milliseconds: 10));
+        return FuturePostConstruct();
+      }
+
+      await DDI.instance.register<FuturePostConstruct>(
+        factory: ScopeFactory.singleton(
+          builder: CustomBuilder(
+            producer: localTest,
+            parametersType: [],
+            returnType: FuturePostConstruct,
+            isFuture: true,
+          ),
+        ),
+      );
+
+      expect(DDI.instance.isFuture<FuturePostConstruct>(), true);
+      expect(DDI.instance.getByType<FuturePostConstruct>().length, 1);
+
+      final FuturePostConstruct instance = await DDI.instance.getAsync();
+
+      expect(instance.value, 10);
+
+      DDI.instance.destroy<FuturePostConstruct>();
+
+      expect(DDI.instance.isRegistered<FuturePostConstruct>(), false);
+    });
+
+    test(
+        'Register a Singleton class with Future PostConstruct mixin and qualifier',
+        () async {
+      Future<FuturePostConstruct> localTest() async {
+        await Future.delayed(const Duration(milliseconds: 10));
+        return FuturePostConstruct();
+      }
+
+      await DDI.instance.register<Future<FuturePostConstruct>>(
+        factory: ScopeFactory.singleton(
+          builder: CustomBuilder(
+            producer: localTest,
+            parametersType: [],
+            returnType: FuturePostConstruct,
+            isFuture: true,
+          ),
+        ),
+        qualifier: 'FuturePostConstruct',
+      );
+
+      expect(DDI.instance.isFuture(qualifier: 'FuturePostConstruct'), true);
+
+      expect(DDI.instance.getByType<Future<FuturePostConstruct>>().length, 1);
+
+      final FuturePostConstruct instance =
+          await DDI.instance.getAsync(qualifier: 'FuturePostConstruct');
+
+      expect(instance.value, 10);
+
+      DDI.instance.destroy(qualifier: 'FuturePostConstruct');
+
+      expect(
+          DDI.instance.isRegistered(qualifier: 'FuturePostConstruct'), false);
+    });
+
+    test(
+        'Register a Singleton Future class with Future PostConstruct mixin and qualifier',
+        () async {
+      Future<FuturePostConstruct> localTest() async {
+        await Future.delayed(const Duration(milliseconds: 10));
+        return FuturePostConstruct();
+      }
+
+      await DDI.instance.register<Future<FuturePostConstruct>>(
+        factory: ScopeFactory.singleton(
+          builder: CustomBuilder(
+            producer: localTest,
+            parametersType: [],
+            returnType: FuturePostConstruct,
+            isFuture: true,
+          ),
+        ),
+        qualifier: 'FuturePostConstruct',
+      );
+
+      expect(DDI.instance.isFuture(qualifier: 'FuturePostConstruct'), true);
+
+      expect(DDI.instance.getByType<Future<FuturePostConstruct>>().length, 1);
+
+      final FuturePostConstruct futureInstance =
+          await DDI.instance.get(qualifier: 'FuturePostConstruct');
+
+      expect(futureInstance.value, 10);
+
+      final FuturePostConstruct cachedInstance = await DDI.instance
+          .get<Future<FuturePostConstruct>>(qualifier: 'FuturePostConstruct');
+
+      expect(cachedInstance.value, 10);
+
+      expect(identical(cachedInstance, futureInstance), true);
+
+      DDI.instance.destroy(qualifier: 'FuturePostConstruct');
+
+      expect(
+          DDI.instance.isRegistered(qualifier: 'FuturePostConstruct'), false);
     });
   });
 }

@@ -91,9 +91,9 @@ class _DDIImpl implements DDI {
 
     if (clazz is PostConstruct) {
       return clazz.onPostConstruct();
-    } /*else if (clazz is Future<PostConstruct>) {
+    } else if (clazz is Future<PostConstruct>) {
       return DartDDIUtils.runFutureOrPostConstruct(clazz);
-    }*/
+    }
   }
 
   @override
@@ -289,15 +289,17 @@ class _DDIImpl implements DDI {
   }) async {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    final f = _beans[effectiveQualifierName];
+    final reg = _beans[effectiveQualifierName];
 
-    if (f case final ScopeFactory<BeanT> factory?) {
-      return ScopeUtils.executarAsync<BeanT, ParameterT>(
+    if (reg case final ScopeFactory<BeanT> factory?) {
+      final clazz = ScopeUtils.executarAsync<BeanT, ParameterT>(
         factory: factory,
         effectiveQualifierName: effectiveQualifierName,
         parameter: parameter,
       );
-    } else if (f case final ScopeFactory<Future<BeanT>> factory?) {
+
+      return clazz is Future<Future> ? await clazz : clazz;
+    } else if (reg case final ScopeFactory<Future<BeanT>> factory?) {
       // This prevents to return a Future<Future<BeanT>>
       // This was find with the Object Scope
       return await ScopeUtils.executarAsync<Future<BeanT>, ParameterT>(

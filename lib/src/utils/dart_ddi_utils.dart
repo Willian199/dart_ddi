@@ -19,8 +19,7 @@ final class DartDDIUtils {
     return clazz;
   }
 
-  static Future<void> runFutureOrPostConstruct(
-      Future<PostConstruct> register) async {
+  static Future<void> runFutureOrPostConstruct(Future<PostConstruct> register) async {
     final PostConstruct clazz = await register;
 
     return clazz.onPostConstruct();
@@ -33,7 +32,7 @@ final class DartDDIUtils {
     if (factory.instanceHolder case final clazz?) {
       return InterceptorUtil.get<BeanT>(factory, clazz);
     }
-
+    // Singleton should always have an instance
     throw BeanDestroyedException(effectiveQualifierName.toString());
   }
 
@@ -46,7 +45,7 @@ final class DartDDIUtils {
 
       return exec is Future ? await exec : exec;
     }
-
+    // Singleton should always have an instance
     throw BeanDestroyedException(effectiveQualifierName.toString());
   }
 }

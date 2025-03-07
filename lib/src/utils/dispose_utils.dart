@@ -31,12 +31,11 @@ final class DisposeUtils {
 
     _disposeChildren(factory.children);
     factory.instanceHolder = null;
-    return Future.value();
   }
 
   static Future<void> _runFutureOrPreDispose<BeanT extends Object>(
       ScopeFactory<BeanT> factory, PreDispose clazz) async {
-    disposeChildrenAsync<BeanT>(factory.children);
+    await disposeChildrenAsync<BeanT>(factory.children);
 
     await clazz.onPreDispose();
 
@@ -56,9 +55,12 @@ final class DisposeUtils {
   static Future<void> disposeChildrenAsync<BeanT extends Object>(
       Set<Object>? children) async {
     if (children?.isNotEmpty ?? false) {
+      final List<Future<void>> futures = [];
       for (final Object child in children!) {
-        await ddi.dispose(qualifier: child);
+        futures.add(ddi.dispose(qualifier: child));
       }
+
+      await Future.wait(futures);
     }
   }
 }

@@ -1,11 +1,13 @@
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/exception/bean_not_found.dart';
 import 'package:dart_ddi/src/exception/duplicated_bean.dart';
+import 'package:dart_ddi/src/exception/future_not_accept.dart';
 import 'package:test/test.dart';
 
 import '../clazz_samples/a.dart';
 import '../clazz_samples/b.dart';
 import '../clazz_samples/c.dart';
+import '../clazz_samples/future_post_construct.dart';
 import '../clazz_samples/undestroyable/application_destroy_get.dart';
 import '../clazz_samples/undestroyable/application_destroy_register.dart';
 import 'payment_service.dart';
@@ -217,6 +219,85 @@ void application() {
 
       expect(false, ddi.isRegistered(qualifier: 'creditCard'));
       expect(false, ddi.isRegistered(qualifier: 'paypal'));
+    });
+
+    test('Register and retrieve Application bean from a new DDI instance', () {
+      void register(DDI d) {
+        d.registerApplication(() => A(d()));
+        d.registerApplication(() => B(d()));
+        d.registerApplication(C.new);
+      }
+
+      void destroy(DDI d) {
+        d.destroy<A>();
+        d.destroy<B>();
+        d.destroy<C>();
+      }
+
+      void check(DDI d) {
+        final instance1 = d.get<A>();
+        final instance2 = d.get<A>();
+        expect(instance1, same(instance2));
+        expect(instance1.b, same(instance2.b));
+        expect(instance1.b.c, same(instance2.b.c));
+        expect(instance1.b.c.value, same(instance2.b.c.value));
+      }
+
+      final newDdi = DDI.newInstance;
+
+      register(ddi);
+      register(newDdi);
+
+      check(ddi);
+      check(newDdi);
+
+      destroy(ddi);
+      destroy(newDdi);
+    });
+
+    test(
+        'Register an Application Future class with Future PostConstruct mixin and qualifier',
+        () async {
+      Future<FuturePostConstruct> localTest() async {
+        await Future.delayed(const Duration(milliseconds: 10));
+        return FuturePostConstruct();
+      }
+
+      DDI.instance.register<Future<FuturePostConstruct>>(
+        factory: ScopeFactory.application(
+          builder: CustomBuilder(
+            producer: localTest,
+            parametersType: [],
+            returnType: FuturePostConstruct,
+            isFuture: true,
+          ),
+        ),
+        qualifier: 'FuturePostConstruct',
+      );
+
+      expect(DDI.instance.isFuture(qualifier: 'FuturePostConstruct'), true);
+
+      expect(DDI.instance.getByType<Future<FuturePostConstruct>>().length, 1);
+
+      expect(() => DDI.instance.get(qualifier: 'FuturePostConstruct'),
+          throwsA(isA<FutureNotAcceptException>()));
+
+      final FuturePostConstruct futureInstance =
+          await DDI.instance.getAsync(qualifier: 'FuturePostConstruct');
+
+      expect(futureInstance.value, 10);
+
+      final FuturePostConstruct cachedInstance = await DDI.instance
+          .get<Future<FuturePostConstruct>>(qualifier: 'FuturePostConstruct');
+
+      expect(cachedInstance.value, 10);
+
+      expect(identical(cachedInstance, futureInstance), true);
+
+      DDI.instance.destroy(qualifier: 'FuturePostConstruct');
+
+      expect(
+          DDI.instance.isRegistered(qualifier: 'FuturePostConstruct'), false);
     });
   });
 }

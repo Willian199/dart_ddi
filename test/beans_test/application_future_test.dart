@@ -322,13 +322,13 @@ void applicationFuture() {
     });
 
     test('Register an Application class with PostConstruct mixin', () async {
-      Future<FuturePostConstruct> test() async {
+      Future<FuturePostConstruct> localTest() async {
         await Future.delayed(const Duration(milliseconds: 10));
         return FuturePostConstruct();
       }
 
       await DDI.instance.register<FuturePostConstruct>(
-        factory: ScopeFactory.application(builder: test.builder),
+        factory: ScopeFactory.application(builder: localTest.builder),
         qualifier: 'FuturePostConstruct',
       );
 
@@ -341,6 +341,106 @@ void applicationFuture() {
 
       expect(() => DDI.instance.get(qualifier: 'FuturePostConstruct'),
           throwsA(isA<BeanNotFoundException>()));
+    });
+
+    test('Register an Application class with Future PostConstruct mixin',
+        () async {
+      Future<FuturePostConstruct> localTest() async {
+        await Future.delayed(const Duration(milliseconds: 10));
+        return FuturePostConstruct();
+      }
+
+      DDI.instance.register<FuturePostConstruct>(
+        factory: ScopeFactory.application(
+          builder: CustomBuilder(
+            producer: localTest,
+            parametersType: [],
+            returnType: FuturePostConstruct,
+            isFuture: true,
+          ),
+        ),
+      );
+
+      expect(DDI.instance.isFuture<FuturePostConstruct>(), true);
+      expect(DDI.instance.getByType<FuturePostConstruct>().length, 1);
+
+      final FuturePostConstruct instance = await DDI.instance.getAsync();
+
+      expect(instance.value, 10);
+
+      DDI.instance.destroy<FuturePostConstruct>();
+
+      expect(DDI.instance.isRegistered<FuturePostConstruct>(), false);
+    });
+
+    test(
+        'Register an Application class with Future PostConstruct mixin and qualifier',
+        () async {
+      Future<FuturePostConstruct> localTest() async {
+        await Future.delayed(const Duration(milliseconds: 10));
+        return FuturePostConstruct();
+      }
+
+      DDI.instance.register<FuturePostConstruct>(
+        factory: ScopeFactory.application(
+          builder: CustomBuilder(
+            producer: localTest,
+            parametersType: [],
+            returnType: FuturePostConstruct,
+            isFuture: true,
+          ),
+        ),
+        qualifier: 'FuturePostConstruct',
+      );
+
+      expect(DDI.instance.isFuture(qualifier: 'FuturePostConstruct'), true);
+
+      expect(DDI.instance.getByType<FuturePostConstruct>().length, 1);
+
+      final FuturePostConstruct instance =
+          await DDI.instance.getAsync(qualifier: 'FuturePostConstruct');
+
+      expect(instance.value, 10);
+
+      DDI.instance.destroy(qualifier: 'FuturePostConstruct');
+
+      expect(
+          DDI.instance.isRegistered(qualifier: 'FuturePostConstruct'), false);
+    });
+
+    test(
+        'Register an Application Future class with Future PostConstruct mixin and qualifier',
+        () async {
+      Future<FuturePostConstruct> localTest() async {
+        await Future.delayed(const Duration(milliseconds: 10));
+        return FuturePostConstruct();
+      }
+
+      DDI.instance.register<Future<FuturePostConstruct>>(
+        factory: ScopeFactory.application(
+          builder: CustomBuilder(
+            producer: localTest,
+            parametersType: [],
+            returnType: FuturePostConstruct,
+            isFuture: true,
+          ),
+        ),
+        qualifier: 'FuturePostConstruct',
+      );
+
+      expect(DDI.instance.isFuture(qualifier: 'FuturePostConstruct'), true);
+
+      expect(DDI.instance.getByType<Future<FuturePostConstruct>>().length, 1);
+
+      final FuturePostConstruct instance =
+          await DDI.instance.getAsync(qualifier: 'FuturePostConstruct');
+
+      expect(instance.value, 10);
+
+      DDI.instance.destroy(qualifier: 'FuturePostConstruct');
+
+      expect(
+          DDI.instance.isRegistered(qualifier: 'FuturePostConstruct'), false);
     });
   });
 }

@@ -71,6 +71,7 @@ final class ApplicationUtils {
       if (applicationClazz is PostConstruct) {
         applicationClazz.onPostConstruct();
       } else if (applicationClazz is Future<PostConstruct>) {
+        // Should be impossible to pass here, but I will keep it
         DartDDIUtils.runFutureOrPostConstruct(applicationClazz);
       }
     } else {
