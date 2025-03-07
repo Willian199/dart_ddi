@@ -19,7 +19,8 @@ final class DartDDIUtils {
     return clazz;
   }
 
-  static Future<void> runFutureOrPostConstruct(Future<PostConstruct> register) async {
+  static Future<void> runFutureOrPostConstruct(
+      Future<PostConstruct> register) async {
     final PostConstruct clazz = await register;
 
     return clazz.onPostConstruct();
