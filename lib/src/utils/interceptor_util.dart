@@ -69,21 +69,4 @@ final class InterceptorUtil {
 
     return applicationClazz;
   }
-
-  static FutureOr<void> disposeAsync<BeanT extends Object>(
-    ScopeFactory<BeanT> factory,
-    BeanT? applicationClazz,
-  ) async {
-    if (factory.interceptors case final inter? when inter.isNotEmpty) {
-      for (final interceptor in inter) {
-        final instance =
-            (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
-
-        final exec = instance.onDispose(applicationClazz);
-        if (exec is Future) {
-          await exec;
-        }
-      }
-    }
-  }
 }

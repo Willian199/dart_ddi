@@ -4,6 +4,7 @@ import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/enum/scopes.dart';
+import 'package:dart_ddi/src/exception/factory_not_allowed.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
 
 /// [ScopeFactory] is a class that represents a Bean and its state.
@@ -230,6 +231,10 @@ final class ScopeFactory<BeanT extends Object> {
     Object? qualifier,
     FutureOr<bool> Function()? canRegister,
   }) {
+    if (scopeType == Scopes.object) {
+      throw FactoryNotAllowedException(BeanT.toString());
+    }
+
     return DDI.instance.register<BeanT>(
       factory: this,
       qualifier: qualifier,

@@ -12,6 +12,7 @@ import 'beans_test/dependent_test.dart';
 import 'beans_test/dispose_destroy_all_session_test.dart';
 import 'beans_test/factory_circular_injection_test.dart';
 import 'beans_test/factory_interceptor_test.dart';
+import 'beans_test/factory_variation_test.dart';
 import 'beans_test/future_add_decoratos_test.dart';
 import 'beans_test/future_circular_injection_test.dart';
 import 'beans_test/future_post_construct_pre_destroy_test.dart';
@@ -37,12 +38,6 @@ import 'beans_test/singleton_factory_future_test.dart';
 import 'beans_test/singleton_factory_test.dart';
 import 'beans_test/singleton_future_test.dart';
 import 'beans_test/singleton_test.dart';
-import 'event_test/event_filter_test.dart';
-import 'event_test/event_lock_test.dart';
-import 'event_test/event_test.dart';
-import 'event_test/event_undo_redo_test.dart';
-import 'event_test/timer_events_test.dart';
-import 'stream_test/stream_test.dart';
 
 void main() {
   //Basic Tests, with consists in register, get, dispose, remove
@@ -59,6 +54,7 @@ void main() {
   applicationFactoryFuture();
   dependentFactory();
   dependentFactoryFuture();
+  factoryVariationTest();
 
   runByType();
   disposeDestroyAllSession();
@@ -100,14 +96,4 @@ void main() {
   moduleSessionTest();
   moduleComponentTest();
   moduleFactoryApplicationTest();
-
-  //Events
-  eventTest();
-  eventFilterTest();
-  eventLockTest();
-  eventDurationTests();
-  eventUndoRedoTest();
-
-  //Streams
-  streamTest();
 }

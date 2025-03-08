@@ -1,6 +1,10 @@
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/exception/bean_not_found.dart';
+import 'package:dart_ddi/src/exception/duplicated_bean.dart';
+import 'package:dart_ddi/src/exception/factory_not_allowed.dart';
 import 'package:test/test.dart';
+
+import '../clazz_samples/custom_interceptors.dart';
 
 void object() {
   group('DDI Object Basic Tests', () {
@@ -81,6 +85,94 @@ void object() {
       expect(false, identical(instance2, instance3));
 
       DDI.instance.destroy(qualifier: 'name');
+    });
+
+    test('Try to register an Object with default register function', () {
+      expect(
+          () => DDI.instance.register(
+              factory: ScopeFactory.object(instanceHolder: 'Value test')),
+          throwsA(isA<FactoryNotAllowedException>()));
+    });
+
+    test('Try to refresh an Object not registered', () {
+      expect(() => DDI.instance.refreshObject("new value"),
+          throwsA(isA<BeanNotFoundException>()));
+    });
+
+    test('Try to register a duplicated Object', () {
+      DDI.instance.registerObject('Will', qualifier: 'name');
+
+      expect(() => DDI.instance.registerObject('Willian', qualifier: 'name'),
+          throwsA(isA<DuplicatedBeanException>()));
+
+      DDI.instance.destroy(qualifier: 'name');
+    });
+
+    test('Register an Object with canRegister true', () {
+      DDI.instance
+          .registerObject('Will', qualifier: 'name', canRegister: () => true);
+
+      final value = DDI.instance.get(qualifier: 'name');
+
+      expect('Will', value);
+
+      DDI.instance.destroy(qualifier: 'name');
+
+      expect(() => DDI.instance.get(qualifier: 'name'),
+          throwsA(isA<BeanNotFoundException>()));
+    });
+
+    test('Register an Object with canRegister false', () {
+      DDI.instance
+          .registerObject('Will', qualifier: 'name', canRegister: () => false);
+
+      expect(() => DDI.instance.get(qualifier: 'name'),
+          throwsA(isA<BeanNotFoundException>()));
+    });
+
+    test('Register an Object with postConstruct function', () {
+      String value = 'Will';
+      DDI.instance.registerObject(
+        value,
+        qualifier: 'name',
+        postConstruct: () {
+          value = 'Willian';
+        },
+      );
+
+      expect('Willian', value);
+
+      expect('Will', DDI.instance.get(qualifier: 'name'));
+
+      DDI.instance.destroy(qualifier: 'name');
+
+      expect(() => DDI.instance.get(qualifier: 'name'),
+          throwsA(isA<BeanNotFoundException>()));
+    });
+
+    test('Block register an Object with ScopeFactory.object', () {
+      expect(
+          () => ScopeFactory.object(
+                instanceHolder: AddInterceptor(),
+              ).register(),
+          throwsA(isA<FactoryNotAllowedException>()));
+    });
+
+    test('Register an Object with Interceptor', () {
+      ddi.registerObject(AddInterceptor());
+      ddi.registerObject(MultiplyInterceptor());
+
+      DDI.instance.registerObject<int>(15,
+          interceptors: {AddInterceptor, MultiplyInterceptor});
+
+      expect(50, DDI.instance.get<int>());
+
+      DDI.instance.destroy<int>();
+      DDI.instance.destroy<AddInterceptor>();
+      DDI.instance.destroy<MultiplyInterceptor>();
+
+      expect(
+          () => DDI.instance.get<int>(), throwsA(isA<BeanNotFoundException>()));
     });
   });
 }

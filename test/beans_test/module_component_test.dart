@@ -9,7 +9,7 @@ import '../clazz_samples/parent_module.dart';
 
 void moduleComponentTest() {
   group('DDI Modules Component Basic Tests', () {
-    test('Register a Component Module', () {
+    test('Register a Component Module', () async {
       DDI.instance.registerSingleton(ParentModule.new);
 
       final Component parent = DDI.instance.getComponent(module: ParentModule);
@@ -30,7 +30,7 @@ void moduleComponentTest() {
       expect(child,
           same(DDI.instance.getComponent<Component>(module: ChildModule)));
 
-      DDI.instance.destroy<ParentModule>();
+      await DDI.instance.destroy<ParentModule>();
 
       expect(() => DDI.instance.getComponent<Component>(module: ChildModule),
           throwsA(isA<ModuleNotFoundException>()));
@@ -42,7 +42,7 @@ void moduleComponentTest() {
           throwsA(isA<BeanNotFoundException>()));
     });
 
-    test('Register a Component Module with Qualifier', () {
+    test('Register a Component Module with Qualifier', () async {
       DDI.instance.registerSingleton(ParentModule.new, qualifier: 'first');
 
       final Component parent = DDI.instance.getComponent(module: 'first');
@@ -63,7 +63,7 @@ void moduleComponentTest() {
       expect(child,
           same(DDI.instance.getComponent<Component>(module: ChildModule)));
 
-      DDI.instance.destroy(qualifier: 'first');
+      await DDI.instance.destroy(qualifier: 'first');
 
       expect(() => DDI.instance.getComponent<Component>(module: ChildModule),
           throwsA(isA<ModuleNotFoundException>()));
@@ -73,6 +73,15 @@ void moduleComponentTest() {
           throwsA(isA<BeanNotFoundException>()));
       expect(() => DDI.instance.get(qualifier: 'first'),
           throwsA(isA<BeanNotFoundException>()));
+    });
+
+    test('Try to register a Component without Module', () {
+      expect(
+          () => ddi.registerComponent(
+                clazzRegister: () => const Component('parent'),
+                moduleQualifier: ParentModule,
+              ),
+          throwsA(isA<ModuleNotFoundException>()));
     });
   });
 }

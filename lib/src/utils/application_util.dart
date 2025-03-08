@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
-import 'package:dart_ddi/src/core/bean/utils/dart_ddi_utils.dart';
-import 'package:dart_ddi/src/core/bean/utils/instance_factory_util.dart';
-import 'package:dart_ddi/src/core/bean/utils/interceptor_util.dart';
+import 'package:dart_ddi/src/utils/dart_ddi_utils.dart';
+import 'package:dart_ddi/src/utils/instance_factory_util.dart';
+import 'package:dart_ddi/src/utils/interceptor_util.dart';
 
 final class ApplicationUtils {
   static Future<BeanT>
@@ -71,6 +71,7 @@ final class ApplicationUtils {
       if (applicationClazz is PostConstruct) {
         applicationClazz.onPostConstruct();
       } else if (applicationClazz is Future<PostConstruct>) {
+        // Should be impossible to pass here, but I will keep it
         DartDDIUtils.runFutureOrPostConstruct(applicationClazz);
       }
     } else {

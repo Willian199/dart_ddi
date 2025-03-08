@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
-import 'package:dart_ddi/src/core/bean/utils/interceptor_util.dart';
 import 'package:dart_ddi/src/exception/bean_destroyed.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
+import 'package:dart_ddi/src/utils/interceptor_util.dart';
 
 final class DartDDIUtils {
   static BeanT executarDecorators<BeanT extends Object>(
@@ -33,7 +33,7 @@ final class DartDDIUtils {
     if (factory.instanceHolder case final clazz?) {
       return InterceptorUtil.get<BeanT>(factory, clazz);
     }
-
+    // Singleton should always have an instance
     throw BeanDestroyedException(effectiveQualifierName.toString());
   }
 
@@ -46,7 +46,7 @@ final class DartDDIUtils {
 
       return exec is Future ? await exec : exec;
     }
-
+    // Singleton should always have an instance
     throw BeanDestroyedException(effectiveQualifierName.toString());
   }
 }
