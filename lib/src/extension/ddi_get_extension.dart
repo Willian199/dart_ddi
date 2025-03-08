@@ -93,7 +93,7 @@ extension DDIGetExtension on DDI {
   ///
   /// This method supports asynchronous retrieval with a parameter.
   Future<BeanT?>
-      getOptionalWithAsync<BeanT extends Object, ParameterT extends Object>({
+      getOptionalAsyncWith<BeanT extends Object, ParameterT extends Object>({
     ParameterT? parameter,
     Object? qualifier,
   }) async {

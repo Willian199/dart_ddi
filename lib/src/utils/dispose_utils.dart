@@ -29,38 +29,39 @@ final class DisposeUtils {
       return _runFutureOrPreDispose<BeanT>(factory, clazz);
     }
 
-    _disposeChildren(factory.children);
-    factory.instanceHolder = null;
+    if (factory.instanceHolder is DDIModule &&
+        (factory.children?.isNotEmpty ?? false)) {
+      await disposeChildrenAsync(factory);
+      factory.instanceHolder = null;
+    } else {
+      final disposed = disposeChildrenAsync(factory);
+      factory.instanceHolder = null;
+
+      return disposed;
+    }
   }
 
   static Future<void> _runFutureOrPreDispose<BeanT extends Object>(
       ScopeFactory<BeanT> factory, PreDispose clazz) async {
-    await disposeChildrenAsync<BeanT>(factory.children);
-
     await clazz.onPreDispose();
+
+    await disposeChildrenAsync<BeanT>(factory);
 
     factory.instanceHolder = null;
 
     return Future.value();
   }
 
-  static void _disposeChildren<BeanT extends Object>(Set<Object>? children) {
-    if (children?.isNotEmpty ?? false) {
-      for (final Object child in children!) {
-        ddi.dispose(qualifier: child);
-      }
-    }
-  }
-
   static Future<void> disposeChildrenAsync<BeanT extends Object>(
-      Set<Object>? children) async {
-    if (children?.isNotEmpty ?? false) {
+    ScopeFactory<BeanT> factory,
+  ) async {
+    if (factory.children?.isNotEmpty ?? false) {
       final List<Future<void>> futures = [];
-      for (final Object child in children!) {
+      for (final Object child in factory.children!) {
         futures.add(ddi.dispose(qualifier: child));
       }
 
-      await Future.wait(futures);
+      return Future.wait(futures).ignore();
     }
   }
 }

@@ -449,7 +449,7 @@ class _DDIImpl implements DDI {
         case Scopes.session:
           return DisposeUtils.disposeBean<BeanT>(factory);
         default:
-          return DisposeUtils.disposeChildrenAsync<BeanT>(factory.children);
+          return DisposeUtils.disposeChildrenAsync<BeanT>(factory);
       }
     }
 

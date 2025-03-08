@@ -11,14 +11,26 @@ class InstanceFactoryUtil {
       final BeanT Function() s => s.call(),
       final BeanT Function(ParameterT) c =>
         c.call(parameter ?? ddi.get<ParameterT>()),
-      final Function f when parameter != null && parameter is List =>
-        Function.apply(f, parameter) as BeanT,
+      final Function f when parameter != null && parameter is Iterable =>
+        Function.apply(f, parameter.toList()) as BeanT,
       final Function f when parameter != null && parameter is Map =>
-        Function.apply(f, null, parameter as Map<Symbol, dynamic>) as BeanT,
-      final Function f when parameter != null =>
-        Function.apply(f, [parameter]) as BeanT,
+        Function.apply(f, null, _getMap(parameter)) as BeanT,
       final _ => _autoInject(builder),
     };
+  }
+
+  // ignore: strict_raw_type
+  static Map<Symbol, dynamic> _getMap<BeanT extends Object>(Map map) {
+    assert(map is Map<Symbol, dynamic>, '''
+When creating the instance with a Map type, it must be Map<Symbol, dynamic>
+Ex:
+<Symbol, dynamic>{
+  #first: ddi.get(qualifier: 'first'),
+  #second: SecondValue(),
+}
+''');
+
+    return map as Map<Symbol, dynamic>;
   }
 
   static BeanT _autoInject<BeanT extends Object>(
@@ -39,12 +51,10 @@ class InstanceFactoryUtil {
       final FutureOr<BeanT> Function() s => s.call(),
       final FutureOr<BeanT> Function(ParameterT) c =>
         c.call(parameter ?? await ddi.getAsync<ParameterT>()),
-      final Function f when parameter != null && parameter is List =>
-        Function.apply(f, [...parameter]) as FutureOr<BeanT>,
+      final Function f when parameter != null && parameter is Iterable =>
+        Function.apply(f, parameter.toList()) as FutureOr<BeanT>,
       final Function f when parameter != null && parameter is Map =>
-        Function.apply(f, null, parameter as Map<Symbol, dynamic>) as BeanT,
-      final Function f when parameter != null =>
-        Function.apply(f, [parameter]) as FutureOr<BeanT>,
+        Function.apply(f, null, _getMap(parameter)) as FutureOr<BeanT>,
       final _ => _autoInjectAsync(builder),
     };
   }
@@ -58,6 +68,6 @@ class InstanceFactoryUtil {
         await ddi.getAsync(qualifier: inject)
     ];
 
-    return Function.apply(builder.producer, instances) as BeanT;
+    return Function.apply(builder.producer, instances) as FutureOr<BeanT>;
   }
 }

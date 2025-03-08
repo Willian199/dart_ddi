@@ -12,6 +12,7 @@ import 'beans_test/dependent_test.dart';
 import 'beans_test/dispose_destroy_all_session_test.dart';
 import 'beans_test/factory_circular_injection_test.dart';
 import 'beans_test/factory_interceptor_test.dart';
+import 'beans_test/factory_variation_test.dart';
 import 'beans_test/future_add_decoratos_test.dart';
 import 'beans_test/future_circular_injection_test.dart';
 import 'beans_test/future_post_construct_pre_destroy_test.dart';
@@ -53,6 +54,7 @@ void main() {
   applicationFactoryFuture();
   dependentFactory();
   dependentFactoryFuture();
+  factoryVariationTest();
 
   runByType();
   disposeDestroyAllSession();
