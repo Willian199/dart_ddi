@@ -36,3 +36,6 @@ jobs:
       # want to change this to 'flutter test'.
       - name: Run tests
         run: flutter test test/dart_ddi_test.dart
+
+      - name: Coveralls
+        uses: coverallsapp/github-action@v2
