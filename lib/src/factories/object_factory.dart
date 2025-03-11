@@ -55,7 +55,7 @@ class ObjectFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
   /// Register the instance in [DDI].
   /// When the instance is ready, must call apply function.
   @override
-  Future<void> register(void Function(DDIBaseFactory) apply) async {
+  Future<void> register(void Function(DDIBaseFactory<BeanT>) apply) async {
     if (_created.isCompleted) {
       throw FactoryAlreadyCreatedException(BeanT.toString());
     }

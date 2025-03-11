@@ -20,7 +20,7 @@ abstract class DDIBaseFactory<BeanT extends Object> with InstanceFactoryMixin {
 
   /// Register the instance in [DDI].
   /// When the instance is ready, must call apply function.
-  Future<void> register(void Function(DDIBaseFactory) apply);
+  Future<void> register(void Function(DDIBaseFactory<BeanT>) apply);
 
   /// Gets or creates this instance.
   ///

@@ -17,9 +17,9 @@ import 'package:dart_ddi/src/utils/intance_decorators_utils.dart';
 /// * Refresh the qualifier for the Module.
 /// * Make the instance ready.
 /// * Run the PostConstruct for the instance.
+/// * Run the Interceptor for get process.
 ///
 /// `Note`: `PreDispose` and `PreDestroy` mixins will only be called if the instance is in use. Use `Interceptor` if you want to call them regardless.
-
 class ApplicationFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
   ApplicationFactory({
     required CustomBuilder<FutureOr<BeanT>> builder,
@@ -58,7 +58,7 @@ class ApplicationFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
   /// Register the instance in [DDI].
   /// When the instance is ready, must call apply function.
   @override
-  Future<void> register(void Function(DDIBaseFactory) apply) async {
+  Future<void> register(void Function(DDIBaseFactory<BeanT>) apply) async {
     return apply(this);
   }
 

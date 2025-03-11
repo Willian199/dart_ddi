@@ -5,6 +5,18 @@ import 'package:dart_ddi/src/typedef/typedef.dart';
 import 'package:dart_ddi/src/utils/instance_destroy_utils.dart';
 import 'package:dart_ddi/src/utils/intance_decorators_utils.dart';
 
+/// Create a new instance every time it is requested.
+///
+/// This Scopes defines is behavior on the [getWith] or [getAsyncWith] methods.
+///
+/// It will do:
+/// * Create the instance.
+/// * Run the Interceptor for create process.
+/// * Apply all Decorators to the instance.
+/// * Run the PostConstruct for the instance.
+/// * Run the Interceptor for get process.
+///
+/// `Note`: `PreDispose` and `PreDestroy` mixins will only be called if the instance is in use. Use `Interceptor` if you want to call them regardless.
 class DependentFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
   DependentFactory({
     required CustomBuilder<FutureOr<BeanT>> builder,
@@ -37,7 +49,7 @@ class DependentFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
   /// Register the instance in [DDI].
   /// When the instance is ready, must call apply function.
   @override
-  Future<void> register(void Function(DDIBaseFactory) apply) async {
+  Future<void> register(void Function(DDIBaseFactory<BeanT>) apply) async {
     return apply(this);
   }
 

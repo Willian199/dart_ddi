@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
-import 'package:dart_ddi/src/factories/object_factory.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
 
 extension DDIRegisterExtension on DDI {
