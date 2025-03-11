@@ -9,7 +9,6 @@ import 'beans_test/dependent_factory_future_test.dart';
 import 'beans_test/dependent_factory_test.dart';
 import 'beans_test/dependent_future_test.dart';
 import 'beans_test/dependent_test.dart';
-import 'beans_test/dispose_destroy_all_session_test.dart';
 import 'beans_test/factory_circular_injection_test.dart';
 import 'beans_test/factory_interceptor_test.dart';
 import 'beans_test/factory_variation_test.dart';
@@ -22,18 +21,14 @@ import 'beans_test/interceptor_cases_test.dart';
 import 'beans_test/interceptor_feature_test.dart';
 import 'beans_test/interceptor_test.dart';
 import 'beans_test/module_application_test.dart';
-import 'beans_test/module_component_test.dart';
 import 'beans_test/module_dependent_test.dart';
 import 'beans_test/module_factory_test.dart';
 import 'beans_test/module_object_test.dart';
-import 'beans_test/module_session_test.dart';
 import 'beans_test/module_singleton_test.dart';
 import 'beans_test/object_future_test.dart';
 import 'beans_test/object_test.dart';
 import 'beans_test/post_construct_pre_destroy_test.dart';
 import 'beans_test/register_if_test.dart';
-import 'beans_test/session_future_test.dart';
-import 'beans_test/session_test.dart';
 import 'beans_test/singleton_factory_future_test.dart';
 import 'beans_test/singleton_factory_test.dart';
 import 'beans_test/singleton_future_test.dart';
@@ -43,7 +38,6 @@ void main() {
   //Basic Tests, with consists in register, get, dispose, remove
   singleton();
   application();
-  session();
   dependent();
   object();
 
@@ -57,14 +51,13 @@ void main() {
   factoryVariationTest();
 
   runByType();
-  disposeDestroyAllSession();
   canRegister();
   postConstructPreDestroyTest();
 
   //Futures
   applicationFuture();
   singletonFuture();
-  sessionFuture();
+
   dependentFuture();
   objectFuture();
 
@@ -81,7 +74,7 @@ void main() {
   interceptor();
   factoryInterceptor();
   interceptorFeatures();
-  intecertorCases();
+  inteceptorCases();
 
   //CircularDetection
   circularDetection();
@@ -93,7 +86,5 @@ void main() {
   moduleApplicationTest();
   moduleDependentTest();
   moduleObjectTest();
-  moduleSessionTest();
-  moduleComponentTest();
   moduleFactoryApplicationTest();
 }

@@ -45,10 +45,9 @@ Summary
 1. [Core Concepts](#core-concepts)
    1. [Singleton](#singleton)
    2. [Application](#application)
-   3. [Session](#session)
-   4. [Dependent](#dependent)
-   5. [Object](#object)
-   6. [Common Considerations](#common-considerations)
+   3. [Dependent](#dependent)
+   4. [Object](#object)
+   5. [Common Considerations](#common-considerations)
 2. [Factories ](#factories)
    1. [How Factories Work](#how-factories-work)
    2. [Use Cases for Factories](#use-cases-for-factories)
@@ -90,7 +89,7 @@ The Dart Dependency Injection (DDI) package supports various scopes for efficien
 
  * `Interceptor.onDipose` and `PreDispose` mixin are not supported. You can just destroy the instance. 
 
- * If you call dispose, only the Application or Session childrens will be disposed.      
+ * If you call dispose, only the Application childrens will be disposed.      
 
 ## Application
 `Description`: Generates an instance when first used and reuses it for all subsequent requests during the application's execution.
@@ -98,15 +97,6 @@ The Dart Dependency Injection (DDI) package supports various scopes for efficien
 `Recommendation`: Indicated for objects that need to be created only once per application and shared across different parts of the code.
 
 `Use Case`: Managing application-level resources, such as a network client or a global configuration.
-
-`Note`: `PreDispose` and `PreDestroy` mixins will only be called if the instance is in use. Use `Interceptor` if you want to call them regardless.
-
-## Session
-`Description`: Ties an instance to a specific session, persisting throughout the session's lifespan.
-
-`Recommendation`: Suitable for objects that need to be retained while a session is active, such as user-specific data or state.
-
-`Use Case`: Managing user authentication state or caching user-specific preferences.
 
 `Note`: `PreDispose` and `PreDestroy` mixins will only be called if the instance is in use. Use `Interceptor` if you want to call them regardless.
 
@@ -134,7 +124,7 @@ The Dart Dependency Injection (DDI) package supports various scopes for efficien
 
  * `Interceptor.onDipose` and `PreDispose` mixin are not supported. You can just destroy the instance.
 
- * If you call dispose, only the Application or Session childrens will be disposed.
+ * If you call dispose, only the Application childrens will be disposed.
 
 ## Common Considerations:
 `Unique Registration`: Ensure that the instance to be registered is unique for a specific type or use qualifiers to enable the registration of multiple instances of the same type.
@@ -173,7 +163,7 @@ Factories support asynchronous creation, which is useful when initialization req
 
 ```dart
 DDI.instance.register(
-  factory: ScopeFactory.application(
+  factory: ApplicationFactory(
     builder: () async {
       final data = await getApiData();
       return MyApiService(data);
@@ -188,7 +178,7 @@ Factories can define parameters for builders, allowing for more flexible object 
 ```dart
 // Registering the factory
 DDI.instance.register(
-  factory: ScopeFactory.application(
+  factory: ApplicationFactory(
     builder: (RecordParameter parameter) { 
       return ServiceWithParameter(parameter);
     }.builder,
@@ -196,7 +186,7 @@ DDI.instance.register(
 );
 
 DDI.instance.register(
-  factory: ScopeFactory.application(
+  factory: ApplicationFactory(
     builder: (MyDatabase database, UserService userService) {
       return ServiceAutoInject(database, userService);
     }.builder,
@@ -209,13 +199,11 @@ ddi.get<ServiceAutoInject>();
 ```
 ## Considerations
 
-`Object Scope:` The Object Scope is not supported for factories.
-
 `Singleton Scope:` The Singleton Scope can only be created with auto-inject. If you attempt to create a singleton with custom objects, a `BeanNotFoundException` will be thrown.
 
 `Supertypes or Interfaces:` You cannot use the shortcut builder (`MyService.new.builder.asApplication()`) with supertypes or interfaces. This limitation exists because the builder function only recognizes the implementation class, not the supertype or interface.
 
-`Decorators and Interceptors:` It is highly recommended to register the factory using `factory: ScopeFactory.scope(...)`. This approach handles type inference more effectively.
+`Decorators and Interceptors:` It is highly recommended to register the factory using `factory: CustomFactory(...)`. This approach handles type inference more effectively.
 
 `Lazy vs. Eager Injection:` Eager Injection occurs when you inject beans using auto-inject functionality or manually via constructors. For lazy injection, you can use the `DDIInject` mixin or define the variable as `late`(e.g., `late final ServiceAutoInject serviceAutoInject = ddi.get()`).
 
@@ -276,24 +264,13 @@ ddi.registerSingleton<PlatformService>(iOSService.new, qualifier: "ios");
 `Type Identifiers:` Qualifiers are often implemented using string-based identifiers, which may introduce issues such as typos or potential naming conflicts. To mitigate these concerns, it is highly recommended to utilize enums or constants.
 
 # Extra Customization
-The DDI package provides features for customizing the lifecycle of registered instances. These features include `postConstruct`, `decorators`, `interceptor`, `canRegister` and `canDestroy`.
+The DDI package provides features for customizing the lifecycle of registered instances. These features include `decorators`, `interceptor`, `canRegister` and `canDestroy`.
 
-## PostConstruct
-The `postConstruct` callback allows to perform additional setup or initialization after an instance is created. This is particularly useful for executing logic that should run once the instance is ready for use.
-
-#### Example Usage:
-```dart
-ddi.registerSingleton<MyService>(
-  MyService.new,
-  postConstruct: () {
-    // Additional setup logic after MyService instance creation.
-    print("MyService instance is ready!");
-  },
-);
-```
 
 ## Decorators
 Decorators provide a way to modify or enhance the behavior of an instance before it is returned. Each decorator is a function that takes the existing instance and returns a modified instance. Multiple decorators can be applied, and they are executed in the order they are specified during registration.
+
+You can also use Decorators to "refresh" the instance.
 
 #### Example Usage:
 ```dart
@@ -403,7 +380,7 @@ ddi.registerApplication<MyService>(
 ```
 
 ## Selector
-The `selector` parameter allows for conditional selection when retrieving an instance, providing a way to determine which instance should be used based on specific criteria. The first instance that matches `true` will be selected; if no instance matches, a `BeanNotFoundException` will be thrown. The selector requires registration with an interface type, making it particularly useful in scenarios where multiple instances of the same type are registered, but only one needs to be chosen dynamically at runtime based on context.`
+The `selector` parameter allows for conditional selection when retrieving an instance, providing a way to determine which instance should be used based on specific criteria. The first instance that matches `true` will be selected; if no instance matches, a `BeanNotFoundException` will be thrown. The selector requires registration with an interface type, making it particularly useful in scenarios where multiple instances of the same type are registered, but only one needs to be chosen dynamically at runtime based on context.
 
 #### Example Usage:
 ```dart

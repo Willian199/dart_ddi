@@ -50,20 +50,6 @@ void futureAddDecorator() {
       DDI.instance.destroy<D>();
     });
 
-    test('ADD Decorators to a Session bean', () async {
-      DDI.instance.registerSession<D>(
-        () => Future.value(D()),
-        decorators: [
-          (instance) => E(instance),
-          (instance) => F(instance),
-        ],
-      );
-
-      await regraSoma();
-
-      DDI.instance.destroy<D>();
-    });
-
     test('ADD Decorators to a Dependent bean', () async {
       DDI.instance.registerDependent<D>(
         () => Future.value(D()),

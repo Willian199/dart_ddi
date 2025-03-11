@@ -15,13 +15,13 @@ void interceptorFeatures() {
   group('DDI Feature Interceptor Tests', () {
     test('ADD Interceptor with Logs Interceptors and Beans', () {
       ddi.register(
-        factory: ScopeFactory.singleton(
+        factory: SingletonFactory(
           builder: LoggerInterceptor.new.builder,
         ),
       );
 
       ddi.register(
-        factory: ScopeFactory.application(
+        factory: ApplicationFactory(
           builder: CustomBuilder.of(J.new),
           interceptors: {LoggerInterceptor},
         ),
@@ -48,18 +48,17 @@ void interceptorFeatures() {
       expect(ddi.isRegistered<LoggerInterceptor>(), false);
     });
 
-    test('ADD Future variation Interceptor with Logs Interceptors and Beans',
-        () async {
-      DatabaseLog.new.builder.asApplication().register();
+    test('ADD Future variation Interceptor with Logs Interceptors and Beans', () async {
+      DatabaseLog.new.builder.asApplication();
 
       ddi.register(
-        factory: ScopeFactory.application(
+        factory: ApplicationFactory(
           builder: LoggerFutureInterceptor.new.builder,
         ),
       );
 
       ddi.register(
-        factory: ScopeFactory.application(
+        factory: ApplicationFactory(
           builder: CustomBuilder.ofFuture(J.new),
           interceptors: {LoggerFutureInterceptor},
         ),
@@ -96,7 +95,7 @@ void interceptorFeatures() {
 
     test('ADD Future Interceptor with Logs Interceptors and Beans', () async {
       ddi.register(
-        factory: ScopeFactory.singleton(
+        factory: SingletonFactory(
           builder: () async {
             await Future.delayed(const Duration(milliseconds: 200));
             return LoggerInterceptor();
@@ -105,7 +104,7 @@ void interceptorFeatures() {
       );
 
       ddi.register(
-        factory: ScopeFactory.application(
+        factory: ApplicationFactory(
           builder: CustomBuilder.ofFuture(() async {
             await Future.delayed(const Duration(milliseconds: 200));
             return J();
@@ -138,7 +137,7 @@ void interceptorFeatures() {
 
     test('ADD Future Interceptor with destroy onGet', () async {
       await ddi.register(
-        factory: ScopeFactory.singleton(
+        factory: SingletonFactory(
           builder: () async {
             await Future.delayed(const Duration(milliseconds: 200));
             return WithDestroyInterceptor();

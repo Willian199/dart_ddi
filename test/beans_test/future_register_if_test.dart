@@ -13,8 +13,7 @@ void canRegister() {
         return false;
       });
 
-      expect(
-          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
 
       DDI.instance.destroy<C>();
     });
@@ -32,8 +31,7 @@ void canRegister() {
 
       await expectLater(intance.value, 1);
     });
-    test('Register a Singleton bean with canRegister true and qualifier',
-        () async {
+    test('Register a Singleton bean with canRegister true and qualifier', () async {
       await DDI.instance.registerSingleton(
         C.new,
         qualifier: 'typeC',
@@ -48,12 +46,10 @@ void canRegister() {
 
       DDI.instance.destroy(qualifier: 'typeC');
 
-      expect(() => DDI.instance.get(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get(qualifier: 'typeC'), throwsA(isA<BeanNotFoundException>()));
     });
 
-    test('Register a Singleton bean with canRegister false and qualifier',
-        () async {
+    test('Register a Singleton bean with canRegister false and qualifier', () async {
       await DDI.instance.registerSingleton(
         C.new,
         qualifier: 'typeC',
@@ -64,8 +60,7 @@ void canRegister() {
         },
       );
 
-      expect(() => DDI.instance.get(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get(qualifier: 'typeC'), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Register a Application bean with canRegister true', () async {
@@ -83,8 +78,7 @@ void canRegister() {
 
       DDI.instance.destroy(qualifier: 'typeC');
 
-      expect(() => DDI.instance.get(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get(qualifier: 'typeC'), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Register a Application bean with canRegister false', () async {
@@ -98,42 +92,7 @@ void canRegister() {
         },
       );
 
-      expect(() => DDI.instance.get(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFoundException>()));
-    });
-
-    test('Register a Session bean with canRegister true', () async {
-      await DDI.instance.registerSession(
-        C.new,
-        qualifier: 'typeC',
-        canRegister: () async {
-          await Future.delayed(const Duration(milliseconds: 200));
-
-          return true;
-        },
-      );
-
-      DDI.instance.get(qualifier: 'typeC');
-
-      DDI.instance.destroy(qualifier: 'typeC');
-
-      expect(() => DDI.instance.get(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFoundException>()));
-    });
-
-    test('Register a Session bean with canRegister false', () async {
-      await DDI.instance.registerSession(
-        C.new,
-        qualifier: 'typeC',
-        canRegister: () async {
-          await Future.delayed(const Duration(milliseconds: 200));
-
-          return false;
-        },
-      );
-
-      expect(() => DDI.instance.get(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get(qualifier: 'typeC'), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Register a Dependent bean with canRegister true', () async {
@@ -151,8 +110,7 @@ void canRegister() {
 
       DDI.instance.destroy(qualifier: 'typeC');
 
-      expect(() => DDI.instance.get(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get(qualifier: 'typeC'), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Register a Dependent bean with canRegister false', () async {
@@ -166,8 +124,7 @@ void canRegister() {
         },
       );
 
-      expect(() => DDI.instance.get(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get(qualifier: 'typeC'), throwsA(isA<BeanNotFoundException>()));
     });
   });
 }

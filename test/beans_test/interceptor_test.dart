@@ -11,22 +11,11 @@ import '../clazz_samples/i.dart';
 import '../clazz_samples/j.dart';
 import '../clazz_samples/k.dart';
 
-/*extension PI0<B extends Object, InterceptorT extends DDIInterceptor<B>> on DDIInterceptor Function<B extends Object>() {
-  List<Type> get parameters => [];
-  Type get returnType => InterceptorT;
-  CustomBuilder<InterceptorT> get builder => CustomBuilder<InterceptorT>(
-        producer: this,
-        parametersType: parameters,
-        returnType: returnType,
-        isFuture: this is Future<Object> Function(),
-      );
-}*/
-
 void interceptor() {
   group('DDI Interceptor Tests', () {
     test('ADD Interceptor to a Singleton bean', () {
       ddi.register(
-        factory: ScopeFactory.singleton(
+        factory: SingletonFactory(
           builder: const CustomBuilder<J>(
             producer: J.new,
             parametersType: [],
@@ -47,14 +36,13 @@ void interceptor() {
       DDI.instance.destroy<G>();
       ddi.destroy<J>();
 
-      expect(
-          () => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
       expect(DDI.instance.isRegistered<J>(), false);
     });
 
     test('ADD Interceptor to a Application bean', () {
       ddi.register<J<G>>(
-        factory: ScopeFactory.application(
+        factory: ApplicationFactory(
           builder: J<G>.new.builder,
         ),
       );
@@ -68,19 +56,17 @@ void interceptor() {
       DDI.instance.destroy<G>();
       ddi.destroy<J>();
 
-      expect(
-          () => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
       expect(DDI.instance.isRegistered<J>(), false);
     });
 
     test('ADD Interceptor to a Application bean with qualifier', () {
       ddi.register<J>(
-        factory: ScopeFactory.application(
+        factory: ApplicationFactory(
           builder: J<G>.new.builder,
         ),
       );
-      DDI.instance.registerApplication<G>(() => H(),
-          qualifier: 'qualifier', interceptors: {J});
+      DDI.instance.registerApplication<G>(() => H(), qualifier: 'qualifier', interceptors: {J});
 
       final G instance = DDI.instance.get<G>(qualifier: 'qualifier');
 
@@ -90,14 +76,13 @@ void interceptor() {
       DDI.instance.destroy<G>(qualifier: 'qualifier');
       ddi.destroy<J>();
 
-      expect(() => DDI.instance.get<G>(qualifier: 'qualifier'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<G>(qualifier: 'qualifier'), throwsA(isA<BeanNotFoundException>()));
       expect(DDI.instance.isRegistered<J>(), false);
     });
 
     test('ADD Interceptor to a Dependent bean', () {
       ddi.register<J>(
-        factory: ScopeFactory.dependent(
+        factory: DependentFactory(
           builder: J<G>.new.builder,
         ),
       );
@@ -111,35 +96,13 @@ void interceptor() {
       DDI.instance.destroy<G>();
       ddi.destroy<J>();
 
-      expect(
-          () => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
-      expect(DDI.instance.isRegistered<J>(), false);
-    });
-
-    test('ADD Interceptor to a Session bean', () {
-      ddi.register<J>(
-        factory: ScopeFactory.session(
-          builder: J<G>.new.builder,
-        ),
-      );
-      DDI.instance.registerSession<G>(() => H(), interceptors: {J});
-
-      final G instance = DDI.instance.get<G>();
-
-      expect(instance.area(), 20);
-      expect(instance is I, true);
-
-      DDI.instance.destroy<G>();
-      ddi.destroy<J>();
-
-      expect(
-          () => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
       expect(DDI.instance.isRegistered<J>(), false);
     });
 
     test('ADD Interceptor after registered a Application bean', () {
       ddi.register<J>(
-        factory: ScopeFactory.application(
+        factory: ApplicationFactory(
           builder: J<G>.new.builder,
         ),
       );
@@ -162,14 +125,13 @@ void interceptor() {
       DDI.instance.destroy<G>();
       ddi.destroy<J>();
 
-      expect(
-          () => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
       expect(DDI.instance.isRegistered<J>(), false);
     });
 
     test('ADD Decorators and Interceptor to a Singleton bean', () {
       ddi.register<K>(
-        factory: ScopeFactory.singleton(
+        factory: SingletonFactory(
           builder: K.new.builder,
         ),
       );
@@ -206,8 +168,7 @@ void interceptor() {
     });
 
     test('ADD Interceptor to a Bean not registered', () {
-      expect(() => ddi.addInterceptor<D>({}),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => ddi.addInterceptor<D>({}), throwsA(isA<BeanNotFoundException>()));
     });
   });
 }

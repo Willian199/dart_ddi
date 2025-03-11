@@ -14,10 +14,10 @@ import '../clazz_samples/undestroyable/dependent_factory_destroy_register.dart';
 void dependentFactory() {
   group('DDI Dependent Factory Basic Tests', () {
     void registerDependentBeans() {
-      MultiInject.new.builder.asDependent().register();
-      A.new.builder.asDependent().register();
-      B.new.builder.asDependent().register();
-      C.new.builder.asDependent().register();
+      MultiInject.new.builder.asDependent();
+      A.new.builder.asDependent();
+      B.new.builder.asDependent();
+      C.new.builder.asDependent();
     }
 
     void removeDependentBeans() {
@@ -72,7 +72,7 @@ void dependentFactory() {
     });
 
     test('Try to retrieve Dependent bean after disposed', () {
-      C.new.builder.asDependent().register();
+      C.new.builder.asDependent();
 
       final instance1 = DDI.instance.get<C>();
 
@@ -86,18 +86,17 @@ void dependentFactory() {
     });
 
     test('Try to retrieve Dependent bean after removed', () {
-      C.new.builder.asDependent().register();
+      C.new.builder.asDependent();
 
       DDI.instance.get<C>();
 
       DDI.instance.destroy<C>();
 
-      expect(
-          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
     });
 
-    test('Create, get and remove a qualifier bean', () {
-      C.new.builder.asDependent().register(qualifier: 'typeC');
+    test('register, get and remove a qualifier bean', () {
+      C.new.builder.asDependent(qualifier: 'typeC');
 
       final instance1 = DDI.instance.get(qualifier: 'typeC');
       final instance2 = DDI.instance.get(qualifier: 'typeC');
@@ -106,14 +105,11 @@ void dependentFactory() {
 
       DDI.instance.destroy(qualifier: 'typeC');
 
-      expect(() => DDI.instance.get(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get(qualifier: 'typeC'), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Try to destroy a undestroyable Dependent bean', () {
-      DependentFactoryDestroyGet.new.builder
-          .asDependent(canDestroy: false)
-          .register();
+      DependentFactoryDestroyGet.new.builder.asDependent(canDestroy: false);
 
       final instance1 = DDI.instance.get<DependentFactoryDestroyGet>();
 
@@ -126,33 +122,26 @@ void dependentFactory() {
     });
 
     test('Try to register again a undestroyable Dependent bean', () {
-      DependentFactoryDestroyRegister.new.builder
-          .asDependent(canDestroy: false)
-          .register();
+      DependentFactoryDestroyRegister.new.builder.asDependent(canDestroy: false);
 
       DDI.instance.get<DependentFactoryDestroyRegister>();
 
       DDI.instance.destroy<DependentFactoryDestroyRegister>();
 
-      expect(
-          () => DDI.instance
-              .registerDependent(() => DependentFactoryDestroyRegister()),
-          throwsA(isA<DuplicatedBeanException>()));
+      expect(() => DDI.instance.registerDependent(() => DependentFactoryDestroyRegister()), throwsA(isA<DuplicatedBeanException>()));
     });
 
     test('Retrieve Factory Dependent with Custom Parameter', () {
-      FactoryParameter.new.builder.asDependent().register();
+      FactoryParameter.new.builder.asDependent();
 
-      final FactoryParameter instance =
-          DDI.instance(parameter: getRecordParameter);
+      final FactoryParameter instance = DDI.instance(parameter: getRecordParameter);
 
       expect(instance, isA<FactoryParameter>());
       expect(instance.parameter, getRecordParameter);
 
       DDI.instance.destroy<FactoryParameter>();
 
-      expect(() => DDI.instance.get<FactoryParameter>(),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<FactoryParameter>(), throwsA(isA<BeanNotFoundException>()));
     });
   });
 }

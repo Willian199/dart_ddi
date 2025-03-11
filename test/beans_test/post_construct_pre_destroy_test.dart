@@ -25,16 +25,6 @@ void postConstructPreDestroyTest() {
       DDI.instance.destroy<L>();
     });
 
-    test('Regsiter a Session bean with PostConstruct  and PreDestroy', () {
-      DDI.instance.registerSession(() => L());
-
-      final L instance = DDI.instance.get();
-
-      expect('abcd', instance.value);
-
-      DDI.instance.destroy<L>();
-    });
-
     test('Regsiter a Dependent bean with PostConstruct  and PreDestroy', () {
       DDI.instance.registerDependent(() => L());
 

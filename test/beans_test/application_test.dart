@@ -55,8 +55,7 @@ void application() {
       removeApplicationBeans();
     });
 
-    test('Retrieve Application bean after a second "child" bean is diposed',
-        () {
+    test('Retrieve Application bean after a second "child" bean is diposed', () {
       registerApplicationBeans();
 
       final instance = DDI.instance.get<A>();
@@ -71,8 +70,7 @@ void application() {
       removeApplicationBeans();
     });
 
-    test('Retrieve Application bean after the last "child" bean is diposed',
-        () {
+    test('Retrieve Application bean after the last "child" bean is diposed', () {
       registerApplicationBeans();
 
       final instance1 = DDI.instance.get<A>();
@@ -144,8 +142,7 @@ void application() {
 
       DDI.instance.destroy<C>();
 
-      expect(
-          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Create, get and remove a qualifier bean', () {
@@ -155,13 +152,11 @@ void application() {
 
       DDI.instance.destroy(qualifier: 'typeC');
 
-      expect(() => DDI.instance.get(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get(qualifier: 'typeC'), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Try to destroy a undestroyable Application bean', () {
-      DDI.instance
-          .registerApplication(ApplicationDestroyGet.new, canDestroy: false);
+      DDI.instance.registerApplication(ApplicationDestroyGet.new, canDestroy: false);
 
       final instance1 = DDI.instance.get<ApplicationDestroyGet>();
 
@@ -173,17 +168,13 @@ void application() {
     });
 
     test('Try to register again a undestroyable Application bean', () {
-      DDI.instance.registerApplication(ApplicationDestroyRegister.new,
-          canDestroy: false);
+      DDI.instance.registerApplication(ApplicationDestroyRegister.new, canDestroy: false);
 
       DDI.instance.get<ApplicationDestroyRegister>();
 
       DDI.instance.destroy<ApplicationDestroyRegister>();
 
-      expect(
-          () => DDI.instance
-              .registerApplication(() => ApplicationDestroyRegister()),
-          throwsA(isA<DuplicatedBeanException>()));
+      expect(() => DDI.instance.registerApplication(() => ApplicationDestroyRegister()), throwsA(isA<DuplicatedBeanException>()));
     });
 
     test('Select an Application bean', () {
@@ -255,16 +246,14 @@ void application() {
       destroy(newDdi);
     });
 
-    test(
-        'Register an Application Future class with Future PostConstruct mixin and qualifier',
-        () async {
+    test('Register an Application Future class with Future PostConstruct mixin and qualifier', () async {
       Future<FuturePostConstruct> localTest() async {
         await Future.delayed(const Duration(milliseconds: 10));
         return FuturePostConstruct();
       }
 
       DDI.instance.register<Future<FuturePostConstruct>>(
-        factory: ScopeFactory.application(
+        factory: ApplicationFactory(
           builder: CustomBuilder(
             producer: localTest,
             parametersType: [],
@@ -279,16 +268,13 @@ void application() {
 
       expect(DDI.instance.getByType<Future<FuturePostConstruct>>().length, 1);
 
-      expect(() => DDI.instance.get(qualifier: 'FuturePostConstruct'),
-          throwsA(isA<FutureNotAcceptException>()));
+      expect(() => DDI.instance.get(qualifier: 'FuturePostConstruct'), throwsA(isA<FutureNotAcceptException>()));
 
-      final FuturePostConstruct futureInstance =
-          await DDI.instance.getAsync(qualifier: 'FuturePostConstruct');
+      final FuturePostConstruct futureInstance = await DDI.instance.getAsync(qualifier: 'FuturePostConstruct');
 
       expect(futureInstance.value, 10);
 
-      final FuturePostConstruct cachedInstance = await DDI.instance
-          .get<Future<FuturePostConstruct>>(qualifier: 'FuturePostConstruct');
+      final FuturePostConstruct cachedInstance = await DDI.instance.get<Future<FuturePostConstruct>>(qualifier: 'FuturePostConstruct');
 
       expect(cachedInstance.value, 10);
 
@@ -296,8 +282,7 @@ void application() {
 
       DDI.instance.destroy(qualifier: 'FuturePostConstruct');
 
-      expect(
-          DDI.instance.isRegistered(qualifier: 'FuturePostConstruct'), false);
+      expect(DDI.instance.isRegistered(qualifier: 'FuturePostConstruct'), false);
     });
   });
 }

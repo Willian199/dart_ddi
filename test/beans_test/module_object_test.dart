@@ -1,5 +1,6 @@
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/exception/bean_not_found.dart';
+import 'package:dart_ddi/src/factories/object_factory.dart';
 import 'package:test/test.dart';
 
 import '../clazz_samples/module_object.dart';
@@ -7,7 +8,7 @@ import '../clazz_samples/module_object.dart';
 void moduleObjectTest() {
   group('DDI Modules Object Basic Tests', () {
     test('Register a Object Module', () {
-      DDI.instance.registerObject(ModuleObject());
+      DDI.instance.register(factory: ObjectFactory(instance: ModuleObject()));
 
       final author = DDI.instance.get(qualifier: 'authored');
       final enabled = DDI.instance.get(qualifier: 'enabled');
@@ -17,8 +18,7 @@ void moduleObjectTest() {
 
       DDI.instance.destroy<ModuleObject>();
 
-      expect(() => DDI.instance.get(qualifier: 'authored'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get(qualifier: 'authored'), throwsA(isA<BeanNotFoundException>()));
     });
   });
 }

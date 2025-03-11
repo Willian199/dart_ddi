@@ -38,13 +38,11 @@ void addDecoratorFactory() {
     }
 
     test('ADD Decorators to a Factory Singleton bean', () {
-      DDI.instance.register(
-        factory: D.new.builder.asSingleton(
-          decorators: [
-            (instance) => E(instance),
-            (instance) => F(instance),
-          ],
-        ),
+      D.new.builder.asSingleton(
+        decorators: [
+          (instance) => E(instance),
+          (instance) => F(instance),
+        ],
       );
 
       regraSoma();
@@ -53,28 +51,11 @@ void addDecoratorFactory() {
     });
 
     test('ADD Decorators to a Factory Application bean', () {
-      DDI.instance.register(
-        factory: D.new.builder.asApplication(
-          decorators: [
-            (instance) => E(instance),
-            (instance) => F(instance),
-          ],
-        ),
-      );
-
-      regraSoma();
-
-      DDI.instance.destroy<D>();
-    });
-
-    test('ADD Decorators to a Session bean', () {
-      DDI.instance.register(
-        factory: D.new.builder.asSession(
-          decorators: [
-            (instance) => E(instance),
-            (instance) => F(instance),
-          ],
-        ),
+      D.new.builder.asApplication(
+        decorators: [
+          (instance) => E(instance),
+          (instance) => F(instance),
+        ],
       );
 
       regraSoma();
@@ -83,13 +64,11 @@ void addDecoratorFactory() {
     });
 
     test('ADD Decorators to a Dependent bean', () {
-      DDI.instance.register(
-        factory: D.new.builder.asDependent(
-          decorators: [
-            (instance) => E(instance),
-            (instance) => F(instance),
-          ],
-        ),
+      D.new.builder.asDependent(
+        decorators: [
+          (instance) => E(instance),
+          (instance) => F(instance),
+        ],
       );
 
       regraSoma();
@@ -98,16 +77,14 @@ void addDecoratorFactory() {
     });
 
     test('ADD Decorators to a Future Factory Singleton bean', () async {
-      await DDI.instance.register(
-        factory: () async {
-          await Future.delayed(const Duration(milliseconds: 10));
-          return Future.value(D());
-        }.builder.asSingleton(
-          decorators: [
-            (instance) => E(instance),
-            (instance) => F(instance),
-          ],
-        ),
+      await () async {
+        await Future.delayed(const Duration(milliseconds: 10));
+        return Future.value(D());
+      }.builder.asSingleton(
+        decorators: [
+          (instance) => E(instance),
+          (instance) => F(instance),
+        ],
       );
 
       await regraSomaAsync();
@@ -116,34 +93,14 @@ void addDecoratorFactory() {
     });
 
     test('ADD Decorators to a Future Factory Application bean', () async {
-      DDI.instance.register(
-        factory: () async {
-          await Future.delayed(const Duration(milliseconds: 10));
-          return Future.value(D());
-        }.builder.asApplication(
-          decorators: [
-            (instance) => E(instance),
-            (instance) => F(instance),
-          ],
-        ),
-      );
-
-      await regraSomaAsync();
-
-      DDI.instance.destroy<D>();
-    });
-
-    test('ADD Decorators to a Future Factory Session bean', () async {
-      DDI.instance.register(
-        factory: () async {
-          await Future.delayed(const Duration(milliseconds: 10));
-          return Future.value(D());
-        }.builder.asSession(
-          decorators: [
-            (instance) => E(instance),
-            (instance) => F(instance),
-          ],
-        ),
+      () async {
+        await Future.delayed(const Duration(milliseconds: 10));
+        return Future.value(D());
+      }.builder.asApplication(
+        decorators: [
+          (instance) => E(instance),
+          (instance) => F(instance),
+        ],
       );
 
       await regraSomaAsync();
@@ -152,16 +109,14 @@ void addDecoratorFactory() {
     });
 
     test('ADD Decorators to a Future Factory Dependent bean', () async {
-      DDI.instance.register(
-        factory: () async {
-          await Future.delayed(const Duration(milliseconds: 10));
-          return Future.value(D());
-        }.builder.asDependent(
-          decorators: [
-            (instance) => E(instance),
-            (instance) => F(instance),
-          ],
-        ),
+      () async {
+        await Future.delayed(const Duration(milliseconds: 10));
+        return Future.value(D());
+      }.builder.asDependent(
+        decorators: [
+          (instance) => E(instance),
+          (instance) => F(instance),
+        ],
       );
 
       await regraSomaAsync();

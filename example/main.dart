@@ -61,7 +61,7 @@ class MyModule with DDIModule, PreDestroy {
     );
 
     // Register MyLoggingService with dependency on MyService1
-    registerSession<MyLoggingService>(
+    registerApplication<MyLoggingService>(
       () => MyLoggingService(ddi.get(qualifier: 'MyService1')),
       qualifier: 'MyLoggingSession',
       interceptors: {CustomInterceptor},
@@ -112,21 +112,18 @@ void main() async {
   myService2.doSomething();
 
   // Get an instance of MyLoggingService with qualifier
-  late final MyLoggingService myLoggingSession =
-      ddi.get(qualifier: 'MyLoggingSession');
+  late final MyLoggingService myLoggingSession = ddi.get(qualifier: 'MyLoggingSession');
 
   // Call a method on the MyLoggingService instance
   myLoggingSession.logSomething();
 
   // Get another instance of MyLoggingService with different qualifier
-  late final MyLoggingService myLoggingDependent =
-      ddi.get(qualifier: 'MyLoggingDependent');
+  late final MyLoggingService myLoggingDependent = ddi.get(qualifier: 'MyLoggingDependent');
   myLoggingDependent.logSomething();
 
   // Add a decorator to uppercase strings
   String uppercaseDecorator(String str) => str.toUpperCase();
-  ddi.registerObject('Hello World',
-      qualifier: 'authored', decorators: [uppercaseDecorator]);
+  ddi.registerSingleton(() => 'Hello World', qualifier: 'authored', decorators: [uppercaseDecorator]);
 
   // Will return HELLO WORLD
   print(ddi.get(qualifier: 'authored'));

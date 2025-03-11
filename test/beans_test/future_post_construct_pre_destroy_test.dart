@@ -1,16 +1,15 @@
 import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
+import 'package:dart_ddi/src/factories/object_factory.dart';
 import 'package:test/test.dart';
 
 import '../clazz_samples/l.dart';
 
 void futurePostConstructPreDestroyTest() {
   group('DDI Future PostConstruct and PreDestroy test', () {
-    test('Regsiter a Singleton bean with PostConstruct  and PreDestroy',
-        () async {
-      await DDI.instance.registerSingleton(
-          () => Future.delayed(const Duration(milliseconds: 200), L.new));
+    test('Regsiter a Singleton bean with PostConstruct  and PreDestroy', () async {
+      await DDI.instance.registerSingleton(() => Future.delayed(const Duration(milliseconds: 200), L.new));
 
       final L instance = await DDI.instance.getAsync<L>();
 
@@ -19,10 +18,8 @@ void futurePostConstructPreDestroyTest() {
       DDI.instance.destroy<L>();
     });
 
-    test('Regsiter a Applcation bean with PostConstruct  and PreDestroy',
-        () async {
-      DDI.instance.registerApplication(
-          () => Future.delayed(const Duration(milliseconds: 200), L.new));
+    test('Regsiter a Applcation bean with PostConstruct  and PreDestroy', () async {
+      DDI.instance.registerApplication(() => Future.delayed(const Duration(milliseconds: 200), L.new));
 
       final L instance = await DDI.instance.getAsync<L>();
 
@@ -31,22 +28,8 @@ void futurePostConstructPreDestroyTest() {
       DDI.instance.destroy<L>();
     });
 
-    test('Regsiter a Session bean with PostConstruct  and PreDestroy',
-        () async {
-      DDI.instance.registerSession(
-          () => Future.delayed(const Duration(milliseconds: 200), L.new));
-
-      final L instance = await DDI.instance.getAsync<L>();
-
-      expect(instance.value, 'abcd');
-
-      DDI.instance.destroy<L>();
-    });
-
-    test('Regsiter a Dependent bean with PostConstruct  and PreDestroy',
-        () async {
-      DDI.instance.registerDependent(
-          () => Future.delayed(const Duration(milliseconds: 200), L.new));
+    test('Regsiter a Dependent bean with PostConstruct  and PreDestroy', () async {
+      DDI.instance.registerDependent(() => Future.delayed(const Duration(milliseconds: 200), L.new));
 
       final L instance = await DDI.instance.getAsync<L>();
 
@@ -62,7 +45,7 @@ void futurePostConstructPreDestroyTest() {
         return L();
       }
 
-      DDI.instance.registerObject(loadValue());
+      DDI.instance.register(factory: ObjectFactory(instance: loadValue()));
 
       final L instance = await DDI.instance.get<Future<L>>();
 

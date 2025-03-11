@@ -3,12 +3,12 @@ import 'package:test/test.dart';
 
 import '../clazz_samples/custom_interceptors.dart';
 
-void intecertorCases() {
+void inteceptorCases() {
   group('DDI Interceptor Tests with int values', () {
     setUp(() async {
       // Registro de interceptores
       await ddi.register<AddInterceptor>(
-        factory: ScopeFactory.singleton(
+        factory: SingletonFactory(
           builder: const CustomBuilder<AddInterceptor>(
             producer: AddInterceptor.new,
             parametersType: [],
@@ -19,7 +19,7 @@ void intecertorCases() {
       );
 
       await ddi.register<MultiplyInterceptor>(
-        factory: ScopeFactory.singleton(
+        factory: SingletonFactory(
           builder: const CustomBuilder<MultiplyInterceptor>(
             producer: MultiplyInterceptor.new,
             parametersType: [],
@@ -30,7 +30,7 @@ void intecertorCases() {
       );
 
       await ddi.register<AsyncAddInterceptor>(
-        factory: ScopeFactory.singleton(
+        factory: SingletonFactory(
           builder: const CustomBuilder<AsyncAddInterceptor>(
             producer: AsyncAddInterceptor.new,
             parametersType: [],
@@ -41,7 +41,7 @@ void intecertorCases() {
       );
 
       await ddi.register<ErrorInterceptor>(
-        factory: ScopeFactory.singleton(
+        factory: SingletonFactory(
           builder: const CustomBuilder<ErrorInterceptor>(
             producer: ErrorInterceptor.new,
             parametersType: [],
@@ -62,7 +62,7 @@ void intecertorCases() {
 
     test('Interceptores aplicando soma e multiplicação', () async {
       await ddi.register<int>(
-        factory: ScopeFactory.singleton(
+        factory: SingletonFactory(
           builder: CustomBuilder<int>(
             producer: () => 5,
             parametersType: const [],
@@ -81,7 +81,7 @@ void intecertorCases() {
 
     test('Interceptores assíncronos com valores inteiros', () async {
       await ddi.register<int>(
-        factory: ScopeFactory.singleton(
+        factory: SingletonFactory(
           builder: CustomBuilder<int>(
             producer: () => 10,
             parametersType: const [],
@@ -100,7 +100,7 @@ void intecertorCases() {
 
     test('Erro em interceptor ao criar valor', () async {
       await ddi.register<int>(
-        factory: ScopeFactory.singleton(
+        factory: SingletonFactory(
           builder: CustomBuilder<int>(
             producer: () => 5,
             parametersType: const [],
@@ -118,7 +118,7 @@ void intecertorCases() {
 
     test('Combinação de decorators e interceptores', () async {
       await ddi.register<int>(
-        factory: ScopeFactory.singleton(
+        factory: SingletonFactory(
           builder: CustomBuilder<int>(
             producer: () => 3,
             parametersType: const [],
@@ -141,7 +141,7 @@ void intecertorCases() {
     test('Registro condicional de interceptores', () async {
       await ddi.register<int>(
         canRegister: () => Future.value(true), // Registro condicional
-        factory: ScopeFactory.singleton(
+        factory: SingletonFactory(
           builder: CustomBuilder<int>(
             producer: () => 15,
             parametersType: const [],
@@ -161,7 +161,7 @@ void intecertorCases() {
     test('Register a Application Future Interceptor', () async {
       ddi.register<AddInterceptor>(
         qualifier: 'SumInterceptor',
-        factory: ScopeFactory.application(
+        factory: ApplicationFactory(
           builder: CustomBuilder<AddInterceptor>(
             producer: () async {
               await Future.delayed(const Duration(milliseconds: 20));
@@ -176,7 +176,7 @@ void intecertorCases() {
 
       ddi.register<MultiplyInterceptor>(
         qualifier: 'MultiplyInterceptor',
-        factory: ScopeFactory.application(
+        factory: ApplicationFactory(
           builder: CustomBuilder<MultiplyInterceptor>(
             producer: () async {
               await Future.delayed(const Duration(milliseconds: 20));
@@ -190,19 +190,14 @@ void intecertorCases() {
       );
 
       ddi.register<int>(
-        factory: ScopeFactory.application(
+        factory: ApplicationFactory(
           builder: CustomBuilder<int>(
             producer: () => 15,
             parametersType: const [],
             returnType: int,
             isFuture: false,
           ),
-          interceptors: {
-            'SumInterceptor',
-            AsyncAddInterceptor,
-            'MultiplyInterceptor',
-            MultiplyInterceptor
-          },
+          interceptors: {'SumInterceptor', AsyncAddInterceptor, 'MultiplyInterceptor', MultiplyInterceptor},
         ),
       );
 
@@ -227,7 +222,7 @@ void intecertorCases() {
     test('Register a Singleton Future Interceptor', () async {
       ddi.register<AddInterceptor>(
         qualifier: 'SumInterceptor',
-        factory: ScopeFactory.application(
+        factory: ApplicationFactory(
           builder: CustomBuilder<AddInterceptor>(
             producer: () async {
               await Future.delayed(const Duration(milliseconds: 20));
@@ -242,7 +237,7 @@ void intecertorCases() {
 
       ddi.register<MultiplyInterceptor>(
         qualifier: 'MultiplyInterceptor',
-        factory: ScopeFactory.application(
+        factory: ApplicationFactory(
           builder: CustomBuilder<MultiplyInterceptor>(
             producer: () async {
               await Future.delayed(const Duration(milliseconds: 20));
@@ -256,19 +251,14 @@ void intecertorCases() {
       );
 
       await ddi.register<int>(
-        factory: ScopeFactory.singleton(
+        factory: SingletonFactory(
           builder: CustomBuilder<int>(
             producer: () => 15,
             parametersType: const [],
             returnType: int,
             isFuture: false,
           ),
-          interceptors: {
-            'SumInterceptor',
-            AsyncAddInterceptor,
-            'MultiplyInterceptor',
-            MultiplyInterceptor
-          },
+          interceptors: {'SumInterceptor', AsyncAddInterceptor, 'MultiplyInterceptor', MultiplyInterceptor},
         ),
       );
 

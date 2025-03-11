@@ -11,7 +11,7 @@ import '../clazz_samples/module_factory_singleton.dart';
 void moduleFactoryApplicationTest() {
   group('DDI Factory Modules Application Basic Tests', () {
     test('Register a Factory Application Module', () {
-      ModuleFactoryApplication.new.builder.asApplication().register();
+      ModuleFactoryApplication.new.builder.asApplication();
 
       DDI.instance.get<ModuleFactoryApplication>();
       final instance1 = DDI.instance.get<A>();
@@ -24,12 +24,11 @@ void moduleFactoryApplicationTest() {
 
       DDI.instance.destroy<ModuleFactoryApplication>();
 
-      expect(
-          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Register a Factory Dependent Module', () {
-      ModuleFactoryDependent.new.builder.asDependent().register();
+      ModuleFactoryDependent.new.builder.asDependent();
 
       DDI.instance.get<ModuleFactoryDependent>();
       final instance1 = DDI.instance.get<A>();
@@ -42,12 +41,11 @@ void moduleFactoryApplicationTest() {
 
       DDI.instance.destroy<ModuleFactoryDependent>();
 
-      expect(
-          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Register a Factory Singleton Module', () {
-      ModuleFactorySingleton.new.builder.asSingleton().register();
+      ModuleFactorySingleton.new.builder.asSingleton();
 
       final instance1 = DDI.instance.get<A>();
       final instance2 = DDI.instance.get<A>();
@@ -59,8 +57,7 @@ void moduleFactoryApplicationTest() {
 
       DDI.instance.destroy<ModuleFactorySingleton>();
 
-      expect(
-          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
     });
   });
 }

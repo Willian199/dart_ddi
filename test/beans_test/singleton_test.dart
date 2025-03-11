@@ -1,7 +1,6 @@
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/exception/bean_not_found.dart';
 import 'package:dart_ddi/src/exception/duplicated_bean.dart';
-import 'package:dart_ddi/src/exception/factory_not_allowed.dart';
 import 'package:test/test.dart';
 
 import '../clazz_samples/a.dart';
@@ -55,8 +54,7 @@ void singleton() {
       ddi.destroy<B>();
     });
 
-    test('Retrieve singleton bean after a second "child" bean is destroyed',
-        () {
+    test('Retrieve singleton bean after a second "child" bean is destroyed', () {
       registerSingletonBeans();
 
       final instance = ddi.get<A>();
@@ -89,8 +87,7 @@ void singleton() {
 
       ddi.destroy(qualifier: 'typeC');
 
-      expect(() => ddi.get(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(() => ddi.get(qualifier: 'typeC'), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Try to destroy a undestroyable Singleton bean', () {
@@ -106,41 +103,21 @@ void singleton() {
     });
 
     test('Try to register again a undestroyable Singleton bean', () {
-      ddi.registerSingleton(() => SingletonDestroyRegister(),
-          canDestroy: false);
+      ddi.registerSingleton(() => SingletonDestroyRegister(), canDestroy: false);
 
       ddi.get<SingletonDestroyRegister>();
 
       ddi.destroy<SingletonDestroyRegister>();
 
-      expect(() => ddi.registerSingleton(() => SingletonDestroyRegister()),
-          throwsA(isA<DuplicatedBeanException>()));
-    });
-
-    test('Fail register with custom factory without scope builder', () {
-      expect(
-          () => ddi.register(
-                factory: ScopeFactory.singleton(),
-              ),
-          throwsA(isA<FactoryNotAllowedException>()));
-    });
-
-    test('Fail register a Object type value', () {
-      expect(
-          () => ddi.register<Object>(
-                factory: SingletonDestroyRegister.new.builder.asSingleton(),
-              ),
-          throwsA(isA<FactoryNotAllowedException>()));
+      expect(() => ddi.registerSingleton(() => SingletonDestroyRegister()), throwsA(isA<DuplicatedBeanException>()));
     });
 
     test('Verify if a Bean not registered is Future', () {
-      expect(
-          () => ddi.isFuture<Object>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => ddi.isFuture<Object>(), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Verify if a Bean not registered is Ready', () {
-      expect(
-          () => ddi.isReady<Object>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => ddi.isReady<Object>(), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Disponse a Bean not registered', () {

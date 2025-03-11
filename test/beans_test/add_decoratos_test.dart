@@ -53,21 +53,6 @@ void addDecorator() {
       DDI.instance.destroy<D>();
     });
 
-    test('ADD Decorators to a Session bean', () {
-      ///Where is Singleton, should the register in the correct order
-      DDI.instance.registerSession(
-        () => D(),
-        decorators: [
-          (D instance) => E(instance),
-          (D instance) => F(instance),
-        ],
-      );
-
-      regraSoma();
-
-      DDI.instance.destroy<D>();
-    });
-
     test('ADD Decorators to a Dependent bean', () {
       ///Where is Singleton, should the register in the correct order
       DDI.instance.registerDependent(
