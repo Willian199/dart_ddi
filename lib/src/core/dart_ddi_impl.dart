@@ -27,7 +27,11 @@ class _DDIImpl implements DDI {
       final Object effectiveQualifierName = qualifier ?? BeanT;
 
       if (_beans[effectiveQualifierName] != null) {
-        throw DuplicatedBeanException(effectiveQualifierName.toString());
+        if (BeanStateEnum.none == (_beans[effectiveQualifierName]?.state ?? BeanStateEnum.none)) {
+          _beans.remove(effectiveQualifierName);
+        } else {
+          throw DuplicatedBeanException(effectiveQualifierName.toString());
+        }
       }
 
       // Force the type to be correct. Fixes the behavior with FutureOr and interfaces
@@ -35,21 +39,30 @@ class _DDIImpl implements DDI {
         factory.setType<BeanT>();
       }
 
-      return factory.register(
-        (instance) {
-          if (instance is DDIModule) {
-            (instance as DDIModule).moduleQualifier = effectiveQualifierName;
-          }
+      factory.state = BeanStateEnum.beingRegistered;
+      _beans[effectiveQualifierName] = factory;
 
+      final f = factory.register(
+        qualifier: effectiveQualifierName,
+        apply: (instance) {
+          instance.state = BeanStateEnum.registered;
           _beans[effectiveQualifierName] = instance;
         },
       );
+
+      f.onError((e, _) {
+        _beans.remove(effectiveQualifierName);
+      });
+
+      return f;
     }
   }
 
   @override
   bool isRegistered<BeanT extends Object>({Object? qualifier}) {
-    return _beans.containsKey(qualifier ?? BeanT);
+    final Object effectiveQualifierName = qualifier ?? BeanT;
+
+    return BeanStateEnum.none != (_beans[effectiveQualifierName]?.state ?? BeanStateEnum.none);
   }
 
   @override
@@ -66,7 +79,7 @@ class _DDIImpl implements DDI {
   bool isReady<BeanT extends Object>({Object? qualifier}) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
     if (_beans[effectiveQualifierName] case final DDIBaseFactory<BeanT> factory?) {
-      return factory.isReady;
+      return factory.isReady && factory.state == BeanStateEnum.created;
     }
 
     throw BeanNotFoundException(effectiveQualifierName.toString());

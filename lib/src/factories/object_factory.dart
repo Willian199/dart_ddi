@@ -55,13 +55,18 @@ class ObjectFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
   /// Register the instance in [DDI].
   /// When the instance is ready, must call apply function.
   @override
-  Future<void> register(void Function(DDIBaseFactory<BeanT>) apply) async {
+  Future<void> register({
+    required Object qualifier,
+    required void Function(DDIBaseFactory<BeanT>) apply,
+  }) async {
     if (_created.isCompleted) {
       throw FactoryAlreadyCreatedException(BeanT.toString());
     }
 
     try {
       apply(this);
+
+      state = BeanStateEnum.beingRegistered;
 
       for (final interceptor in _interceptors) {
         if (ddi.isFuture(qualifier: interceptor)) {
@@ -82,6 +87,11 @@ class ObjectFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
 
       _instance = InstanceDecoratorsUtils.executarDecorators<BeanT>(_instance, _decorators);
 
+      if (_instance is DDIModule) {
+        (_instance as DDIModule).moduleQualifier = qualifier;
+      }
+
+      state = BeanStateEnum.registered;
       _created.complete();
 
       if (_instance is PostConstruct) {
@@ -167,6 +177,7 @@ class ObjectFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
   /// Removes this instance from [DDI].
   @override
   FutureOr<void> destroy(void Function() apply) {
+    state = BeanStateEnum.beingDestroyed;
     return InstanceDestroyUtils.destroyInstance<BeanT>(
       apply: apply,
       canDestroy: _canDestroy,

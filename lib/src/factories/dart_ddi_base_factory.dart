@@ -18,9 +18,14 @@ abstract class DDIBaseFactory<BeanT extends Object> with InstanceFactoryMixin {
 
   void setType<NewType extends Object>() => _type = NewType;
 
+  BeanStateEnum state = BeanStateEnum.none;
+
   /// Register the instance in [DDI].
   /// When the instance is ready, must call apply function.
-  Future<void> register(void Function(DDIBaseFactory<BeanT>) apply);
+  Future<void> register({
+    required Object qualifier,
+    required void Function(DDIBaseFactory<BeanT>) apply,
+  });
 
   /// Gets or creates this instance.
   ///

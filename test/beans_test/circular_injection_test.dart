@@ -18,6 +18,9 @@ void circularDetection() {
       DDI.instance.registerApplication(() => Father(mother: DDI.instance()));
       DDI.instance.registerApplication(() => Mother(father: DDI.instance()));
 
+      expect(DDI.instance.isReady<Father>(), false);
+      expect(DDI.instance.isReady<Mother>(), false);
+
       DDI.instance.destroy<Mother>();
       DDI.instance.destroy<Father>();
     });
@@ -26,10 +29,16 @@ void circularDetection() {
       DDI.instance.registerApplication(() => Father(mother: DDI.instance()));
       DDI.instance.registerApplication(() => Mother(father: DDI.instance()));
 
+      expect(DDI.instance.isReady<Father>(), false);
+      expect(DDI.instance.isReady<Mother>(), false);
+
       expect(() => DDI.instance.get<Mother>(), throwsA(isA<ConcurrentCreationException>()));
 
       DDI.instance.destroy<Mother>();
       DDI.instance.destroy<Father>();
+
+      expect(DDI.instance.isRegistered<Father>(), false);
+      expect(DDI.instance.isRegistered<Mother>(), false);
     });
 
     test('Inject a Dependent bean with circular dependency', () {

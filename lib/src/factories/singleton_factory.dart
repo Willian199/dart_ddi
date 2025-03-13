@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/exception/bean_not_ready.dart';
-import 'package:dart_ddi/src/exception/bean_timeout.dart';
 import 'package:dart_ddi/src/exception/factory_already_created.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
 import 'package:dart_ddi/src/utils/instance_destroy_utils.dart';
@@ -58,7 +57,10 @@ class SingletonFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
   /// Register the instance in [DDI].
   /// When the instance is ready, must call apply function.
   @override
-  Future<void> register(void Function(DDIBaseFactory<BeanT>) apply) async {
+  Future<void> register({
+    required Object qualifier,
+    required void Function(DDIBaseFactory<BeanT>) apply,
+  }) async {
     if (_created.isCompleted) {
       throw FactoryAlreadyCreatedException(BeanT.toString());
     }
@@ -70,6 +72,8 @@ class SingletonFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
           execInstance is Future ? await execInstance : execInstance;
 
       apply(this);
+
+      state = BeanStateEnum.beingCreated;
 
       for (final interceptor in _interceptors) {
         if (ddi.isFuture(qualifier: interceptor)) {
@@ -90,9 +94,15 @@ class SingletonFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
 
       clazz = InstanceDecoratorsUtils.executarDecorators<BeanT>(clazz, _decorators);
 
+      if (clazz is DDIModule) {
+        (clazz as DDIModule).moduleQualifier = qualifier;
+      }
+
       _instance = clazz;
 
       _created.complete();
+
+      state = BeanStateEnum.created;
 
       if (clazz is PostConstruct) {
         return clazz.onPostConstruct();
@@ -144,13 +154,7 @@ class SingletonFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
     ParameterT? parameter,
   }) async {
     if (!isReady) {
-      // Await for 20 seconds to the instance to be created
-      await _created.future.timeout(
-        const Duration(seconds: 20),
-        onTimeout: () {
-          throw BeanTimeoutException(qualifier.toString());
-        },
-      );
+      await _created.future;
     }
 
     if (_instance != null) {
@@ -181,6 +185,7 @@ class SingletonFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
   /// Removes this instance from [DDI].
   @override
   FutureOr<void> destroy(void Function() apply) {
+    state = BeanStateEnum.beingDestroyed;
     return InstanceDestroyUtils.destroyInstance<BeanT>(
       apply: apply,
       canDestroy: _canDestroy,

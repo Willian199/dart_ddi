@@ -8,8 +8,8 @@ import '../clazz_samples/mother.dart';
 
 void factoryCircularDetection() {
   group('DDI Factory Circular Injection Detection tests', () {
-    test('Inject a Factory Singleton bean depending from a bean that not exists yet', () {
-      expect(() => Father.fromMother.builder.asSingleton(), throwsA(isA<BeanNotFoundException>()));
+    test('Inject a Factory Singleton bean depending from a bean that not exists yet', () async {
+      await expectLater(() => Father.fromMother.builder.asSingleton(), throwsA(isA<BeanNotFoundException>()));
       expect(ddi.isRegistered<Father>(), false);
     });
 

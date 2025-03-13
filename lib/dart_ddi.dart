@@ -2,6 +2,7 @@ library;
 
 export 'src/core/dart_ddi.dart' show DDI, ddi;
 export 'src/data/custom_builder.dart';
+export 'src/enum/bean_state_enum.dart';
 export 'src/extension/ddi_get_extension.dart';
 export 'src/extension/ddi_register_extension.dart';
 export 'src/extension/function_extension.dart';

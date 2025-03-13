@@ -1,6 +1,7 @@
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/exception/bean_not_found.dart';
 import 'package:dart_ddi/src/exception/duplicated_bean.dart';
+import 'package:dart_ddi/src/exception/factory_not_allowed.dart';
 import 'package:dart_ddi/src/exception/future_not_accept.dart';
 import 'package:test/test.dart';
 
@@ -8,6 +9,9 @@ import '../clazz_samples/a.dart';
 import '../clazz_samples/b.dart';
 import '../clazz_samples/c.dart';
 import '../clazz_samples/future_post_construct.dart';
+import '../clazz_samples/g.dart';
+import '../clazz_samples/h.dart';
+import '../clazz_samples/i.dart';
 import '../clazz_samples/undestroyable/application_destroy_get.dart';
 import '../clazz_samples/undestroyable/application_destroy_register.dart';
 import 'payment_service.dart';
@@ -155,7 +159,7 @@ void application() {
       expect(() => DDI.instance.get(qualifier: 'typeC'), throwsA(isA<BeanNotFoundException>()));
     });
 
-    test('Try to destroy a undestroyable Application bean', () {
+    test('Try to destroy an undestroyable Application bean', () {
       DDI.instance.registerApplication(ApplicationDestroyGet.new, canDestroy: false);
 
       final instance1 = DDI.instance.get<ApplicationDestroyGet>();
@@ -167,7 +171,7 @@ void application() {
       expect(instance1, same(instance2));
     });
 
-    test('Try to register again a undestroyable Application bean', () {
+    test('Try to register again an undestroyable Application bean', () {
       DDI.instance.registerApplication(ApplicationDestroyRegister.new, canDestroy: false);
 
       DDI.instance.get<ApplicationDestroyRegister>();
@@ -283,6 +287,23 @@ void application() {
       DDI.instance.destroy(qualifier: 'FuturePostConstruct');
 
       expect(DDI.instance.isRegistered(qualifier: 'FuturePostConstruct'), false);
+    });
+
+    test('Try to register again an Object Type Bean', () {
+      expect(() => DDI.instance.registerApplication<Object>(() => "Test"), throwsA(isA<FactoryNotAllowedException>()));
+    });
+
+    test('Register Beans with same interface', () {
+      DDI.instance.registerApplication<G>(I.new, qualifier: 'First');
+      DDI.instance.register<G>(factory: ApplicationFactory<H>(builder: H.new.builder), qualifier: 'Second');
+
+      expect(DDI.instance.getByType<G>().length, 2);
+
+      DDI.instance.destroy(qualifier: 'First');
+      DDI.instance.destroy(qualifier: 'Second');
+
+      expect(DDI.instance.isRegistered(qualifier: 'First'), false);
+      expect(DDI.instance.isRegistered(qualifier: 'Second'), false);
     });
   });
 }

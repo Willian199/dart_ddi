@@ -49,7 +49,10 @@ class DependentFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
   /// Register the instance in [DDI].
   /// When the instance is ready, must call apply function.
   @override
-  Future<void> register(void Function(DDIBaseFactory<BeanT>) apply) async {
+  Future<void> register({
+    required Object qualifier,
+    required void Function(DDIBaseFactory<BeanT>) apply,
+  }) async {
     return apply(this);
   }
 
@@ -173,6 +176,7 @@ class DependentFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
   @override
   FutureOr<void> destroy(void Function() apply) {
+    state = BeanStateEnum.beingDestroyed;
     return InstanceDestroyUtils.destroyInstance<BeanT>(
         apply: apply, canDestroy: _canDestroy, instance: null, interceptors: _interceptors, children: _children);
   }

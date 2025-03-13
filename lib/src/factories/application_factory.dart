@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
+import 'package:dart_ddi/src/exception/concurrent_creation.dart';
 import 'package:dart_ddi/src/exception/future_not_accept.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
 import 'package:dart_ddi/src/utils/instance_destroy_utils.dart';
@@ -58,7 +59,10 @@ class ApplicationFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
   /// Register the instance in [DDI].
   /// When the instance is ready, must call apply function.
   @override
-  Future<void> register(void Function(DDIBaseFactory<BeanT>) apply) async {
+  Future<void> register({
+    required Object qualifier,
+    required void Function(DDIBaseFactory<BeanT>) apply,
+  }) async {
     return apply(this);
   }
 
@@ -74,8 +78,12 @@ class ApplicationFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
     ParameterT? parameter,
   }) {
     if (!isReady) {
-      if (isFuture || _runningCreateProcess) {
+      if (isFuture) {
         throw const FutureNotAcceptException();
+      }
+
+      if (_runningCreateProcess) {
+        throw ConcurrentCreationException(qualifier.toString());
       }
 
       _runningCreateProcess = true;
@@ -133,11 +141,12 @@ class ApplicationFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
     required Object qualifier,
     ParameterT? parameter,
   }) async {
+    state = BeanStateEnum.beingCreated;
     if (_runningCreateProcess) {
       await _created.future;
     }
 
-    if (!isReady) {
+    if (!isReady && !_created.isCompleted) {
       try {
         _runningCreateProcess = true;
 
@@ -150,8 +159,11 @@ class ApplicationFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
         /// Verify if the Instance class is Future, and await for it
         _instance = execInstance is Future ? await execInstance : execInstance;
 
-        /// Run the Interceptor for create process
+        if (_created.isCompleted) {
+          throw StateError('Another process canceled the creation process.');
+        }
 
+        /// Run the Interceptor for create process
         for (final interceptor in _interceptors) {
           final ins = (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
 
@@ -168,7 +180,9 @@ class ApplicationFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
           (_instance as DDIModule).moduleQualifier = qualifier;
         }
 
+        state = BeanStateEnum.created;
         _runningCreateProcess = false;
+        _created.complete();
 
         if (_instance is PostConstruct) {
           await (_instance as PostConstruct).onPostConstruct();
@@ -177,10 +191,10 @@ class ApplicationFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
 
           await postConstruct.onPostConstruct();
         }
-
-        _created.complete();
       } catch (e) {
-        _created.complete();
+        if (!_created.isCompleted) {
+          _created.complete();
+        }
         rethrow;
       }
     }
@@ -206,11 +220,14 @@ class ApplicationFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
   @override
   bool get isReady => _instance != null && _created.isCompleted;
 
-  /// Removes the instance of the registered class in [DDI].
-  ///
-  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
+  /// Removes this instance of the registered class in [DDI].
   @override
-  FutureOr<void> destroy(void Function() apply) {
+  FutureOr<void> destroy(void Function() apply) async {
+    state = BeanStateEnum.beingDestroyed;
+    if (_runningCreateProcess && !_created.isCompleted) {
+      _created.complete();
+    }
+
     return InstanceDestroyUtils.destroyInstance<BeanT>(
       apply: apply,
       canDestroy: _canDestroy,
@@ -223,7 +240,12 @@ class ApplicationFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
   /// Disposes of the instance of the registered class in [DDI].
   @override
   Future<void> dispose() async {
+    state = BeanStateEnum.beingDisposed;
     if (!_created.isCompleted) {
+      if (_runningCreateProcess) {
+        await _created.future;
+      }
+
       _created.complete();
     }
     _created = Completer<void>();

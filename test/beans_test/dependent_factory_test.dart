@@ -121,7 +121,7 @@ void dependentFactory() {
       expect(false, identical(instance1, instance2));
     });
 
-    test('Try to register again a undestroyable Dependent bean', () {
+    test('Try to register again an undestroyable Dependent bean', () {
       DependentFactoryDestroyRegister.new.builder.asDependent(canDestroy: false);
 
       DDI.instance.get<DependentFactoryDestroyRegister>();
