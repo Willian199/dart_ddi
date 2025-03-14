@@ -15,9 +15,12 @@ void moduleObjectTest() {
       expect(author, 'Willian');
       expect(enabled, true);
 
+      DDI.instance.dispose<ModuleObject>();
+
       DDI.instance.destroy<ModuleObject>();
 
-      expect(() => DDI.instance.get(qualifier: 'authored'), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get(qualifier: 'authored'),
+          throwsA(isA<BeanNotFoundException>()));
     });
   });
 }

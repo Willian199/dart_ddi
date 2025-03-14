@@ -16,10 +16,16 @@ void moduleApplicationTest() {
       final instance1 = DDI.instance.get<A>();
       final instance2 = DDI.instance.get<A>();
 
+      expect(DDI.instance.isReady<A>(), true);
+
       expect(instance1, same(instance2));
       expect(instance1.b, same(instance2.b));
       expect(instance1.b.c, same(instance2.b.c));
       expect(instance1.b.c.value, same(instance2.b.c.value));
+
+      DDI.instance.dispose<ModuleApplication>();
+
+      expect(DDI.instance.isReady<A>(), false);
 
       DDI.instance.destroy<ModuleApplication>();
 

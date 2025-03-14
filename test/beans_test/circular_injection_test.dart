@@ -9,11 +9,16 @@ import '../clazz_samples/mother.dart';
 
 void circularDetection() {
   group('DDI Circular Injection Detection tests', () {
-    test('Inject a Singleton bean depending from a bean that not exists yet', () {
-      expect(() => DDI.instance.registerSingleton(() => Father(mother: DDI.instance())), throwsA(isA<BeanNotFoundException>()));
+    test('Inject a Singleton bean depending from a bean that not exists yet',
+        () {
+      expect(
+          () => DDI.instance
+              .registerSingleton(() => Father(mother: DDI.instance())),
+          throwsA(isA<BeanNotFoundException>()));
     });
 
-    test('Inject a Application bean depending from a bean that not exists yet', () {
+    test('Inject a Application bean depending from a bean that not exists yet',
+        () {
       //This works because it was just registered
       DDI.instance.registerApplication(() => Father(mother: DDI.instance()));
       DDI.instance.registerApplication(() => Mother(father: DDI.instance()));
@@ -32,7 +37,8 @@ void circularDetection() {
       expect(DDI.instance.isReady<Father>(), false);
       expect(DDI.instance.isReady<Mother>(), false);
 
-      expect(() => DDI.instance.get<Mother>(), throwsA(isA<ConcurrentCreationException>()));
+      expect(() => DDI.instance.get<Mother>(),
+          throwsA(isA<ConcurrentCreationException>()));
 
       DDI.instance.destroy<Mother>();
       DDI.instance.destroy<Father>();
@@ -45,7 +51,8 @@ void circularDetection() {
       DDI.instance.registerDependent(() => Father(mother: DDI.instance()));
       DDI.instance.registerDependent(() => Mother(father: DDI.instance()));
 
-      expect(() => DDI.instance.get<Mother>(), throwsA(isA<ConcurrentCreationException>()));
+      expect(() => DDI.instance.get<Mother>(),
+          throwsA(isA<ConcurrentCreationException>()));
 
       DDI.instance.destroy<Mother>();
       DDI.instance.destroy<Father>();

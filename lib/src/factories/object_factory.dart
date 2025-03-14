@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/exception/bean_not_ready.dart';
-import 'package:dart_ddi/src/exception/bean_timeout.dart';
 import 'package:dart_ddi/src/exception/factory_already_created.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
 import 'package:dart_ddi/src/utils/instance_destroy_utils.dart';
@@ -70,7 +69,8 @@ class ObjectFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
 
       for (final interceptor in _interceptors) {
         if (ddi.isFuture(qualifier: interceptor)) {
-          final inter = await ddi.getAsync(qualifier: interceptor) as DDIInterceptor;
+          final inter =
+              await ddi.getAsync(qualifier: interceptor) as DDIInterceptor;
 
           _instance = (await inter.onCreate(_instance)) as BeanT;
         } else {
@@ -85,7 +85,8 @@ class ObjectFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
         }
       }
 
-      _instance = InstanceDecoratorsUtils.executarDecorators<BeanT>(_instance, _decorators);
+      _instance = InstanceDecoratorsUtils.executarDecorators<BeanT>(
+          _instance, _decorators);
 
       if (_instance is DDIModule) {
         (_instance as DDIModule).moduleQualifier = qualifier;
@@ -97,7 +98,8 @@ class ObjectFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
       if (_instance is PostConstruct) {
         return (_instance as PostConstruct).onPostConstruct();
       } else if (_instance is Future<PostConstruct>) {
-        final PostConstruct postConstruct = await (_instance as Future<PostConstruct>);
+        final PostConstruct postConstruct =
+            await (_instance as Future<PostConstruct>);
 
         return postConstruct.onPostConstruct();
       }
@@ -144,18 +146,13 @@ class ObjectFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
     ParameterT? parameter,
   }) async {
     if (!isReady) {
-      // Await for 20 seconds to the instance to be created
-      await _created.future.timeout(
-        const Duration(seconds: 20),
-        onTimeout: () {
-          throw BeanTimeoutException(qualifier.toString());
-        },
-      );
+      await _created.future;
     }
 
     if (_interceptors.isNotEmpty) {
       for (final interceptor in _interceptors) {
-        final ins = (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
+        final ins =
+            (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
 
         final exec = ins.onGet(_instance);
 
@@ -214,7 +211,8 @@ class ObjectFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
       throw BeanNotReadyException(BeanT.toString());
     }
 
-    _instance = InstanceDecoratorsUtils.executarDecorators<BeanT>(_instance, newDecorators);
+    _instance = InstanceDecoratorsUtils.executarDecorators<BeanT>(
+        _instance, newDecorators);
   }
 
   @override

@@ -13,7 +13,8 @@ import '../clazz_samples/undestroyable/future_dependent_destroy_get.dart';
 void dependentFuture() {
   group('DDI Dependent Future Basic Tests', () {
     void registerDependentBeans() {
-      DDI.instance.registerDependent(() async => A(await DDI.instance.getAsync()));
+      DDI.instance
+          .registerDependent(() async => A(await DDI.instance.getAsync()));
       DDI.instance.registerDependent<B>(() => Future.value(B(DDI.instance())));
       DDI.instance.registerDependent(C.new);
     }
@@ -53,7 +54,8 @@ void dependentFuture() {
       removeDependentBeans();
     });
 
-    test('Retrieve Dependent bean after a second "child" bean is diposed', () async {
+    test('Retrieve Dependent bean after a second "child" bean is diposed',
+        () async {
       registerDependentBeans();
 
       final instance = await DDI.instance.getAsync<A>();
@@ -89,11 +91,13 @@ void dependentFuture() {
 
       DDI.instance.destroy<C>();
 
-      expect(() => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
+      expect(
+          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Create, get and remove a qualifier bean', () async {
-      DDI.instance.registerDependent(() => Future.value(C()), qualifier: 'typeC');
+      DDI.instance
+          .registerDependent(() => Future.value(C()), qualifier: 'typeC');
 
       final instance1 = await DDI.instance.getAsync(qualifier: 'typeC');
       final instance2 = DDI.instance.getAsync(qualifier: 'typeC');
@@ -102,17 +106,21 @@ void dependentFuture() {
 
       DDI.instance.destroy(qualifier: 'typeC');
 
-      expect(() => DDI.instance.get(qualifier: 'typeC'), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get(qualifier: 'typeC'),
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Try to destroy a undestroyable Dependent bean', () async {
-      DDI.instance.registerDependent(() => Future.value(FutureDependentDestroyGet()), canDestroy: false);
+      DDI.instance.registerDependent(
+          () => Future.value(FutureDependentDestroyGet()),
+          canDestroy: false);
 
       final FutureDependentDestroyGet instance1 = await DDI.instance.getAsync();
 
       DDI.instance.destroy<FutureDependentDestroyGet>();
 
-      final instance2 = await DDI.instance.getAsync<FutureDependentDestroyGet>();
+      final instance2 =
+          await DDI.instance.getAsync<FutureDependentDestroyGet>();
 
       expect(instance2, isNotNull);
       expect(false, identical(instance1, instance2));
@@ -131,8 +139,11 @@ void dependentFuture() {
       DDI.instance.destroy<C>();
     });
 
-    test('Retrieve Dependent bean after a "child" bean is disposed using Future', () async {
-      DDI.instance.registerDependent(() async => A(await DDI.instance.getAsync()));
+    test(
+        'Retrieve Dependent bean after a "child" bean is disposed using Future',
+        () async {
+      DDI.instance
+          .registerDependent(() async => A(await DDI.instance.getAsync()));
       DDI.instance.registerDependent<B>(() => B(DDI.instance()));
       DDI.instance.registerDependent(C.new);
 
@@ -166,7 +177,8 @@ void dependentFuture() {
       DDI.instance.destroy<StreamController<C>>();
     });
 
-    test('Register a Dependent class with Future PostConstruct mixin', () async {
+    test('Register a Dependent class with Future PostConstruct mixin',
+        () async {
       Future<FuturePostConstruct> localTest() async {
         await Future.delayed(const Duration(milliseconds: 10));
         return FuturePostConstruct();
@@ -195,7 +207,9 @@ void dependentFuture() {
       expect(DDI.instance.isRegistered<FuturePostConstruct>(), false);
     });
 
-    test('Register a Dependent class with Future PostConstruct mixin and qualifier', () async {
+    test(
+        'Register a Dependent class with Future PostConstruct mixin and qualifier',
+        () async {
       Future<FuturePostConstruct> localTest() async {
         await Future.delayed(const Duration(milliseconds: 10));
         return FuturePostConstruct();
@@ -217,16 +231,20 @@ void dependentFuture() {
 
       expect(DDI.instance.getByType<FuturePostConstruct>().length, 1);
 
-      final FuturePostConstruct instance = await DDI.instance.getAsync(qualifier: 'FuturePostConstruct');
+      final FuturePostConstruct instance =
+          await DDI.instance.getAsync(qualifier: 'FuturePostConstruct');
 
       expect(instance.value, 10);
 
       DDI.instance.destroy(qualifier: 'FuturePostConstruct');
 
-      expect(DDI.instance.isRegistered(qualifier: 'FuturePostConstruct'), false);
+      expect(
+          DDI.instance.isRegistered(qualifier: 'FuturePostConstruct'), false);
     });
 
-    test('Register a Dependent Future class with Future PostConstruct mixin and qualifier', () async {
+    test(
+        'Register a Dependent Future class with Future PostConstruct mixin and qualifier',
+        () async {
       Future<FuturePostConstruct> localTest() async {
         await Future.delayed(const Duration(milliseconds: 10));
         return FuturePostConstruct();
@@ -248,13 +266,15 @@ void dependentFuture() {
 
       expect(DDI.instance.getByType<Future<FuturePostConstruct>>().length, 1);
 
-      final FuturePostConstruct instance = await DDI.instance.getAsync(qualifier: 'FuturePostConstruct');
+      final FuturePostConstruct instance =
+          await DDI.instance.getAsync(qualifier: 'FuturePostConstruct');
 
       expect(instance.value, 10);
 
       DDI.instance.destroy(qualifier: 'FuturePostConstruct');
 
-      expect(DDI.instance.isRegistered(qualifier: 'FuturePostConstruct'), false);
+      expect(
+          DDI.instance.isRegistered(qualifier: 'FuturePostConstruct'), false);
     });
   });
 }

@@ -5,7 +5,8 @@ import 'package:dart_ddi/src/mixin/instance_factory_mixin.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
 
 abstract class DDIBaseFactory<BeanT extends Object> with InstanceFactoryMixin {
-  DDIBaseFactory({required FutureOr<bool> Function(Object)? selector}) : _selector = selector;
+  DDIBaseFactory({required FutureOr<bool> Function(Object)? selector})
+      : _selector = selector;
 
   final FutureOr<bool> Function(Object)? _selector;
   FutureOr<bool> Function(Object)? get selector => _selector;
@@ -75,13 +76,17 @@ abstract class DDIBaseFactory<BeanT extends Object> with InstanceFactoryMixin {
   ///
   /// - **Order of Execution:** Interceptor are applied in the order they are provided.
   /// - **Instaces Already Gets:** No changes any Instances that have been get.
-  void addInterceptor(Set<Object> newInterceptors); /* {
+  void addInterceptor(
+      Set<Object>
+          newInterceptors); /* {
     interceptors = {...interceptors ?? {}, ...newInterceptors};
   }*/
 
   /// This function adds multiple child modules to a parent module.
   /// It takes a list of 'child' objects and an optional 'qualifier' for the parent module.
-  void addChildrenModules(Set<Object> child); /* {
+  void addChildrenModules(
+      Set<Object>
+          child); /* {
     children = {...children ?? {}, ...child};
   }
 */

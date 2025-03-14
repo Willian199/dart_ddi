@@ -54,7 +54,7 @@ class ApplicationFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
   Set<Object> _children;
 
   bool _runningCreateProcess = false;
-  Completer<void> _created = Completer<void>();
+  Completer<void> _created = Completer.sync();
 
   /// Register the instance in [DDI].
   /// When the instance is ready, must call apply function.
@@ -86,6 +86,7 @@ class ApplicationFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
         throw ConcurrentCreationException(qualifier.toString());
       }
 
+      state = BeanStateEnum.beingCreated;
       _runningCreateProcess = true;
 
       try {
@@ -100,18 +101,21 @@ class ApplicationFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
           _instance = ins.onCreate(_instance!) as BeanT;
         }
 
-        _instance = InstanceDecoratorsUtils.executarDecorators<BeanT>(_instance!, _decorators);
+        _instance = InstanceDecoratorsUtils.executarDecorators<BeanT>(
+            _instance!, _decorators);
 
         if (_instance is DDIModule) {
           (_instance as DDIModule).moduleQualifier = qualifier;
         }
 
+        state = BeanStateEnum.created;
         _created.complete();
         _runningCreateProcess = false;
         if (_instance is PostConstruct) {
           (_instance as PostConstruct).onPostConstruct();
         } else if (_instance is Future<PostConstruct>) {
-          (_instance as Future<PostConstruct>).then((PostConstruct postConstruct) => postConstruct.onPostConstruct());
+          (_instance as Future<PostConstruct>).then(
+              (PostConstruct postConstruct) => postConstruct.onPostConstruct());
         }
       } catch (e) {
         _created.complete();
@@ -141,13 +145,13 @@ class ApplicationFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
     required Object qualifier,
     ParameterT? parameter,
   }) async {
-    state = BeanStateEnum.beingCreated;
     if (_runningCreateProcess) {
       await _created.future;
     }
 
     if (!isReady && !_created.isCompleted) {
       try {
+        state = BeanStateEnum.beingCreated;
         _runningCreateProcess = true;
 
         /// Create the Instance class
@@ -165,7 +169,8 @@ class ApplicationFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
 
         /// Run the Interceptor for create process
         for (final interceptor in _interceptors) {
-          final ins = (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
+          final ins =
+              (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
 
           final exec = ins.onCreate(_instance!);
 
@@ -173,7 +178,8 @@ class ApplicationFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
         }
 
         /// Apply all Decorators to the instance
-        _instance = InstanceDecoratorsUtils.executarDecorators<BeanT>(_instance!, _decorators);
+        _instance = InstanceDecoratorsUtils.executarDecorators<BeanT>(
+            _instance!, _decorators);
 
         /// Refresh the qualifier for the Module
         if (_instance is DDIModule) {
@@ -187,7 +193,8 @@ class ApplicationFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
         if (_instance is PostConstruct) {
           await (_instance as PostConstruct).onPostConstruct();
         } else if (_instance is Future<PostConstruct>) {
-          final PostConstruct postConstruct = await (_instance as Future<PostConstruct>);
+          final PostConstruct postConstruct =
+              await (_instance as Future<PostConstruct>);
 
           await postConstruct.onPostConstruct();
         }
@@ -202,7 +209,8 @@ class ApplicationFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
     /// Run the Interceptors for the GET process.
     /// Must run everytime
     for (final interceptor in _interceptors) {
-      final ins = (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
+      final ins =
+          (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
 
       final exec = ins.onGet(_instance!);
 
@@ -223,7 +231,6 @@ class ApplicationFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
   /// Removes this instance of the registered class in [DDI].
   @override
   FutureOr<void> destroy(void Function() apply) async {
-    state = BeanStateEnum.beingDestroyed;
     if (_runningCreateProcess && !_created.isCompleted) {
       _created.complete();
     }
@@ -244,15 +251,16 @@ class ApplicationFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
     if (!_created.isCompleted) {
       if (_runningCreateProcess) {
         await _created.future;
+      } else {
+        _created.complete();
       }
-
-      _created.complete();
     }
-    _created = Completer<void>();
+    _created = Completer.sync();
 
     for (final interceptor in _interceptors) {
       if (ddi.isFuture(qualifier: interceptor)) {
-        final instance = (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
+        final instance =
+            (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
 
         final exec = instance.onDispose(instance);
         if (exec is Future) {
@@ -272,9 +280,11 @@ class ApplicationFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
     if (_instance is DDIModule && (_children.isNotEmpty)) {
       await disposeChildrenAsync();
       _instance = null;
+      state = BeanStateEnum.disposed;
     } else {
       final disposed = disposeChildrenAsync();
       _instance = null;
+      state = BeanStateEnum.disposed;
 
       return disposed;
     }
@@ -286,7 +296,7 @@ class ApplicationFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
     await disposeChildrenAsync();
 
     _instance = null;
-
+    state = BeanStateEnum.disposed;
     return Future.value();
   }
 
@@ -310,7 +320,8 @@ class ApplicationFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
   @override
   FutureOr<void> addDecorator(ListDecorator<BeanT> newDecorators) {
     if (isReady) {
-      _instance = InstanceDecoratorsUtils.executarDecorators<BeanT>(_instance!, newDecorators);
+      _instance = InstanceDecoratorsUtils.executarDecorators<BeanT>(
+          _instance!, newDecorators);
     }
 
     _decorators = [..._decorators, ...newDecorators];

@@ -197,7 +197,12 @@ void inteceptorCases() {
             returnType: int,
             isFuture: false,
           ),
-          interceptors: {'SumInterceptor', AsyncAddInterceptor, 'MultiplyInterceptor', MultiplyInterceptor},
+          interceptors: {
+            'SumInterceptor',
+            AsyncAddInterceptor,
+            'MultiplyInterceptor',
+            MultiplyInterceptor
+          },
         ),
       );
 
@@ -258,9 +263,144 @@ void inteceptorCases() {
             returnType: int,
             isFuture: false,
           ),
-          interceptors: {'SumInterceptor', AsyncAddInterceptor, 'MultiplyInterceptor', MultiplyInterceptor},
+          interceptors: {
+            'SumInterceptor',
+            AsyncAddInterceptor,
+            'MultiplyInterceptor'
+          },
         ),
       );
+
+      ddi.addInterceptor<int>({MultiplyInterceptor});
+
+      expect(ddi.isFuture(qualifier: 'SumInterceptor'), true);
+      expect(ddi.isFuture(qualifier: 'MultiplyInterceptor'), true);
+
+      expect(ddi.isReady(qualifier: 'SumInterceptor'), true);
+      expect(ddi.isReady(qualifier: 'MultiplyInterceptor'), true);
+
+      final instance = await ddi.getAsync<int>();
+      expect(instance, 180);
+
+      await ddi.destroy<int>();
+      ddi.destroy(qualifier: 'SumInterceptor');
+      ddi.destroy(qualifier: 'MultiplyInterceptor');
+
+      expect(ddi.isRegistered<int>(), false);
+      expect(ddi.isRegistered(qualifier: 'SumInterceptor'), false);
+      expect(ddi.isRegistered(qualifier: 'MultiplyInterceptor'), false);
+    });
+
+    test('Register a Dependent Future Interceptor', () async {
+      ddi.register<AddInterceptor>(
+        qualifier: 'SumInterceptor',
+        factory: ApplicationFactory(
+          builder: CustomBuilder<AddInterceptor>(
+            producer: () async {
+              await Future.delayed(const Duration(milliseconds: 20));
+              return AddInterceptor();
+            },
+            parametersType: [],
+            returnType: AddInterceptor,
+            isFuture: true,
+          ),
+        ),
+      );
+
+      ddi.register<MultiplyInterceptor>(
+        qualifier: 'MultiplyInterceptor',
+        factory: ApplicationFactory(
+          builder: CustomBuilder<MultiplyInterceptor>(
+            producer: () async {
+              await Future.delayed(const Duration(milliseconds: 20));
+              return MultiplyInterceptor();
+            },
+            parametersType: [],
+            returnType: MultiplyInterceptor,
+            isFuture: true,
+          ),
+        ),
+      );
+
+      await ddi.register<int>(
+        factory: DependentFactory(
+          builder: CustomBuilder<int>(
+            producer: () => 15,
+            parametersType: const [],
+            returnType: int,
+            isFuture: false,
+          ),
+          interceptors: {
+            'SumInterceptor',
+            AsyncAddInterceptor,
+            'MultiplyInterceptor'
+          },
+        ),
+      );
+
+      ddi.addInterceptor<int>({MultiplyInterceptor});
+
+      expect(ddi.isFuture(qualifier: 'SumInterceptor'), true);
+      expect(ddi.isFuture(qualifier: 'MultiplyInterceptor'), true);
+
+      expect(ddi.isReady(qualifier: 'SumInterceptor'), false);
+      expect(ddi.isReady(qualifier: 'MultiplyInterceptor'), false);
+
+      final instance = await ddi.getAsync<int>();
+      expect(instance, 180);
+
+      await ddi.destroy<int>();
+      ddi.destroy(qualifier: 'SumInterceptor');
+      ddi.destroy(qualifier: 'MultiplyInterceptor');
+
+      expect(ddi.isRegistered<int>(), false);
+      expect(ddi.isRegistered(qualifier: 'SumInterceptor'), false);
+      expect(ddi.isRegistered(qualifier: 'MultiplyInterceptor'), false);
+    });
+
+    test('Register an Object Future Interceptor', () async {
+      ddi.register<AddInterceptor>(
+        qualifier: 'SumInterceptor',
+        factory: ApplicationFactory(
+          builder: CustomBuilder<AddInterceptor>(
+            producer: () async {
+              await Future.delayed(const Duration(milliseconds: 20));
+              return AddInterceptor();
+            },
+            parametersType: [],
+            returnType: AddInterceptor,
+            isFuture: true,
+          ),
+        ),
+      );
+
+      ddi.register<MultiplyInterceptor>(
+        qualifier: 'MultiplyInterceptor',
+        factory: ApplicationFactory(
+          builder: CustomBuilder<MultiplyInterceptor>(
+            producer: () async {
+              await Future.delayed(const Duration(milliseconds: 20));
+              return MultiplyInterceptor();
+            },
+            parametersType: [],
+            returnType: MultiplyInterceptor,
+            isFuture: true,
+          ),
+        ),
+      );
+
+      await ddi.register<int>(
+        factory: ObjectFactory(
+          instance: 15,
+          interceptors: {
+            'SumInterceptor',
+            AsyncAddInterceptor,
+            'MultiplyInterceptor'
+          },
+        ),
+      );
+
+      ddi.addInterceptor<int>({MultiplyInterceptor});
 
       expect(ddi.isFuture(qualifier: 'SumInterceptor'), true);
       expect(ddi.isFuture(qualifier: 'MultiplyInterceptor'), true);

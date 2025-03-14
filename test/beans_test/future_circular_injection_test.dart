@@ -9,16 +9,22 @@ import '../clazz_samples/mother.dart';
 
 void futureCircularDetection() {
   group('DDI Future Circular Injection Detection tests', () {
-    test('Inject a Singleton bean depending from a bean that not exists yet', () async {
+    test('Inject a Singleton bean depending from a bean that not exists yet',
+        () async {
       await expectLater(
-          () => DDI.instance.registerSingleton(() => Future.value(Father(mother: ddi.get<Mother>()))), throwsA(isA<BeanNotFoundException>()));
+          () => DDI.instance.registerSingleton(
+              () => Future.value(Father(mother: ddi.get<Mother>()))),
+          throwsA(isA<BeanNotFoundException>()));
       expect(DDI.instance.isRegistered<Father>(), false);
     });
 
-    test('Inject a Application bean depending from a bean that not exists yet', () {
+    test('Inject a Application bean depending from a bean that not exists yet',
+        () {
       //This works because it was just registered
-      DDI.instance.registerApplication<Father>(() async => Future.value(Father(mother: await DDI.instance.getAsync<Mother>())));
-      DDI.instance.registerApplication<Mother>(() async => Future.value(Mother(father: await DDI.instance.getAsync<Father>())));
+      DDI.instance.registerApplication<Father>(() async =>
+          Future.value(Father(mother: await DDI.instance.getAsync<Mother>())));
+      DDI.instance.registerApplication<Mother>(() async =>
+          Future.value(Mother(father: await DDI.instance.getAsync<Father>())));
 
       DDI.instance.destroy<Mother>();
       DDI.instance.destroy<Father>();
@@ -28,10 +34,13 @@ void futureCircularDetection() {
     });
 
     test('Inject a Application bean with circular dependency', () async {
-      DDI.instance.registerApplication<Father>(() async => Future.value(Father(mother: await DDI.instance.getAsync<Mother>())));
-      DDI.instance.registerApplication<Mother>(() async => Future.value(Mother(father: await DDI.instance.getAsync<Father>())));
+      DDI.instance.registerApplication<Father>(() async =>
+          Future.value(Father(mother: await DDI.instance.getAsync<Mother>())));
+      DDI.instance.registerApplication<Mother>(() async =>
+          Future.value(Mother(father: await DDI.instance.getAsync<Father>())));
 
-      await expectLater(() => DDI.instance.getAsync<Mother>(), throwsA(isA<ConcurrentCreationException>()));
+      await expectLater(() => DDI.instance.getAsync<Mother>(),
+          throwsA(isA<ConcurrentCreationException>()));
 
       DDI.instance.destroy<Mother>();
       DDI.instance.destroy<Father>();
@@ -41,11 +50,14 @@ void futureCircularDetection() {
     });
 
     test('Inject a Dependent bean with circular dependency', () {
-      DDI.instance.registerDependent<Father>(() async => Future.value(Father(mother: await DDI.instance.getAsync<Mother>())));
+      DDI.instance.registerDependent<Father>(() async =>
+          Future.value(Father(mother: await DDI.instance.getAsync<Mother>())));
 
-      DDI.instance.registerDependent<Mother>(() async => Future.value(Mother(father: await DDI.instance.getAsync<Father>())));
+      DDI.instance.registerDependent<Mother>(() async =>
+          Future.value(Mother(father: await DDI.instance.getAsync<Father>())));
 
-      expectLater(() => DDI.instance.getAsync<Mother>(), throwsA(isA<ConcurrentCreationException>()));
+      expectLater(() => DDI.instance.getAsync<Mother>(),
+          throwsA(isA<ConcurrentCreationException>()));
 
       DDI.instance.destroy<Mother>();
       DDI.instance.destroy<Father>();
@@ -82,7 +94,7 @@ void futureCircularDetection() {
         return C();
       });
 
-      expect(DDI.instance.isRegistered<C>(), true);
+      expect(DDI.instance.isRegistered<C>(), false);
       expect(DDI.instance.isReady<C>(), false);
 
       int count = 0;

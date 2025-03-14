@@ -1,4 +1,5 @@
 import 'package:dart_ddi/dart_ddi.dart';
+import 'package:dart_ddi/src/exception/bean_not_ready.dart';
 import 'package:test/test.dart';
 
 import '../clazz_samples/d.dart';
@@ -60,6 +61,27 @@ void futureAddDecorator() {
       );
 
       await regraSoma();
+
+      DDI.instance.destroy<D>();
+    });
+
+    test('ADD Decorators when the Singleton bean is not ready', () async {
+      DDI.instance.registerSingleton<D>(
+        () async {
+          await Future.delayed(const Duration(milliseconds: 20));
+          return D();
+        },
+        decorators: [
+          (instance) => E(instance),
+          (instance) => F(instance),
+        ],
+      );
+
+      expect(
+          () => DDI.instance.addDecorator<D>([
+                (instance) => E(instance),
+              ]),
+          throwsA(isA<BeanNotReadyException>()));
 
       DDI.instance.destroy<D>();
     });

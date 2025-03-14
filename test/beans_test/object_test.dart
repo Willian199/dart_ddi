@@ -1,8 +1,10 @@
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/exception/bean_not_found.dart';
 import 'package:dart_ddi/src/exception/duplicated_bean.dart';
+import 'package:dart_ddi/src/exception/factory_already_created.dart';
 import 'package:test/test.dart';
 
+import '../clazz_samples/c.dart';
 import '../clazz_samples/custom_interceptors.dart';
 
 void object() {
@@ -26,7 +28,8 @@ void object() {
 
       DDI.instance.destroy(qualifier: 'author');
 
-      expect(() => DDI.instance.get(qualifier: 'author'), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get(qualifier: 'author'),
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Try to destroy a undestroyable Object bean', () {
@@ -86,19 +89,22 @@ void object() {
     });
 
     test('Try to refresh an Object not registered', () {
-      expect(() => DDI.instance.addDecorator([(_) => "new value"]), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.addDecorator([(_) => "new value"]),
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Try to register a duplicated Object', () {
       DDI.instance.registerObject('Will', qualifier: 'name');
 
-      expect(() => DDI.instance.registerObject('Willian', qualifier: 'name'), throwsA(isA<DuplicatedBeanException>()));
+      expect(() => DDI.instance.registerObject('Willian', qualifier: 'name'),
+          throwsA(isA<DuplicatedBeanException>()));
 
       DDI.instance.destroy(qualifier: 'name');
     });
 
     test('Register an Object with canRegister true', () {
-      DDI.instance.registerObject('Will', qualifier: 'name', canRegister: () => true);
+      DDI.instance
+          .registerObject('Will', qualifier: 'name', canRegister: () => true);
 
       final value = DDI.instance.get(qualifier: 'name');
 
@@ -106,20 +112,24 @@ void object() {
 
       DDI.instance.destroy(qualifier: 'name');
 
-      expect(() => DDI.instance.get(qualifier: 'name'), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get(qualifier: 'name'),
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Register an Object with canRegister false', () {
-      DDI.instance.registerObject('Will', qualifier: 'name', canRegister: () => false);
+      DDI.instance
+          .registerObject('Will', qualifier: 'name', canRegister: () => false);
 
-      expect(() => DDI.instance.get(qualifier: 'name'), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get(qualifier: 'name'),
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Register an Object with Interceptor', () {
       ddi.registerObject(AddInterceptor());
       ddi.registerObject(MultiplyInterceptor());
 
-      DDI.instance.registerObject<int>(15, interceptors: {AddInterceptor, MultiplyInterceptor});
+      DDI.instance.registerObject<int>(15,
+          interceptors: {AddInterceptor, MultiplyInterceptor});
 
       expect(50, DDI.instance.get<int>());
 
@@ -127,7 +137,32 @@ void object() {
       DDI.instance.destroy<AddInterceptor>();
       DDI.instance.destroy<MultiplyInterceptor>();
 
-      expect(() => DDI.instance.get<int>(), throwsA(isA<BeanNotFoundException>()));
+      expect(
+          () => DDI.instance.get<int>(), throwsA(isA<BeanNotFoundException>()));
+    });
+
+    test('Call register before passing to DDI', () {
+      final c = ObjectFactory(instance: C())
+        ..register(qualifier: C, apply: (_) {});
+
+      expect(() => ddi.register<C>(factory: c),
+          throwsA(isA<FactoryAlreadyCreatedException>()));
+    });
+
+    test('Try to get a Bean using a list Future wait', () async {
+      Future.wait<dynamic>(
+        [
+          await Future.value(ddi.registerObject<C>(await Future.delayed(
+              const Duration(milliseconds: 10), () => C()))),
+          Future.value(ddi.get<C>()),
+          ddi.getAsync<C>(),
+        ],
+        eagerError: true,
+      );
+
+      await ddi.destroy<C>();
+
+      expect(ddi.isRegistered<C>(), false);
     });
   });
 }

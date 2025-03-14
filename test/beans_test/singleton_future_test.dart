@@ -14,8 +14,10 @@ void singletonFuture() {
   group('DDI Singleton Future Basic Tests', () {
     Future<void> registerSingletonBeans() async {
       DDI.instance.registerSingleton(C.new);
-      await DDI.instance.registerSingleton<B>(() => Future.value(B(DDI.instance())));
-      await DDI.instance.registerSingleton(() async => A(await DDI.instance.getAsync()));
+      await DDI.instance
+          .registerSingleton<B>(() => Future.value(B(DDI.instance())));
+      await DDI.instance
+          .registerSingleton(() async => A(await DDI.instance.getAsync()));
     }
 
     void removeSingletonBeans() {
@@ -55,7 +57,8 @@ void singletonFuture() {
       DDI.instance.destroy<B>();
     });
 
-    test('Retrieve singleton bean after a second "child" bean is diposed', () async {
+    test('Retrieve singleton bean after a second "child" bean is diposed',
+        () async {
       await registerSingletonBeans();
 
       final instance = await DDI.instance.getAsync<A>();
@@ -78,27 +81,34 @@ void singletonFuture() {
 
       DDI.instance.destroy<C>();
 
-      expect(() => DDI.instance.getAsync<C>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.getAsync<C>(),
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Create, get and remove a qualifier bean', () async {
-      await DDI.instance.registerSingleton(() => Future.value(C()), qualifier: 'typeC');
+      await DDI.instance
+          .registerSingleton(() => Future.value(C()), qualifier: 'typeC');
 
       DDI.instance.getAsync(qualifier: 'typeC');
 
       DDI.instance.destroy(qualifier: 'typeC');
 
-      expect(() => DDI.instance.getAsync(qualifier: 'typeC'), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.getAsync(qualifier: 'typeC'),
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Try to destroy a undestroyable Singleton bean', () async {
-      await DDI.instance.registerSingleton(() => Future.value(FutureSingletonDestroyGet()), canDestroy: false);
+      await DDI.instance.registerSingleton(
+          () => Future.value(FutureSingletonDestroyGet()),
+          canDestroy: false);
 
-      final instance1 = await DDI.instance.getAsync<FutureSingletonDestroyGet>();
+      final instance1 =
+          await DDI.instance.getAsync<FutureSingletonDestroyGet>();
 
       DDI.instance.destroy<FutureSingletonDestroyGet>();
 
-      final instance2 = await DDI.instance.getAsync<FutureSingletonDestroyGet>();
+      final instance2 =
+          await DDI.instance.getAsync<FutureSingletonDestroyGet>();
 
       expect(instance1, same(instance2));
     });
@@ -116,10 +126,13 @@ void singletonFuture() {
       await expectLater(intance.value, 1);
     });
 
-    test('Retrieve Singleton bean after a "child" bean is disposed using Future', () async {
+    test(
+        'Retrieve Singleton bean after a "child" bean is disposed using Future',
+        () async {
       DDI.instance.registerSingleton(C.new);
       await DDI.instance.registerSingleton<B>(() => B(DDI.instance()));
-      await DDI.instance.registerSingleton(() async => A(await DDI.instance.getAsync()));
+      await DDI.instance
+          .registerSingleton(() async => A(await DDI.instance.getAsync()));
 
       final instance1 = await DDI.instance.getAsync<A>();
 
@@ -176,16 +189,19 @@ void singletonFuture() {
         qualifier: 'FuturePostConstruct',
       );
 
-      final FuturePostConstruct instance = await DDI.instance.getAsync(qualifier: 'FuturePostConstruct');
+      final FuturePostConstruct instance =
+          await DDI.instance.getAsync(qualifier: 'FuturePostConstruct');
 
       expect(instance.value, 10);
 
       DDI.instance.destroy(qualifier: 'FuturePostConstruct');
 
-      expect(() => DDI.instance.get(qualifier: 'FuturePostConstruct'), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get(qualifier: 'FuturePostConstruct'),
+          throwsA(isA<BeanNotFoundException>()));
     });
 
-    test('Register a Singleton class with Future PostConstruct mixin', () async {
+    test('Register a Singleton class with Future PostConstruct mixin',
+        () async {
       Future<FuturePostConstruct> localTest() async {
         await Future.delayed(const Duration(milliseconds: 10));
         return FuturePostConstruct();
@@ -214,7 +230,9 @@ void singletonFuture() {
       expect(DDI.instance.isRegistered<FuturePostConstruct>(), false);
     });
 
-    test('Register a Singleton class with Future PostConstruct mixin and qualifier', () async {
+    test(
+        'Register a Singleton class with Future PostConstruct mixin and qualifier',
+        () async {
       Future<FuturePostConstruct> localTest() async {
         await Future.delayed(const Duration(milliseconds: 10));
         return FuturePostConstruct();
@@ -236,16 +254,20 @@ void singletonFuture() {
 
       expect(DDI.instance.getByType<Future<FuturePostConstruct>>().length, 1);
 
-      final FuturePostConstruct instance = await DDI.instance.getAsync(qualifier: 'FuturePostConstruct');
+      final FuturePostConstruct instance =
+          await DDI.instance.getAsync(qualifier: 'FuturePostConstruct');
 
       expect(instance.value, 10);
 
       DDI.instance.destroy(qualifier: 'FuturePostConstruct');
 
-      expect(DDI.instance.isRegistered(qualifier: 'FuturePostConstruct'), false);
+      expect(
+          DDI.instance.isRegistered(qualifier: 'FuturePostConstruct'), false);
     });
 
-    test('Register a Singleton Future class with Future PostConstruct mixin and qualifier', () async {
+    test(
+        'Register a Singleton Future class with Future PostConstruct mixin and qualifier',
+        () async {
       Future<FuturePostConstruct> localTest() async {
         await Future.delayed(const Duration(milliseconds: 10));
         return FuturePostConstruct();
@@ -267,11 +289,13 @@ void singletonFuture() {
 
       expect(DDI.instance.getByType<Future<FuturePostConstruct>>().length, 1);
 
-      final FuturePostConstruct futureInstance = await DDI.instance.get(qualifier: 'FuturePostConstruct');
+      final FuturePostConstruct futureInstance =
+          await DDI.instance.get(qualifier: 'FuturePostConstruct');
 
       expect(futureInstance.value, 10);
 
-      final FuturePostConstruct cachedInstance = await DDI.instance.get<Future<FuturePostConstruct>>(qualifier: 'FuturePostConstruct');
+      final FuturePostConstruct cachedInstance = await DDI.instance
+          .get<Future<FuturePostConstruct>>(qualifier: 'FuturePostConstruct');
 
       expect(cachedInstance.value, 10);
 
@@ -279,7 +303,8 @@ void singletonFuture() {
 
       DDI.instance.destroy(qualifier: 'FuturePostConstruct');
 
-      expect(DDI.instance.isRegistered(qualifier: 'FuturePostConstruct'), false);
+      expect(
+          DDI.instance.isRegistered(qualifier: 'FuturePostConstruct'), false);
     });
   });
 }

@@ -36,13 +36,15 @@ final class InstanceRunnerUtils {
     resolutionMap.add(effectiveQualifierName);
 
     try {
-      return factory.getWith<ParameterT>(parameter: parameter, qualifier: effectiveQualifierName);
+      return factory.getWith<ParameterT>(
+          parameter: parameter, qualifier: effectiveQualifierName);
     } finally {
       resolutionMap.remove(effectiveQualifierName);
     }
   }
 
-  static Future<BeanT> runAsync<BeanT extends Object, ParameterT extends Object>({
+  static Future<BeanT>
+      runAsync<BeanT extends Object, ParameterT extends Object>({
     required DDIBaseFactory<BeanT> factory,
     required Object effectiveQualifierName,
     ParameterT? parameter,
@@ -68,7 +70,8 @@ final class InstanceRunnerUtils {
     resolutionMap.add(effectiveQualifierName);
 
     try {
-      return await factory.getAsyncWith(parameter: parameter, qualifier: effectiveQualifierName);
+      return await factory.getAsyncWith(
+          parameter: parameter, qualifier: effectiveQualifierName);
     } finally {
       resolutionMap.remove(effectiveQualifierName);
     }

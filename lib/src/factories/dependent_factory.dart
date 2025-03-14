@@ -77,12 +77,15 @@ class DependentFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
       dependentClazz = inter.onCreate(dependentClazz) as BeanT;
     }
 
-    assert(dependentClazz is! PreDispose || dependentClazz is! Future<PreDispose>,
+    assert(
+        dependentClazz is! PreDispose || dependentClazz is! Future<PreDispose>,
         'Dependent instances dont support PreDispose. Use Interceptors instead.');
-    assert(dependentClazz is! PreDestroy || dependentClazz is! Future<PreDestroy>,
+    assert(
+        dependentClazz is! PreDestroy || dependentClazz is! Future<PreDestroy>,
         'Dependent instances dont support PreDestroy. Use Interceptors instead.');
 
-    dependentClazz = InstanceDecoratorsUtils.executarDecorators<BeanT>(dependentClazz, _decorators);
+    dependentClazz = InstanceDecoratorsUtils.executarDecorators<BeanT>(
+        dependentClazz, _decorators);
 
     if (dependentClazz is DDIModule) {
       dependentClazz.moduleQualifier = qualifier;
@@ -91,7 +94,8 @@ class DependentFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
     if (dependentClazz is PostConstruct) {
       dependentClazz.onPostConstruct();
     } else if (dependentClazz is Future<PostConstruct>) {
-      dependentClazz.then((PostConstruct postConstruct) => postConstruct.onPostConstruct());
+      dependentClazz.then(
+          (PostConstruct postConstruct) => postConstruct.onPostConstruct());
     }
 
     /// Run the Interceptors for the GET process.
@@ -122,20 +126,24 @@ class DependentFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
 
     /// Run the Interceptor for create process
     for (final interceptor in _interceptors) {
-      final inter = (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
+      final inter =
+          (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
 
       final exec = inter.onCreate(dependentClazz);
 
       dependentClazz = (exec is Future ? await exec : exec) as BeanT;
     }
 
-    assert(dependentClazz is! PreDispose || dependentClazz is! Future<PreDispose>,
+    assert(
+        dependentClazz is! PreDispose || dependentClazz is! Future<PreDispose>,
         'Dependent instances dont support PreDispose. Use Interceptors instead.');
-    assert(dependentClazz is! PreDestroy || dependentClazz is! Future<PreDestroy>,
+    assert(
+        dependentClazz is! PreDestroy || dependentClazz is! Future<PreDestroy>,
         'Dependent instances dont support PreDestroy. Use Interceptors instead.');
 
     /// Apply all Decorators to the instance
-    dependentClazz = InstanceDecoratorsUtils.executarDecorators<BeanT>(dependentClazz, _decorators);
+    dependentClazz = InstanceDecoratorsUtils.executarDecorators<BeanT>(
+        dependentClazz, _decorators);
 
     /// Refresh the qualifier for the Module
     if (dependentClazz is DDIModule) {
@@ -145,7 +153,8 @@ class DependentFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
     if (dependentClazz is PostConstruct) {
       await dependentClazz.onPostConstruct();
     } else if (dependentClazz is Future<PostConstruct>) {
-      final PostConstruct postConstruct = await (dependentClazz as Future<PostConstruct>);
+      final PostConstruct postConstruct =
+          await (dependentClazz as Future<PostConstruct>);
 
       await postConstruct.onPostConstruct();
     }
@@ -153,7 +162,8 @@ class DependentFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
     /// Run the Interceptors for the GET process.
     /// Must run everytime
     for (final interceptor in _interceptors) {
-      final inter = (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
+      final inter =
+          (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
 
       final exec = inter.onGet(dependentClazz);
 
@@ -178,7 +188,12 @@ class DependentFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
   FutureOr<void> destroy(void Function() apply) {
     state = BeanStateEnum.beingDestroyed;
     return InstanceDestroyUtils.destroyInstance<BeanT>(
-        apply: apply, canDestroy: _canDestroy, instance: null, interceptors: _interceptors, children: _children);
+      apply: apply,
+      canDestroy: _canDestroy,
+      instance: null,
+      interceptors: _interceptors,
+      children: _children,
+    );
   }
 
   /// Disposes of the instance of the registered class in [DDI].

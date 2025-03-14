@@ -77,7 +77,8 @@ class SingletonFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
 
       for (final interceptor in _interceptors) {
         if (ddi.isFuture(qualifier: interceptor)) {
-          final inter = await ddi.getAsync(qualifier: interceptor) as DDIInterceptor;
+          final inter =
+              await ddi.getAsync(qualifier: interceptor) as DDIInterceptor;
 
           clazz = (await inter.onCreate(clazz)) as BeanT;
         } else {
@@ -92,7 +93,8 @@ class SingletonFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
         }
       }
 
-      clazz = InstanceDecoratorsUtils.executarDecorators<BeanT>(clazz, _decorators);
+      clazz =
+          InstanceDecoratorsUtils.executarDecorators<BeanT>(clazz, _decorators);
 
       if (clazz is DDIModule) {
         (clazz as DDIModule).moduleQualifier = qualifier;
@@ -107,7 +109,8 @@ class SingletonFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
       if (clazz is PostConstruct) {
         return clazz.onPostConstruct();
       } else if (clazz is Future<PostConstruct>) {
-        final PostConstruct postConstruct = await (clazz as Future<PostConstruct>);
+        final PostConstruct postConstruct =
+            await (clazz as Future<PostConstruct>);
 
         return postConstruct.onPostConstruct();
       }
@@ -160,7 +163,8 @@ class SingletonFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
     if (_instance != null) {
       if (_interceptors.isNotEmpty) {
         for (final interceptor in _interceptors) {
-          final ins = (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
+          final ins =
+              (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
 
           final exec = ins.onGet(_instance!);
 
@@ -222,7 +226,8 @@ class SingletonFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
       throw BeanNotReadyException(BeanT.toString());
     }
 
-    _instance = InstanceDecoratorsUtils.executarDecorators<BeanT>(_instance!, newDecorators);
+    _instance = InstanceDecoratorsUtils.executarDecorators<BeanT>(
+        _instance!, newDecorators);
   }
 
   @override

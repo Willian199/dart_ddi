@@ -18,7 +18,8 @@ final class InstanceDestroyUtils {
     // Should call interceptors even if the instance is null
     for (final interceptor in interceptors) {
       if (ddi.isFuture(qualifier: interceptor)) {
-        final inter = (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
+        final inter =
+            (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
 
         await inter.onDestroy(instance);
       } else {
@@ -49,13 +50,15 @@ final class InstanceDestroyUtils {
     apply();
   }
 
-  static FutureOr<void> _destroyChildren<BeanT extends Object>(Set<Object> children) {
+  static FutureOr<void> _destroyChildren<BeanT extends Object>(
+      Set<Object> children) {
     for (final Object child in children) {
       ddi.destroy(qualifier: child);
     }
   }
 
-  static Future<void> _runFutureOrPreDestroy<BeanT extends Object>(PreDestroy clazz, Set<Object> children, void Function() apply) async {
+  static Future<void> _runFutureOrPreDestroy<BeanT extends Object>(
+      PreDestroy clazz, Set<Object> children, void Function() apply) async {
     for (final Object child in children) {
       await ddi.destroy(qualifier: child);
     }

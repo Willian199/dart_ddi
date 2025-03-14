@@ -68,7 +68,8 @@ void dependentFactoryFuture() {
       removeDependentBeans();
     });
 
-    test('Retrieve Dependent bean after a second "child" bean is diposed', () async {
+    test('Retrieve Dependent bean after a second "child" bean is diposed',
+        () async {
       registerDependentBeans();
 
       final instance = await DDI.instance.getAsync<A>();
@@ -108,7 +109,8 @@ void dependentFactoryFuture() {
 
       DDI.instance.destroy<C>();
 
-      expect(() => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
+      expect(
+          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Create, get and remove a qualifier bean', () async {
@@ -123,7 +125,8 @@ void dependentFactoryFuture() {
 
       DDI.instance.destroy(qualifier: 'typeC');
 
-      expect(() => DDI.instance.get(qualifier: 'typeC'), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get(qualifier: 'typeC'),
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Register and retrieve Future delayed Dependent bean', () async {
@@ -149,14 +152,16 @@ void dependentFactoryFuture() {
         ),
       );
 
-      final FactoryParameter instance = await DDI.instance.getAsyncWith(parameter: getRecordParameter);
+      final FactoryParameter instance =
+          await DDI.instance.getAsyncWith(parameter: getRecordParameter);
 
       expect(instance, isA<FactoryParameter>());
       expect(instance.parameter, getRecordParameter);
 
       DDI.instance.destroy<FactoryParameter>();
 
-      expectLater(() => DDI.instance.getAsync<FactoryParameter>(), throwsA(isA<BeanNotFoundException>()));
+      expectLater(() => DDI.instance.getAsync<FactoryParameter>(),
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Register a Dependent class with PostConstruct mixin', () async {
@@ -170,13 +175,15 @@ void dependentFactoryFuture() {
         qualifier: 'FuturePostConstruct',
       );
 
-      final FuturePostConstruct instance = await DDI.instance.getAsync(qualifier: 'FuturePostConstruct');
+      final FuturePostConstruct instance =
+          await DDI.instance.getAsync(qualifier: 'FuturePostConstruct');
 
       expect(instance.value, 10);
 
       DDI.instance.destroy(qualifier: 'FuturePostConstruct');
 
-      expect(DDI.instance.isRegistered(qualifier: 'FuturePostConstruct'), false);
+      expect(
+          DDI.instance.isRegistered(qualifier: 'FuturePostConstruct'), false);
     });
   });
 }

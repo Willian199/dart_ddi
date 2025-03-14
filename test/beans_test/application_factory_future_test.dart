@@ -57,7 +57,8 @@ void applicationFactoryFuture() {
       removeApplicationBeans();
     });
 
-    test('Retrieve Factory Application bean after a "child" bean is diposed', () async {
+    test('Retrieve Factory Application bean after a "child" bean is diposed',
+        () async {
       registerApplicationBeans();
 
       final instance = await DDI.instance.getAsync<MultiInject>();
@@ -72,7 +73,9 @@ void applicationFactoryFuture() {
       removeApplicationBeans();
     });
 
-    test('Retrieve Factory Application bean after a second "child" bean is diposed', () async {
+    test(
+        'Retrieve Factory Application bean after a second "child" bean is diposed',
+        () async {
       registerApplicationBeans();
 
       final instance = await DDI.instance.getAsync<MultiInject>();
@@ -87,7 +90,9 @@ void applicationFactoryFuture() {
       removeApplicationBeans();
     });
 
-    test('Retrieve Factory Application bean after the last "child" bean is diposed', () async {
+    test(
+        'Retrieve Factory Application bean after the last "child" bean is diposed',
+        () async {
       registerApplicationBeans();
 
       final instance1 = await DDI.instance.getAsync<MultiInject>();
@@ -103,7 +108,8 @@ void applicationFactoryFuture() {
       removeApplicationBeans();
     });
 
-    test('Retrieve Factory Application bean after 2 "child" bean is diposed', () async {
+    test('Retrieve Factory Application bean after 2 "child" bean is diposed',
+        () async {
       registerApplicationBeans();
 
       final instance1 = await DDI.instance.getAsync<MultiInject>();
@@ -120,7 +126,8 @@ void applicationFactoryFuture() {
       removeApplicationBeans();
     });
 
-    test('Retrieve Factory Application bean after 3 "child" bean is diposed', () async {
+    test('Retrieve Factory Application bean after 3 "child" bean is diposed',
+        () async {
       registerApplicationBeans();
 
       final instance1 = await DDI.instance.getAsync<MultiInject>();
@@ -174,7 +181,8 @@ void applicationFactoryFuture() {
 
       DDI.instance.destroy<C>();
 
-      expect(() => DDI.instance.getAsync<C>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.getAsync<C>(),
+          throwsA(isA<BeanNotFoundException>()));
       expect(DDI.instance.isRegistered<C>(), false);
     });
 
@@ -185,12 +193,14 @@ void applicationFactoryFuture() {
 
       expect(DDI.instance.isRegistered(qualifier: 'typeC'), true);
 
-      expect(() => DDI.instance.getAsync(qualifier: 'typeC'), throwsA(isA<StateError>()));
+      expect(() => DDI.instance.getAsync(qualifier: 'typeC'),
+          throwsA(isA<StateError>()));
       expect(DDI.instance.isReady(qualifier: 'typeC'), false);
 
       DDI.instance.destroy(qualifier: 'typeC');
 
-      expect(() => DDI.instance.getAsync(qualifier: 'typeC'), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.getAsync(qualifier: 'typeC'),
+          throwsA(isA<BeanNotFoundException>()));
       expect(DDI.instance.isRegistered(qualifier: 'typeC'), false);
     });
 
@@ -204,11 +214,13 @@ void applicationFactoryFuture() {
         ),
       );
 
-      final instance1 = await DDI.instance.getAsync<FutureApplicationFactoryDestroyGet>();
+      final instance1 =
+          await DDI.instance.getAsync<FutureApplicationFactoryDestroyGet>();
 
       DDI.instance.destroy<FutureApplicationFactoryDestroyGet>();
 
-      final instance2 = await DDI.instance.getAsync<FutureApplicationFactoryDestroyGet>();
+      final instance2 =
+          await DDI.instance.getAsync<FutureApplicationFactoryDestroyGet>();
 
       expect(instance1, same(instance2));
     });
@@ -245,11 +257,13 @@ void applicationFactoryFuture() {
       DDI.instance.destroy<C>();
     });
 
-    test('Register and retrieve Future delayed Factory Application bean', () async {
+    test('Register and retrieve Future delayed Factory Application bean',
+        () async {
       DDI.instance.register<C>(
         factory: ApplicationFactory(
           builder: () async {
-            final C value = await Future.delayed(const Duration(seconds: 1), C.new);
+            final C value =
+                await Future.delayed(const Duration(seconds: 1), C.new);
             return value;
           }.builder,
         ),
@@ -281,14 +295,16 @@ void applicationFactoryFuture() {
       );
       C.new.builder.asApplication();
       //This happens because A(await DDI.instance()) transform to A(await DDI.instance<FutureOr<B>>())
-      expect(() => DDI.instance.getAsync<A>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.getAsync<A>(),
+          throwsA(isA<BeanNotFoundException>()));
 
       DDI.instance.destroy<A>();
       DDI.instance.destroy<B>();
       DDI.instance.destroy<C>();
     });
 
-    test('Register and retrieve Factory Application bean using FutureOr', () async {
+    test('Register and retrieve Factory Application bean using FutureOr',
+        () async {
       DDI.instance.register(
         factory: ApplicationFactory(
           builder: () async {
@@ -320,7 +336,9 @@ void applicationFactoryFuture() {
       DDI.instance.destroy<B>();
       DDI.instance.destroy<C>();
     });
-    test('Retrieve Factory Application bean after a "child" bean is disposed using Future', () async {
+    test(
+        'Retrieve Factory Application bean after a "child" bean is disposed using Future',
+        () async {
       DDI.instance.register(
         factory: ApplicationFactory(
           builder: () async {
@@ -380,14 +398,16 @@ void applicationFactoryFuture() {
         ),
       );
 
-      final FactoryParameter instance = await DDI.instance.getAsyncWith(parameter: getRecordParameter);
+      final FactoryParameter instance =
+          await DDI.instance.getAsyncWith(parameter: getRecordParameter);
 
       expect(instance, isA<FactoryParameter>());
       expect(instance.parameter, getRecordParameter);
 
       DDI.instance.destroy<FactoryParameter>();
 
-      expectLater(() => DDI.instance.getAsync<FactoryParameter>(), throwsA(isA<BeanNotFoundException>()));
+      expectLater(() => DDI.instance.getAsync<FactoryParameter>(),
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Select an Application bean', () async {
@@ -434,6 +454,26 @@ void applicationFactoryFuture() {
 
       expect(false, ddi.isRegistered(qualifier: 'creditCard'));
       expect(false, ddi.isRegistered(qualifier: 'paypal'));
+    });
+
+    test('Register a Future instance and just await to destroy', () async {
+      ddi.register<C>(
+        factory: ApplicationFactory(
+            builder: () async {
+          await Future.delayed(const Duration(milliseconds: 20));
+          return C();
+        }.builder),
+      );
+
+      ddi.getAsync<C>();
+
+      ddi.dispose<C>();
+
+      expect(ddi.isReady<C>(), false);
+
+      await ddi.destroy<C>();
+
+      expect(ddi.isRegistered<C>(), false);
     });
   });
 }

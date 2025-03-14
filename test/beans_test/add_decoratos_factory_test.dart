@@ -48,6 +48,8 @@ void addDecoratorFactory() {
       regraSoma();
 
       DDI.instance.destroy<D>();
+
+      expect(ddi.isRegistered<D>(), false);
     });
 
     test('ADD Decorators to a Factory Application bean', () {
@@ -61,6 +63,8 @@ void addDecoratorFactory() {
       regraSoma();
 
       DDI.instance.destroy<D>();
+
+      expect(ddi.isRegistered<D>(), false);
     });
 
     test('ADD Decorators to a Dependent bean', () {
@@ -74,28 +78,46 @@ void addDecoratorFactory() {
       regraSoma();
 
       DDI.instance.destroy<D>();
+
+      expect(ddi.isRegistered<D>(), false);
     });
 
     test('ADD Decorators to a Future Factory Singleton bean', () async {
+      expect(ddi.isRegistered<D>(), false);
       await () async {
         await Future.delayed(const Duration(milliseconds: 10));
-        return Future.value(D());
+        return D();
       }.builder.asSingleton(
         decorators: [
-          (instance) => E(instance),
-          (instance) => F(instance),
+          (D instance) => E(instance),
+          (D instance) => F(instance),
         ],
       );
 
-      await regraSomaAsync();
+      final instance1 = await DDI.instance.getAsync<D>();
 
-      DDI.instance.destroy<D>();
+      expect(instance1.value, 'bcdfghi');
+
+      DDI.instance.addDecorator<D>([
+        (instance) => E(instance),
+      ]);
+
+      final instance2 = await DDI.instance.getAsync<D>();
+
+      expect(instance2.value, 'bcdfghdef');
+      expect(identical(instance1, instance2), false);
+
+      await DDI.instance.destroy<D>();
+
+      expect(ddi.isRegistered<D>(), false);
     });
 
     test('ADD Decorators to a Future Factory Application bean', () async {
+      expect(ddi.isRegistered<D>(), false);
+
       () async {
         await Future.delayed(const Duration(milliseconds: 10));
-        return Future.value(D());
+        return D();
       }.builder.asApplication(
         decorators: [
           (instance) => E(instance),
@@ -106,12 +128,16 @@ void addDecoratorFactory() {
       await regraSomaAsync();
 
       DDI.instance.destroy<D>();
+
+      expect(ddi.isRegistered<D>(), false);
     });
 
     test('ADD Decorators to a Future Factory Dependent bean', () async {
+      expect(ddi.isRegistered<D>(), false);
+
       () async {
         await Future.delayed(const Duration(milliseconds: 10));
-        return Future.value(D());
+        return D();
       }.builder.asDependent(
         decorators: [
           (instance) => E(instance),
@@ -122,6 +148,8 @@ void addDecoratorFactory() {
       await regraSomaAsync();
 
       DDI.instance.destroy<D>();
+
+      expect(ddi.isRegistered<D>(), false);
     });
   });
 }

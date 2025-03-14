@@ -42,7 +42,8 @@ void singletonFactory() {
       removeSingletonBeans();
     });
 
-    test('Retrieve a Factory singleton bean after a "child" bean is destroyed', () {
+    test('Retrieve a Factory singleton bean after a "child" bean is destroyed',
+        () {
       registerBeans();
 
       final instance = ddi.get<MultiInject>();
@@ -59,7 +60,9 @@ void singletonFactory() {
       ddi.destroy<MultiInject>();
     });
 
-    test('Retrieve a Factory singleton bean after a second "child" bean is destroyed', () {
+    test(
+        'Retrieve a Factory singleton bean after a second "child" bean is destroyed',
+        () {
       registerBeans();
 
       final instance = ddi.get<MultiInject>();
@@ -93,7 +96,8 @@ void singletonFactory() {
 
       ddi.destroy(qualifier: 'typeC');
 
-      expect(() => ddi.get(qualifier: 'typeC'), throwsA(isA<BeanNotFoundException>()));
+      expect(() => ddi.get(qualifier: 'typeC'),
+          throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Try to destroy a undestroyable Factory Singleton bean', () {
@@ -109,17 +113,20 @@ void singletonFactory() {
     });
 
     test('Try to register again a undestroyable Factory Singleton bean', () {
-      SingletonFactoryDestroyRegister.new.builder.asSingleton(canDestroy: false);
+      SingletonFactoryDestroyRegister.new.builder
+          .asSingleton(canDestroy: false);
 
       ddi.get<SingletonFactoryDestroyRegister>();
 
       ddi.destroy<SingletonFactoryDestroyRegister>();
 
-      expect(() => SingletonFactoryDestroyRegister.new.builder.asSingleton(), throwsA(isA<DuplicatedBeanException>()));
+      expect(() => SingletonFactoryDestroyRegister.new.builder.asSingleton(),
+          throwsA(isA<DuplicatedBeanException>()));
     });
 
     test('Retrieve Factory Singleton with Custom Parameter', () {
-      expect(() => FactoryParameter.new.builder.asSingleton(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => FactoryParameter.new.builder.asSingleton(),
+          throwsA(isA<BeanNotFoundException>()));
     });
   });
 }

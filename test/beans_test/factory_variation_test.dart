@@ -60,7 +60,8 @@ void factoryVariationTest() {
 
       expectRegistered();
 
-      final instance1 = ddi.getWith<MultiInject, List<Object>>(parameter: [ddi.get<A>(), ddi.get<B>(), ddi.get<C>()]);
+      final instance1 = ddi.getWith<MultiInject, List<Object>>(
+          parameter: [ddi.get<A>(), ddi.get<B>(), ddi.get<C>()]);
       final instance2 = ddi.get<A>();
 
       expect(instance1.a, same(instance2));
@@ -77,8 +78,12 @@ void factoryVariationTest() {
 
       expectRegistered();
 
-      final instance1 =
-          ddi.getOptionalWith<MultiInject, List<Object>>(parameter: [ddi.getOptional<A>()!, ddi.getOptional<B>()!, ddi.getOptional<C>()!])!;
+      final instance1 = ddi.getOptionalWith<MultiInject, List<Object>>(
+          parameter: [
+            ddi.getOptional<A>()!,
+            ddi.getOptional<B>()!,
+            ddi.getOptional<C>()!
+          ])!;
       final instance2 = ddi.get<A>();
 
       expect(instance1.a, same(instance2));
@@ -147,7 +152,8 @@ void factoryVariationTest() {
         ),
       );
 
-      final instance1 = ddi.getWith<MultiInject, Map<Symbol, dynamic>>(parameter: {
+      final instance1 =
+          ddi.getWith<MultiInject, Map<Symbol, dynamic>>(parameter: {
         #b: ddi.getOptional<B>()!,
         #c: ddi.getOptional<C>()!,
       });
@@ -215,7 +221,8 @@ void factoryVariationTest() {
 
       expectRegistered();
 
-      final instance1 = await ddi.getAsyncWith<MultiInject, Map<Symbol, dynamic>>(
+      final instance1 =
+          await ddi.getAsyncWith<MultiInject, Map<Symbol, dynamic>>(
         parameter: {
           #a: ddi.get<A>(),
           #b: ddi.get<B>(),
@@ -255,7 +262,8 @@ void factoryVariationTest() {
 
       expectRegistered();
 
-      final instance1 = await ddi.getOptionalAsyncWith<MultiInject, List<Object>>(
+      final instance1 =
+          await ddi.getOptionalAsyncWith<MultiInject, List<Object>>(
         parameter: [
           ddi.get<A>(),
           ddi.get<B>(),
@@ -275,7 +283,8 @@ void factoryVariationTest() {
       removeBeans();
     });
 
-    test('Register a Future and retrieve all Factories using a Record', () async {
+    test('Register a Future and retrieve all Factories using a Record',
+        () async {
       C.new.builder.asApplication();
       B.new.builder.asApplication();
       A.new.builder.asSingleton();

@@ -19,6 +19,8 @@ void moduleSingletonTest() {
       expect(instance1.b.c, same(instance2.b.c));
       expect(instance1.b.c.value, same(instance2.b.c.value));
 
+      DDI.instance.dispose<ModuleSingleton>();
+
       DDI.instance.destroy<ModuleSingleton>();
 
       expect(
