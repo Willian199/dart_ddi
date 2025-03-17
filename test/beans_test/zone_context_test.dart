@@ -53,26 +53,21 @@ void zoneContext() {
     });
 
     test('Zones devem ser completamente isoladas umas das outras', () async {
-      await ddi.runInZone('zone1', () async {
-        ddi.registerSingleton<String>(() => 'Zone 1 String',
-            qualifier: 'zoneString');
+      ddi.runInZone('zone1', () {
+        ddi.registerSingleton<String>(() => 'Zone 1 String', qualifier: 'zoneString');
 
-        await ddi.runInZone('zone2', () async {
-          ddi.registerSingleton<String>(() => 'Zone 2 String',
-              qualifier: 'zoneString');
+        ddi.runInZone<void>('zone2', () {
+          ddi.registerSingleton<String>(() => 'Zone 2 String', qualifier: 'zoneString');
 
-          expect(ddi.get<String>(qualifier: 'zoneString'),
-              equals('Zone 2 String'));
+          expect(ddi.get<String>(qualifier: 'zoneString'), equals('Zone 2 String'));
 
-          expect(() => ddi.get<String>(qualifier: 'zoneString2'),
-              throwsA(isA<BeanNotFoundException>()));
+          expect(() => ddi.get<String>(qualifier: 'zoneString2'), throwsA(isA<BeanNotFoundException>()));
 
           ddi.destroy<String>(qualifier: 'zoneString');
           expect(ddi.isRegistered<String>(qualifier: 'zoneString'), false);
         });
 
-        expect(
-            ddi.get<String>(qualifier: 'zoneString'), equals('Zone 1 String'));
+        expect(ddi.get<String>(qualifier: 'zoneString'), equals('Zone 1 String'));
       });
     });
   });

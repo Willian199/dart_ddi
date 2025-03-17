@@ -7,24 +7,18 @@ class _DDIImpl implements DDI {
   String get zoneName => _beans.zoneName;
 
   @override
-  Future<void> runInZone(String name, Future<void> Function() body) {
-    final Completer<void> completer = Completer<void>();
-
-    _beans.runWithZoneRegistry(name, () async {
+  T runInZone<T>(String name, T Function() body) {
+    return _beans.runWithZoneRegistry<T>(name, () {
       try {
-        await body();
-
+        return body();
+      } finally {
         if (_beans.hasZoneRegistry()) {
           for (final key in _beans.keys.toList()) {
             _destroy(key);
           }
         }
-      } finally {
-        completer.complete();
       }
     });
-
-    return completer.future;
   }
 
   @override
@@ -50,8 +44,7 @@ class _DDIImpl implements DDI {
     if (shouldRegister) {
       final Object effectiveQualifierName = qualifier ?? BeanT;
 
-      final fac =
-          _beans.getFactory(qualifier: effectiveQualifierName, fallback: false);
+      final fac = _beans.getFactory(qualifier: effectiveQualifierName, fallback: false);
 
       if (fac != null) {
         if (BeanStateEnum.none == fac.state) {
@@ -89,17 +82,14 @@ class _DDIImpl implements DDI {
   bool isRegistered<BeanT extends Object>({Object? qualifier}) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    return ![BeanStateEnum.none, BeanStateEnum.beingRegistered].contains(_beans
-            .getFactory(qualifier: effectiveQualifierName, fallback: false)
-            ?.state ??
-        BeanStateEnum.none);
+    return ![BeanStateEnum.none, BeanStateEnum.beingRegistered]
+        .contains(_beans.getFactory(qualifier: effectiveQualifierName, fallback: false)?.state ?? BeanStateEnum.none);
   }
 
   @override
   bool isFuture<BeanT extends Object>({Object? qualifier}) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
-    if (_beans.getFactory(qualifier: effectiveQualifierName, fallback: false)
-        case final DDIBaseFactory<BeanT> factory?) {
+    if (_beans.getFactory(qualifier: effectiveQualifierName, fallback: false) case final DDIBaseFactory<BeanT> factory?) {
       return factory.isFuture;
     }
 
@@ -109,8 +99,7 @@ class _DDIImpl implements DDI {
   @override
   bool isReady<BeanT extends Object>({Object? qualifier}) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
-    if (_beans.getFactory(qualifier: effectiveQualifierName, fallback: false)
-        case final DDIBaseFactory<BeanT> factory?) {
+    if (_beans.getFactory(qualifier: effectiveQualifierName, fallback: false) case final DDIBaseFactory<BeanT> factory?) {
       return factory.isReady && factory.state == BeanStateEnum.created;
     }
 
@@ -125,8 +114,7 @@ class _DDIImpl implements DDI {
   }) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    if (_beans.getFactory(qualifier: effectiveQualifierName)
-        case final DDIBaseFactory<BeanT> factory?) {
+    if (_beans.getFactory(qualifier: effectiveQualifierName) case final DDIBaseFactory<BeanT> factory?) {
       return InstanceRunnerUtils.run<BeanT, ParameterT>(
         factory: factory,
         effectiveQualifierName: effectiveQualifierName,
@@ -135,8 +123,7 @@ class _DDIImpl implements DDI {
     } else if (select != null && BeanT != Object) {
       // Try to find a bean with the selector
       for (final MapEntry(key: _, :value) in _beans.entries) {
-        if (value.type == BeanT &&
-            (value.selector?.call(select) ?? false) as bool) {
+        if (value.type == BeanT && (value.selector?.call(select) ?? false) as bool) {
           return InstanceRunnerUtils.run<BeanT, ParameterT>(
             factory: value as DDIBaseFactory<BeanT>,
             effectiveQualifierName: effectiveQualifierName,
@@ -178,9 +165,7 @@ class _DDIImpl implements DDI {
     } else if (select != null && BeanT != Object) {
       // Try to find a bean with the selector
       for (final MapEntry(key: _, :value) in _beans.entries) {
-        if (value.type == BeanT &&
-            value.selector != null &&
-            await (value.selector?.call(select) ?? false)) {
+        if (value.type == BeanT && value.selector != null && await (value.selector?.call(select) ?? false)) {
           return InstanceRunnerUtils.runAsync<BeanT, ParameterT>(
             factory: value as DDIBaseFactory<BeanT>,
             effectiveQualifierName: effectiveQualifierName,
@@ -197,10 +182,7 @@ class _DDIImpl implements DDI {
   List<Object> getByType<BeanT extends Object>() {
     final Type type = BeanT;
 
-    return _beans.entries
-        .where((element) => element.value.type == type)
-        .map((e) => e.key)
-        .toList();
+    return _beans.entries.where((element) => element.value.type == type).map((e) => e.key).toList();
   }
 
   @override
@@ -210,10 +192,8 @@ class _DDIImpl implements DDI {
     return _destroy<BeanT>(effectiveQualifierName);
   }
 
-  FutureOr<void> _destroy<BeanT extends Object>(
-      Object effectiveQualifierName) async {
-    if (_beans.getFactory(qualifier: effectiveQualifierName, fallback: false)
-        case final factory?) {
+  FutureOr<void> _destroy<BeanT extends Object>(Object effectiveQualifierName) async {
+    if (_beans.getFactory(qualifier: effectiveQualifierName, fallback: false) case final factory?) {
       factory.state = BeanStateEnum.beingDestroyed;
       return factory.destroy(() => _beans.remove(effectiveQualifierName));
     }
@@ -233,8 +213,7 @@ class _DDIImpl implements DDI {
   Future<void> dispose<BeanT extends Object>({Object? qualifier}) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    if (_beans.getFactory(qualifier: effectiveQualifierName, fallback: false)
-        case final DDIBaseFactory<BeanT> factory?) {
+    if (_beans.getFactory(qualifier: effectiveQualifierName, fallback: false) case final DDIBaseFactory<BeanT> factory?) {
       return factory.dispose();
     }
 
@@ -255,8 +234,7 @@ class _DDIImpl implements DDI {
   }) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    final DDIBaseFactory<BeanT>? factory = _beans.getFactory(
-        qualifier: effectiveQualifierName) as DDIBaseFactory<BeanT>?;
+    final DDIBaseFactory<BeanT>? factory = _beans.getFactory(qualifier: effectiveQualifierName) as DDIBaseFactory<BeanT>?;
 
     if (factory == null) {
       throw BeanNotFoundException(effectiveQualifierName.toString());
@@ -272,8 +250,7 @@ class _DDIImpl implements DDI {
   }) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    if (_beans.getFactory(qualifier: effectiveQualifierName)
-        case final DDIBaseFactory<BeanT> factory?) {
+    if (_beans.getFactory(qualifier: effectiveQualifierName) case final DDIBaseFactory<BeanT> factory?) {
       factory.addInterceptor(interceptors ?? {});
     } else {
       throw BeanNotFoundException(effectiveQualifierName.toString());
@@ -281,8 +258,7 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  void addChildModules<BeanT extends Object>(
-      {required Object child, Object? qualifier}) {
+  void addChildModules<BeanT extends Object>({required Object child, Object? qualifier}) {
     addChildrenModules<BeanT>(child: {child}, qualifier: qualifier);
   }
 
@@ -293,8 +269,7 @@ class _DDIImpl implements DDI {
   }) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    if (_beans.getFactory(qualifier: effectiveQualifierName)
-        case final DDIBaseFactory<BeanT> factory?) {
+    if (_beans.getFactory(qualifier: effectiveQualifierName) case final DDIBaseFactory<BeanT> factory?) {
       factory.addChildrenModules(child);
     } else {
       throw BeanNotFoundException(effectiveQualifierName.toString());
