@@ -34,7 +34,9 @@ void futureAddDecorator() {
 
       await regraSoma();
 
-      DDI.instance.destroy<D>();
+      await DDI.instance.destroy<D>();
+
+      expect(ddi.isRegistered<D>(), false);
     });
 
     test('ADD Decorators to a Application bean', () async {
@@ -48,7 +50,9 @@ void futureAddDecorator() {
 
       await regraSoma();
 
-      DDI.instance.destroy<D>();
+      await DDI.instance.destroy<D>();
+
+      expect(ddi.isRegistered<D>(), false);
     });
 
     test('ADD Decorators to a Dependent bean', () async {
@@ -62,7 +66,9 @@ void futureAddDecorator() {
 
       await regraSoma();
 
-      DDI.instance.destroy<D>();
+      await DDI.instance.destroy<D>();
+
+      expect(ddi.isRegistered<D>(), false);
     });
 
     test('ADD Decorators when the Singleton bean is not ready', () async {
@@ -83,7 +89,9 @@ void futureAddDecorator() {
               ]),
           throwsA(isA<BeanNotReadyException>()));
 
-      DDI.instance.destroy<D>();
+      await DDI.instance.destroy<D>();
+
+      expect(ddi.isRegistered<D>(), false);
     });
   });
 }

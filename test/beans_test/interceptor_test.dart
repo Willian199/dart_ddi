@@ -135,7 +135,7 @@ void interceptor() {
       expect(DDI.instance.isRegistered<J>(), false);
     });
 
-    test('ADD Decorators and Interceptor to a Singleton bean', () {
+    test('ADD Decorators and Interceptor to a Singleton bean', () async {
       ddi.register<K>(
         factory: SingletonFactory(
           builder: K.new.builder,
@@ -166,7 +166,7 @@ void interceptor() {
       expect(instance2.value, 'bcconsdfghGETdefGET');
       expect(identical(instance1, instance2), false);
 
-      DDI.instance.destroy<D>();
+      await DDI.instance.destroy<D>();
       ddi.destroy<K>();
 
       expect(DDI.instance.isRegistered<D>(), false);

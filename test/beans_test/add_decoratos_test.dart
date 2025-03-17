@@ -23,7 +23,7 @@ void addDecorator() {
       expect(identical(instance1, instance2), false);
     }
 
-    test('ADD Decorators to a Singleton bean', () {
+    test('ADD Decorators to a Singleton bean', () async {
       ///Where is Singleton, should the register in the correct order
       DDI.instance.registerSingleton(
         () => D(),
@@ -35,10 +35,10 @@ void addDecorator() {
 
       regraSoma();
 
-      DDI.instance.destroy<D>();
+      await DDI.instance.destroy<D>();
     });
 
-    test('ADD Decorators to a Application bean', () {
+    test('ADD Decorators to a Application bean', () async {
       ///Where is Singleton, should the register in the correct order
       DDI.instance.registerApplication(
         () => D(),
@@ -50,10 +50,10 @@ void addDecorator() {
 
       regraSoma();
 
-      DDI.instance.destroy<D>();
+      await DDI.instance.destroy<D>();
     });
 
-    test('ADD Decorators to a Dependent bean', () {
+    test('ADD Decorators to a Dependent bean', () async {
       ///Where is Singleton, should the register in the correct order
       DDI.instance.registerDependent(
         () => D(),
@@ -65,7 +65,7 @@ void addDecorator() {
 
       regraSoma();
 
-      DDI.instance.destroy<D>();
+      await DDI.instance.destroy<D>();
     });
 
     test('ADD Decorators to a Bean not registered', () {

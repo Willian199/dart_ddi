@@ -190,7 +190,7 @@ void singletonFactoryFuture() {
           () async => ddi.getAsync<D>(), throwsA(isA<BeanNotReadyException>()));
       expect(ddi.isRegistered<D>(), false);
 
-      DDI.instance.destroy<D>();
+      await DDI.instance.destroy<D>();
     });
   });
 }

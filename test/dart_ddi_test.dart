@@ -33,6 +33,7 @@ import 'beans_test/singleton_factory_future_test.dart';
 import 'beans_test/singleton_factory_test.dart';
 import 'beans_test/singleton_future_test.dart';
 import 'beans_test/singleton_test.dart';
+import 'beans_test/zone_context_test.dart';
 
 void main() {
   //Basic Tests, with consists in register, get, dispose, remove
@@ -40,6 +41,7 @@ void main() {
   application();
   dependent();
   object();
+  zoneContext();
 
   //Factories
   singletonFactory();

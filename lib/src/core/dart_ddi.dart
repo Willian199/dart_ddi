@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
+import 'package:dart_ddi/src/core/dart_ddi_qualifier.dart';
 import 'package:dart_ddi/src/exception/bean_not_found.dart';
 import 'package:dart_ddi/src/exception/duplicated_bean.dart';
 import 'package:dart_ddi/src/exception/factory_not_allowed.dart';
@@ -24,6 +25,9 @@ abstract class DDI {
 
   /// Get a new instance of the [DDI] class.
   static DDI get newInstance => _DDIImpl();
+
+  // Método para executar código com um novo DartDDIQualifier
+  Future<void> runInZone(String name, Future<void> Function() body);
 
   /// Registers a factory to create an instance of the class [BeanT].
   ///
