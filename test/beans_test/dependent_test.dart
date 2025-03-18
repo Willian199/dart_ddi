@@ -11,9 +11,9 @@ import '../clazz_samples/undestroyable/dependent_destroy_register.dart';
 void dependent() {
   group('DDI Dependent Basic Tests', () {
     void registerDependentBeans() {
-      DDI.instance.registerDependent(() => A(DDI.instance()));
-      DDI.instance.registerDependent(() => B(DDI.instance()));
-      DDI.instance.registerDependent(() => C());
+      DDI.instance.dependent(() => A(DDI.instance()));
+      DDI.instance.dependent(() => B(DDI.instance()));
+      DDI.instance.dependent(() => C());
     }
 
     void removeDependentBeans() {
@@ -67,7 +67,7 @@ void dependent() {
     });
 
     test('Try to retrieve Dependent bean after disposed', () {
-      DDI.instance.registerDependent(() => C());
+      DDI.instance.dependent(() => C());
 
       final instance1 = DDI.instance.get<C>();
 
@@ -88,7 +88,7 @@ void dependent() {
     });
 
     test('Create, get and remove a qualifier bean', () {
-      DDI.instance.registerDependent(() => C(), qualifier: 'typeC');
+      DDI.instance.dependent(() => C(), qualifier: 'typeC');
 
       final instance1 = DDI.instance.get(qualifier: 'typeC');
       final instance2 = DDI.instance.get(qualifier: 'typeC');
@@ -102,8 +102,7 @@ void dependent() {
     });
 
     test('Try to destroy a undestroyable Dependent bean', () {
-      DDI.instance
-          .registerDependent(() => DependentDestroyGet(), canDestroy: false);
+      DDI.instance.dependent(() => DependentDestroyGet(), canDestroy: false);
 
       final instance1 = DDI.instance.get<DependentDestroyGet>();
 
@@ -116,8 +115,8 @@ void dependent() {
     });
 
     test('Try to register again a undestroyable Dependent bean', () {
-      DDI.instance.registerDependent(() => DependentDestroyRegister(),
-          canDestroy: false);
+      DDI.instance
+          .dependent(() => DependentDestroyRegister(), canDestroy: false);
 
       DDI.instance.get<DependentDestroyRegister>();
 

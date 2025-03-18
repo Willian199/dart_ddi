@@ -8,9 +8,9 @@ import 'multi_inject.dart';
 class ModuleFactoryApplication with DDIModule {
   @override
   void onPostConstruct() {
-    register(factory: B.new.builder.asApplication());
-    register(factory: A.new.builder.asApplication());
-    register(factory: C.new.builder.asApplication());
-    register(factory: MultiInject.new.builder.asApplication());
+    register(factory: ApplicationFactory(builder: B.new.builder));
+    register(factory: ApplicationFactory(builder: A.new.builder));
+    register(factory: ApplicationFactory(builder: C.new.builder));
+    register(factory: ApplicationFactory(builder: MultiInject.new.builder));
   }
 }

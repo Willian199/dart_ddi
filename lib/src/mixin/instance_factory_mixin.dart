@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
 
-class InstanceFactoryUtil {
-  static BeanT create<BeanT extends Object, ParameterT extends Object>({
+mixin InstanceFactoryMixin {
+  BeanT createInstance<BeanT extends Object, ParameterT extends Object>({
     required CustomBuilder<FutureOr<BeanT>> builder,
     ParameterT? parameter,
   }) {
@@ -20,7 +20,7 @@ class InstanceFactoryUtil {
   }
 
   // ignore: strict_raw_type
-  static Map<Symbol, dynamic> _getMap<BeanT extends Object>(Map map) {
+  Map<Symbol, dynamic> _getMap<BeanT extends Object>(Map map) {
     assert(map is Map<Symbol, dynamic>, '''
 When creating the instance with a Map type, it must be Map<Symbol, dynamic>
 Ex:
@@ -33,7 +33,7 @@ Ex:
     return map as Map<Symbol, dynamic>;
   }
 
-  static BeanT _autoInject<BeanT extends Object>(
+  BeanT _autoInject<BeanT extends Object>(
       CustomBuilder<FutureOr<BeanT>> builder) {
     final instances = [
       for (final inject in builder.parametersType) ddi.get(qualifier: inject)
@@ -42,8 +42,8 @@ Ex:
     return Function.apply(builder.producer, instances) as BeanT;
   }
 
-  static FutureOr<BeanT>
-      createAsync<BeanT extends Object, ParameterT extends Object>({
+  FutureOr<BeanT>
+      createInstanceAsync<BeanT extends Object, ParameterT extends Object>({
     required CustomBuilder<FutureOr<BeanT>> builder,
     ParameterT? parameter,
   }) async {
@@ -59,7 +59,7 @@ Ex:
     };
   }
 
-  static FutureOr<BeanT> _autoInjectAsync<BeanT extends Object>(
+  FutureOr<BeanT> _autoInjectAsync<BeanT extends Object>(
       CustomBuilder<FutureOr<BeanT>> builder) async {
     /// Must await inject by inject
     /// If use await Future.wait([]) could create different instance for the same type.

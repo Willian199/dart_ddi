@@ -8,7 +8,6 @@ extension DDIRegisterExtension on DDI {
   ///
   /// - `clazzRegister`: Factory function to create the instance.
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
-  /// - `postConstruct`: Optional function to be executed after the instance is constructed.
   /// - `decorators`: List of decoration functions to apply to the instance.
   /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
   /// - `canRegister`: Optional function to conditionally register the instance.
@@ -23,19 +22,18 @@ extension DDIRegisterExtension on DDI {
   ///  **Use Case:**
   /// - Suitable for objects that are stateless or have shared state across the entire application.
   /// - Examples include utility classes, configuration objects, or services that maintain global state.
-  Future<void> registerSingleton<BeanT extends Object>(
+  Future<void> singleton<BeanT extends Object>(
     BeanRegister<BeanT> clazzRegister, {
     Object? qualifier,
-    VoidCallback? postConstruct,
-    ListDecorator<BeanT>? decorators,
-    Set<Object>? interceptors,
     FutureOrBoolCallback? canRegister,
     bool canDestroy = true,
-    Set<Object>? children,
+    ListDecorator<BeanT> decorators = const [],
+    Set<Object> interceptors = const {},
+    Set<Object> children = const {},
     FutureOr<bool> Function(Object)? selector,
   }) {
     return register<BeanT>(
-      factory: ScopeFactory.singleton(
+      factory: SingletonFactory<BeanT>(
         builder: clazzRegister.builder,
         children: children,
         interceptors: interceptors,
@@ -52,7 +50,6 @@ extension DDIRegisterExtension on DDI {
   ///
   /// - `clazzRegister`: Factory function to create the instance.
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
-  /// - `postConstruct`: Optional function to be executed after the instance is constructed.
   /// - `decorators`: List of decoration functions to apply to the instance.
   /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
   /// - `canRegister`: Optional function to conditionally register the instance.
@@ -68,64 +65,18 @@ extension DDIRegisterExtension on DDI {
   ///  **Use Case:**
   /// - Appropriate for objects that need to persist during the entire application's lifecycle, but may have a more dynamic nature than Singleton instances.
   /// - Examples include managers, controllers, or services that should persist but might be recreated under certain circumstances.
-  Future<void> registerApplication<BeanT extends Object>(
+  Future<void> application<BeanT extends Object>(
     BeanRegister<BeanT> clazzRegister, {
     Object? qualifier,
-    VoidCallback? postConstruct,
-    ListDecorator<BeanT>? decorators,
-    Set<Object>? interceptors,
     FutureOrBoolCallback? canRegister,
     bool canDestroy = true,
-    Set<Object>? children,
+    ListDecorator<BeanT> decorators = const [],
+    Set<Object> interceptors = const {},
+    Set<Object> children = const {},
     FutureOr<bool> Function(Object)? selector,
   }) {
     return register<BeanT>(
-      factory: ScopeFactory.application(
-        builder: clazzRegister.builder,
-        children: children,
-        interceptors: interceptors,
-        decorators: decorators,
-        canDestroy: canDestroy,
-        selector: selector,
-      ),
-      qualifier: qualifier,
-      canRegister: canRegister,
-    );
-  }
-
-  /// Registers an instance as a Session.
-  ///
-  /// - `clazzRegister`: Factory function to create the instance.
-  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
-  /// - `postConstruct`: Optional function to be executed after the instance is constructed.
-  /// - `decorators`: List of decoration functions to apply to the instance.
-  /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
-  /// - `canRegister`: Optional function to conditionally register the instance.
-  /// - `canDestroy`: Optional parameter to make the instance indestructible.
-  /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module.
-  /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
-  ///
-  /// **Session Scope:**
-  /// - Ensures that only one instance of the registered class is created and shared throughout the entire application.
-  /// - Created once when first requested.
-  /// - Lazy instance creation.
-  ///
-  ///  **Use Case:**
-  /// - Appropriate for objects that need to persist during the entire application's lifecycle, but may have a more dynamic nature than Singleton instances.
-  /// - Examples include managing user authentication state or caching user-specific preferences.
-  Future<void> registerSession<BeanT extends Object>(
-    BeanRegister<BeanT> clazzRegister, {
-    Object? qualifier,
-    VoidCallback? postConstruct,
-    ListDecorator<BeanT>? decorators,
-    Set<Object>? interceptors,
-    FutureOrBoolCallback? canRegister,
-    bool canDestroy = true,
-    Set<Object>? children,
-    FutureOr<bool> Function(Object)? selector,
-  }) {
-    return register<BeanT>(
-      factory: ScopeFactory.session(
+      factory: ApplicationFactory<BeanT>(
         builder: clazzRegister.builder,
         children: children,
         interceptors: interceptors,
@@ -142,7 +93,6 @@ extension DDIRegisterExtension on DDI {
   ///
   /// - `clazzRegister`: Factory function to create the instance.
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
-  /// - `postConstruct`: Optional function to be executed after the instance is constructed.
   /// - `decorators`: List of decoration functions to apply to the instance.
   /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
   /// - `canRegister`: Optional function to conditionally register the instance.
@@ -157,20 +107,61 @@ extension DDIRegisterExtension on DDI {
   ///  **Use Case:**
   /// - Suitable for objects with a short lifecycle or those that need to be recreated frequently, ensuring isolation between different parts of the application.
   /// - Examples include transient objects, temporary data holders, or components with a short lifespan.
-  Future<void> registerDependent<BeanT extends Object>(
+  Future<void> dependent<BeanT extends Object>(
     BeanRegister<BeanT> clazzRegister, {
     Object? qualifier,
-    VoidCallback? postConstruct,
-    ListDecorator<BeanT>? decorators,
-    Set<Object>? interceptors,
     FutureOrBoolCallback? canRegister,
     bool canDestroy = true,
-    Set<Object>? children,
+    ListDecorator<BeanT> decorators = const [],
+    Set<Object> interceptors = const {},
+    Set<Object> children = const {},
     FutureOr<bool> Function(Object)? selector,
   }) {
     return register<BeanT>(
-      factory: ScopeFactory.dependent(
+      factory: DependentFactory<BeanT>(
         builder: clazzRegister.builder,
+        children: children,
+        interceptors: interceptors,
+        decorators: decorators,
+        canDestroy: canDestroy,
+        selector: selector,
+      ),
+      qualifier: qualifier,
+      canRegister: canRegister,
+    );
+  }
+
+  /// Registers an instance as a Object Scope.
+  ///
+  /// - `instance`: The instance to be registered.
+  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
+  /// - `decorators`: List of decoration functions to apply to the instance.
+  /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
+  /// - `canRegister`: Optional function to conditionally register the instance.
+  /// - `canDestroy`: Optional parameter to make the instance indestructible.
+  /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module.
+  /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
+  ///
+  /// **Singleton Scope:**
+  /// - Ensures that only one instance of the registered class is created and shared throughout the entire application.
+  /// - Created once when registered.
+  ///
+  ///  **Use Case:**
+  /// - Suitable for objects that are stateless or have shared state across the entire application.
+  /// - Examples include utility classes, configuration objects, or services that maintain global state.
+  Future<void> object<BeanT extends Object>(
+    BeanT instance, {
+    Object? qualifier,
+    FutureOrBoolCallback? canRegister,
+    bool canDestroy = true,
+    ListDecorator<BeanT> decorators = const [],
+    Set<Object> interceptors = const {},
+    Set<Object> children = const {},
+    FutureOr<bool> Function(Object)? selector,
+  }) {
+    return register<BeanT>(
+      factory: ObjectFactory<BeanT>(
+        instance: instance,
         children: children,
         interceptors: interceptors,
         decorators: decorators,

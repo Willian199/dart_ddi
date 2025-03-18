@@ -48,97 +48,88 @@ final class CustomBuilder<BeanT extends Object> {
 
   /// Creates a Bean with an Application scope.
   ///
-  /// - `postConstruct`: An optional function that is executed after the Bean is created.
   /// - `decorators`: A list of decorators to modify the Bean before it is returned.
   /// - `canDestroy`: Optional parameter to make the instance indestructible.
   /// - `children`: A set of child objects associated with the Bean.
   /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
-  ScopeFactory<BeanT> asApplication({
-    VoidCallback? postConstruct,
-    ListDecorator<BeanT>? decorators,
+  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
+  /// - `canRegister`: Optional function to conditionally register the instance.
+  Future<void> asApplication({
+    ListDecorator<BeanT> decorators = const [],
     bool canDestroy = true,
-    Set<Object>? children,
+    Set<Object> children = const {},
     FutureOr<bool> Function(Object)? selector,
+    Object? qualifier,
+    FutureOr<bool> Function()? canRegister,
   }) {
-    return ScopeFactory<BeanT>.application(
-      builder: this,
-      postConstruct: postConstruct,
-      decorators: decorators,
-      canDestroy: canDestroy,
-      children: children,
-      selector: selector,
-    );
-  }
-
-  /// Creates a Bean with a Session scope.
-  ///
-  /// - `postConstruct`: An optional function that is executed after the Bean is created.
-  /// - `decorators`: A list of decorators to modify the Bean before it is returned.
-  /// - `canDestroy`: Optional parameter to make the instance indestructible.
-  /// - `children`: A set of child objects associated with the Bean.
-  /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
-  ScopeFactory<BeanT> asSession({
-    VoidCallback? postConstruct,
-    ListDecorator<BeanT>? decorators,
-    bool canDestroy = true,
-    Set<Object>? children,
-    FutureOr<bool> Function(Object)? selector,
-  }) {
-    return ScopeFactory<BeanT>.session(
-      builder: this,
-      postConstruct: postConstruct,
-      decorators: decorators,
-      canDestroy: canDestroy,
-      children: children,
-      selector: selector,
+    return DDI.instance.register<BeanT>(
+      factory: ApplicationFactory<BeanT>(
+        builder: this,
+        decorators: decorators,
+        canDestroy: canDestroy,
+        children: children,
+        selector: selector,
+      ),
+      qualifier: qualifier,
+      canRegister: canRegister,
     );
   }
 
   /// Creates a Bean with a Dependent scope.
   ///
-  /// - `postConstruct`: An optional function that is executed after the Bean is created.
   /// - `decorators`: A list of decorators to modify the Bean before it is returned.
   /// - `canDestroy`: Optional parameter to make the instance indestructible.
   /// - `children`: A set of child objects associated with the Bean.
   /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
-  ScopeFactory<BeanT> asDependent({
-    VoidCallback? postConstruct,
-    ListDecorator<BeanT>? decorators,
+  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
+  /// - `canRegister`: Optional function to conditionally register the instance.
+  Future<void> asDependent({
+    ListDecorator<BeanT> decorators = const [],
     bool canDestroy = true,
-    Set<Object>? children,
+    Set<Object> children = const {},
     FutureOr<bool> Function(Object)? selector,
+    Object? qualifier,
+    FutureOr<bool> Function()? canRegister,
   }) {
-    return ScopeFactory<BeanT>.dependent(
-      builder: this,
-      postConstruct: postConstruct,
-      decorators: decorators,
-      canDestroy: canDestroy,
-      children: children,
-      selector: selector,
+    return DDI.instance.register<BeanT>(
+      factory: DependentFactory<BeanT>(
+        builder: this,
+        decorators: decorators,
+        canDestroy: canDestroy,
+        children: children,
+        selector: selector,
+      ),
+      qualifier: qualifier,
+      canRegister: canRegister,
     );
   }
 
   /// Creates a Bean with a Singleton scope.
   ///
-  /// - `postConstruct`: An optional function that is executed after the Bean is created.
   /// - `decorators`: A list of decorators to modify the Bean before it is returned.
   /// - `canDestroy`: Optional parameter to make the instance indestructible.
   /// - `children`: A set of child objects associated with the Bean.
   /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
-  ScopeFactory<BeanT> asSingleton({
-    VoidCallback? postConstruct,
-    ListDecorator<BeanT>? decorators,
+  /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
+  /// - `canRegister`: Optional function to conditionally register the instance.
+  Future<void> asSingleton({
+    ListDecorator<BeanT> decorators = const [],
     bool canDestroy = true,
-    Set<Object>? children,
+    Set<Object> children = const {},
     FutureOr<bool> Function(Object)? selector,
+    Object? qualifier,
+    FutureOr<bool> Function()? canRegister,
   }) {
-    return ScopeFactory<BeanT>.singleton(
-      builder: this,
-      postConstruct: postConstruct,
-      decorators: decorators,
-      canDestroy: canDestroy,
-      children: children,
-      selector: selector,
+    return DDI.instance.register<BeanT>(
+      factory: SingletonFactory<BeanT>(
+        builder: this,
+        decorators: decorators,
+        canDestroy: canDestroy,
+        children: children,
+        selector: selector,
+      ),
+      qualifier: qualifier,
+      canRegister: canRegister,
     );
   }
 }

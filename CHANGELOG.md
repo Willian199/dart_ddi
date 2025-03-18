@@ -1,3 +1,12 @@
+## 0.12.0
+* This version brings a major rework to be able to use Custom Scopes.
+* Now you can create your own Scopes.
+
+* Break changes:
+    * Removed the `Session Scope` and correlated methods. Use `Application` instead.
+    * Now the `YourClazz.new.builder.asApplication()` shortcut registers directly into ddi. You no longer need to call `.register()`.
+    * Now the custom factory requires to specify the Scope Factory and the builder.
+
 ## 0.11.0
 * Fixed DDIModule not waiting for all children to be destroyed in `destroy`.
 
@@ -39,7 +48,7 @@
 
 * Warnings:
     * When registering a Factory Future and trying to obtain more than one instance simultaneously, it may cause a race condition and will be blocked. Especially if the instance is Application Scope.
-    * When using Interceptors and Factories, you must register your Factory with `ddi.register(factory: ScopeFactory.application(builder: ..., interceptors: [...]))`
+    * When using Interceptors and Factories, you must register your Factory with `ddi.register(factory: ApplicationFactory(builder: ..., interceptors: [...]))`
 
 * Break changes:
     * `DDIInterceptor.aroundConstruct` renamed to `DDIInterceptor.onCreate`.
