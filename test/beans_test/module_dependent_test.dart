@@ -10,7 +10,7 @@ import '../clazz_samples/module_dependent.dart';
 void moduleDependentTest() {
   group('DDI Modules Dependent Basic Tests', () {
     test('Register a Dependent Module', () async {
-      DDI.instance.registerDependent(ModuleDependent.new);
+      DDI.instance.dependent(ModuleDependent.new);
 
       DDI.instance.get<ModuleDependent>();
 
@@ -19,7 +19,7 @@ void moduleDependentTest() {
 
       DDI.instance.destroy<ModuleDependent>();
 
-      DDI.instance.registerDependent(ModuleDependent.new);
+      DDI.instance.dependent(ModuleDependent.new);
 
       await DDI.instance.getAsync<ModuleDependent>();
 

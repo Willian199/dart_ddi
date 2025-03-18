@@ -10,7 +10,7 @@ import '../clazz_samples/custom_interceptors.dart';
 void object() {
   group('DDI Object Basic Tests', () {
     test('Register and retrieve object bean', () {
-      DDI.instance.registerObject('Willian Marchesan', qualifier: 'author');
+      DDI.instance.object('Willian Marchesan', qualifier: 'author');
 
       final instance1 = DDI.instance.get(qualifier: 'author');
       final instance2 = DDI.instance.get(qualifier: 'author');
@@ -22,7 +22,7 @@ void object() {
     });
 
     test('Try to retrieve object bean after removed', () {
-      DDI.instance.registerObject('Willian Marchesan', qualifier: 'author');
+      DDI.instance.object('Willian Marchesan', qualifier: 'author');
 
       DDI.instance.get(qualifier: 'author');
 
@@ -33,7 +33,7 @@ void object() {
     });
 
     test('Try to destroy a undestroyable Object bean', () {
-      DDI.instance.registerObject(
+      DDI.instance.object(
         'Willian Marchesan',
         qualifier: 'author',
         canDestroy: false,
@@ -50,7 +50,7 @@ void object() {
     });
 
     test('Try to register again a undestroyable Object bean', () {
-      DDI.instance.registerObject(
+      DDI.instance.object(
         'Willian Marchesan',
         qualifier: 'owner',
         canDestroy: false,
@@ -61,7 +61,7 @@ void object() {
       DDI.instance.destroy(qualifier: 'owner');
 
       expect(
-          () => DDI.instance.registerObject(
+          () => DDI.instance.object(
                 'Willian Marchesan',
                 qualifier: 'owner',
               ),
@@ -69,7 +69,7 @@ void object() {
     });
 
     test('Register, retrieve and refresh object bean', () {
-      DDI.instance.registerObject('Willian Marchesan', qualifier: 'name');
+      DDI.instance.object('Willian Marchesan', qualifier: 'name');
 
       final instance1 = DDI.instance.get(qualifier: 'name');
       final instance2 = DDI.instance.get(qualifier: 'name');
@@ -94,17 +94,16 @@ void object() {
     });
 
     test('Try to register a duplicated Object', () {
-      DDI.instance.registerObject('Will', qualifier: 'name');
+      DDI.instance.object('Will', qualifier: 'name');
 
-      expect(() => DDI.instance.registerObject('Willian', qualifier: 'name'),
+      expect(() => DDI.instance.object('Willian', qualifier: 'name'),
           throwsA(isA<DuplicatedBeanException>()));
 
       DDI.instance.destroy(qualifier: 'name');
     });
 
     test('Register an Object with canRegister true', () {
-      DDI.instance
-          .registerObject('Will', qualifier: 'name', canRegister: () => true);
+      DDI.instance.object('Will', qualifier: 'name', canRegister: () => true);
 
       final value = DDI.instance.get(qualifier: 'name');
 
@@ -117,19 +116,18 @@ void object() {
     });
 
     test('Register an Object with canRegister false', () {
-      DDI.instance
-          .registerObject('Will', qualifier: 'name', canRegister: () => false);
+      DDI.instance.object('Will', qualifier: 'name', canRegister: () => false);
 
       expect(() => DDI.instance.get(qualifier: 'name'),
           throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Register an Object with Interceptor', () {
-      ddi.registerObject(AddInterceptor());
-      ddi.registerObject(MultiplyInterceptor());
+      ddi.object(AddInterceptor());
+      ddi.object(MultiplyInterceptor());
 
-      DDI.instance.registerObject<int>(15,
-          interceptors: {AddInterceptor, MultiplyInterceptor});
+      DDI.instance
+          .object<int>(15, interceptors: {AddInterceptor, MultiplyInterceptor});
 
       expect(50, DDI.instance.get<int>());
 
@@ -152,7 +150,7 @@ void object() {
     test('Try to get a Bean using a list Future wait', () async {
       Future.wait<dynamic>(
         [
-          await Future.value(ddi.registerObject<C>(await Future.delayed(
+          await Future.value(ddi.object<C>(await Future.delayed(
               const Duration(milliseconds: 10), () => C()))),
           Future.value(ddi.get<C>()),
           ddi.getAsync<C>(),

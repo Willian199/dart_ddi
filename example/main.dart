@@ -49,32 +49,32 @@ class MyModule with DDIModule, PreDestroy {
   @override
   Future<void> onPostConstruct() async {
     // Register MyService with a custom qualifier
-    registerSingleton<MyService>(
+    singleton<MyService>(
       () => MyService('1st Instance'),
       qualifier: 'MyService1',
     );
 
     // Register another instance of MyService with a different qualifier
-    registerApplication<MyService>(
+    application<MyService>(
       () => MyService('2nd Instance'),
       qualifier: 'MyService2',
     );
 
     // Register MyLoggingService with dependency on MyService1
-    registerApplication<MyLoggingService>(
+    application<MyLoggingService>(
       () => MyLoggingService(ddi.get(qualifier: 'MyService1')),
       qualifier: 'MyLoggingSession',
       interceptors: {CustomInterceptor},
     );
 
     // Register MyLoggingService with dependency on MyService2
-    registerDependent<MyLoggingService>(
+    dependent<MyLoggingService>(
       () => MyLoggingService(ddi.get(qualifier: 'MyService2')),
       qualifier: 'MyLoggingDependent',
       interceptors: {CustomInterceptor},
     );
 
-    registerApplication<CustomInterceptor>(CustomInterceptor.new);
+    application<CustomInterceptor>(CustomInterceptor.new);
 
     await Future.delayed(const Duration(seconds: 1));
   }
@@ -99,7 +99,7 @@ class CustomInterceptor extends DDIInterceptor<MyLoggingService> {
 // Main function where the code execution starts
 void main() async {
   // Register services from MyModule
-  await ddi.registerSingleton(MyModule.new);
+  await ddi.singleton(MyModule.new);
 
   // Get an instance of MyService with qualifier
   late final MyService myService1 = ddi.get(qualifier: 'MyService1');
@@ -125,7 +125,7 @@ void main() async {
 
   // Add a decorator to uppercase strings
   String uppercaseDecorator(String str) => str.toUpperCase();
-  ddi.registerSingleton(() => 'Hello World',
+  ddi.singleton(() => 'Hello World',
       qualifier: 'authored', decorators: [uppercaseDecorator]);
 
   // Will return HELLO WORLD

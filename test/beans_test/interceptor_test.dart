@@ -26,7 +26,7 @@ void interceptor() {
       );
 
       ///Where is Singleton, should the register in the correct order
-      DDI.instance.registerSingleton<G>(() => H(), interceptors: {J});
+      DDI.instance.singleton<G>(() => H(), interceptors: {J});
 
       final G instance = DDI.instance.get<G>();
 
@@ -47,7 +47,7 @@ void interceptor() {
           builder: J<G>.new.builder,
         ),
       );
-      DDI.instance.registerApplication<G>(() => H(), interceptors: {J<G>});
+      DDI.instance.application<G>(() => H(), interceptors: {J<G>});
 
       final G instance = DDI.instance.get<G>();
 
@@ -68,8 +68,8 @@ void interceptor() {
           builder: J<G>.new.builder,
         ),
       );
-      DDI.instance.registerApplication<G>(() => H(),
-          qualifier: 'qualifier', interceptors: {J});
+      DDI.instance
+          .application<G>(() => H(), qualifier: 'qualifier', interceptors: {J});
 
       final G instance = DDI.instance.get<G>(qualifier: 'qualifier');
 
@@ -90,7 +90,7 @@ void interceptor() {
           builder: J<G>.new.builder,
         ),
       );
-      DDI.instance.registerDependent<G>(() => H(), interceptors: {J});
+      DDI.instance.dependent<G>(() => H(), interceptors: {J});
 
       final G instance = DDI.instance.get<G>();
 
@@ -111,7 +111,7 @@ void interceptor() {
           builder: J<G>.new.builder,
         ),
       );
-      DDI.instance.registerApplication<G>(() => H());
+      DDI.instance.application<G>(() => H());
 
       final G instance = DDI.instance.get<G>();
 
@@ -143,7 +143,7 @@ void interceptor() {
       );
 
       ///Where is Singleton, should the register in the correct order
-      DDI.instance.registerSingleton(
+      DDI.instance.singleton(
         () => D(),
         decorators: [
           (D instance) => E(instance),

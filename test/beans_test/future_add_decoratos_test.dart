@@ -24,7 +24,7 @@ void futureAddDecorator() {
     }
 
     test('ADD Decorators to a Singleton bean', () async {
-      await DDI.instance.registerSingleton<D>(
+      await DDI.instance.singleton<D>(
         () => Future.value(D()),
         decorators: [
           (instance) => E(instance),
@@ -40,7 +40,7 @@ void futureAddDecorator() {
     });
 
     test('ADD Decorators to a Application bean', () async {
-      DDI.instance.registerApplication<D>(
+      DDI.instance.application<D>(
         () => Future.value(D()),
         decorators: [
           (instance) => E(instance),
@@ -56,7 +56,7 @@ void futureAddDecorator() {
     });
 
     test('ADD Decorators to a Dependent bean', () async {
-      DDI.instance.registerDependent<D>(
+      DDI.instance.dependent<D>(
         () => Future.value(D()),
         decorators: [
           (instance) => E(instance),
@@ -72,7 +72,7 @@ void futureAddDecorator() {
     });
 
     test('ADD Decorators when the Singleton bean is not ready', () async {
-      DDI.instance.registerSingleton<D>(
+      DDI.instance.singleton<D>(
         () async {
           await Future.delayed(const Duration(milliseconds: 20));
           return D();

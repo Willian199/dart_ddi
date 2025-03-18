@@ -174,7 +174,7 @@ void singletonFactoryFuture() {
     });
 
     test('Thow error on Factory Singleton', () async {
-      DDI.instance.registerSingleton<D>(
+      DDI.instance.singleton<D>(
         () async {
           await Future.delayed(const Duration(milliseconds: 20));
           return D();

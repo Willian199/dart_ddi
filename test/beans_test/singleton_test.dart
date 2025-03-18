@@ -14,9 +14,9 @@ import '../clazz_samples/undestroyable/singleton_destroy_register.dart';
 void singleton() {
   group('DDI Singleton Basic Tests', () {
     void registerSingletonBeans() {
-      ddi.registerSingleton(C.new);
-      ddi.registerSingleton(() => B(ddi()));
-      ddi.registerSingleton(() => A(ddi()));
+      ddi.singleton(C.new);
+      ddi.singleton(() => B(ddi()));
+      ddi.singleton(() => A(ddi()));
     }
 
     void removeSingletonBeans() {
@@ -74,7 +74,7 @@ void singleton() {
     });
 
     test('Try to retrieve singleton bean after removed', () {
-      ddi.registerSingleton(() => C());
+      ddi.singleton(() => C());
 
       ddi.get<C>();
 
@@ -84,7 +84,7 @@ void singleton() {
     });
 
     test('Create, get and remove a qualifier bean', () {
-      ddi.registerSingleton(() => C(), qualifier: 'typeC');
+      ddi.singleton(() => C(), qualifier: 'typeC');
 
       ddi.get(qualifier: 'typeC');
 
@@ -95,7 +95,7 @@ void singleton() {
     });
 
     test('Try to destroy a undestroyable Singleton bean', () {
-      ddi.registerSingleton(() => SingletonDestroyGet(), canDestroy: false);
+      ddi.singleton(() => SingletonDestroyGet(), canDestroy: false);
 
       final instance1 = ddi.get<SingletonDestroyGet>();
 
@@ -107,14 +107,13 @@ void singleton() {
     });
 
     test('Try to register again a undestroyable Singleton bean', () {
-      ddi.registerSingleton(() => SingletonDestroyRegister(),
-          canDestroy: false);
+      ddi.singleton(() => SingletonDestroyRegister(), canDestroy: false);
 
       ddi.get<SingletonDestroyRegister>();
 
       ddi.destroy<SingletonDestroyRegister>();
 
-      expect(() => ddi.registerSingleton(() => SingletonDestroyRegister()),
+      expect(() => ddi.singleton(() => SingletonDestroyRegister()),
           throwsA(isA<DuplicatedBeanException>()));
     });
 
@@ -143,7 +142,7 @@ void singleton() {
     test('Try to get a Bean using a list Future wait', () async {
       await expectLater(
           () => Future.wait<dynamic>([
-                ddi.registerSingleton<C>(() async {
+                ddi.singleton<C>(() async {
                   return C();
                 }),
                 Future.value(ddi.get<C>()),

@@ -28,7 +28,7 @@ void interceptorFeatures() {
       );
 
       ///Where is Singleton, should the register in the correct order
-      ddi.registerSingleton<G>(() => H(), interceptors: {J, LoggerInterceptor});
+      ddi.singleton<G>(() => H(), interceptors: {J, LoggerInterceptor});
 
       final G instance = ddi.get<G>();
 
@@ -65,7 +65,7 @@ void interceptorFeatures() {
         ),
       );
 
-      ddi.registerApplication<G>(
+      ddi.application<G>(
         H.new,
         interceptors: {J, LoggerFutureInterceptor},
       );
@@ -114,7 +114,7 @@ void interceptorFeatures() {
         ),
       );
 
-      ddi.registerApplication<G>(H.new, interceptors: {J, LoggerInterceptor});
+      ddi.application<G>(H.new, interceptors: {J, LoggerInterceptor});
 
       final G instance = await ddi.getAsync<G>();
 
@@ -146,7 +146,7 @@ void interceptorFeatures() {
         ),
       );
 
-      ddi.registerApplication<G>(H.new, interceptors: {WithDestroyInterceptor});
+      ddi.application<G>(H.new, interceptors: {WithDestroyInterceptor});
 
       expect(ddi.isRegistered<G>(), true);
 

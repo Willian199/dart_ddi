@@ -13,14 +13,14 @@ void runByFutureType() {
     test('Application Get bean by Type that have registered and dispose',
         () async {
       ///Where is Singleton, should the register in the correct order
-      DDI.instance.registerApplication<G>(() => Future.value(H()),
-          qualifier: 'firtsClass');
+      DDI.instance
+          .application<G>(() => Future.value(H()), qualifier: 'firtsClass');
 
       final List<Object> keys1 = DDI.instance.getByType<G>();
 
       expect(keys1.length, 1);
-      DDI.instance.registerApplication<G>(() => Future.value(I()),
-          qualifier: 'secondClass');
+      DDI.instance
+          .application<G>(() => Future.value(I()), qualifier: 'secondClass');
 
       final List<Object> keys2 = DDI.instance.getByType<G>();
 
@@ -42,13 +42,13 @@ void runByFutureType() {
 
     test('Dependent Get bean by Type that have registered and dispose',
         () async {
-      DDI.instance.registerDependent<G>(() => H(), qualifier: 'firtsClass');
+      DDI.instance.dependent<G>(() => H(), qualifier: 'firtsClass');
 
       final List<Object> keys1 = DDI.instance.getByType<G>();
 
       expect(keys1.length, 1);
-      DDI.instance.registerDependent<G>(() => Future.value(I()),
-          qualifier: 'secondClass');
+      DDI.instance
+          .dependent<G>(() => Future.value(I()), qualifier: 'secondClass');
 
       final List<Object> keys2 = DDI.instance.getByType<G>();
 
@@ -69,14 +69,14 @@ void runByFutureType() {
     });
 
     test('Get bean by Type that have registered and dispose', () async {
-      DDI.instance.registerApplication<G>(
+      DDI.instance.application<G>(
           () => Future.delayed(const Duration(milliseconds: 500), H.new),
           qualifier: 'firtsClass');
 
       final List<Object> keys1 = DDI.instance.getByType<G>();
 
       expect(keys1.length, 1);
-      DDI.instance.registerDependent<G>(I.new, qualifier: 'secondClass');
+      DDI.instance.dependent<G>(I.new, qualifier: 'secondClass');
 
       final List<Object> keys2 = DDI.instance.getByType<G>();
 

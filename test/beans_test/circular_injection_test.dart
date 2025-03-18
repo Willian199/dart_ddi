@@ -11,17 +11,15 @@ void circularDetection() {
   group('DDI Circular Injection Detection tests', () {
     test('Inject a Singleton bean depending from a bean that not exists yet',
         () {
-      expect(
-          () => DDI.instance
-              .registerSingleton(() => Father(mother: DDI.instance())),
+      expect(() => DDI.instance.singleton(() => Father(mother: DDI.instance())),
           throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Inject a Application bean depending from a bean that not exists yet',
         () {
       //This works because it was just registered
-      DDI.instance.registerApplication(() => Father(mother: DDI.instance()));
-      DDI.instance.registerApplication(() => Mother(father: DDI.instance()));
+      DDI.instance.application(() => Father(mother: DDI.instance()));
+      DDI.instance.application(() => Mother(father: DDI.instance()));
 
       expect(DDI.instance.isReady<Father>(), false);
       expect(DDI.instance.isReady<Mother>(), false);
@@ -31,8 +29,8 @@ void circularDetection() {
     });
 
     test('Inject a Application bean with circular dependency', () {
-      DDI.instance.registerApplication(() => Father(mother: DDI.instance()));
-      DDI.instance.registerApplication(() => Mother(father: DDI.instance()));
+      DDI.instance.application(() => Father(mother: DDI.instance()));
+      DDI.instance.application(() => Mother(father: DDI.instance()));
 
       expect(DDI.instance.isReady<Father>(), false);
       expect(DDI.instance.isReady<Mother>(), false);
@@ -48,8 +46,8 @@ void circularDetection() {
     });
 
     test('Inject a Dependent bean with circular dependency', () {
-      DDI.instance.registerDependent(() => Father(mother: DDI.instance()));
-      DDI.instance.registerDependent(() => Mother(father: DDI.instance()));
+      DDI.instance.dependent(() => Father(mother: DDI.instance()));
+      DDI.instance.dependent(() => Mother(father: DDI.instance()));
 
       expect(() => DDI.instance.get<Mother>(),
           throwsA(isA<ConcurrentCreationException>()));
@@ -59,7 +57,7 @@ void circularDetection() {
     });
 
     test('Get the same Singleton bean 100 times', () {
-      DDI.instance.registerSingleton(() => C());
+      DDI.instance.singleton(() => C());
 
       int count = 0;
       for (int i = 0; i < 100; i++) {
@@ -72,7 +70,7 @@ void circularDetection() {
     });
 
     test('Get the same Application bean 100 times', () {
-      DDI.instance.registerApplication(() => C());
+      DDI.instance.application(() => C());
 
       int count = 0;
       for (int i = 0; i < 100; i++) {
@@ -85,7 +83,7 @@ void circularDetection() {
     });
 
     test('Get the same Dependent bean 100 times', () {
-      DDI.instance.registerDependent(() => C());
+      DDI.instance.dependent(() => C());
 
       int count = 0;
       for (int i = 0; i < 100; i++) {

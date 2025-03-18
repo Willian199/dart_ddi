@@ -7,8 +7,8 @@ import 'c.dart';
 class ModuleDependent with DDIModule {
   @override
   Future<void> onPostConstruct() async {
-    await registerDependent(C.new);
-    registerDependent(() => B(ddi()));
-    registerDependent(() => A(ddi()));
+    await dependent(C.new);
+    dependent(() => B(ddi()));
+    dependent(() => A(ddi()));
   }
 }

@@ -10,7 +10,7 @@ import '../clazz_samples/module_application.dart';
 void moduleApplicationTest() {
   group('DDI Modules Application Basic Tests', () {
     test('Register an Application Module', () {
-      DDI.instance.registerApplication(ModuleApplication.new);
+      DDI.instance.application(ModuleApplication.new);
 
       DDI.instance.get<ModuleApplication>();
       final instance1 = DDI.instance.get<A>();
@@ -34,7 +34,7 @@ void moduleApplicationTest() {
     });
 
     test('Register a Future Application Module', () async {
-      DDI.instance.registerApplication(FutureModuleApplication.new);
+      DDI.instance.application(FutureModuleApplication.new);
 
       await DDI.instance.getAsync<FutureModuleApplication>();
       final instance1 = DDI.instance.get<A>();
@@ -62,7 +62,7 @@ void moduleApplicationTest() {
     });
 
     test('Register an Application Module and dispose async', () async {
-      DDI.instance.registerApplication(FutureModuleApplication.new);
+      DDI.instance.application(FutureModuleApplication.new);
 
       final module = await DDI.instance.getAsync<FutureModuleApplication>();
       expect(module.children.length, 3);

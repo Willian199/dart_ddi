@@ -19,9 +19,9 @@ import 'payment_service.dart';
 void application() {
   group('DDI Application Basic Tests', () {
     void registerApplicationBeans() {
-      DDI.instance.registerApplication(() => A(DDI.instance()));
-      DDI.instance.registerApplication(() => B(DDI.instance()));
-      DDI.instance.registerApplication(C.new);
+      DDI.instance.application(() => A(DDI.instance()));
+      DDI.instance.application(() => B(DDI.instance()));
+      DDI.instance.application(C.new);
     }
 
     void removeApplicationBeans() {
@@ -128,7 +128,7 @@ void application() {
     });
 
     test('Try to retrieve Application bean after disposed', () {
-      DDI.instance.registerApplication(C.new);
+      DDI.instance.application(C.new);
 
       final instance1 = DDI.instance.get<C>();
 
@@ -142,7 +142,7 @@ void application() {
     });
 
     test('Try to retrieve Application bean after removed', () {
-      DDI.instance.registerApplication(C.new);
+      DDI.instance.application(C.new);
 
       DDI.instance.get<C>();
 
@@ -153,7 +153,7 @@ void application() {
     });
 
     test('Create, get and remove a qualifier bean', () {
-      DDI.instance.registerApplication(C.new, qualifier: 'typeC');
+      DDI.instance.application(C.new, qualifier: 'typeC');
 
       DDI.instance.get(qualifier: 'typeC');
 
@@ -164,8 +164,7 @@ void application() {
     });
 
     test('Try to destroy an undestroyable Application bean', () {
-      DDI.instance
-          .registerApplication(ApplicationDestroyGet.new, canDestroy: false);
+      DDI.instance.application(ApplicationDestroyGet.new, canDestroy: false);
 
       final instance1 = DDI.instance.get<ApplicationDestroyGet>();
 
@@ -177,29 +176,27 @@ void application() {
     });
 
     test('Try to register again an undestroyable Application bean', () {
-      DDI.instance.registerApplication(ApplicationDestroyRegister.new,
-          canDestroy: false);
+      DDI.instance
+          .application(ApplicationDestroyRegister.new, canDestroy: false);
 
       DDI.instance.get<ApplicationDestroyRegister>();
 
       DDI.instance.destroy<ApplicationDestroyRegister>();
 
-      expect(
-          () => DDI.instance
-              .registerApplication(() => ApplicationDestroyRegister()),
+      expect(() => DDI.instance.application(() => ApplicationDestroyRegister()),
           throwsA(isA<DuplicatedBeanException>()));
     });
 
     test('Select an Application bean', () {
       // Registering CreditCardPaymentService with a selector condition
-      ddi.registerApplication<PaymentService>(
+      ddi.application<PaymentService>(
         CreditCardPaymentService.new,
         qualifier: 'creditCard',
         selector: (paymentMethod) => paymentMethod == 'creditCard',
       );
 
       // Registering PayPalPaymentService with a selector condition
-      ddi.registerApplication<PaymentService>(
+      ddi.application<PaymentService>(
         PayPalPaymentService.new,
         qualifier: 'paypal',
         selector: (paymentMethod) => paymentMethod == 'paypal',
@@ -227,9 +224,9 @@ void application() {
 
     test('Register and retrieve Application bean from a new DDI instance', () {
       void register(DDI d) {
-        d.registerApplication(() => A(d()));
-        d.registerApplication(() => B(d()));
-        d.registerApplication(C.new);
+        d.application(() => A(d()));
+        d.application(() => B(d()));
+        d.application(C.new);
       }
 
       void destroy(DDI d) {
@@ -305,12 +302,12 @@ void application() {
     });
 
     test('Try to register again an Object Type Bean', () {
-      expect(() => DDI.instance.registerApplication<Object>(() => "Test"),
+      expect(() => DDI.instance.application<Object>(() => "Test"),
           throwsA(isA<FactoryNotAllowedException>()));
     });
 
     test('Register Beans with same interface', () {
-      DDI.instance.registerApplication<G>(I.new, qualifier: 'First');
+      DDI.instance.application<G>(I.new, qualifier: 'First');
       DDI.instance.register<G>(
           factory: ApplicationFactory<H>(builder: H.new.builder),
           qualifier: 'Second');

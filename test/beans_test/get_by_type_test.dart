@@ -9,12 +9,12 @@ import '../clazz_samples/i.dart';
 void runByType() {
   group('DDI Process By Type', () {
     test('Application Get bean by Type that have registered and dispose', () {
-      ddi.registerApplication<G>(() => H(), qualifier: 'firtsClass');
+      ddi.application<G>(() => H(), qualifier: 'firtsClass');
 
       final List<Object> keys1 = ddi.getByType<G>();
 
       expect(keys1.length, 1);
-      ddi.registerApplication<G>(() => I(), qualifier: 'secondClass');
+      ddi.application<G>(() => I(), qualifier: 'secondClass');
 
       final List<Object> keys2 = ddi.getByType<G>();
 
@@ -41,12 +41,12 @@ void runByType() {
     });
 
     test('Dependent Get bean by Type that have registered and dispose', () {
-      ddi.registerDependent<G>(() => H(), qualifier: 'firtsClass');
+      ddi.dependent<G>(() => H(), qualifier: 'firtsClass');
 
       final List<Object> keys1 = ddi.getByType<G>();
 
       expect(keys1.length, 1);
-      ddi.registerDependent<G>(() => I(), qualifier: 'secondClass');
+      ddi.dependent<G>(() => I(), qualifier: 'secondClass');
 
       final List<Object> keys2 = ddi.getByType<G>();
 
@@ -72,12 +72,12 @@ void runByType() {
     });
 
     test('Get bean by Type that have registered and dispose', () {
-      ddi.registerApplication<G>(() => H(), qualifier: 'firtsClass');
+      ddi.application<G>(() => H(), qualifier: 'firtsClass');
 
       final List<Object> keys1 = ddi.getByType<G>();
 
       expect(keys1.length, 1);
-      ddi.registerDependent<G>(() => I(), qualifier: 'secondClass');
+      ddi.dependent<G>(() => I(), qualifier: 'secondClass');
 
       final List<Object> keys2 = ddi.getByType<G>();
 
@@ -185,7 +185,7 @@ void runByType() {
       final List<Object> keys1 = ddi.getByType<G>();
 
       expect(keys1.length, 1);
-      ddi.registerApplication<G>(() => I(), qualifier: 'secondClass');
+      ddi.application<G>(() => I(), qualifier: 'secondClass');
 
       final List<Object> keys2 = ddi.getByType<G>();
 

@@ -10,10 +10,10 @@ import '../clazz_samples/i.dart';
 void zoneContext() {
   group('DDI Zone Context Basic Tests', () {
     test('Must create the Beans in separated zone', () async {
-      ddi.registerSingleton<G>(H.new);
+      ddi.singleton<G>(H.new);
 
       await ddi.runInZone('zone1', () async {
-        ddi.registerSingleton<G>(I.new);
+        ddi.singleton<G>(I.new);
 
         expect(ddi.isRegistered<G>(), isTrue);
 
@@ -30,14 +30,14 @@ void zoneContext() {
     });
 
     test('Create a Global and acess in a zone', () async {
-      ddi.registerSingleton<C>(() => C());
+      ddi.singleton<C>(() => C());
 
       expect(ddi.isRegistered<C>(), isTrue);
 
       await ddi.runInZone('zone1', () async {
         expect(ddi.isRegistered<C>(), isFalse);
 
-        ddi.registerSingleton<G>(I.new);
+        ddi.singleton<G>(I.new);
 
         expect(ddi.isRegistered<G>(), isTrue);
 
@@ -54,12 +54,10 @@ void zoneContext() {
 
     test('Zones devem ser completamente isoladas umas das outras', () async {
       ddi.runInZone('zone1', () {
-        ddi.registerSingleton<String>(() => 'Zone 1 String',
-            qualifier: 'zoneString');
+        ddi.singleton<String>(() => 'Zone 1 String', qualifier: 'zoneString');
 
         ddi.runInZone<void>('zone2', () {
-          ddi.registerSingleton<String>(() => 'Zone 2 String',
-              qualifier: 'zoneString');
+          ddi.singleton<String>(() => 'Zone 2 String', qualifier: 'zoneString');
 
           expect(ddi.get<String>(qualifier: 'zoneString'),
               equals('Zone 2 String'));

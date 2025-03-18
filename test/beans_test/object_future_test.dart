@@ -154,7 +154,7 @@ void objectFuture() {
       DDI.instance
           .register(factory: ObjectFactory(instance: AsyncAddInterceptor()));
 
-      ddi.registerApplication<MultiplyInterceptor>(() {
+      ddi.application<MultiplyInterceptor>(() {
         return Future.delayed(
             const Duration(milliseconds: 10), () => MultiplyInterceptor());
       });
@@ -181,7 +181,7 @@ void objectFuture() {
         return FuturePostConstruct();
       }
 
-      await DDI.instance.registerObject(localTest());
+      await DDI.instance.object(localTest());
 
       expect(DDI.instance.isFuture<Future<FuturePostConstruct>>(), false);
       expect(DDI.instance.getByType<Future<FuturePostConstruct>>().length, 1);
@@ -206,7 +206,7 @@ void objectFuture() {
         return FuturePostConstruct();
       }
 
-      await DDI.instance.registerObject<Future<FuturePostConstruct>>(
+      await DDI.instance.object<Future<FuturePostConstruct>>(
         localTest(),
         qualifier: 'FuturePostConstruct',
       );

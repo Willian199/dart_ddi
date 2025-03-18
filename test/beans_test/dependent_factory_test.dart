@@ -132,8 +132,7 @@ void dependentFactory() {
       DDI.instance.destroy<DependentFactoryDestroyRegister>();
 
       expect(
-          () => DDI.instance
-              .registerDependent(() => DependentFactoryDestroyRegister()),
+          () => DDI.instance.dependent(() => DependentFactoryDestroyRegister()),
           throwsA(isA<DuplicatedBeanException>()));
     });
 

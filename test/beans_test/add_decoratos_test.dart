@@ -25,7 +25,7 @@ void addDecorator() {
 
     test('ADD Decorators to a Singleton bean', () async {
       ///Where is Singleton, should the register in the correct order
-      DDI.instance.registerSingleton(
+      DDI.instance.singleton(
         () => D(),
         decorators: [
           (D instance) => E(instance),
@@ -40,7 +40,7 @@ void addDecorator() {
 
     test('ADD Decorators to a Application bean', () async {
       ///Where is Singleton, should the register in the correct order
-      DDI.instance.registerApplication(
+      DDI.instance.application(
         () => D(),
         decorators: [
           (D instance) => E(instance),
@@ -55,7 +55,7 @@ void addDecorator() {
 
     test('ADD Decorators to a Dependent bean', () async {
       ///Where is Singleton, should the register in the correct order
-      DDI.instance.registerDependent(
+      DDI.instance.dependent(
         () => D(),
         decorators: [
           (D instance) => E(instance),

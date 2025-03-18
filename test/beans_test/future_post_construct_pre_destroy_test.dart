@@ -9,7 +9,7 @@ void futurePostConstructPreDestroyTest() {
   group('DDI Future PostConstruct and PreDestroy test', () {
     test('Regsiter a Singleton bean with PostConstruct  and PreDestroy',
         () async {
-      await DDI.instance.registerSingleton(
+      await DDI.instance.singleton(
           () => Future.delayed(const Duration(milliseconds: 200), L.new));
 
       final L instance = await DDI.instance.getAsync<L>();
@@ -21,7 +21,7 @@ void futurePostConstructPreDestroyTest() {
 
     test('Regsiter a Applcation bean with PostConstruct  and PreDestroy',
         () async {
-      DDI.instance.registerApplication(
+      DDI.instance.application(
           () => Future.delayed(const Duration(milliseconds: 200), L.new));
 
       final L instance = await DDI.instance.getAsync<L>();
@@ -33,7 +33,7 @@ void futurePostConstructPreDestroyTest() {
 
     test('Regsiter a Dependent bean with PostConstruct  and PreDestroy',
         () async {
-      DDI.instance.registerDependent(
+      DDI.instance.dependent(
           () => Future.delayed(const Duration(milliseconds: 200), L.new));
 
       final L instance = await DDI.instance.getAsync<L>();
