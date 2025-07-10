@@ -11,7 +11,7 @@ import '../clazz_samples/c.dart';
 import '../clazz_samples/undestroyable/singleton_destroy_get.dart';
 import '../clazz_samples/undestroyable/singleton_destroy_register.dart';
 
-void singleton() {
+void main() {
   group('DDI Singleton Basic Tests', () {
     void registerSingletonBeans() {
       ddi.singleton(C.new);

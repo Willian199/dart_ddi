@@ -11,7 +11,7 @@ import '../clazz_samples/multi_inject.dart';
 import '../clazz_samples/undestroyable/singleton_factory_destroy_get.dart';
 import '../clazz_samples/undestroyable/singleton_factory_destroy_register.dart';
 
-void singletonFactory() {
+void main() {
   group('DDI Singleton Factory Basic Tests', () {
     void registerBeans() {
       C.new.builder.asSingleton();

@@ -10,7 +10,7 @@ import '../clazz_samples/c.dart';
 import '../clazz_samples/future_post_construct.dart';
 import '../clazz_samples/undestroyable/future_dependent_destroy_get.dart';
 
-void dependentFuture() {
+void main() {
   group('DDI Dependent Future Basic Tests', () {
     void registerDependentBeans() {
       DDI.instance.dependent(() async => A(await DDI.instance.getAsync()));

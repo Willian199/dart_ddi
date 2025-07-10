@@ -8,7 +8,7 @@ import '../clazz_samples/c.dart';
 import '../clazz_samples/undestroyable/dependent_destroy_get.dart';
 import '../clazz_samples/undestroyable/dependent_destroy_register.dart';
 
-void dependent() {
+void main() {
   group('DDI Dependent Basic Tests', () {
     void registerDependentBeans() {
       DDI.instance.dependent(() => A(DDI.instance()));

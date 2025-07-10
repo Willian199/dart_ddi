@@ -11,7 +11,7 @@ import '../clazz_samples/i.dart';
 import '../clazz_samples/j.dart';
 import '../clazz_samples/k.dart';
 
-void factoryInterceptor() {
+void main() {
   group('DDI Factory Interceptor Tests', () {
     test('ADD Interceptor to a Factory Singleton bean', () {
       ddi.register<J>(

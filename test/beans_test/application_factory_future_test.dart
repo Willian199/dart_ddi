@@ -12,7 +12,7 @@ import '../clazz_samples/multi_inject.dart';
 import '../clazz_samples/undestroyable/future_application_factory_destroy_get.dart';
 import 'payment_service.dart';
 
-void applicationFactoryFuture() {
+void main() {
   group('DDI Factory Application Future Basic Tests', () {
     void registerApplicationBeans() {
       MultiInject.new.builder.asApplication();

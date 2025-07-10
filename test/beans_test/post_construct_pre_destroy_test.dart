@@ -3,7 +3,7 @@ import 'package:test/test.dart';
 
 import '../clazz_samples/l.dart';
 
-void postConstructPreDestroyTest() {
+void main() {
   group('DDI PostConstruct and PreDestroy test', () {
     test('Regsiter a Singleton bean with PostConstruct  and PreDestroy', () {
       DDI.instance.singleton(() => L());

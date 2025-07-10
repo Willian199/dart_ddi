@@ -6,7 +6,7 @@ import 'package:test/test.dart';
 import '../clazz_samples/father.dart';
 import '../clazz_samples/mother.dart';
 
-void factoryCircularDetection() {
+void main() {
   group('DDI Factory Circular Injection Detection tests', () {
     test(
         'Inject a Factory Singleton bean depending from a bean that not exists yet',

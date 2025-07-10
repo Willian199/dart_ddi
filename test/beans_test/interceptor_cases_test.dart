@@ -3,7 +3,7 @@ import 'package:test/test.dart';
 
 import '../clazz_samples/custom_interceptors.dart';
 
-void inteceptorCases() {
+void main() {
   group('DDI Interceptor Tests with int values', () {
     setUp(() async {
       // Registro de interceptores

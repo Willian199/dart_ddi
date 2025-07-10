@@ -5,7 +5,7 @@ import '../clazz_samples/d.dart';
 import '../clazz_samples/e.dart';
 import '../clazz_samples/f.dart';
 
-void addDecoratorFactory() {
+void main() {
   group('DDI ADD Decorators Factory Tests', () {
     void regraSoma() {
       final instance1 = DDI.instance.get<D>();

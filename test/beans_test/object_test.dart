@@ -7,7 +7,7 @@ import 'package:test/test.dart';
 import '../clazz_samples/c.dart';
 import '../clazz_samples/custom_interceptors.dart';
 
-void object() {
+void main() {
   group('DDI Object Basic Tests', () {
     test('Register and retrieve object bean', () {
       DDI.instance.object('Willian Marchesan', qualifier: 'author');

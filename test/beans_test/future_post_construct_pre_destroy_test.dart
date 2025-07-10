@@ -5,7 +5,7 @@ import 'package:test/test.dart';
 
 import '../clazz_samples/l.dart';
 
-void futurePostConstructPreDestroyTest() {
+void main() {
   group('DDI Future PostConstruct and PreDestroy test', () {
     test('Regsiter a Singleton bean with PostConstruct  and PreDestroy',
         () async {

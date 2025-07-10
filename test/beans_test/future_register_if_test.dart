@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 
 import '../clazz_samples/c.dart';
 
-void canRegister() {
+void main() {
   group('DDI Register If tests', () {
     test('Try to register a bean with canRegister false', () async {
       await DDI.instance.singleton(C.new, canRegister: () async {

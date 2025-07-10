@@ -10,7 +10,7 @@ import '../clazz_samples/c.dart';
 import '../clazz_samples/future_post_construct.dart';
 import '../clazz_samples/undestroyable/future_singleton_destroy_get.dart';
 
-void singletonFuture() {
+void main() {
   group('DDI Singleton Future Basic Tests', () {
     Future<void> registerSingletonBeans() async {
       DDI.instance.singleton(C.new);

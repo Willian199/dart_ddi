@@ -11,7 +11,7 @@ import '../clazz_samples/i.dart';
 import '../clazz_samples/j.dart';
 import '../clazz_samples/k.dart';
 
-void interceptor() {
+void main() {
   group('DDI Interceptor Tests', () {
     test('ADD Interceptor to a Singleton bean', () {
       ddi.register(

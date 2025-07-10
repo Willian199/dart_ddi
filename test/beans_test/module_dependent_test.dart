@@ -7,7 +7,7 @@ import '../clazz_samples/a.dart';
 import '../clazz_samples/c.dart';
 import '../clazz_samples/module_dependent.dart';
 
-void moduleDependentTest() {
+void main() {
   group('DDI Modules Dependent Basic Tests', () {
     test('Register a Dependent Module', () async {
       DDI.instance.dependent(ModuleDependent.new);

@@ -5,7 +5,7 @@ import 'package:test/test.dart';
 import '../clazz_samples/custom_interceptors.dart';
 import '../clazz_samples/future_post_construct.dart';
 
-void objectFuture() {
+void main() {
   group('DDI Object Future Basic Tests', () {
     test('Register and retrieve object bean', () async {
       DDI.instance.register(

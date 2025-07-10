@@ -16,7 +16,7 @@ import '../clazz_samples/undestroyable/application_destroy_get.dart';
 import '../clazz_samples/undestroyable/application_destroy_register.dart';
 import 'payment_service.dart';
 
-void application() {
+void main() {
   group('DDI Application Basic Tests', () {
     void registerApplicationBeans() {
       DDI.instance.application(() => A(DDI.instance()));

@@ -6,7 +6,7 @@ import '../clazz_samples/d.dart';
 import '../clazz_samples/e.dart';
 import '../clazz_samples/f.dart';
 
-void futureAddDecorator() {
+void main() {
   group('DDI Future ADD Decorators Tests', () {
     Future<void> regraSoma() async {
       final instance1 = await DDI.instance.getAsync<D>();

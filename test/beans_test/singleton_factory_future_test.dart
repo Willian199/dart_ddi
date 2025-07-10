@@ -14,7 +14,7 @@ import '../clazz_samples/factory_parameter.dart';
 import '../clazz_samples/multi_inject.dart';
 import '../clazz_samples/undestroyable/future_singleton_factory_destroy_get.dart';
 
-void singletonFactoryFuture() {
+void main() {
   group('DDI Singleton Factory Future Basic Tests', () {
     Future<void> registerBeans() async {
       C.new.builder.asSingleton();

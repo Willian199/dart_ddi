@@ -8,7 +8,7 @@ import '../clazz_samples/module_factory_application.dart';
 import '../clazz_samples/module_factory_dependent.dart';
 import '../clazz_samples/module_factory_singleton.dart';
 
-void moduleFactoryApplicationTest() {
+void main() {
   group('DDI Factory Modules Application Basic Tests', () {
     test('Register a Factory Application Module', () {
       ModuleFactoryApplication.new.builder.asApplication();

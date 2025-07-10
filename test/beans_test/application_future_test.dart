@@ -11,7 +11,7 @@ import '../clazz_samples/future_post_construct.dart';
 import '../clazz_samples/undestroyable/future_application_destroy_get.dart';
 import 'payment_service.dart';
 
-void applicationFuture() {
+void main() {
   group('DDI Application Future Basic Tests', () {
     void registerApplicationBeans() {
       DDI.instance

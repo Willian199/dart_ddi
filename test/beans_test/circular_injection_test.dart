@@ -7,7 +7,7 @@ import '../clazz_samples/c.dart';
 import '../clazz_samples/father.dart';
 import '../clazz_samples/mother.dart';
 
-void circularDetection() {
+void main() {
   group('DDI Circular Injection Detection tests', () {
     test('Inject a Singleton bean depending from a bean that not exists yet',
         () {

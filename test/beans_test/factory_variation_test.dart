@@ -8,7 +8,7 @@ import '../clazz_samples/multi_inject.dart';
 
 typedef RecordInject = (A a, B b, C c);
 
-void factoryVariationTest() {
+void main() {
   group('DDI Factory Variation Tests', () {
     void registerBeans() {
       MultiInject.new.builder.asDependent();

@@ -7,7 +7,7 @@ import '../clazz_samples/g.dart';
 import '../clazz_samples/h.dart';
 import '../clazz_samples/i.dart';
 
-void zoneContext() {
+void main() {
   group('DDI Zone Context Basic Tests', () {
     test('Must create the Beans in separated zone', () async {
       ddi.singleton<G>(H.new);

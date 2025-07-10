@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 
 import '../clazz_samples/module_object.dart';
 
-void moduleObjectTest() {
+void main() {
   group('DDI Modules Object Basic Tests', () {
     test('Register a Object Module', () {
       DDI.instance.register(factory: ObjectFactory(instance: ModuleObject()));

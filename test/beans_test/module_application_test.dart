@@ -7,7 +7,7 @@ import '../clazz_samples/c.dart';
 import '../clazz_samples/future_module_application.dart';
 import '../clazz_samples/module_application.dart';
 
-void moduleApplicationTest() {
+void main() {
   group('DDI Modules Application Basic Tests', () {
     test('Register an Application Module', () {
       DDI.instance.application(ModuleApplication.new);

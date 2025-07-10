@@ -8,7 +8,7 @@ import '../clazz_samples/g.dart';
 import '../clazz_samples/h.dart';
 import '../clazz_samples/i.dart';
 
-void runByFutureType() {
+void main() {
   group('DDI Process Future By Type', () {
     test('Application Get bean by Type that have registered and dispose',
         () async {

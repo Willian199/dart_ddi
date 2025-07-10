@@ -11,7 +11,7 @@ import '../clazz_samples/logger_future_interceptor.dart';
 import '../clazz_samples/logger_interceptor.dart';
 import '../clazz_samples/with_destroy_interceptor.dart';
 
-void interceptorFeatures() {
+void main() {
   group('DDI Feature Interceptor Tests', () {
     test('ADD Interceptor with Logs Interceptors and Beans', () {
       ddi.register(

@@ -6,7 +6,7 @@ import '../clazz_samples/g.dart';
 import '../clazz_samples/h.dart';
 import '../clazz_samples/i.dart';
 
-void runByType() {
+void main() {
   group('DDI Process By Type', () {
     test('Application Get bean by Type that have registered and dispose', () {
       ddi.application<G>(() => H(), qualifier: 'firtsClass');

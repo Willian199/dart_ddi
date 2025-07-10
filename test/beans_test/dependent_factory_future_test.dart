@@ -10,7 +10,7 @@ import '../clazz_samples/c.dart';
 import '../clazz_samples/factory_parameter.dart';
 import '../clazz_samples/future_post_construct.dart';
 
-void dependentFactoryFuture() {
+void main() {
   group('DDI Dependent Factory Future Basic Tests', () {
     void registerDependentBeans() {
       DDI.instance.register<A>(
