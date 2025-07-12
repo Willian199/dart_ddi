@@ -79,7 +79,7 @@ Summary
 The Dart Dependency Injection (DDI) package supports various scopes for efficient management of object instances. Each scope determines how instances are created, reused, and destroyed throughout the application lifecycle. Below are detailed characteristics of each scope, along with recommendations, use cases, and considerations for potential issues.
 
 ## Singleton
-`Description`: This scope creates an unique instance during registration and reuses it in all subsequent requests.
+This scope creates an unique instance during registration and reuses it in all subsequent requests.
 
 `Recommendation`: Suitable for objects that need to be globally shared across the application, maintaining a single instance.
 
@@ -92,7 +92,7 @@ The Dart Dependency Injection (DDI) package supports various scopes for efficien
  * If you call dispose, only the Application childrens will be disposed.      
 
 ## Application
-`Description`: Generates an instance when first used and reuses it for all subsequent requests during the application's execution.
+Generates an instance when first used and reuses it for all subsequent requests during the application's execution.
 
 `Recommendation`: Indicated for objects that need to be created only once per application and shared across different parts of the code.
 
@@ -101,7 +101,7 @@ The Dart Dependency Injection (DDI) package supports various scopes for efficien
 `Note`: `PreDispose` and `PreDestroy` mixins will only be called if the instance is in use. Use `Interceptor` if you want to call them regardless.
 
 ## Dependent
-`Description`: Produces a new instance every time it is requested, ensuring independence and uniqueness.
+Produces a new instance every time it is requested, ensuring independence and uniqueness.
 
 `Recommendation`: Useful for objects that should remain independent and different in each context or request.
 
@@ -114,7 +114,7 @@ The Dart Dependency Injection (DDI) package supports various scopes for efficien
  * `PreDestroy` mixins are not supported. Use `Interceptor.onDestroy` instead. 
 
 ## Object
-`Description`: Registers an Object in the Object Scope, ensuring it is created once and shared throughout the entire application, working like Singleton.
+Registers an Object in the Object Scope, ensuring it is created once and shared throughout the entire application, working like Singleton.
 
 `Recommendation`: Suitable for objects that are stateless or have shared state across the entire application.
 
@@ -146,15 +146,14 @@ When you register a factory, you provide a builder function that defines how the
 #### Example Registration
 
 ```dart
-MyService.new.builder.asApplication().register();
+MyService.new.builder.asApplication();
 ```
 
 In this example:
 
 * `MyService.new.` is the default constructor of the class (e.g., `() => MyService()`). 
 * `.builder` defines the parameters for the instance of `MyService`.
-* `.asApplication()` define the scope of the factory to create a new instance of `MyService` only on the first request.
-* `.register()` finalizes the factory registration in the `dart_ddi` system.
+* `.asApplication()` define the scope of the factory to create a new instance of `MyService` and register the factory in the `dart_ddi` system.
 
 ## Use Cases for Factories
 
@@ -163,7 +162,7 @@ Factories support asynchronous creation, which is useful when initialization req
 
 ```dart
 DDI.instance.register(
-  factory: ApplicationFactory(
+  factory: ApplicationFactory<MyApiService>(
     builder: () async {
       final data = await getApiData();
       return MyApiService(data);
@@ -270,14 +269,12 @@ The DDI package provides features for customizing the lifecycle of registered in
 ## Decorators
 Decorators provide a way to modify or enhance the behavior of an instance before it is returned. Each decorator is a function that takes the existing instance and returns a modified instance. Multiple decorators can be applied, and they are executed in the order they are specified during registration.
 
-You can also use Decorators to "refresh" the instance.
-
 #### Example Usage:
 ```dart
 
 class ModifiedMyService extends MyService {
   ModifiedMyService(MyService instance) {
-    super.value = 'new value';
+    super.value = instance.value.toUpperCase();
   }
 }
 
@@ -496,31 +493,31 @@ The `PreDestroy` mixin has been created to provide a mechanism for executing spe
 
 #### Example Usage:
 ```dart
-class MyClass with PreDestroy {
+class MyClassName with PreDestroy {
   final String name;
 
-  MyClass(this.name);
+  MyMyClassNameClass(this.name);
 
   @override
   void onPreDestroy() {
     // Custom cleanup logic to be executed before destruction.
-    print('Instance of MyClass is about to be destroyed.');
+    print('Instance of MyClassName is about to be destroyed.');
     print('Performing cleanup for $name');
   }
 }
 
 void main() {
-  // Registering an instance of MyClass
-  ddi.registerSingleton<MyClass>(
-     () => MyClass('Willian'),
+  // Registering an instance of MyClassName
+  ddi.registerSingleton<MyClassName>(
+     () => MyClassName('DDI Example'),
   );
   
   // Destroying the instance (removing it from the container).
-  ddi.remove<MyClass>();
+  ddi.remove<MyClassName>();
   
   // Output:
-  // Instance of MyClass is about to be destroyed.
-  // Performing cleanup for Willian
+  // Instance of MyClassName is about to be destroyed.
+  // Performing cleanup for DDI Example
 }
 ```
 
