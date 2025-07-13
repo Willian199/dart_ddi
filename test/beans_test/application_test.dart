@@ -1,6 +1,7 @@
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/exception/bean_not_found.dart';
 import 'package:dart_ddi/src/exception/duplicated_bean.dart';
+import 'package:dart_ddi/src/exception/factory_not_allowed.dart';
 import 'package:dart_ddi/src/exception/future_not_accept.dart';
 import 'package:test/test.dart';
 
@@ -8,16 +9,19 @@ import '../clazz_samples/a.dart';
 import '../clazz_samples/b.dart';
 import '../clazz_samples/c.dart';
 import '../clazz_samples/future_post_construct.dart';
+import '../clazz_samples/g.dart';
+import '../clazz_samples/h.dart';
+import '../clazz_samples/i.dart';
 import '../clazz_samples/undestroyable/application_destroy_get.dart';
 import '../clazz_samples/undestroyable/application_destroy_register.dart';
 import 'payment_service.dart';
 
-void application() {
+void main() {
   group('DDI Application Basic Tests', () {
     void registerApplicationBeans() {
-      DDI.instance.registerApplication(() => A(DDI.instance()));
-      DDI.instance.registerApplication(() => B(DDI.instance()));
-      DDI.instance.registerApplication(C.new);
+      DDI.instance.application(() => A(DDI.instance()));
+      DDI.instance.application(() => B(DDI.instance()));
+      DDI.instance.application(C.new);
     }
 
     void removeApplicationBeans() {
@@ -124,7 +128,7 @@ void application() {
     });
 
     test('Try to retrieve Application bean after disposed', () {
-      DDI.instance.registerApplication(C.new);
+      DDI.instance.application(C.new);
 
       final instance1 = DDI.instance.get<C>();
 
@@ -138,7 +142,7 @@ void application() {
     });
 
     test('Try to retrieve Application bean after removed', () {
-      DDI.instance.registerApplication(C.new);
+      DDI.instance.application(C.new);
 
       DDI.instance.get<C>();
 
@@ -149,7 +153,7 @@ void application() {
     });
 
     test('Create, get and remove a qualifier bean', () {
-      DDI.instance.registerApplication(C.new, qualifier: 'typeC');
+      DDI.instance.application(C.new, qualifier: 'typeC');
 
       DDI.instance.get(qualifier: 'typeC');
 
@@ -159,9 +163,8 @@ void application() {
           throwsA(isA<BeanNotFoundException>()));
     });
 
-    test('Try to destroy a undestroyable Application bean', () {
-      DDI.instance
-          .registerApplication(ApplicationDestroyGet.new, canDestroy: false);
+    test('Try to destroy an undestroyable Application bean', () {
+      DDI.instance.application(ApplicationDestroyGet.new, canDestroy: false);
 
       final instance1 = DDI.instance.get<ApplicationDestroyGet>();
 
@@ -172,30 +175,28 @@ void application() {
       expect(instance1, same(instance2));
     });
 
-    test('Try to register again a undestroyable Application bean', () {
-      DDI.instance.registerApplication(ApplicationDestroyRegister.new,
-          canDestroy: false);
+    test('Try to register again an undestroyable Application bean', () {
+      DDI.instance
+          .application(ApplicationDestroyRegister.new, canDestroy: false);
 
       DDI.instance.get<ApplicationDestroyRegister>();
 
       DDI.instance.destroy<ApplicationDestroyRegister>();
 
-      expect(
-          () => DDI.instance
-              .registerApplication(() => ApplicationDestroyRegister()),
+      expect(() => DDI.instance.application(() => ApplicationDestroyRegister()),
           throwsA(isA<DuplicatedBeanException>()));
     });
 
     test('Select an Application bean', () {
       // Registering CreditCardPaymentService with a selector condition
-      ddi.registerApplication<PaymentService>(
+      ddi.application<PaymentService>(
         CreditCardPaymentService.new,
         qualifier: 'creditCard',
         selector: (paymentMethod) => paymentMethod == 'creditCard',
       );
 
       // Registering PayPalPaymentService with a selector condition
-      ddi.registerApplication<PaymentService>(
+      ddi.application<PaymentService>(
         PayPalPaymentService.new,
         qualifier: 'paypal',
         selector: (paymentMethod) => paymentMethod == 'paypal',
@@ -223,9 +224,9 @@ void application() {
 
     test('Register and retrieve Application bean from a new DDI instance', () {
       void register(DDI d) {
-        d.registerApplication(() => A(d()));
-        d.registerApplication(() => B(d()));
-        d.registerApplication(C.new);
+        d.application(() => A(d()));
+        d.application(() => B(d()));
+        d.application(C.new);
       }
 
       void destroy(DDI d) {
@@ -264,7 +265,7 @@ void application() {
       }
 
       DDI.instance.register<Future<FuturePostConstruct>>(
-        factory: ScopeFactory.application(
+        factory: ApplicationFactory(
           builder: CustomBuilder(
             producer: localTest,
             parametersType: [],
@@ -298,6 +299,26 @@ void application() {
 
       expect(
           DDI.instance.isRegistered(qualifier: 'FuturePostConstruct'), false);
+    });
+
+    test('Try to register again an Object Type Bean', () {
+      expect(() => DDI.instance.application<Object>(() => "Test"),
+          throwsA(isA<FactoryNotAllowedException>()));
+    });
+
+    test('Register Beans with same interface', () {
+      DDI.instance.application<G>(I.new, qualifier: 'First');
+      DDI.instance.register<G>(
+          factory: ApplicationFactory<H>(builder: H.new.builder),
+          qualifier: 'Second');
+
+      expect(DDI.instance.getByType<G>().length, 2);
+
+      DDI.instance.destroy(qualifier: 'First');
+      DDI.instance.destroy(qualifier: 'Second');
+
+      expect(DDI.instance.isRegistered(qualifier: 'First'), false);
+      expect(DDI.instance.isRegistered(qualifier: 'Second'), false);
     });
   });
 }

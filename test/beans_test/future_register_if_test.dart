@@ -4,10 +4,10 @@ import 'package:test/test.dart';
 
 import '../clazz_samples/c.dart';
 
-void canRegister() {
+void main() {
   group('DDI Register If tests', () {
     test('Try to register a bean with canRegister false', () async {
-      await DDI.instance.registerSingleton(C.new, canRegister: () async {
+      await DDI.instance.singleton(C.new, canRegister: () async {
         await Future.delayed(const Duration(milliseconds: 200));
 
         return false;
@@ -20,7 +20,7 @@ void canRegister() {
     });
 
     test('Try to register a bean with canRegister true', () async {
-      await DDI.instance.registerSingleton(C.new, canRegister: () async {
+      await DDI.instance.singleton(C.new, canRegister: () async {
         await Future.delayed(const Duration(milliseconds: 200));
 
         return true;
@@ -34,7 +34,7 @@ void canRegister() {
     });
     test('Register a Singleton bean with canRegister true and qualifier',
         () async {
-      await DDI.instance.registerSingleton(
+      await DDI.instance.singleton(
         C.new,
         qualifier: 'typeC',
         canRegister: () async {
@@ -54,7 +54,7 @@ void canRegister() {
 
     test('Register a Singleton bean with canRegister false and qualifier',
         () async {
-      await DDI.instance.registerSingleton(
+      await DDI.instance.singleton(
         C.new,
         qualifier: 'typeC',
         canRegister: () async {
@@ -69,7 +69,7 @@ void canRegister() {
     });
 
     test('Register a Application bean with canRegister true', () async {
-      await DDI.instance.registerApplication(
+      await DDI.instance.application(
         C.new,
         qualifier: 'typeC',
         canRegister: () async {
@@ -88,41 +88,7 @@ void canRegister() {
     });
 
     test('Register a Application bean with canRegister false', () async {
-      await DDI.instance.registerApplication(
-        C.new,
-        qualifier: 'typeC',
-        canRegister: () async {
-          await Future.delayed(const Duration(milliseconds: 200));
-
-          return false;
-        },
-      );
-
-      expect(() => DDI.instance.get(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFoundException>()));
-    });
-
-    test('Register a Session bean with canRegister true', () async {
-      await DDI.instance.registerSession(
-        C.new,
-        qualifier: 'typeC',
-        canRegister: () async {
-          await Future.delayed(const Duration(milliseconds: 200));
-
-          return true;
-        },
-      );
-
-      DDI.instance.get(qualifier: 'typeC');
-
-      DDI.instance.destroy(qualifier: 'typeC');
-
-      expect(() => DDI.instance.get(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFoundException>()));
-    });
-
-    test('Register a Session bean with canRegister false', () async {
-      await DDI.instance.registerSession(
+      await DDI.instance.application(
         C.new,
         qualifier: 'typeC',
         canRegister: () async {
@@ -137,7 +103,7 @@ void canRegister() {
     });
 
     test('Register a Dependent bean with canRegister true', () async {
-      await DDI.instance.registerDependent(
+      await DDI.instance.dependent(
         C.new,
         qualifier: 'typeC',
         canRegister: () async {
@@ -156,7 +122,7 @@ void canRegister() {
     });
 
     test('Register a Dependent bean with canRegister false', () async {
-      await DDI.instance.registerDependent(
+      await DDI.instance.dependent(
         C.new,
         qualifier: 'typeC',
         canRegister: () async {

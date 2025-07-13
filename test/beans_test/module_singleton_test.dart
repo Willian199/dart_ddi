@@ -6,10 +6,10 @@ import '../clazz_samples/a.dart';
 import '../clazz_samples/c.dart';
 import '../clazz_samples/module_singleton.dart';
 
-void moduleSingletonTest() {
+void main() {
   group('DDI Modules Singleton Basic Tests', () {
     test('Register a Singleton Module', () {
-      DDI.instance.registerSingleton(ModuleSingleton.new);
+      DDI.instance.singleton(ModuleSingleton.new);
 
       final instance1 = DDI.instance.get<A>();
       final instance2 = DDI.instance.get<A>();
@@ -18,6 +18,8 @@ void moduleSingletonTest() {
       expect(instance1.b, same(instance2.b));
       expect(instance1.b.c, same(instance2.b.c));
       expect(instance1.b.c.value, same(instance2.b.c.value));
+
+      DDI.instance.dispose<ModuleSingleton>();
 
       DDI.instance.destroy<ModuleSingleton>();
 

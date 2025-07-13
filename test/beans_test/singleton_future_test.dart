@@ -10,14 +10,13 @@ import '../clazz_samples/c.dart';
 import '../clazz_samples/future_post_construct.dart';
 import '../clazz_samples/undestroyable/future_singleton_destroy_get.dart';
 
-void singletonFuture() {
+void main() {
   group('DDI Singleton Future Basic Tests', () {
-    void registerSingletonBeans() {
-      DDI.instance.registerApplication(C.new);
-      DDI.instance
-          .registerApplication<B>(() => Future.value(B(DDI.instance())));
-      DDI.instance
-          .registerApplication(() async => A(await DDI.instance.getAsync()));
+    Future<void> registerSingletonBeans() async {
+      DDI.instance.singleton(C.new);
+      await DDI.instance.singleton<B>(() => Future.value(B(DDI.instance())));
+      await DDI.instance
+          .singleton(() async => A(await DDI.instance.getAsync()));
     }
 
     void removeSingletonBeans() {
@@ -28,7 +27,7 @@ void singletonFuture() {
 
     test('Register and retrieve singleton bean', () async {
       ///Where is Singleton, should the register in the correct order
-      registerSingletonBeans();
+      await registerSingletonBeans();
 
       final instance1 = await DDI.instance.getAsync<A>();
       final instance2 = await DDI.instance.getAsync<A>();
@@ -42,7 +41,7 @@ void singletonFuture() {
     });
 
     test('Retrieve singleton bean after a "child" bean is diposed', () async {
-      registerSingletonBeans();
+      await registerSingletonBeans();
 
       final instance = await DDI.instance.getAsync<A>();
 
@@ -59,7 +58,7 @@ void singletonFuture() {
 
     test('Retrieve singleton bean after a second "child" bean is diposed',
         () async {
-      registerSingletonBeans();
+      await registerSingletonBeans();
 
       final instance = await DDI.instance.getAsync<A>();
 
@@ -75,7 +74,7 @@ void singletonFuture() {
     });
 
     test('Try to retrieve singleton bean after removed', () async {
-      await DDI.instance.registerSingleton(() => Future.value(C()));
+      await DDI.instance.singleton(() => Future.value(C()));
 
       DDI.instance.getAsync<C>();
 
@@ -86,8 +85,7 @@ void singletonFuture() {
     });
 
     test('Create, get and remove a qualifier bean', () async {
-      await DDI.instance
-          .registerSingleton(() => Future.value(C()), qualifier: 'typeC');
+      await DDI.instance.singleton(() => Future.value(C()), qualifier: 'typeC');
 
       DDI.instance.getAsync(qualifier: 'typeC');
 
@@ -98,7 +96,7 @@ void singletonFuture() {
     });
 
     test('Try to destroy a undestroyable Singleton bean', () async {
-      await DDI.instance.registerSingleton(
+      await DDI.instance.singleton(
           () => Future.value(FutureSingletonDestroyGet()),
           canDestroy: false);
 
@@ -114,7 +112,7 @@ void singletonFuture() {
     });
 
     test('Register and retrieve Future delayed Singleton bean', () async {
-      await DDI.instance.registerSingleton<C>(() async {
+      await DDI.instance.singleton<C>(() async {
         final C value = await Future.delayed(const Duration(seconds: 1), C.new);
         return value;
       });
@@ -129,10 +127,10 @@ void singletonFuture() {
     test(
         'Retrieve Singleton bean after a "child" bean is disposed using Future',
         () async {
-      DDI.instance.registerSingleton(C.new);
-      await DDI.instance.registerSingleton<B>(() => B(DDI.instance()));
+      DDI.instance.singleton(C.new);
+      await DDI.instance.singleton<B>(() => B(DDI.instance()));
       await DDI.instance
-          .registerSingleton(() async => A(await DDI.instance.getAsync()));
+          .singleton(() async => A(await DDI.instance.getAsync()));
 
       final instance1 = await DDI.instance.getAsync<A>();
 
@@ -150,7 +148,7 @@ void singletonFuture() {
     });
 
     test('Retrieve Singleton bean Stream', () async {
-      DDI.instance.registerSingleton(StreamController<C>.new);
+      DDI.instance.singleton(StreamController<C>.new);
 
       final StreamController<C> streamController = DDI.instance();
 
@@ -165,7 +163,7 @@ void singletonFuture() {
     });
 
     test('Register a Singleton bean with Future Post Construct', () async {
-      await ddi.registerSingleton<FuturePostConstruct>(() async {
+      await ddi.singleton<FuturePostConstruct>(() async {
         await Future.delayed(const Duration(milliseconds: 10));
 
         return Future.value(FuturePostConstruct());
@@ -185,7 +183,7 @@ void singletonFuture() {
       }
 
       await DDI.instance.register<FuturePostConstruct>(
-        factory: ScopeFactory.singleton(builder: localTest.builder),
+        factory: SingletonFactory(builder: localTest.builder),
         qualifier: 'FuturePostConstruct',
       );
 
@@ -208,7 +206,7 @@ void singletonFuture() {
       }
 
       await DDI.instance.register<FuturePostConstruct>(
-        factory: ScopeFactory.singleton(
+        factory: SingletonFactory(
           builder: CustomBuilder(
             producer: localTest,
             parametersType: [],
@@ -239,7 +237,7 @@ void singletonFuture() {
       }
 
       await DDI.instance.register<Future<FuturePostConstruct>>(
-        factory: ScopeFactory.singleton(
+        factory: SingletonFactory(
           builder: CustomBuilder(
             producer: localTest,
             parametersType: [],
@@ -274,7 +272,7 @@ void singletonFuture() {
       }
 
       await DDI.instance.register<Future<FuturePostConstruct>>(
-        factory: ScopeFactory.singleton(
+        factory: SingletonFactory(
           builder: CustomBuilder(
             producer: localTest,
             parametersType: [],

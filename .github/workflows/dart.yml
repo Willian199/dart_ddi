@@ -16,7 +16,7 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.0'
+          flutter-version: '3.32.6'
           channel: 'stable'
       - run: flutter --version
 
@@ -35,7 +35,7 @@ jobs:
       # package:test for this step to succeed. Note that Flutter projects will
       # want to change this to 'flutter test'.
       - name: Run tests
-        run: flutter test test/dart_ddi_test.dart --coverage
+        run: flutter test --coverage
 
       - name: Coveralls
         uses: coverallsapp/github-action@v2

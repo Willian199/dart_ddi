@@ -7,19 +7,25 @@ import '../clazz_samples/c.dart';
 import '../clazz_samples/future_module_application.dart';
 import '../clazz_samples/module_application.dart';
 
-void moduleApplicationTest() {
+void main() {
   group('DDI Modules Application Basic Tests', () {
     test('Register an Application Module', () {
-      DDI.instance.registerApplication(ModuleApplication.new);
+      DDI.instance.application(ModuleApplication.new);
 
       DDI.instance.get<ModuleApplication>();
       final instance1 = DDI.instance.get<A>();
       final instance2 = DDI.instance.get<A>();
 
+      expect(DDI.instance.isReady<A>(), true);
+
       expect(instance1, same(instance2));
       expect(instance1.b, same(instance2.b));
       expect(instance1.b.c, same(instance2.b.c));
       expect(instance1.b.c.value, same(instance2.b.c.value));
+
+      DDI.instance.dispose<ModuleApplication>();
+
+      expect(DDI.instance.isReady<A>(), false);
 
       DDI.instance.destroy<ModuleApplication>();
 
@@ -28,7 +34,7 @@ void moduleApplicationTest() {
     });
 
     test('Register a Future Application Module', () async {
-      DDI.instance.registerApplication(FutureModuleApplication.new);
+      DDI.instance.application(FutureModuleApplication.new);
 
       await DDI.instance.getAsync<FutureModuleApplication>();
       final instance1 = DDI.instance.get<A>();
@@ -56,7 +62,7 @@ void moduleApplicationTest() {
     });
 
     test('Register an Application Module and dispose async', () async {
-      DDI.instance.registerApplication(FutureModuleApplication.new);
+      DDI.instance.application(FutureModuleApplication.new);
 
       final module = await DDI.instance.getAsync<FutureModuleApplication>();
       expect(module.children.length, 3);

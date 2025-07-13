@@ -11,24 +11,24 @@ import '../clazz_samples/logger_future_interceptor.dart';
 import '../clazz_samples/logger_interceptor.dart';
 import '../clazz_samples/with_destroy_interceptor.dart';
 
-void interceptorFeatures() {
+void main() {
   group('DDI Feature Interceptor Tests', () {
     test('ADD Interceptor with Logs Interceptors and Beans', () {
       ddi.register(
-        factory: ScopeFactory.singleton(
+        factory: SingletonFactory(
           builder: LoggerInterceptor.new.builder,
         ),
       );
 
       ddi.register(
-        factory: ScopeFactory.application(
+        factory: ApplicationFactory(
           builder: CustomBuilder.of(J.new),
           interceptors: {LoggerInterceptor},
         ),
       );
 
       ///Where is Singleton, should the register in the correct order
-      ddi.registerSingleton<G>(() => H(), interceptors: {J, LoggerInterceptor});
+      ddi.singleton<G>(() => H(), interceptors: {J, LoggerInterceptor});
 
       final G instance = ddi.get<G>();
 
@@ -50,22 +50,22 @@ void interceptorFeatures() {
 
     test('ADD Future variation Interceptor with Logs Interceptors and Beans',
         () async {
-      DatabaseLog.new.builder.asApplication().register();
+      DatabaseLog.new.builder.asApplication();
 
       ddi.register(
-        factory: ScopeFactory.application(
+        factory: ApplicationFactory(
           builder: LoggerFutureInterceptor.new.builder,
         ),
       );
 
       ddi.register(
-        factory: ScopeFactory.application(
+        factory: ApplicationFactory(
           builder: CustomBuilder.ofFuture(J.new),
           interceptors: {LoggerFutureInterceptor},
         ),
       );
 
-      ddi.registerApplication<G>(
+      ddi.application<G>(
         H.new,
         interceptors: {J, LoggerFutureInterceptor},
       );
@@ -96,7 +96,7 @@ void interceptorFeatures() {
 
     test('ADD Future Interceptor with Logs Interceptors and Beans', () async {
       ddi.register(
-        factory: ScopeFactory.singleton(
+        factory: SingletonFactory(
           builder: () async {
             await Future.delayed(const Duration(milliseconds: 200));
             return LoggerInterceptor();
@@ -105,7 +105,7 @@ void interceptorFeatures() {
       );
 
       ddi.register(
-        factory: ScopeFactory.application(
+        factory: ApplicationFactory(
           builder: CustomBuilder.ofFuture(() async {
             await Future.delayed(const Duration(milliseconds: 200));
             return J();
@@ -114,7 +114,7 @@ void interceptorFeatures() {
         ),
       );
 
-      ddi.registerApplication<G>(H.new, interceptors: {J, LoggerInterceptor});
+      ddi.application<G>(H.new, interceptors: {J, LoggerInterceptor});
 
       final G instance = await ddi.getAsync<G>();
 
@@ -138,7 +138,7 @@ void interceptorFeatures() {
 
     test('ADD Future Interceptor with destroy onGet', () async {
       await ddi.register(
-        factory: ScopeFactory.singleton(
+        factory: SingletonFactory(
           builder: () async {
             await Future.delayed(const Duration(milliseconds: 200));
             return WithDestroyInterceptor();
@@ -146,7 +146,7 @@ void interceptorFeatures() {
         ),
       );
 
-      ddi.registerApplication<G>(H.new, interceptors: {WithDestroyInterceptor});
+      ddi.application<G>(H.new, interceptors: {WithDestroyInterceptor});
 
       expect(ddi.isRegistered<G>(), true);
 

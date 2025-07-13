@@ -1,11 +1,12 @@
 import 'package:dart_ddi/dart_ddi.dart';
+import 'package:dart_ddi/src/exception/bean_not_ready.dart';
 import 'package:test/test.dart';
 
 import '../clazz_samples/d.dart';
 import '../clazz_samples/e.dart';
 import '../clazz_samples/f.dart';
 
-void futureAddDecorator() {
+void main() {
   group('DDI Future ADD Decorators Tests', () {
     Future<void> regraSoma() async {
       final instance1 = await DDI.instance.getAsync<D>();
@@ -23,7 +24,7 @@ void futureAddDecorator() {
     }
 
     test('ADD Decorators to a Singleton bean', () async {
-      await DDI.instance.registerSingleton<D>(
+      await DDI.instance.singleton<D>(
         () => Future.value(D()),
         decorators: [
           (instance) => E(instance),
@@ -33,11 +34,13 @@ void futureAddDecorator() {
 
       await regraSoma();
 
-      DDI.instance.destroy<D>();
+      await DDI.instance.destroy<D>();
+
+      expect(ddi.isRegistered<D>(), false);
     });
 
     test('ADD Decorators to a Application bean', () async {
-      DDI.instance.registerApplication<D>(
+      DDI.instance.application<D>(
         () => Future.value(D()),
         decorators: [
           (instance) => E(instance),
@@ -47,25 +50,13 @@ void futureAddDecorator() {
 
       await regraSoma();
 
-      DDI.instance.destroy<D>();
-    });
+      await DDI.instance.destroy<D>();
 
-    test('ADD Decorators to a Session bean', () async {
-      DDI.instance.registerSession<D>(
-        () => Future.value(D()),
-        decorators: [
-          (instance) => E(instance),
-          (instance) => F(instance),
-        ],
-      );
-
-      await regraSoma();
-
-      DDI.instance.destroy<D>();
+      expect(ddi.isRegistered<D>(), false);
     });
 
     test('ADD Decorators to a Dependent bean', () async {
-      DDI.instance.registerDependent<D>(
+      DDI.instance.dependent<D>(
         () => Future.value(D()),
         decorators: [
           (instance) => E(instance),
@@ -75,7 +66,32 @@ void futureAddDecorator() {
 
       await regraSoma();
 
-      DDI.instance.destroy<D>();
+      await DDI.instance.destroy<D>();
+
+      expect(ddi.isRegistered<D>(), false);
+    });
+
+    test('ADD Decorators when the Singleton bean is not ready', () async {
+      DDI.instance.singleton<D>(
+        () async {
+          await Future.delayed(const Duration(milliseconds: 20));
+          return D();
+        },
+        decorators: [
+          (instance) => E(instance),
+          (instance) => F(instance),
+        ],
+      );
+
+      expect(
+          () => DDI.instance.addDecorator<D>([
+                (instance) => E(instance),
+              ]),
+          throwsA(isA<BeanNotReadyException>()));
+
+      await DDI.instance.destroy<D>();
+
+      expect(ddi.isRegistered<D>(), false);
     });
   });
 }

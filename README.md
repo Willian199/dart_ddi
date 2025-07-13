@@ -24,7 +24,7 @@ and the Flutter guide for
 
 ## Overview
 
-The package Dart Dependency Injection (DDI) is a robust and flexible dependency injection mechanism. Facilitates the management of object instances and their lifecycles by introducing different scopes and customization options. This documentation aims to provide an in-depth understanding of DDI's core concepts, usage, and features.
+The Dart Dependency Injection (DDI) package is a robust and flexible dependency injection mechanism. It facilitates the management of object instances and their lifecycles by introducing different scopes and customization options. This documentation aims to provide an in-depth understanding of DDI's core concepts, usage, and features.
 
 🚀 Contribute to the DDI by sharing your ideas, feedback, or practical examples.
 
@@ -45,10 +45,11 @@ Summary
 1. [Core Concepts](#core-concepts)
    1. [Singleton](#singleton)
    2. [Application](#application)
-   3. [Session](#session)
-   4. [Dependent](#dependent)
-   5. [Object](#object)
-   6. [Common Considerations](#common-considerations)
+   3. [Dependent](#dependent)
+   4. [Object](#object)
+   5. [Common Considerations](#common-considerations)
+   6. [Custom Scopes](#custom-scopes)
+   7. [Zone Management](#zone-management)
 2. [Factories ](#factories)
    1. [How Factories Work](#how-factories-work)
    2. [Use Cases for Factories](#use-cases-for-factories)
@@ -80,7 +81,7 @@ Summary
 The Dart Dependency Injection (DDI) package supports various scopes for efficient management of object instances. Each scope determines how instances are created, reused, and destroyed throughout the application lifecycle. Below are detailed characteristics of each scope, along with recommendations, use cases, and considerations for potential issues.
 
 ## Singleton
-`Description`: This scope creates an unique instance during registration and reuses it in all subsequent requests.
+This scope creates a single instance during registration and reuses it in all subsequent requests.
 
 `Recommendation`: Suitable for objects that need to be globally shared across the application, maintaining a single instance.
 
@@ -88,12 +89,12 @@ The Dart Dependency Injection (DDI) package supports various scopes for efficien
 
 `Note`: 
 
- * `Interceptor.onDipose` and `PreDispose` mixin are not supported. You can just destroy the instance. 
+ * `Interceptor.onDispose` and `PreDispose` mixin are not supported. You can just destroy the instance. 
 
- * If you call dispose, only the Application or Session childrens will be disposed.      
+ * If you call dispose, only the Application children will be disposed.      
 
 ## Application
-`Description`: Generates an instance when first used and reuses it for all subsequent requests during the application's execution.
+Generates an instance when first used and reuses it for all subsequent requests during the application's execution.
 
 `Recommendation`: Indicated for objects that need to be created only once per application and shared across different parts of the code.
 
@@ -101,17 +102,8 @@ The Dart Dependency Injection (DDI) package supports various scopes for efficien
 
 `Note`: `PreDispose` and `PreDestroy` mixins will only be called if the instance is in use. Use `Interceptor` if you want to call them regardless.
 
-## Session
-`Description`: Ties an instance to a specific session, persisting throughout the session's lifespan.
-
-`Recommendation`: Suitable for objects that need to be retained while a session is active, such as user-specific data or state.
-
-`Use Case`: Managing user authentication state or caching user-specific preferences.
-
-`Note`: `PreDispose` and `PreDestroy` mixins will only be called if the instance is in use. Use `Interceptor` if you want to call them regardless.
-
 ## Dependent
-`Description`: Produces a new instance every time it is requested, ensuring independence and uniqueness.
+Produces a new instance every time it is requested, ensuring independence and uniqueness.
 
 `Recommendation`: Useful for objects that should remain independent and different in each context or request.
 
@@ -119,12 +111,12 @@ The Dart Dependency Injection (DDI) package supports various scopes for efficien
 
 `Note`:
 
- * `Dispose` functions, `Interceptor.onDipose` and `PreDispose` mixin are not supported.
+ * `Dispose` functions, `Interceptor.onDispose` and `PreDispose` mixin are not supported.
 
  * `PreDestroy` mixins are not supported. Use `Interceptor.onDestroy` instead. 
 
 ## Object
-`Description`: Registers an Object in the Object Scope, ensuring it is created once and shared throughout the entire application, working like Singleton.
+Registers an Object in the Object Scope, ensuring it is created once and shared throughout the entire application, working like Singleton.
 
 `Recommendation`: Suitable for objects that are stateless or have shared state across the entire application.
 
@@ -132,9 +124,68 @@ The Dart Dependency Injection (DDI) package supports various scopes for efficien
 
 `Note`:
 
- * `Interceptor.onDipose` and `PreDispose` mixin are not supported. You can just destroy the instance.
+ * `Interceptor.onDispose` and `PreDispose` mixin are not supported. You can just destroy the instance.
 
- * If you call dispose, only the Application or Session childrens will be disposed.
+ * If you call dispose, only the Application children will be disposed.
+
+## Custom Scopes
+The DDI package provides a flexible architecture that allows you to create custom scopes by extending the `DDIBaseFactory` abstract class. This enables you to implement specialized lifecycle management strategies tailored to your specific application needs.
+
+### Creating Custom Scopes
+
+To create a custom scope, you need to extend `DDIBaseFactory<BeanT>` and implement the required methods:
+
+```dart
+class CustomScopeFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {...}
+```
+
+### Using Custom Scopes
+
+Once you've created a custom scope factory, you can register it using the standard `register` method:
+
+```dart
+// Register your custom scope
+await ddi.register<MyService>(
+  factory: CustomScopeFactory<MyService>(
+    builder: MyService.new.builder,
+    canDestroy: true,
+    decorators: [(instance) => ModifiedService(instance)],
+    interceptors: {MyInterceptor()},
+  ),
+);
+
+// Retrieve the instance
+final service = ddi.get<MyService>();
+```
+
+## Zone Management
+
+Run in a new Zone, making possible to register specific instances in a different context.
+
+```dart
+T runInZone<T>(String name, T Function() body);
+```
+
+This method creates a new Dart Zone with its own isolated registry of beans. This allows you to register and manage instances in a separate context without affecting the global DDI container. When the zone completes, all registered instances in that zone are automatically destroyed.
+
+**Use cases:**
+- Testing scenarios where you need isolated instances
+- Temporary registrations that shouldn't persist
+- Scoped dependency injection for specific operations
+- Avoiding conflicts between different parts of the application
+
+Example:
+```dart
+final result = ddi.runInZone('test-zone', () {
+  // Register instances specific to this zone
+  ddi.registerSingleton<TestService>(TestService.new);
+
+  // Use the zone-specific instance
+  final service = ddi.get<TestService>();
+  return service.process();
+});
+// Zone instances are automatically destroyed here
+```
 
 ## Common Considerations:
 `Unique Registration`: Ensure that the instance to be registered is unique for a specific type or use qualifiers to enable the registration of multiple instances of the same type.
@@ -156,15 +207,14 @@ When you register a factory, you provide a builder function that defines how the
 #### Example Registration
 
 ```dart
-MyService.new.builder.asApplication().register();
+MyService.new.builder.asApplication();
 ```
 
 In this example:
 
 * `MyService.new.` is the default constructor of the class (e.g., `() => MyService()`). 
 * `.builder` defines the parameters for the instance of `MyService`.
-* `.asApplication()` define the scope of the factory to create a new instance of `MyService` only on the first request.
-* `.register()` finalizes the factory registration in the `dart_ddi` system.
+* `.asApplication()` defines the scope of the factory to create a new instance of `MyService` and register the factory in the `dart_ddi` system.
 
 ## Use Cases for Factories
 
@@ -173,7 +223,7 @@ Factories support asynchronous creation, which is useful when initialization req
 
 ```dart
 DDI.instance.register(
-  factory: ScopeFactory.application(
+  factory: ApplicationFactory<MyApiService>(
     builder: () async {
       final data = await getApiData();
       return MyApiService(data);
@@ -188,7 +238,7 @@ Factories can define parameters for builders, allowing for more flexible object 
 ```dart
 // Registering the factory
 DDI.instance.register(
-  factory: ScopeFactory.application(
+  factory: ApplicationFactory(
     builder: (RecordParameter parameter) { 
       return ServiceWithParameter(parameter);
     }.builder,
@@ -196,7 +246,7 @@ DDI.instance.register(
 );
 
 DDI.instance.register(
-  factory: ScopeFactory.application(
+  factory: ApplicationFactory(
     builder: (MyDatabase database, UserService userService) {
       return ServiceAutoInject(database, userService);
     }.builder,
@@ -209,22 +259,20 @@ ddi.get<ServiceAutoInject>();
 ```
 ## Considerations
 
-`Object Scope:` The Object Scope is not supported for factories.
-
 `Singleton Scope:` The Singleton Scope can only be created with auto-inject. If you attempt to create a singleton with custom objects, a `BeanNotFoundException` will be thrown.
 
 `Supertypes or Interfaces:` You cannot use the shortcut builder (`MyService.new.builder.asApplication()`) with supertypes or interfaces. This limitation exists because the builder function only recognizes the implementation class, not the supertype or interface.
 
-`Decorators and Interceptors:` It is highly recommended to register the factory using `factory: ScopeFactory.scope(...)`. This approach handles type inference more effectively.
+`Decorators and Interceptors:` It is highly recommended to register the factory using `factory: CustomFactory(...)`. This approach handles type inference more effectively.
 
 `Lazy vs. Eager Injection:` Eager Injection occurs when you inject beans using auto-inject functionality or manually via constructors. For lazy injection, you can use the `DDIInject` mixin or define the variable as `late`(e.g., `late final ServiceAutoInject serviceAutoInject = ddi.get()`).
 
 # Qualifiers
 
-Qualifiers are used to differentiate instances of the same type, enabling to identify and retrieve specific instances. In scenarios where multiple instances coexist, qualifiers serve as optional labels or identifiers associated with the registration and retrieval of instances.
+Qualifiers are used to differentiate instances of the same type, enabling you to identify and retrieve specific instances. In scenarios where multiple instances coexist, qualifiers serve as optional labels or identifiers associated with the registration and retrieval of instances.
 
 ## How Qualifiers Work
-When registering an instance, can provide a qualifier as part of the registration process. This qualifier acts as metadata associated with the instance and can later be used during retrieval to specify which instance is needed.
+When registering an instance, you can provide a qualifier as part of the registration process. This qualifier acts as metadata associated with the instance and can later be used during retrieval to specify which instance is needed.
 
 #### Example Registration with Qualifier
 
@@ -233,7 +281,7 @@ ddi.registerSingleton<MyService>(MyService.new, qualifier: "specialInstance");
 ```
 
 ## Retrieval with Qualifiers
-During retrieval, if multiple instances of the same type exist, can use the associated qualifier to specify the desired instance. But remember, if you register using qualifier, should retrieve with qualifier.
+During retrieval, if multiple instances of the same type exist, you can use the associated qualifier to specify the desired instance. But remember, if you register using a qualifier, you should retrieve with a qualifier.
 
 ####  Example Retrieval with Qualifier
 
@@ -276,21 +324,8 @@ ddi.registerSingleton<PlatformService>(iOSService.new, qualifier: "ios");
 `Type Identifiers:` Qualifiers are often implemented using string-based identifiers, which may introduce issues such as typos or potential naming conflicts. To mitigate these concerns, it is highly recommended to utilize enums or constants.
 
 # Extra Customization
-The DDI package provides features for customizing the lifecycle of registered instances. These features include `postConstruct`, `decorators`, `interceptor`, `canRegister` and `canDestroy`.
+The DDI package provides features for customizing the lifecycle of registered instances. These features include `decorators`, `interceptor`, `canRegister` and `canDestroy`.
 
-## PostConstruct
-The `postConstruct` callback allows to perform additional setup or initialization after an instance is created. This is particularly useful for executing logic that should run once the instance is ready for use.
-
-#### Example Usage:
-```dart
-ddi.registerSingleton<MyService>(
-  MyService.new,
-  postConstruct: () {
-    // Additional setup logic after MyService instance creation.
-    print("MyService instance is ready!");
-  },
-);
-```
 
 ## Decorators
 Decorators provide a way to modify or enhance the behavior of an instance before it is returned. Each decorator is a function that takes the existing instance and returns a modified instance. Multiple decorators can be applied, and they are executed in the order they are specified during registration.
@@ -300,7 +335,7 @@ Decorators provide a way to modify or enhance the behavior of an instance before
 
 class ModifiedMyService extends MyService {
   ModifiedMyService(MyService instance) {
-    super.value = 'new value';
+    super.value = instance.value.toUpperCase();
   }
 }
 
@@ -403,7 +438,7 @@ ddi.registerApplication<MyService>(
 ```
 
 ## Selector
-The `selector` parameter allows for conditional selection when retrieving an instance, providing a way to determine which instance should be used based on specific criteria. The first instance that matches `true` will be selected; if no instance matches, a `BeanNotFoundException` will be thrown. The selector requires registration with an interface type, making it particularly useful in scenarios where multiple instances of the same type are registered, but only one needs to be chosen dynamically at runtime based on context.`
+The `selector` parameter allows for conditional selection when retrieving an instance, providing a way to determine which instance should be used based on specific criteria. The first instance that matches `true` will be selected; if no instance matches, a `BeanNotFoundException` will be thrown. The selector requires registration with an interface type, making it particularly useful in scenarios where multiple instances of the same type are registered, but only one needs to be chosen dynamically at runtime based on context.
 
 #### Example Usage:
 ```dart
@@ -457,8 +492,8 @@ ddi.addChildModules<MyModule>(
 );
 ```
 
-### Adding Multiple Class
-To add multiple class to a module at once, you can utilize the `addChildrenModules` method.
+### Adding Multiple Classes
+To add multiple classes to a module at once, you can utilize the `addChildrenModules` method.
 
 - `child`: This refers to the type or qualifier of the subclasses that will be part of the module. Note that these are not instances, but rather types or qualifiers.
 - `qualifier` (optional): This parameter refers to the main class type of the module. It is optional and is used as a qualifier if needed.
@@ -519,31 +554,31 @@ The `PreDestroy` mixin has been created to provide a mechanism for executing spe
 
 #### Example Usage:
 ```dart
-class MyClass with PreDestroy {
+class MyClassName with PreDestroy {
   final String name;
 
-  MyClass(this.name);
+  MyMyClassNameClass(this.name);
 
   @override
   void onPreDestroy() {
     // Custom cleanup logic to be executed before destruction.
-    print('Instance of MyClass is about to be destroyed.');
+    print('Instance of MyClassName is about to be destroyed.');
     print('Performing cleanup for $name');
   }
 }
 
 void main() {
-  // Registering an instance of MyClass
-  ddi.registerSingleton<MyClass>(
-     () => MyClass('Willian'),
+  // Registering an instance of MyClassName
+  ddi.registerSingleton<MyClassName>(
+     () => MyClassName('DDI Example'),
   );
   
   // Destroying the instance (removing it from the container).
-  ddi.remove<MyClass>();
+  ddi.remove<MyClassName>();
   
   // Output:
-  // Instance of MyClass is about to be destroyed.
-  // Performing cleanup for Willian
+  // Instance of MyClassName is about to be destroyed.
+  // Performing cleanup for DDI Example
 }
 ```
 
@@ -592,7 +627,7 @@ class AppModule with DDIModule {
 
 The `DDIInject`, `DDIInjectAsync` and `DDIComponentInject` mixins are designed to facilitate dependency injection of an instance into your classes. They provide a convenient method to obtain an instance of a specific type from the dependency injection container.
 
-The `DDIInject` mixin allows for synchronous injection of an instance and `DDIInjectAsync` mixin allows for asynchronous injection. Both defines a `instance` property that will be initialized with the `InjectType` instance obtained.
+The `DDIInject` mixin allows for synchronous injection of an instance and `DDIInjectAsync` mixin allows for asynchronous injection. Both define an `instance` property that will be initialized with the `InjectType` instance obtained.
 
 The `DDIComponentInject` allows injecting a specific instance using a module as a selector.
 
@@ -609,6 +644,7 @@ class MyAsyncController with DDIInjectAsync<MyService> {
     final myInstance = await instance;
     myInstance.runSomething();
   }
+}
 
 class MyController with DDIComponentInject<MyComponent, MyModule> {
 

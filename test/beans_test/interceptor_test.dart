@@ -11,22 +11,11 @@ import '../clazz_samples/i.dart';
 import '../clazz_samples/j.dart';
 import '../clazz_samples/k.dart';
 
-/*extension PI0<B extends Object, InterceptorT extends DDIInterceptor<B>> on DDIInterceptor Function<B extends Object>() {
-  List<Type> get parameters => [];
-  Type get returnType => InterceptorT;
-  CustomBuilder<InterceptorT> get builder => CustomBuilder<InterceptorT>(
-        producer: this,
-        parametersType: parameters,
-        returnType: returnType,
-        isFuture: this is Future<Object> Function(),
-      );
-}*/
-
-void interceptor() {
+void main() {
   group('DDI Interceptor Tests', () {
     test('ADD Interceptor to a Singleton bean', () {
       ddi.register(
-        factory: ScopeFactory.singleton(
+        factory: SingletonFactory(
           builder: const CustomBuilder<J>(
             producer: J.new,
             parametersType: [],
@@ -37,7 +26,7 @@ void interceptor() {
       );
 
       ///Where is Singleton, should the register in the correct order
-      DDI.instance.registerSingleton<G>(() => H(), interceptors: {J});
+      DDI.instance.singleton<G>(() => H(), interceptors: {J});
 
       final G instance = DDI.instance.get<G>();
 
@@ -54,11 +43,11 @@ void interceptor() {
 
     test('ADD Interceptor to a Application bean', () {
       ddi.register<J<G>>(
-        factory: ScopeFactory.application(
+        factory: ApplicationFactory(
           builder: J<G>.new.builder,
         ),
       );
-      DDI.instance.registerApplication<G>(() => H(), interceptors: {J<G>});
+      DDI.instance.application<G>(() => H(), interceptors: {J<G>});
 
       final G instance = DDI.instance.get<G>();
 
@@ -75,12 +64,12 @@ void interceptor() {
 
     test('ADD Interceptor to a Application bean with qualifier', () {
       ddi.register<J>(
-        factory: ScopeFactory.application(
+        factory: ApplicationFactory(
           builder: J<G>.new.builder,
         ),
       );
-      DDI.instance.registerApplication<G>(() => H(),
-          qualifier: 'qualifier', interceptors: {J});
+      DDI.instance
+          .application<G>(() => H(), qualifier: 'qualifier', interceptors: {J});
 
       final G instance = DDI.instance.get<G>(qualifier: 'qualifier');
 
@@ -97,32 +86,11 @@ void interceptor() {
 
     test('ADD Interceptor to a Dependent bean', () {
       ddi.register<J>(
-        factory: ScopeFactory.dependent(
+        factory: DependentFactory(
           builder: J<G>.new.builder,
         ),
       );
-      DDI.instance.registerDependent<G>(() => H(), interceptors: {J});
-
-      final G instance = DDI.instance.get<G>();
-
-      expect(instance.area(), 20);
-      expect(instance is I, true);
-
-      DDI.instance.destroy<G>();
-      ddi.destroy<J>();
-
-      expect(
-          () => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
-      expect(DDI.instance.isRegistered<J>(), false);
-    });
-
-    test('ADD Interceptor to a Session bean', () {
-      ddi.register<J>(
-        factory: ScopeFactory.session(
-          builder: J<G>.new.builder,
-        ),
-      );
-      DDI.instance.registerSession<G>(() => H(), interceptors: {J});
+      DDI.instance.dependent<G>(() => H(), interceptors: {J});
 
       final G instance = DDI.instance.get<G>();
 
@@ -139,11 +107,11 @@ void interceptor() {
 
     test('ADD Interceptor after registered a Application bean', () {
       ddi.register<J>(
-        factory: ScopeFactory.application(
+        factory: ApplicationFactory(
           builder: J<G>.new.builder,
         ),
       );
-      DDI.instance.registerApplication<G>(() => H());
+      DDI.instance.application<G>(() => H());
 
       final G instance = DDI.instance.get<G>();
 
@@ -167,15 +135,15 @@ void interceptor() {
       expect(DDI.instance.isRegistered<J>(), false);
     });
 
-    test('ADD Decorators and Interceptor to a Singleton bean', () {
+    test('ADD Decorators and Interceptor to a Singleton bean', () async {
       ddi.register<K>(
-        factory: ScopeFactory.singleton(
+        factory: SingletonFactory(
           builder: K.new.builder,
         ),
       );
 
       ///Where is Singleton, should the register in the correct order
-      DDI.instance.registerSingleton(
+      DDI.instance.singleton(
         () => D(),
         decorators: [
           (D instance) => E(instance),
@@ -198,7 +166,7 @@ void interceptor() {
       expect(instance2.value, 'bcconsdfghGETdefGET');
       expect(identical(instance1, instance2), false);
 
-      DDI.instance.destroy<D>();
+      await DDI.instance.destroy<D>();
       ddi.destroy<K>();
 
       expect(DDI.instance.isRegistered<D>(), false);

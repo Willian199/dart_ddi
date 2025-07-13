@@ -4,16 +4,18 @@ import 'package:test/test.dart';
 
 import '../clazz_samples/module_object.dart';
 
-void moduleObjectTest() {
+void main() {
   group('DDI Modules Object Basic Tests', () {
     test('Register a Object Module', () {
-      DDI.instance.registerObject(ModuleObject());
+      DDI.instance.register(factory: ObjectFactory(instance: ModuleObject()));
 
       final author = DDI.instance.get(qualifier: 'authored');
       final enabled = DDI.instance.get(qualifier: 'enabled');
 
       expect(author, 'Willian');
       expect(enabled, true);
+
+      DDI.instance.dispose<ModuleObject>();
 
       DDI.instance.destroy<ModuleObject>();
 

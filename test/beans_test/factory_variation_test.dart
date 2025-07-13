@@ -8,13 +8,13 @@ import '../clazz_samples/multi_inject.dart';
 
 typedef RecordInject = (A a, B b, C c);
 
-void factoryVariationTest() {
+void main() {
   group('DDI Factory Variation Tests', () {
     void registerBeans() {
-      ddi.register(factory: MultiInject.new.builder.asDependent());
-      ddi.register(factory: B.new.builder.asSession());
-      ddi.register(factory: C.new.builder.asApplication());
-      ddi.register(factory: A.new.builder.asSingleton());
+      MultiInject.new.builder.asDependent();
+      B.new.builder.asApplication();
+      C.new.builder.asApplication();
+      A.new.builder.asSingleton();
     }
 
     void removeBeans() {
@@ -96,16 +96,15 @@ void factoryVariationTest() {
     });
 
     test('Register and retrieve all Factories using Map', () async {
-      ddi.register<A>(
-        factory: (B b) async {
-          return A(b);
-        }.builder.asApplication(),
-      );
-      ddi.register(factory: B.new.builder.asSession());
-      ddi.register(factory: C.new.builder.asDependent());
+      (B b) async {
+        return A(b);
+      }.builder.asApplication();
+
+      B.new.builder.asApplication();
+      C.new.builder.asDependent();
 
       ddi.register(
-        factory: ScopeFactory.dependent(
+        factory: DependentFactory(
           builder: CustomBuilder<MultiInject>(
               producer: ({required A a, required B b, required C? c}) {
                 return MultiInject(a, b, c ?? C());
@@ -138,11 +137,11 @@ void factoryVariationTest() {
     });
 
     test('Register Factories and get using Map', () {
-      ddi.register(factory: C.new.builder.asApplication());
-      ddi.register(factory: B.new.builder.asSession());
+      C.new.builder.asApplication();
+      B.new.builder.asApplication();
 
       ddi.register(
-        factory: ScopeFactory.dependent(
+        factory: DependentFactory(
           builder: CustomBuilder<MultiInject>(
               producer: ({required B b, required C c}) {
                 return MultiInject(A(b), b, c);
@@ -169,12 +168,12 @@ void factoryVariationTest() {
     });
 
     test('Register and retrieve Factories with Wrong Map type', () {
-      ddi.register(factory: C.new.builder.asApplication());
-      ddi.register(factory: B.new.builder.asSession());
-      ddi.register(factory: A.new.builder.asSingleton());
+      C.new.builder.asApplication();
+      B.new.builder.asApplication();
+      A.new.builder.asSingleton();
 
       ddi.register(
-        factory: ScopeFactory.dependent(
+        factory: DependentFactory(
           builder: CustomBuilder<MultiInject>(
             producer: ({required A a, required B b, required C c}) {
               return MultiInject(a, b, c);
@@ -202,12 +201,12 @@ void factoryVariationTest() {
     });
 
     test('Register a Future and retrieve all Factories using Map', () async {
-      ddi.register(factory: C.new.builder.asApplication());
-      ddi.register(factory: B.new.builder.asSession());
-      ddi.register(factory: A.new.builder.asSingleton());
+      C.new.builder.asApplication();
+      B.new.builder.asApplication();
+      A.new.builder.asSingleton();
 
       ddi.register<MultiInject>(
-        factory: ScopeFactory.dependent(
+        factory: DependentFactory(
           builder: CustomBuilder(
             producer: ({required A a, required B b, required C c}) async {
               await Future.delayed(const Duration(milliseconds: 10));
@@ -243,12 +242,12 @@ void factoryVariationTest() {
     });
 
     test('Register a Future and retrieve all Factories using List', () async {
-      ddi.register(factory: C.new.builder.asApplication());
-      ddi.register(factory: B.new.builder.asSession());
-      ddi.register(factory: A.new.builder.asSingleton());
+      C.new.builder.asApplication();
+      B.new.builder.asApplication();
+      A.new.builder.asSingleton();
 
       ddi.register<MultiInject>(
-        factory: ScopeFactory.dependent(
+        factory: DependentFactory(
           builder: CustomBuilder(
             producer: (A a, B b, C c) async {
               await Future.delayed(const Duration(milliseconds: 10));
@@ -286,12 +285,12 @@ void factoryVariationTest() {
 
     test('Register a Future and retrieve all Factories using a Record',
         () async {
-      ddi.register(factory: C.new.builder.asApplication());
-      ddi.register(factory: B.new.builder.asSession());
-      ddi.register(factory: A.new.builder.asSingleton());
+      C.new.builder.asApplication();
+      B.new.builder.asApplication();
+      A.new.builder.asSingleton();
 
       ddi.register<MultiInject>(
-        factory: ScopeFactory.dependent(
+        factory: DependentFactory(
           builder: CustomBuilder(
             producer: (RecordInject record) async {
               await Future.delayed(const Duration(milliseconds: 10));

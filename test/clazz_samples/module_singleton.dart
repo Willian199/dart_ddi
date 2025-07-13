@@ -9,9 +9,9 @@ import 'c.dart';
 class ModuleSingleton with DDIModule, PreDestroy {
   @override
   void onPostConstruct() {
-    registerSingleton(C.new);
-    registerSingleton(() => B(ddi()));
-    ddi.registerSingleton(() => A(ddi()));
+    singleton(C.new);
+    singleton(() => B(ddi()));
+    ddi.singleton(() => A(ddi()));
   }
 
   @override

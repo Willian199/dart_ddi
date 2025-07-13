@@ -1,7 +1,8 @@
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/exception/bean_not_found.dart';
+import 'package:dart_ddi/src/exception/bean_not_ready.dart';
 import 'package:dart_ddi/src/exception/duplicated_bean.dart';
-import 'package:dart_ddi/src/exception/factory_not_allowed.dart';
+import 'package:dart_ddi/src/exception/factory_already_created.dart';
 import 'package:test/test.dart';
 
 import '../clazz_samples/a.dart';
@@ -10,12 +11,12 @@ import '../clazz_samples/c.dart';
 import '../clazz_samples/undestroyable/singleton_destroy_get.dart';
 import '../clazz_samples/undestroyable/singleton_destroy_register.dart';
 
-void singleton() {
+void main() {
   group('DDI Singleton Basic Tests', () {
     void registerSingletonBeans() {
-      ddi.registerSingleton(C.new);
-      ddi.registerSingleton(() => B(ddi()));
-      ddi.registerSingleton(() => A(ddi()));
+      ddi.singleton(C.new);
+      ddi.singleton(() => B(ddi()));
+      ddi.singleton(() => A(ddi()));
     }
 
     void removeSingletonBeans() {
@@ -73,7 +74,7 @@ void singleton() {
     });
 
     test('Try to retrieve singleton bean after removed', () {
-      ddi.registerSingleton(() => C());
+      ddi.singleton(() => C());
 
       ddi.get<C>();
 
@@ -83,7 +84,7 @@ void singleton() {
     });
 
     test('Create, get and remove a qualifier bean', () {
-      ddi.registerSingleton(() => C(), qualifier: 'typeC');
+      ddi.singleton(() => C(), qualifier: 'typeC');
 
       ddi.get(qualifier: 'typeC');
 
@@ -94,7 +95,7 @@ void singleton() {
     });
 
     test('Try to destroy a undestroyable Singleton bean', () {
-      ddi.registerSingleton(() => SingletonDestroyGet(), canDestroy: false);
+      ddi.singleton(() => SingletonDestroyGet(), canDestroy: false);
 
       final instance1 = ddi.get<SingletonDestroyGet>();
 
@@ -106,31 +107,14 @@ void singleton() {
     });
 
     test('Try to register again a undestroyable Singleton bean', () {
-      ddi.registerSingleton(() => SingletonDestroyRegister(),
-          canDestroy: false);
+      ddi.singleton(() => SingletonDestroyRegister(), canDestroy: false);
 
       ddi.get<SingletonDestroyRegister>();
 
       ddi.destroy<SingletonDestroyRegister>();
 
-      expect(() => ddi.registerSingleton(() => SingletonDestroyRegister()),
+      expect(() => ddi.singleton(() => SingletonDestroyRegister()),
           throwsA(isA<DuplicatedBeanException>()));
-    });
-
-    test('Fail register with custom factory without scope builder', () {
-      expect(
-          () => ddi.register(
-                factory: ScopeFactory.singleton(),
-              ),
-          throwsA(isA<FactoryNotAllowedException>()));
-    });
-
-    test('Fail register a Object type value', () {
-      expect(
-          () => ddi.register<Object>(
-                factory: SingletonDestroyRegister.new.builder.asSingleton(),
-              ),
-          throwsA(isA<FactoryNotAllowedException>()));
     });
 
     test('Verify if a Bean not registered is Future', () {
@@ -145,6 +129,29 @@ void singleton() {
 
     test('Disponse a Bean not registered', () {
       expect(() => ddi.dispose<A>(), throwsA(isA<BeanNotFoundException>()));
+    });
+
+    test('Call register before passing to DDI', () {
+      final c = SingletonFactory(builder: C.new.builder)
+        ..register(qualifier: C, apply: (_) {});
+
+      expect(() => ddi.register<C>(factory: c),
+          throwsA(isA<FactoryAlreadyCreatedException>()));
+    });
+
+    test('Try to get a Bean using a list Future wait', () async {
+      await expectLater(
+          () => Future.wait<dynamic>([
+                ddi.singleton<C>(() async {
+                  return C();
+                }),
+                Future.value(ddi.get<C>()),
+              ], eagerError: true),
+          throwsA(isA<BeanNotReadyException>()));
+
+      await ddi.destroy<C>();
+
+      expect(ddi.isRegistered<C>(), false);
     });
   });
 }

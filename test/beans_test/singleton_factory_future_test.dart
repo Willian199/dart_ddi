@@ -2,24 +2,25 @@ import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/exception/bean_not_found.dart';
+import 'package:dart_ddi/src/exception/bean_not_ready.dart';
 import 'package:test/test.dart';
 
 import '../clazz_samples/a.dart';
 import '../clazz_samples/b.dart';
 import '../clazz_samples/c.dart';
+import '../clazz_samples/d.dart';
+import '../clazz_samples/e.dart';
 import '../clazz_samples/factory_parameter.dart';
 import '../clazz_samples/multi_inject.dart';
 import '../clazz_samples/undestroyable/future_singleton_factory_destroy_get.dart';
 
-void singletonFactoryFuture() {
+void main() {
   group('DDI Singleton Factory Future Basic Tests', () {
     Future<void> registerBeans() async {
-      DDI.instance.register(
-        factory: C.new.builder.asSingleton(),
-      );
+      C.new.builder.asSingleton();
 
       await DDI.instance.register<B>(
-        factory: ScopeFactory.singleton(
+        factory: SingletonFactory(
           builder: () async {
             await Future.delayed(const Duration(milliseconds: 200));
             return B(DDI.instance());
@@ -28,14 +29,14 @@ void singletonFactoryFuture() {
       );
 
       await DDI.instance.register<A>(
-        factory: ScopeFactory.singleton(
+        factory: SingletonFactory(
           builder: () async {
             return A(await DDI.instance.getAsync<B>());
           }.builder,
         ),
       );
 
-      DDI.instance.register(factory: MultiInject.new.builder.asSingleton());
+      MultiInject.new.builder.asSingleton();
     }
 
     void removeSingletonBeans() {
@@ -98,7 +99,7 @@ void singletonFactoryFuture() {
 
     test('Try to retrieve a Factory singleton bean after removed', () async {
       await DDI.instance.register<C>(
-        factory: ScopeFactory.singleton(
+        factory: SingletonFactory(
           builder: () async {
             final C value =
                 await Future.delayed(const Duration(seconds: 2), C.new);
@@ -117,7 +118,7 @@ void singletonFactoryFuture() {
 
     test('Create, get and remove a Factory qualifier bean', () async {
       await DDI.instance.register<C>(
-        factory: ScopeFactory.singleton(
+        factory: SingletonFactory(
           builder: () async {
             final C value =
                 await Future.delayed(const Duration(seconds: 2), C.new);
@@ -137,7 +138,7 @@ void singletonFactoryFuture() {
 
     test('Try to destroy a undestroyable Factory Singleton bean', () async {
       await DDI.instance.register<FutureSingletonFactoryDestroyGet>(
-        factory: ScopeFactory.singleton(
+        factory: SingletonFactory(
           canDestroy: false,
           builder: () async {
             final FutureSingletonFactoryDestroyGet value = await Future.delayed(
@@ -162,7 +163,7 @@ void singletonFactoryFuture() {
     test('Retrieve Factory Singleton with Custom Parameter', () {
       expectLater(
           () => DDI.instance.register(
-                factory: ScopeFactory.singleton(
+                factory: SingletonFactory(
                   builder: (RecordParameter parameter) async {
                     await Future.delayed(const Duration(milliseconds: 10));
                     return FactoryParameter(parameter);
@@ -170,6 +171,26 @@ void singletonFactoryFuture() {
                 ),
               ),
           throwsA(isA<BeanNotFoundException>()));
+    });
+
+    test('Thow error on Factory Singleton', () async {
+      DDI.instance.singleton<D>(
+        () async {
+          await Future.delayed(const Duration(milliseconds: 20));
+          return D();
+        },
+        decorators: [
+          (instance) => E(instance),
+          (instance) => throw StateError("Test error"),
+        ],
+      );
+
+      expect(ddi.isRegistered<D>(), false);
+      await expectLater(
+          () async => ddi.getAsync<D>(), throwsA(isA<BeanNotReadyException>()));
+      expect(ddi.isRegistered<D>(), false);
+
+      await DDI.instance.destroy<D>();
     });
   });
 }

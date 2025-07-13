@@ -6,15 +6,15 @@ import '../clazz_samples/g.dart';
 import '../clazz_samples/h.dart';
 import '../clazz_samples/i.dart';
 
-void runByType() {
+void main() {
   group('DDI Process By Type', () {
     test('Application Get bean by Type that have registered and dispose', () {
-      ddi.registerApplication<G>(() => H(), qualifier: 'firtsClass');
+      ddi.application<G>(() => H(), qualifier: 'firtsClass');
 
       final List<Object> keys1 = ddi.getByType<G>();
 
       expect(keys1.length, 1);
-      ddi.registerApplication<G>(() => I(), qualifier: 'secondClass');
+      ddi.application<G>(() => I(), qualifier: 'secondClass');
 
       final List<Object> keys2 = ddi.getByType<G>();
 
@@ -35,15 +35,18 @@ void runByType() {
           throwsA(isA<BeanNotFoundException>()));
       expect(() => ddi.get(qualifier: keys2[1]),
           throwsA(isA<BeanNotFoundException>()));
+
+      expect(ddi.isRegistered(qualifier: 'firtsClass'), false);
+      expect(ddi.isRegistered(qualifier: 'secondClass'), false);
     });
 
     test('Dependent Get bean by Type that have registered and dispose', () {
-      ddi.registerDependent<G>(() => H(), qualifier: 'firtsClass');
+      ddi.dependent<G>(() => H(), qualifier: 'firtsClass');
 
       final List<Object> keys1 = ddi.getByType<G>();
 
       expect(keys1.length, 1);
-      ddi.registerDependent<G>(() => I(), qualifier: 'secondClass');
+      ddi.dependent<G>(() => I(), qualifier: 'secondClass');
 
       final List<Object> keys2 = ddi.getByType<G>();
 
@@ -64,44 +67,17 @@ void runByType() {
           throwsA(isA<BeanNotFoundException>()));
       expect(() => ddi.get(qualifier: keys2[1]),
           throwsA(isA<BeanNotFoundException>()));
-    });
-
-    test('Session Get bean by Type that have registered and dispose', () {
-      ddi.registerSession<G>(() => H(), qualifier: 'firtsClass');
-
-      final List<Object> keys1 = ddi.getByType<G>();
-
-      expect(keys1.length, 1);
-      ddi.registerSession<G>(() => I(), qualifier: 'secondClass');
-
-      final List<Object> keys2 = ddi.getByType<G>();
-
-      expect(keys2.length, 2);
-
-      final G instance1 = ddi.get(qualifier: keys2[0]);
-      final G instance2 = ddi.get(qualifier: keys2[1]);
-
-      expect(instance1.area(), instance2.area() / 2);
-
-      ddi.disposeByType<G>();
-      expect(ddi.isReady(qualifier: 'firtsClass'), false);
-      expect(ddi.isReady(qualifier: 'secondClass'), false);
-
-      ddi.destroyByType<G>();
-
-      expect(() => ddi.get(qualifier: keys2[0]),
-          throwsA(isA<BeanNotFoundException>()));
-      expect(() => ddi.get(qualifier: keys2[1]),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(ddi.isRegistered(qualifier: 'firtsClass'), false);
+      expect(ddi.isRegistered(qualifier: 'secondClass'), false);
     });
 
     test('Get bean by Type that have registered and dispose', () {
-      ddi.registerApplication<G>(() => H(), qualifier: 'firtsClass');
+      ddi.application<G>(() => H(), qualifier: 'firtsClass');
 
       final List<Object> keys1 = ddi.getByType<G>();
 
       expect(keys1.length, 1);
-      ddi.registerDependent<G>(() => I(), qualifier: 'secondClass');
+      ddi.dependent<G>(() => I(), qualifier: 'secondClass');
 
       final List<Object> keys2 = ddi.getByType<G>();
 
@@ -122,18 +98,24 @@ void runByType() {
           throwsA(isA<BeanNotFoundException>()));
       expect(() => ddi.get(qualifier: keys2[1]),
           throwsA(isA<BeanNotFoundException>()));
+      expect(ddi.isRegistered(qualifier: 'firtsClass'), false);
+      expect(ddi.isRegistered(qualifier: 'secondClass'), false);
     });
 
     test('Factory Singleton Get bean by Type that have registered and dispose',
         () {
       ddi.register<G>(
-          factory: H.new.builder.asSingleton(), qualifier: 'firtsClass');
+        factory: SingletonFactory(builder: H.new.builder),
+        qualifier: 'firtsClass',
+      );
 
       final List<Object> keys1 = ddi.getByType<G>();
 
       expect(keys1.length, 1);
       ddi.register<G>(
-          factory: I.new.builder.asSingleton(), qualifier: 'secondClass');
+        factory: SingletonFactory(builder: I.new.builder),
+        qualifier: 'secondClass',
+      );
 
       final List<Object> keys2 = ddi.getByType<G>();
 
@@ -161,13 +143,16 @@ void runByType() {
         'Factory Application Get bean by Type that have registered and dispose',
         () {
       ddi.register<G>(
-          factory: H.new.builder.asApplication(), qualifier: 'firtsClass');
+          factory: ApplicationFactory(builder: H.new.builder),
+          qualifier: 'firtsClass');
 
       final List<Object> keys1 = ddi.getByType<G>();
 
       expect(keys1.length, 1);
       ddi.register<G>(
-          factory: I.new.builder.asApplication(), qualifier: 'secondClass');
+        factory: ApplicationFactory(builder: I.new.builder),
+        qualifier: 'secondClass',
+      );
 
       final List<Object> keys2 = ddi.getByType<G>();
 
@@ -194,12 +179,13 @@ void runByType() {
         'Factory and Non Factory Application Get bean by Type that have registered and dispose',
         () {
       ddi.register<G>(
-          factory: H.new.builder.asApplication(), qualifier: 'firtsClass');
+          factory: ApplicationFactory(builder: H.new.builder),
+          qualifier: 'firtsClass');
 
       final List<Object> keys1 = ddi.getByType<G>();
 
       expect(keys1.length, 1);
-      ddi.registerApplication<G>(() => I(), qualifier: 'secondClass');
+      ddi.application<G>(() => I(), qualifier: 'secondClass');
 
       final List<Object> keys2 = ddi.getByType<G>();
 
@@ -228,7 +214,7 @@ void runByType() {
         () async {
       ddi.register<G>(
         qualifier: 'firtsClass',
-        factory: ScopeFactory.application(
+        factory: ApplicationFactory(
           builder: () async {
             await Future.delayed(const Duration(milliseconds: 200));
             return H();
@@ -241,7 +227,7 @@ void runByType() {
       expect(keys1.length, 1);
       ddi.register<G>(
         qualifier: 'secondClass',
-        factory: ScopeFactory.application(
+        factory: ApplicationFactory(
           builder: () async {
             await Future.delayed(const Duration(milliseconds: 200));
             return I();
@@ -276,7 +262,7 @@ void runByType() {
         () async {
       await ddi.register<G>(
         qualifier: 'firtsClass',
-        factory: ScopeFactory.singleton(
+        factory: SingletonFactory(
           builder: () async {
             await Future.delayed(const Duration(milliseconds: 200));
             return H();
@@ -289,7 +275,7 @@ void runByType() {
       expect(keys1.length, 1);
       await ddi.register<G>(
         qualifier: 'secondClass',
-        factory: ScopeFactory.singleton(
+        factory: SingletonFactory(
           builder: () async {
             await Future.delayed(const Duration(milliseconds: 200));
             return I();
@@ -324,7 +310,7 @@ void runByType() {
         () async {
       ddi.register<G>(
         qualifier: 'firtsClass',
-        factory: ScopeFactory.dependent(
+        factory: DependentFactory(
           builder: () async {
             await Future.delayed(const Duration(milliseconds: 200));
             return H();
@@ -337,7 +323,7 @@ void runByType() {
       expect(keys1.length, 1);
       ddi.register<G>(
         qualifier: 'secondClass',
-        factory: ScopeFactory.dependent(
+        factory: DependentFactory(
           builder: () async {
             await Future.delayed(const Duration(milliseconds: 200));
             return I();
@@ -369,7 +355,7 @@ void runByType() {
     test('Future Factory and Non Future Singleton getByType', () async {
       await ddi.register<G>(
         qualifier: 'firtsClass',
-        factory: ScopeFactory.singleton(
+        factory: SingletonFactory(
           builder: () async {
             await Future.delayed(const Duration(milliseconds: 200));
             return H();
@@ -381,7 +367,8 @@ void runByType() {
 
       expect(keys1.length, 1);
       ddi.register<G>(
-          factory: I.new.builder.asSingleton(), qualifier: 'secondClass');
+          factory: SingletonFactory(builder: I.new.builder),
+          qualifier: 'secondClass');
 
       final List<Object> keys2 = ddi.getByType<G>();
 
@@ -407,7 +394,7 @@ void runByType() {
     test('Future Factory and Non Future Application getByType', () async {
       await ddi.register<G>(
         qualifier: 'firtsClass',
-        factory: ScopeFactory.application(
+        factory: ApplicationFactory(
           builder: () async {
             await Future.delayed(const Duration(milliseconds: 200));
             return H();
@@ -419,7 +406,8 @@ void runByType() {
 
       expect(keys1.length, 1);
       ddi.register<G>(
-          factory: I.new.builder.asApplication(), qualifier: 'secondClass');
+          factory: ApplicationFactory(builder: I.new.builder),
+          qualifier: 'secondClass');
 
       final List<Object> keys2 = ddi.getByType<G>();
 

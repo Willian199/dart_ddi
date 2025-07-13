@@ -10,11 +10,11 @@ import '../clazz_samples/c.dart';
 import '../clazz_samples/factory_parameter.dart';
 import '../clazz_samples/future_post_construct.dart';
 
-void dependentFactoryFuture() {
+void main() {
   group('DDI Dependent Factory Future Basic Tests', () {
     void registerDependentBeans() {
       DDI.instance.register<A>(
-        factory: ScopeFactory.dependent(
+        factory: DependentFactory(
           builder: () async {
             return A(await DDI.instance.getAsync<B>());
           }.builder,
@@ -22,7 +22,7 @@ void dependentFactoryFuture() {
       );
 
       DDI.instance.register<B>(
-        factory: ScopeFactory.dependent(
+        factory: DependentFactory(
           builder: () async {
             await Future.delayed(const Duration(milliseconds: 200));
             return B(DDI.instance());
@@ -30,7 +30,7 @@ void dependentFactoryFuture() {
         ),
       );
 
-      C.new.builder.asDependent().register();
+      C.new.builder.asDependent();
     }
 
     void removeDependentBeans() {
@@ -85,11 +85,9 @@ void dependentFactoryFuture() {
     });
 
     test('Try to retrieve Dependent bean after disposed', () async {
-      DDI.instance.register(
-        factory: () {
-          return Future.value(C());
-        }.builder.asDependent(),
-      );
+      () {
+        return Future.value(C());
+      }.builder.asDependent();
 
       final instance1 = await DDI.instance.getAsync<C>();
 
@@ -103,11 +101,9 @@ void dependentFactoryFuture() {
     });
 
     test('Try to retrieve Dependent bean after removed', () async {
-      DDI.instance.register(
-        factory: () {
-          return Future.value(C());
-        }.builder.asDependent(),
-      );
+      () {
+        return Future.value(C());
+      }.builder.asDependent();
 
       await DDI.instance.getAsync<C>();
 
@@ -118,12 +114,9 @@ void dependentFactoryFuture() {
     });
 
     test('Create, get and remove a qualifier bean', () async {
-      DDI.instance.register(
-        qualifier: 'typeC',
-        factory: () {
-          return Future.value(C());
-        }.builder.asDependent(),
-      );
+      () {
+        return Future.value(C());
+      }.builder.asDependent(qualifier: 'typeC');
 
       final instance1 = await DDI.instance.getAsync(qualifier: 'typeC');
       final instance2 = DDI.instance.getAsync(qualifier: 'typeC');
@@ -137,13 +130,10 @@ void dependentFactoryFuture() {
     });
 
     test('Register and retrieve Future delayed Dependent bean', () async {
-      DDI.instance.register(
-        factory: () async {
-          final C value =
-              await Future.delayed(const Duration(seconds: 1), C.new);
-          return value;
-        }.builder.asDependent(),
-      );
+      () async {
+        final C value = await Future.delayed(const Duration(seconds: 1), C.new);
+        return value;
+      }.builder.asDependent();
 
       final C intance = await DDI.instance.getAsync<C>();
 
@@ -154,7 +144,7 @@ void dependentFactoryFuture() {
 
     test('Retrieve Factory Dependent with Custom Parameter', () async {
       DDI.instance.register(
-        factory: ScopeFactory.dependent(
+        factory: DependentFactory(
           builder: (RecordParameter parameter) async {
             await Future.delayed(const Duration(milliseconds: 10));
             return FactoryParameter(parameter);
@@ -181,7 +171,7 @@ void dependentFactoryFuture() {
       }
 
       await DDI.instance.register<FuturePostConstruct>(
-        factory: ScopeFactory.dependent(builder: localTest.builder),
+        factory: DependentFactory(builder: localTest.builder),
         qualifier: 'FuturePostConstruct',
       );
 

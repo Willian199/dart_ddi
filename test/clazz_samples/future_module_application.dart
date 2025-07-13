@@ -8,8 +8,8 @@ class FutureModuleApplication with DDIModule {
   @override
   Future<void> onPostConstruct() async {
     await Future.delayed(const Duration(milliseconds: 10));
-    registerApplication(() => B(ddi()));
-    registerApplication(() => A(ddi()));
-    registerApplication(C.new);
+    application(() => B(ddi()));
+    application(() => A(ddi()));
+    application(C.new);
   }
 }

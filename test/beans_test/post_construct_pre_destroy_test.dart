@@ -3,10 +3,10 @@ import 'package:test/test.dart';
 
 import '../clazz_samples/l.dart';
 
-void postConstructPreDestroyTest() {
+void main() {
   group('DDI PostConstruct and PreDestroy test', () {
     test('Regsiter a Singleton bean with PostConstruct  and PreDestroy', () {
-      DDI.instance.registerSingleton(() => L());
+      DDI.instance.singleton(() => L());
 
       final L instance = DDI.instance.get();
 
@@ -16,17 +16,7 @@ void postConstructPreDestroyTest() {
     });
 
     test('Regsiter a Applcation bean with PostConstruct  and PreDestroy', () {
-      DDI.instance.registerApplication(() => L());
-
-      final L instance = DDI.instance.get();
-
-      expect('abcd', instance.value);
-
-      DDI.instance.destroy<L>();
-    });
-
-    test('Regsiter a Session bean with PostConstruct  and PreDestroy', () {
-      DDI.instance.registerSession(() => L());
+      DDI.instance.application(() => L());
 
       final L instance = DDI.instance.get();
 
@@ -36,7 +26,7 @@ void postConstructPreDestroyTest() {
     });
 
     test('Regsiter a Dependent bean with PostConstruct  and PreDestroy', () {
-      DDI.instance.registerDependent(() => L());
+      DDI.instance.dependent(() => L());
 
       final L instance = DDI.instance.get();
 
@@ -46,7 +36,7 @@ void postConstructPreDestroyTest() {
     });
 
     test('Regsiter a Object bean with PostConstruct  and PreDestroy', () {
-      DDI.instance.registerObject(L());
+      DDI.instance.object(L());
 
       final L instance = DDI.instance.get();
 
