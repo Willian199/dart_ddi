@@ -94,7 +94,7 @@ class SingletonFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
       }
 
       clazz =
-          InstanceDecoratorsUtils.executarDecorators<BeanT>(clazz, _decorators);
+          InstanceDecoratorsUtils.executeDecorators<BeanT>(clazz, _decorators);
 
       if (clazz is DDIModule) {
         (clazz as DDIModule).moduleQualifier = qualifier;
@@ -226,7 +226,7 @@ class SingletonFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
       throw BeanNotReadyException(BeanT.toString());
     }
 
-    _instance = InstanceDecoratorsUtils.executarDecorators<BeanT>(
+    _instance = InstanceDecoratorsUtils.executeDecorators<BeanT>(
         _instance!, newDecorators);
   }
 

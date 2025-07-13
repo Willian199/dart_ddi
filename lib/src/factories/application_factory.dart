@@ -101,7 +101,7 @@ class ApplicationFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
           _instance = ins.onCreate(_instance!) as BeanT;
         }
 
-        _instance = InstanceDecoratorsUtils.executarDecorators<BeanT>(
+        _instance = InstanceDecoratorsUtils.executeDecorators<BeanT>(
             _instance!, _decorators);
 
         if (_instance is DDIModule) {
@@ -178,7 +178,7 @@ class ApplicationFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
         }
 
         /// Apply all Decorators to the instance
-        _instance = InstanceDecoratorsUtils.executarDecorators<BeanT>(
+        _instance = InstanceDecoratorsUtils.executeDecorators<BeanT>(
             _instance!, _decorators);
 
         /// Refresh the qualifier for the Module
@@ -320,7 +320,7 @@ class ApplicationFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
   @override
   FutureOr<void> addDecorator(ListDecorator<BeanT> newDecorators) {
     if (isReady) {
-      _instance = InstanceDecoratorsUtils.executarDecorators<BeanT>(
+      _instance = InstanceDecoratorsUtils.executeDecorators<BeanT>(
           _instance!, newDecorators);
     }
 

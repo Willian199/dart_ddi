@@ -85,7 +85,7 @@ class ObjectFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
         }
       }
 
-      _instance = InstanceDecoratorsUtils.executarDecorators<BeanT>(
+      _instance = InstanceDecoratorsUtils.executeDecorators<BeanT>(
           _instance, _decorators);
 
       if (_instance is DDIModule) {
@@ -211,7 +211,7 @@ class ObjectFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
       throw BeanNotReadyException(BeanT.toString());
     }
 
-    _instance = InstanceDecoratorsUtils.executarDecorators<BeanT>(
+    _instance = InstanceDecoratorsUtils.executeDecorators<BeanT>(
         _instance, newDecorators);
   }
 

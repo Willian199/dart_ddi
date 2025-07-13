@@ -53,14 +53,14 @@ void main() {
     });
 
     tearDown(() async {
-      // Limpeza do contêiner
+      // Container cleanup
       await ddi.destroy<AddInterceptor>();
       await ddi.destroy<MultiplyInterceptor>();
       await ddi.destroy<AsyncAddInterceptor>();
       await ddi.destroy<ErrorInterceptor>();
     });
 
-    test('Interceptores aplicando soma e multiplicação', () async {
+    test('Interceptors applying sum and multiplication', () async {
       await ddi.register<int>(
         factory: SingletonFactory(
           builder: CustomBuilder<int>(
@@ -79,7 +79,7 @@ void main() {
       await ddi.destroy<int>();
     });
 
-    test('Interceptores assíncronos com valores inteiros', () async {
+    test('Async interceptors with integer values', () async {
       await ddi.register<int>(
         factory: SingletonFactory(
           builder: CustomBuilder<int>(
@@ -116,7 +116,7 @@ void main() {
       await ddi.destroy<int>();
     });
 
-    test('Combinação de decorators e interceptores', () async {
+    test('Combination of decorators and interceptors', () async {
       await ddi.register<int>(
         factory: SingletonFactory(
           builder: CustomBuilder<int>(

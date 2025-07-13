@@ -1,6 +1,7 @@
 ## 0.12.0
 * This version brings a major rework to be able to use Custom Scopes.
 * Now you can create your own Scopes.
+* Added support to Zoned instances with `DDI.instance.runInZone("zone_name", () => factory)`.
 
 * Break changes:
     * Removed the `Session Scope` and correlated methods. Use `Application` instead.

@@ -2,7 +2,36 @@ import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
 
+/// Mixin that provides logic for creating instances of beans, including automatic dependency injection.
+///
+/// This mixin is used by factories to instantiate objects, supporting parameterized constructors, positional and named parameters,
+/// and automatic injection of dependencies based on the types required by the constructor.
+///
+/// Example:
+/// ```dart
+/// class MyFactory with InstanceFactoryMixin {
+///   // ...
+/// }
+/// ```
+///
+/// The [createInstance] method will attempt to resolve parameters automatically from the DDI container if not provided.
+///
+/// - If the constructor requires a parameter and none is provided, it will try to resolve it from DDI.
+/// - If the parameter is an Iterable or Map, it will use [Function.apply] to pass them.
+/// - If no parameters are required, it will call the default constructor.
+///
+/// The [_autoInject] method is used internally to resolve all required types from the DDI container.
 mixin InstanceFactoryMixin {
+  /// Creates an instance of [BeanT] using the provided [CustomBuilder] and optional [parameter].
+  ///
+  /// - If the function matches the parameter signature, it is called directly.
+  /// - If the parameter is an Iterable or Map, it is passed using [Function.apply].
+  /// - If no parameter is provided, it attempts to auto-inject dependencies from DDI.
+  ///
+  /// Example:
+  /// ```dart
+  /// final instance = createInstance<MyService, String>(builder: myBuilder, parameter: 'name');
+  /// ```
   BeanT createInstance<BeanT extends Object, ParameterT extends Object>({
     required CustomBuilder<FutureOr<BeanT>> builder,
     ParameterT? parameter,
@@ -19,6 +48,8 @@ mixin InstanceFactoryMixin {
     };
   }
 
+  /// Converts a [Map] to [Map<Symbol, dynamic>] for named parameter injection.
+  /// Throws an assertion error if the map is not of the correct type.
   // ignore: strict_raw_type
   Map<Symbol, dynamic> _getMap<BeanT extends Object>(Map map) {
     assert(map is Map<Symbol, dynamic>, '''
@@ -33,6 +64,15 @@ Ex:
     return map as Map<Symbol, dynamic>;
   }
 
+  /// Automatically injects dependencies for the parameters required by the [builder].
+  ///
+  /// This method will resolve all types listed in [builder.parametersType] from the DDI container
+  /// and call the producer function with those instances.
+  ///
+  /// Example:
+  /// ```dart
+  /// // If builder.parametersType == [A, B], this will call builder.producer(ddi.get<A>(), ddi.get<B>())
+  /// ```
   BeanT _autoInject<BeanT extends Object>(
       CustomBuilder<FutureOr<BeanT>> builder) {
     final instances = [

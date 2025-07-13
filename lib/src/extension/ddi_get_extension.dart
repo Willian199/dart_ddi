@@ -48,9 +48,28 @@ extension DDIGetExtension on DDI {
 
   /// Optionally retrieves an instance of the registered class.
   ///
+  /// This method safely checks if the class is registered before attempting to retrieve it.
+  /// If the class is not registered, it returns `null` instead of throwing an exception.
+  /// This is useful for optional dependencies or when you want to handle missing registrations gracefully.
+  ///
   /// - `qualifier`: (Optional) Qualifier to distinguish between different instances.
   ///
-  /// This method checks if the class is registered before retrieving the instance.
+  /// **Use cases:**
+  /// - Optional dependencies that may or may not be registered
+  /// - Graceful handling of missing services
+  /// - Conditional service usage based on availability
+  ///
+  /// Example:
+  /// ```dart
+  /// // Safe retrieval - won't throw if not registered
+  /// final service = ddi.getOptional<MyService>();
+  /// if (service != null) {
+  ///   service.doSomething();
+  /// }
+  ///
+  /// // With qualifier
+  /// final service = ddi.getOptional<MyService>(qualifier: 'special');
+  /// ```
   BeanT? getOptional<BeanT extends Object>({Object? qualifier}) {
     return isRegistered<BeanT>(qualifier: qualifier)
         ? get<BeanT>(qualifier: qualifier)
@@ -59,10 +78,32 @@ extension DDIGetExtension on DDI {
 
   /// Optionally retrieves an instance with a parameter of the registered class.
   ///
+  /// This method safely checks if the class is registered before attempting to retrieve it with parameters.
+  /// If the class is not registered, it returns `null` instead of throwing an exception.
+  /// This is useful for optional dependencies that require parameters.
+  ///
   /// - `qualifier`: (Optional) Qualifier to distinguish between different instances.
   /// - `parameter`: (Optional) Parameter to pass during instance creation.
   ///
-  /// This method allows optional retrieval of instances with parameters.
+  /// **Use cases:**
+  /// - Optional dependencies with parameters
+  /// - Safe parameterized service retrieval
+  /// - Conditional service usage with parameters
+  ///
+  /// Example:
+  /// ```dart
+  /// // Safe retrieval with parameter
+  /// final service = ddi.getOptionalWith<MyService, String>(parameter: 'config');
+  /// if (service != null) {
+  ///   service.doSomething();
+  /// }
+  ///
+  /// // With qualifier and parameter
+  /// final service = ddi.getOptionalWith<MyService, String>(
+  ///   qualifier: 'special',
+  ///   parameter: 'config',
+  /// );
+  /// ```
   BeanT? getOptionalWith<BeanT extends Object, ParameterT extends Object>({
     ParameterT? parameter,
     Object? qualifier,

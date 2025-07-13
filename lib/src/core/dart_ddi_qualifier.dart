@@ -2,17 +2,17 @@ import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
 
-/// Gerencia o mapeamento de qualificadores para Zones
+/// Manages qualifier mapping for Zones
 class DartDDIQualifier {
-  // Chave usada para armazenar dados na Zone
+  /// Key used to store data in Zone
   static const _beansKey = #ddi_beans_registry;
 
   String get zoneName => Zone.current[#zone_name] as String? ?? 'root';
 
-  // Mapa global de beans (fallback)
+  /// Global beans map (fallback)
   final Map<Object, DDIBaseFactory<Object>> _globalBeansMap = {};
 
-  // Obtém o mapa de beans para a zona atual
+  /// Gets the beans map for the current zone
   Map<Object, DDIBaseFactory<Object>> _getBeansMap() {
     final Map<Object, DDIBaseFactory<Object>>? zoneMap =
         Zone.current[_beansKey] as Map<Object, DDIBaseFactory<Object>>?;
@@ -49,12 +49,12 @@ class DartDDIQualifier {
     return null;
   }
 
-  // Verifica se estamos em uma zona com registro dedicado
+  /// Checks if we are in a zone with dedicated registry
   bool hasZoneRegistry() {
     return Zone.current[_beansKey] != null;
   }
 
-  // Executa código em uma nova zona com registros dedicados
+  /// Executes code in a new zone with dedicated registries
   T runWithZoneRegistry<T>(String name, T Function() body) {
     return runZoned(
       body,
@@ -65,8 +65,7 @@ class DartDDIQualifier {
     );
   }
 
-  // Implementação dos métodos obrigatórios de MapBase
-
+  /// Implementation of required MapBase methods
   void setFactory(Object key, DDIBaseFactory<Object> value) {
     _getBeansMap()[key] = value;
   }

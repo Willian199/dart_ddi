@@ -44,7 +44,7 @@ class MyLoggingService with PostConstruct {
 
 // Define a module that contains multiple services
 class MyModule with DDIModule, PreDestroy {
-  void executar(String value) => print(value);
+  void execute(String value) => print(value);
 
   @override
   Future<void> onPostConstruct() async {

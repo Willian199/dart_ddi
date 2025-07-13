@@ -84,7 +84,7 @@ class DependentFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
         dependentClazz is! PreDestroy || dependentClazz is! Future<PreDestroy>,
         'Dependent instances dont support PreDestroy. Use Interceptors instead.');
 
-    dependentClazz = InstanceDecoratorsUtils.executarDecorators<BeanT>(
+    dependentClazz = InstanceDecoratorsUtils.executeDecorators<BeanT>(
         dependentClazz, _decorators);
 
     if (dependentClazz is DDIModule) {
@@ -142,7 +142,7 @@ class DependentFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
         'Dependent instances dont support PreDestroy. Use Interceptors instead.');
 
     /// Apply all Decorators to the instance
-    dependentClazz = InstanceDecoratorsUtils.executarDecorators<BeanT>(
+    dependentClazz = InstanceDecoratorsUtils.executeDecorators<BeanT>(
         dependentClazz, _decorators);
 
     /// Refresh the qualifier for the Module
