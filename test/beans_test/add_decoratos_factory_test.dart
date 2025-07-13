@@ -104,14 +104,11 @@ void main() {
       ]);
 
       final instance2 = await DDI.instance.getAsync<D>();
-      print("D get");
 
       expect(instance2.value, 'bcdfghdef');
       expect(identical(instance1, instance2), false);
 
       await DDI.instance.destroy<D>();
-
-      print("D destroyed");
 
       expect(ddi.isRegistered<D>(), false);
     });
