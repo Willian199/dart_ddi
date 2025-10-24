@@ -8,6 +8,11 @@ import '../clazz_samples/f.dart';
 
 void main() {
   group('DDI Future ADD Decorators Tests', () {
+    tearDownAll(
+      () {
+        expect(ddi.isEmpty, true);
+      },
+    );
     Future<void> regraSoma() async {
       final instance1 = await DDI.instance.getAsync<D>();
 

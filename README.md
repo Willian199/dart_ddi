@@ -40,7 +40,7 @@ See this [example](https://github.com/Willian199/dart_ddi/blob/master/example/ma
 - [Perfumei](https://github.com/Willian199/Perfumei) - A simple mobile app about perfumes. Built using DDI and Cubit.
 - [Clinicas](https://github.com/Willian199/lab_clinicas_fe) - A project for a mobile, desktop and web application about Attendance Rank. Built using Signal and Flutter DDI to enable route-based dependency injection management.
 
-Summary
+### Summary
 
 1. [Core Concepts](#core-concepts)
    1. [Singleton](#singleton)
@@ -50,7 +50,7 @@ Summary
    5. [Common Considerations](#common-considerations)
    6. [Custom Scopes](#custom-scopes)
    7. [Zone Management](#zone-management)
-2. [Factories ](#factories)
+2. [Factories](#factories)
    1. [How Factories Work](#how-factories-work)
    2. [Use Cases for Factories](#use-cases-for-factories)
    3. [Considerations](#considerations)
@@ -67,7 +67,7 @@ Summary
    6. [Selectors](#selector)
 5. [Modules](#modules)
    1. [Adding a Class](#adding-a-class)
-   2. [Adding Multiple Class](#adding-multiple-class)
+   2. [Adding Multiple Classes](#adding-multiple-classes)
 6. [Mixins](#mixins)
    1. [Post Construct](#post-construct-mixin)
    2. [Pre Destroy](#pre-destroy-mixin)
@@ -83,11 +83,11 @@ The Dart Dependency Injection (DDI) package supports various scopes for efficien
 ## Singleton
 This scope creates a single instance during registration and reuses it in all subsequent requests.
 
-`Recommendation`: Suitable for objects that need to be globally shared across the application, maintaining a single instance.
+**Recommendation**: Suitable for objects that need to be globally shared across the application, maintaining a single instance.
 
-`Use Case`: Sharing a configuration manager, a logging service, or a global state manager.
+**Use Case**: Sharing a configuration manager, a logging service, or a global state manager.
 
-`Note`: 
+**Note**: 
 
  * `Interceptor.onDispose` and `PreDispose` mixin are not supported. You can just destroy the instance. 
 
@@ -96,20 +96,20 @@ This scope creates a single instance during registration and reuses it in all su
 ## Application
 Generates an instance when first used and reuses it for all subsequent requests during the application's execution.
 
-`Recommendation`: Indicated for objects that need to be created only once per application and shared across different parts of the code.
+**Recommendation**: Indicated for objects that need to be created only once per application and shared across different parts of the code.
 
-`Use Case`: Managing application-level resources, such as a network client or a global configuration.
+**Use Case**: Managing application-level resources, such as a network client or a global configuration.
 
-`Note`: `PreDispose` and `PreDestroy` mixins will only be called if the instance is in use. Use `Interceptor` if you want to call them regardless.
+**Note**: `PreDispose` and `PreDestroy` mixins will only be called if the instance is in use. Use `Interceptor` if you want to call them regardless.
 
 ## Dependent
 Produces a new instance every time it is requested, ensuring independence and uniqueness.
 
-`Recommendation`: Useful for objects that should remain independent and different in each context or request.
+**Recommendation**: Useful for objects that should remain independent and different in each context or request.
 
-`Use Case`: Creating instances of transient objects like data repositories or request handlers.
+**Use Case**: Creating instances of transient objects like data repositories or request handlers.
 
-`Note`:
+**Note**:
 
  * `Dispose` functions, `Interceptor.onDispose` and `PreDispose` mixin are not supported.
 
@@ -118,11 +118,11 @@ Produces a new instance every time it is requested, ensuring independence and un
 ## Object
 Registers an Object in the Object Scope, ensuring it is created once and shared throughout the entire application, working like Singleton.
 
-`Recommendation`: Suitable for objects that are stateless or have shared state across the entire application.
+**Recommendation**: Suitable for objects that are stateless or have shared state across the entire application.
 
-`Use Case`: Application or device properties, like platform or dark mode settings, where the object's state needs to be consistent across the entire application.
+**Use Case**: Application or device properties, like platform or dark mode settings, where the object's state needs to be consistent across the entire application.
 
-`Note`:
+**Note**:
 
  * `Interceptor.onDispose` and `PreDispose` mixin are not supported. You can just destroy the instance.
 
@@ -188,13 +188,13 @@ final result = ddi.runInZone('test-zone', () {
 ```
 
 ## Common Considerations:
-`Unique Registration`: Ensure that the instance to be registered is unique for a specific type or use qualifiers to enable the registration of multiple instances of the same type.
+**Unique Registration**: Ensure that the instance to be registered is unique for a specific type or use qualifiers to enable the registration of multiple instances of the same type.
 
-`Memory Management`: Be aware of memory implications for long-lived objects, especially in the Singleton and Object scopes.
+**Memory Management**: Be aware of memory implications for long-lived objects, especially in the Singleton and Object scopes.
 
-`Nested Instances`: Avoid unintentional coupling by carefully managing instances within larger-scoped objects.
+**Nested Instances**: Avoid unintentional coupling by carefully managing instances within larger-scoped objects.
 
-`const and Modifiers`: Take into account the impact of const and other class modifiers on the behavior of instances within different scopes.
+**const and Modifiers**: Take into account the impact of const and other class modifiers on the behavior of instances within different scopes.
 
 # Factories
 
@@ -259,13 +259,13 @@ ddi.get<ServiceAutoInject>();
 ```
 ## Considerations
 
-`Singleton Scope:` The Singleton Scope can only be created with auto-inject. If you attempt to create a singleton with custom objects, a `BeanNotFoundException` will be thrown.
+**Singleton Scope**: The Singleton Scope can only be created with auto-inject. If you attempt to create a singleton with custom objects, a `BeanNotFoundException` will be thrown.
 
-`Supertypes or Interfaces:` You cannot use the shortcut builder (`MyService.new.builder.asApplication()`) with supertypes or interfaces. This limitation exists because the builder function only recognizes the implementation class, not the supertype or interface.
+**Super-types or Interfaces**: You cannot use the shortcut builder (`MyService.new.builder.asApplication()`) with super-types or interfaces. This limitation exists because the builder function only recognizes the implementation class, not the super-type or interface.
 
-`Decorators and Interceptors:` It is highly recommended to register the factory using `factory: CustomFactory(...)`. This approach handles type inference more effectively.
+**Decorators and Interceptors**: It is highly recommended to register the factory using `factory: CustomFactory(...)`. This approach handles type inference more effectively.
 
-`Lazy vs. Eager Injection:` Eager Injection occurs when you inject beans using auto-inject functionality or manually via constructors. For lazy injection, you can use the `DDIInject` mixin or define the variable as `late`(e.g., `late final ServiceAutoInject serviceAutoInject = ddi.get()`).
+**Lazy vs. Eager Injection**: Eager Injection occurs when you inject beans using auto-inject functionality or manually via constructors. For lazy injection, you can use the `DDIInject` mixin or define the variable as `late` (e.g., `late final ServiceAutoInject serviceAutoInject = ddi.get()`).
 
 # Qualifiers
 
@@ -317,11 +317,11 @@ ddi.registerSingleton<PlatformService>(iOSService.new, qualifier: "ios");
 
 ## Considerations
 
-`Consistent Usage:` Maintain consistent usage of qualifiers throughout the codebase to ensure clarity and avoid confusion.
+**Consistent Usage**: Maintain consistent usage of qualifiers throughout the codebase to ensure clarity and avoid confusion.
 
-`Avoid Overuse:` While qualifiers offer powerful customization, avoid overusing them to keep the codebase clean and maintainable.
+**Avoid Overuse**: While qualifiers offer powerful customization, avoid overusing them to keep the codebase clean and maintainable.
 
-`Type Identifiers:` Qualifiers are often implemented using string-based identifiers, which may introduce issues such as typos or potential naming conflicts. To mitigate these concerns, it is highly recommended to utilize enums or constants.
+**Type Identifiers**: Qualifiers are often implemented using string-based identifiers, which may introduce issues such as typos or potential naming conflicts. To mitigate these concerns, it is highly recommended to utilize enums or constants.
 
 # Extra Customization
 The DDI package provides features for customizing the lifecycle of registered instances. These features include `decorators`, `interceptor`, `canRegister` and `canDestroy`.
@@ -557,7 +557,7 @@ The `PreDestroy` mixin has been created to provide a mechanism for executing spe
 class MyClassName with PreDestroy {
   final String name;
 
-  MyMyClassNameClass(this.name);
+  MyClassName(this.name);
 
   @override
   void onPreDestroy() {

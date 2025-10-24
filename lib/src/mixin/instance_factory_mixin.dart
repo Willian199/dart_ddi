@@ -101,8 +101,8 @@ Ex:
 
   FutureOr<BeanT> _autoInjectAsync<BeanT extends Object>(
       CustomBuilder<FutureOr<BeanT>> builder) async {
-    /// Must await inject by inject
-    /// If use await Future.wait([]) could create different instance for the same type.
+    /// Must await each injection individually.
+    /// If using await Future.wait([]) could create different instances for the same type.
     final instances = [
       for (final inject in builder.parametersType)
         await ddi.getAsync(qualifier: inject)

@@ -9,6 +9,12 @@ import '../clazz_samples/mother.dart';
 
 void main() {
   group('DDI Circular Injection Detection tests', () {
+    tearDownAll(
+      () {
+        expect(ddi.isEmpty, true);
+      },
+    );
+
     test('Inject a Singleton bean depending from a bean that not exists yet',
         () {
       expect(() => DDI.instance.singleton(() => Father(mother: DDI.instance())),

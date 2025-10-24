@@ -271,4 +271,17 @@ abstract class DDI {
   /// }
   /// ```
   Set<Object> getChildren<BeanT extends Object>({Object? qualifier});
+
+  /// Checks if the [DDI] instance has no registered beans.
+  ///
+  /// Returns `true` if no beans are currently registered in the DDI container,
+  /// `false` otherwise.
+  ///
+  bool get isEmpty;
+
+  /// Retrieves the number of registered beans in the [DDI] instance.
+  ///
+  /// Returns the total count of all registered beans across all types and qualifiers.
+  ///
+  int get length;
 }

@@ -5,6 +5,11 @@ import '../clazz_samples/custom_interceptors.dart';
 
 void main() {
   group('DDI Interceptor Tests with int values', () {
+    tearDownAll(
+      () {
+        expect(ddi.isEmpty, true);
+      },
+    );
     setUp(() async {
       // Registro de interceptores
       await ddi.register<AddInterceptor>(

@@ -10,10 +10,19 @@ import '../clazz_samples/factory_parameter.dart';
 import '../clazz_samples/multi_inject.dart';
 import '../clazz_samples/undestroyable/application_factory_destroy_get.dart';
 import '../clazz_samples/undestroyable/application_factory_destroy_register.dart';
-import 'payment_service.dart';
+import '../clazz_samples/payment_service.dart';
 
 void main() {
   group('DDI Factory Application Basic Tests', () {
+    tearDownAll(
+      () {
+        // Still having 2 Bean, because [canDestroy] is false
+        expect(ddi.isEmpty, false);
+        // ApplicationFactoryDestroyGet and ApplicationFactoryDestroyRegister
+        expect(ddi.length, 2);
+      },
+    );
+
     void registerApplicationBeans() {
       MultiInject.new.builder.asApplication();
       A.new.builder.asApplication();

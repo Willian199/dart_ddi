@@ -13,6 +13,11 @@ import '../clazz_samples/k.dart';
 
 void main() {
   group('DDI Interceptor Tests', () {
+    tearDownAll(
+      () {
+        expect(ddi.isEmpty, true);
+      },
+    );
     test('ADD Interceptor to a Singleton bean', () {
       ddi.register(
         factory: SingletonFactory(
@@ -55,11 +60,11 @@ void main() {
       expect(instance is I, true);
 
       DDI.instance.destroy<G>();
-      ddi.destroy<J>();
+      ddi.destroy<J<G>>();
 
       expect(
           () => DDI.instance.get<G>(), throwsA(isA<BeanNotFoundException>()));
-      expect(DDI.instance.isRegistered<J>(), false);
+      expect(DDI.instance.isRegistered<J<G>>(), false);
     });
 
     test('ADD Interceptor to a Application bean with qualifier', () {

@@ -9,6 +9,15 @@ import '../clazz_samples/custom_interceptors.dart';
 
 void main() {
   group('DDI Object Basic Tests', () {
+    tearDownAll(
+      () {
+        // Still having 2 Bean, because [canDestroy] is false
+        expect(ddi.isEmpty, false);
+        // qualifier: 'author',
+        // qualifier: 'owner',
+        expect(ddi.length, 2);
+      },
+    );
     test('Register and retrieve object bean', () {
       DDI.instance.object('Willian Marchesan', qualifier: 'author');
 

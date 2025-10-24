@@ -13,6 +13,11 @@ import '../clazz_samples/k.dart';
 
 void main() {
   group('DDI Factory Interceptor Tests', () {
+    tearDownAll(
+      () {
+        expect(ddi.isEmpty, true);
+      },
+    );
     test('ADD Interceptor to a Factory Singleton bean', () {
       ddi.register<J>(
         factory: SingletonFactory(

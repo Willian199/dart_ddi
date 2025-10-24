@@ -12,6 +12,15 @@ import '../clazz_samples/undestroyable/future_singleton_destroy_get.dart';
 
 void main() {
   group('DDI Singleton Future Basic Tests', () {
+    tearDownAll(
+      () {
+        // Still having 1 Bean, because [canDestroy] is false
+        expect(ddi.isEmpty, false);
+        // FutureSingletonDestroyGet
+        expect(ddi.length, 1);
+      },
+    );
+
     Future<void> registerSingletonBeans() async {
       DDI.instance.singleton(C.new);
       await DDI.instance.singleton<B>(() => Future.value(B(DDI.instance())));

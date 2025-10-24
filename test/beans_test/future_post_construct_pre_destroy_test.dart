@@ -7,6 +7,11 @@ import '../clazz_samples/l.dart';
 
 void main() {
   group('DDI Future PostConstruct and PreDestroy test', () {
+    tearDownAll(
+      () {
+        expect(ddi.isEmpty, true);
+      },
+    );
     test('Regsiter a Singleton bean with PostConstruct  and PreDestroy',
         () async {
       await DDI.instance.singleton(

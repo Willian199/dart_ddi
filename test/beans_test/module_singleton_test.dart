@@ -8,6 +8,11 @@ import '../clazz_samples/module_singleton.dart';
 
 void main() {
   group('DDI Modules Singleton Basic Tests', () {
+    tearDownAll(
+      () {
+        expect(ddi.isEmpty, true);
+      },
+    );
     test('Register a Singleton Module', () {
       DDI.instance.singleton(ModuleSingleton.new);
 

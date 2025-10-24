@@ -5,11 +5,11 @@ import 'package:dart_ddi/src/exception/bean_not_ready.dart';
 import 'package:dart_ddi/src/exception/factory_already_created.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
 import 'package:dart_ddi/src/utils/instance_destroy_utils.dart';
-import 'package:dart_ddi/src/utils/intance_decorators_utils.dart';
+import 'package:dart_ddi/src/utils/instance_decorators_utils.dart';
 
-///  Create an unique instance during registration and reuses it in all subsequent requests.
+///  Creates a unique instance during registration and reuses it in all subsequent requests.
 ///
-/// This Scopes defines is behavior on the [register] methods.
+/// This scope defines its behavior on the [register] methods.
 /// * It will create the instance.
 /// * Run the Interceptor for create process.
 /// * Apply all Decorators to the instance.
@@ -18,9 +18,9 @@ import 'package:dart_ddi/src/utils/intance_decorators_utils.dart';
 /// * Run the PostConstruct for the instance.
 ///
 /// `Note`:
-/// * `Interceptor.onDipose` and `PreDispose` mixin are not supported. You can just destroy the instance.
-/// * If you call dispose, only the Application or Session childrens will be disposed.
-class SingletonFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
+/// * `Interceptor.onDispose` and `PreDispose` mixin are not supported. You can just destroy the instance.
+/// * If you call dispose, only the Application children will be disposed.
+class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   SingletonFactory({
     required CustomBuilder<FutureOr<BeanT>> builder,
     bool canDestroy = true,

@@ -9,10 +9,18 @@ import '../clazz_samples/b.dart';
 import '../clazz_samples/c.dart';
 import '../clazz_samples/future_post_construct.dart';
 import '../clazz_samples/undestroyable/future_application_destroy_get.dart';
-import 'payment_service.dart';
+import '../clazz_samples/payment_service.dart';
 
 void main() {
   group('DDI Application Future Basic Tests', () {
+    tearDownAll(
+      () {
+        // Still having 1 Bean, because [canDestroy] is false
+        expect(ddi.isEmpty, false);
+        expect(ddi.length, 1);
+      },
+    );
+
     void registerApplicationBeans() {
       DDI.instance
           .application<A>(() async => A(await DDI.instance.getAsync<B>()));

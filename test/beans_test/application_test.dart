@@ -14,10 +14,19 @@ import '../clazz_samples/h.dart';
 import '../clazz_samples/i.dart';
 import '../clazz_samples/undestroyable/application_destroy_get.dart';
 import '../clazz_samples/undestroyable/application_destroy_register.dart';
-import 'payment_service.dart';
+import '../clazz_samples/payment_service.dart';
 
 void main() {
   group('DDI Application Basic Tests', () {
+    tearDownAll(
+      () {
+        // Still having 2 Bean, because [canDestroy] is false
+        expect(ddi.isEmpty, false);
+        // ApplicationDestroyGet, ApplicationDestroyRegister
+        expect(ddi.length, 2);
+      },
+    );
+
     void registerApplicationBeans() {
       DDI.instance.application(() => A(DDI.instance()));
       DDI.instance.application(() => B(DDI.instance()));
