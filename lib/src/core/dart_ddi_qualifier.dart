@@ -3,16 +3,24 @@ import 'dart:async';
 import 'package:dart_ddi/dart_ddi.dart';
 
 /// Manages qualifier mapping for Zones
+///
+/// This class provides functionality to manage bean registrations across different
+/// Dart zones, allowing for isolated dependency injection contexts. It handles
+/// both zone-specific and global bean registrations with proper fallback mechanisms.
 class DartDDIQualifier {
-  /// Key used to store data in Zone
+  /// Key used to store bean registry data in Zone
   static const _beansKey = #ddi_beans_registry;
 
+  /// Gets the current zone name for debugging and identification purposes.
   String get zoneName => Zone.current[#zone_name] as String? ?? 'root';
 
-  /// Global beans map (fallback)
+  /// Global beans map used as fallback when no zone-specific registry exists.
   final Map<Object, DDIBaseFactory<Object>> _globalBeansMap = {};
 
-  /// Gets the beans map for the current zone
+  /// Gets the beans map for the current zone, falling back to global registry if needed.
+  ///
+  /// This method returns the appropriate bean registry based on the current zone context.
+  /// If no zone-specific registry exists, it falls back to the global registry.
   Map<Object, DDIBaseFactory<Object>> _getBeansMap() {
     final Map<Object, DDIBaseFactory<Object>>? zoneMap =
         Zone.current[_beansKey] as Map<Object, DDIBaseFactory<Object>>?;
@@ -49,12 +57,22 @@ class DartDDIQualifier {
     return null;
   }
 
-  /// Checks if we are in a zone with dedicated registry
+  /// Checks if we are currently in a zone with a dedicated registry.
+  ///
+  /// Returns `true` if the current zone has its own bean registry,
+  /// `false` if using the global registry.
   bool hasZoneRegistry() {
     return Zone.current[_beansKey] != null;
   }
 
-  /// Executes code in a new zone with dedicated registries
+  /// Executes code in a new zone with dedicated bean registries.
+  ///
+  /// This method creates a new zone with its own isolated bean registry,
+  /// allowing for isolated dependency injection contexts. When the zone completes,
+  /// all registered beans in that zone are automatically cleaned up.
+  ///
+  /// - `name`: Unique identifier for the zone (used for debugging).
+  /// - `body`: Function to execute within the new zone context.
   T runWithZoneRegistry<T>(String name, T Function() body) {
     return runZoned(
       body,

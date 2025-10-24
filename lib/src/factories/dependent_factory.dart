@@ -3,13 +3,13 @@ import 'dart:async';
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
 import 'package:dart_ddi/src/utils/instance_destroy_utils.dart';
-import 'package:dart_ddi/src/utils/intance_decorators_utils.dart';
+import 'package:dart_ddi/src/utils/instance_decorators_utils.dart';
 
 /// Create a new instance every time it is requested.
 ///
-/// This Scopes defines is behavior on the [getWith] or [getAsyncWith] methods.
+/// This scope defines its behavior on the [getWith] or [getAsyncWith] methods.
 ///
-/// It will do:
+/// It will do the following:
 /// * Create the instance.
 /// * Run the Interceptor for create process.
 /// * Apply all Decorators to the instance.

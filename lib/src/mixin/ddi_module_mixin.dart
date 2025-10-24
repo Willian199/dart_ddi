@@ -10,7 +10,7 @@ import 'package:dart_ddi/src/typedef/typedef.dart';
 /// class MyModule with DDIModule {
 ///   @override
 ///   FutureOr<void> onPostConstruct(){
-///     print('do something after construct or register the childrens beans');
+///     print('do something after construct or register the children beans');
 ///
 ///     application<MyService>(MyService.new);
 ///     singleton<MyRepository>(MyRepository.new);
@@ -38,7 +38,7 @@ mixin DDIModule implements PostConstruct {
   /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
   /// - `canRegister`: Optional function to conditionally register the instance.
   /// - `canDestroy`: Optional parameter to make the instance indestructible.
-  /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to vinculate multiple classes under a single parent module.
+  /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to link multiple classes under a single parent module.
   /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
   ///
   Future<void> singleton<BeanT extends Object>(
@@ -75,7 +75,7 @@ mixin DDIModule implements PostConstruct {
   /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
   /// - `canRegister`: Optional function to conditionally register the instance.
   /// - `canDestroy`: Optional parameter to make the instance indestructible.
-  /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to vinculate multiple classes under a single parent module.
+  /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to link multiple classes under a single parent module.
   /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
   ///
   Future<void> application<BeanT extends Object>(
@@ -112,7 +112,7 @@ mixin DDIModule implements PostConstruct {
   /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
   /// - `canRegister`: Optional function to conditionally register the instance.
   /// - `canDestroy`: Optional parameter to make the instance indestructible.
-  /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to vinculate multiple classes under a single parent module.
+  /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to link multiple classes under a single parent module.
   /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
   ///
   Future<void> dependent<BeanT extends Object>(
@@ -149,7 +149,7 @@ mixin DDIModule implements PostConstruct {
   /// - `interceptor`: Optional interceptor to customize the creation, get, dispose or remove behavior.
   /// - `canRegister`: Optional function to conditionally register the instance.
   /// - `canDestroy`: Optional parameter to make the instance indestructible.
-  /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to vinculate multiple classes under a single parent module.
+  /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to link multiple classes under a single parent module.
   /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
   ///
   Future<void> object<BeanT extends Object>(

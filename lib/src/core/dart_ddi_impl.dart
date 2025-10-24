@@ -3,7 +3,7 @@ part of 'dart_ddi.dart';
 class _DDIImpl implements DDI {
   late final DartDDIQualifier _beans = DartDDIQualifier();
 
-  // Getter para o nome da Zone
+  /// Gets the current zone name.
   String get zoneName => _beans.zoneName;
 
   @override
@@ -255,7 +255,7 @@ class _DDIImpl implements DDI {
       return f.addDecorator(decorators);
     }
     assert(factory == null,
-        'The instace is registered but the Scope doesn\'t support decorators.');
+        'The instance is registered but the Scope doesn\'t support decorators.');
 
     throw BeanNotFoundException(effectiveQualifierName.toString());
   }
@@ -273,7 +273,7 @@ class _DDIImpl implements DDI {
       f.addInterceptor(interceptors ?? {});
     } else {
       assert(factory == null,
-          'The instace is registered but the Scope doesn\'t support interceptors.');
+          'The instance is registered but the Scope doesn\'t support interceptors.');
       throw BeanNotFoundException(effectiveQualifierName.toString());
     }
   }
@@ -297,7 +297,7 @@ class _DDIImpl implements DDI {
       f.addChildrenModules(child);
     } else {
       assert(factory == null,
-          'The instace is registered but the Scope doesn\'t support children.');
+          'The instance is registered but the Scope doesn\'t support children.');
       throw BeanNotFoundException(effectiveQualifierName.toString());
     }
   }
@@ -309,7 +309,7 @@ class _DDIImpl implements DDI {
       return f.children;
     }
     assert(factory == null,
-        'The instace is registered but the Scope doesn\'t support children.');
+        'The instance is registered but the Scope doesn\'t support children.');
     return {};
   }
 

@@ -5,13 +5,13 @@ import 'package:dart_ddi/src/exception/concurrent_creation.dart';
 import 'package:dart_ddi/src/exception/future_not_accept.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
 import 'package:dart_ddi/src/utils/instance_destroy_utils.dart';
-import 'package:dart_ddi/src/utils/intance_decorators_utils.dart';
+import 'package:dart_ddi/src/utils/instance_decorators_utils.dart';
 
 /// Create an instance when first used and reuses it for all subsequent requests during the application's execution.
 ///
-/// This Scopes defines is behavior on the [getWith] or [getAsyncWith] methods.
+/// This scope defines its behavior on the [getWith] or [getAsyncWith] methods.
 ///
-/// First will verify if the instance is ready and return it. If not, it will do:
+/// First, it will verify if the instance is ready and return it. If not, it will do:
 /// * Create the instance.
 /// * Run the Interceptor for create process.
 /// * Apply all Decorators to the instance.
