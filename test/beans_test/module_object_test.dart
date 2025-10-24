@@ -6,6 +6,11 @@ import '../clazz_samples/module_object.dart';
 
 void main() {
   group('DDI Modules Object Basic Tests', () {
+    tearDownAll(
+      () {
+        expect(ddi.isEmpty, true);
+      },
+    );
     test('Register a Object Module', () {
       DDI.instance.register(factory: ObjectFactory(instance: ModuleObject()));
 

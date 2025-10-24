@@ -9,6 +9,11 @@ import '../clazz_samples/module_dependent.dart';
 
 void main() {
   group('DDI Modules Dependent Basic Tests', () {
+    tearDownAll(
+      () {
+        expect(ddi.isEmpty, true);
+      },
+    );
     test('Register a Dependent Module', () async {
       DDI.instance.dependent(ModuleDependent.new);
 

@@ -2,13 +2,13 @@ import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/mixin/instance_factory_mixin.dart';
-import 'package:dart_ddi/src/typedef/typedef.dart';
 
 abstract class DDIBaseFactory<BeanT extends Object> with InstanceFactoryMixin {
   DDIBaseFactory({required FutureOr<bool> Function(Object)? selector})
       : _selector = selector;
 
   final FutureOr<bool> Function(Object)? _selector;
+
   FutureOr<bool> Function(Object)? get selector => _selector;
 
   /// The type of the Bean.
@@ -61,35 +61,4 @@ abstract class DDIBaseFactory<BeanT extends Object> with InstanceFactoryMixin {
 
   /// Disposes this instance
   Future<void> dispose();
-
-  /// Allows to dynamically add a Decorators.
-  ///
-  /// When using this method, consider the following:
-  ///
-  /// - **Order of Execution:** Decorators are applied in the order they are provided.
-  /// - **Instaces Already Gets:** No changes any Instances that have been get.
-  FutureOr<void> addDecorator(ListDecorator<BeanT> newDecorators);
-
-  /// Allows to dynamically add a Interceptor.
-  ///
-  /// When using this method, consider the following:
-  ///
-  /// - **Order of Execution:** Interceptor are applied in the order they are provided.
-  /// - **Instaces Already Gets:** No changes any Instances that have been get.
-  void addInterceptor(
-      Set<Object>
-          newInterceptors); /* {
-    interceptors = {...interceptors ?? {}, ...newInterceptors};
-  }*/
-
-  /// This function adds multiple child modules to a parent module.
-  /// It takes a list of 'child' objects and an optional 'qualifier' for the parent module.
-  void addChildrenModules(
-      Set<Object>
-          child); /* {
-    children = {...children ?? {}, ...child};
-  }
-*/
-  /// This function returns a set of child modules for a parent module.
-  Set<Object> get children; // => super.children ?? {};
 }

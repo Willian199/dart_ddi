@@ -9,6 +9,12 @@ import '../clazz_samples/i.dart';
 
 void main() {
   group('DDI Zone Context Basic Tests', () {
+    tearDownAll(
+      () {
+        expect(ddi.isEmpty, true);
+      },
+    );
+
     test('Must create the Beans in separated zone', () async {
       ddi.singleton<G>(H.new);
 

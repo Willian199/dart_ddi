@@ -1,5 +1,6 @@
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/exception/bean_not_found.dart';
+import 'package:dart_ddi/src/exception/duplicated_bean.dart';
 import 'package:test/test.dart';
 
 import '../clazz_samples/a.dart';
@@ -10,6 +11,15 @@ import '../clazz_samples/undestroyable/dependent_destroy_register.dart';
 
 void main() {
   group('DDI Dependent Basic Tests', () {
+    tearDownAll(
+      () {
+        // Still having 2 Bean, because [canDestroy] is false
+        expect(ddi.isEmpty, false);
+        // DependentDestroyGet, DependentDestroyRegister
+        expect(ddi.length, 2);
+      },
+    );
+
     void registerDependentBeans() {
       DDI.instance.dependent(() => A(DDI.instance()));
       DDI.instance.dependent(() => B(DDI.instance()));
@@ -122,7 +132,8 @@ void main() {
 
       DDI.instance.destroy<DependentDestroyRegister>();
 
-      //expect(() => DDI.instance.registerDependent(() => DependentDestroyRegister()), throwsA(isA<DuplicatedBean>()));
+      expect(() => DDI.instance.dependent(() => DependentDestroyRegister()),
+          throwsA(isA<DuplicatedBeanException>()));
     });
   });
 }

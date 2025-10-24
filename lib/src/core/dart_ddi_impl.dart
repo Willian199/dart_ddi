@@ -1,7 +1,7 @@
 part of 'dart_ddi.dart';
 
 class _DDIImpl implements DDI {
-  final DartDDIQualifier _beans = DartDDIQualifier();
+  late final DartDDIQualifier _beans = DartDDIQualifier();
 
   // Getter para o nome da Zone
   String get zoneName => _beans.zoneName;
@@ -249,14 +249,15 @@ class _DDIImpl implements DDI {
   }) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    final DDIBaseFactory<BeanT>? factory = _beans.getFactory(
-        qualifier: effectiveQualifierName) as DDIBaseFactory<BeanT>?;
+    final factory = _beans.getFactory<BeanT>(qualifier: effectiveQualifierName);
 
-    if (factory == null) {
-      throw BeanNotFoundException(effectiveQualifierName.toString());
+    if (factory case final DDIScopeFactory<BeanT> f?) {
+      return f.addDecorator(decorators);
     }
+    assert(factory == null,
+        'The instace is registered but the Scope doesn\'t support decorators.');
 
-    return factory.addDecorator(decorators);
+    throw BeanNotFoundException(effectiveQualifierName.toString());
   }
 
   @override
@@ -266,10 +267,13 @@ class _DDIImpl implements DDI {
   }) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    if (_beans.getFactory(qualifier: effectiveQualifierName)
-        case final DDIBaseFactory<BeanT> factory?) {
-      factory.addInterceptor(interceptors ?? {});
+    final factory = _beans.getFactory(qualifier: effectiveQualifierName);
+
+    if (factory case final DDIScopeFactory<BeanT> f?) {
+      f.addInterceptor(interceptors ?? {});
     } else {
+      assert(factory == null,
+          'The instace is registered but the Scope doesn\'t support interceptors.');
       throw BeanNotFoundException(effectiveQualifierName.toString());
     }
   }
@@ -287,16 +291,31 @@ class _DDIImpl implements DDI {
   }) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    if (_beans.getFactory(qualifier: effectiveQualifierName)
-        case final DDIBaseFactory<BeanT> factory?) {
-      factory.addChildrenModules(child);
+    final factory = _beans.getFactory(qualifier: effectiveQualifierName);
+
+    if (factory case final DDIScopeFactory<BeanT> f?) {
+      f.addChildrenModules(child);
     } else {
+      assert(factory == null,
+          'The instace is registered but the Scope doesn\'t support children.');
       throw BeanNotFoundException(effectiveQualifierName.toString());
     }
   }
 
   @override
   Set<Object> getChildren<BeanT extends Object>({Object? qualifier}) {
-    return _beans.getFactory(qualifier: qualifier ?? BeanT)?.children ?? {};
+    final factory = _beans.getFactory(qualifier: qualifier ?? BeanT);
+    if (factory case final DDIScopeFactory<BeanT> f?) {
+      return f.children;
+    }
+    assert(factory == null,
+        'The instace is registered but the Scope doesn\'t support children.');
+    return {};
   }
+
+  @override
+  bool get isEmpty => _beans.isEmpty;
+
+  @override
+  int get length => _beans.length;
 }

@@ -6,6 +6,11 @@ import '../clazz_samples/c.dart';
 
 void main() {
   group('DDI Register If tests', () {
+    tearDownAll(
+      () {
+        expect(ddi.isEmpty, true);
+      },
+    );
     test('Try to register a bean with canRegister false', () async {
       await DDI.instance.singleton(C.new, canRegister: () async {
         await Future.delayed(const Duration(milliseconds: 200));

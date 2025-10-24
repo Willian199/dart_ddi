@@ -10,6 +10,11 @@ typedef RecordInject = (A a, B b, C c);
 
 void main() {
   group('DDI Factory Variation Tests', () {
+    tearDownAll(
+      () {
+        expect(ddi.isEmpty, true);
+      },
+    );
     void registerBeans() {
       MultiInject.new.builder.asDependent();
       B.new.builder.asApplication();

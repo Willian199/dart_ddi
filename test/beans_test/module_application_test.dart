@@ -9,6 +9,11 @@ import '../clazz_samples/module_application.dart';
 
 void main() {
   group('DDI Modules Application Basic Tests', () {
+    tearDownAll(
+      () {
+        expect(ddi.isEmpty, true);
+      },
+    );
     test('Register an Application Module', () {
       DDI.instance.application(ModuleApplication.new);
 

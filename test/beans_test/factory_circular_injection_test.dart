@@ -8,6 +8,11 @@ import '../clazz_samples/mother.dart';
 
 void main() {
   group('DDI Factory Circular Injection Detection tests', () {
+    tearDownAll(
+      () {
+        expect(ddi.isEmpty, true);
+      },
+    );
     test(
         'Inject a Factory Singleton bean depending from a bean that not exists yet',
         () async {

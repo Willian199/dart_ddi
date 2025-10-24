@@ -8,6 +8,7 @@ export 'src/extension/ddi_register_extension.dart';
 export 'src/extension/function_extension.dart';
 export 'src/factories/application_factory.dart';
 export 'src/factories/dart_ddi_base_factory.dart';
+export 'src/factories/dart_ddi_scope_factory.dart';
 export 'src/factories/dependent_factory.dart';
 export 'src/factories/object_factory.dart';
 export 'src/factories/singleton_factory.dart';

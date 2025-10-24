@@ -12,6 +12,12 @@ import '../clazz_samples/future_post_construct.dart';
 
 void main() {
   group('DDI Dependent Factory Future Basic Tests', () {
+    tearDownAll(
+      () {
+        expect(ddi.isEmpty, true);
+      },
+    );
+
     void registerDependentBeans() {
       DDI.instance.register<A>(
         factory: DependentFactory(

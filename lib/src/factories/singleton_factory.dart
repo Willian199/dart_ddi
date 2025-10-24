@@ -20,7 +20,7 @@ import 'package:dart_ddi/src/utils/intance_decorators_utils.dart';
 /// `Note`:
 /// * `Interceptor.onDipose` and `PreDispose` mixin are not supported. You can just destroy the instance.
 /// * If you call dispose, only the Application or Session childrens will be disposed.
-class SingletonFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
+class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   SingletonFactory({
     required CustomBuilder<FutureOr<BeanT>> builder,
     bool canDestroy = true,

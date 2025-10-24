@@ -271,4 +271,12 @@ abstract class DDI {
   /// }
   /// ```
   Set<Object> getChildren<BeanT extends Object>({Object? qualifier});
+
+  /// Checks if the [DDI] is empty.
+  ///
+  bool get isEmpty;
+
+  /// Retrieve the amount of Beans registered
+  ///
+  int get length;
 }

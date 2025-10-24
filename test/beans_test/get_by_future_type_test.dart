@@ -10,6 +10,11 @@ import '../clazz_samples/i.dart';
 
 void main() {
   group('DDI Process Future By Type', () {
+    tearDownAll(
+      () {
+        expect(ddi.isEmpty, true);
+      },
+    );
     test('Application Get bean by Type that have registered and dispose',
         () async {
       ///Where is Singleton, should the register in the correct order

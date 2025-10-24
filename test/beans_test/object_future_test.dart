@@ -7,6 +7,14 @@ import '../clazz_samples/future_post_construct.dart';
 
 void main() {
   group('DDI Object Future Basic Tests', () {
+    tearDownAll(
+      () {
+        // Still having 1 Bean, because [canDestroy] is false
+        expect(ddi.isEmpty, false);
+        // ObjectFactory
+        expect(ddi.length, 1);
+      },
+    );
     test('Register and retrieve object bean', () async {
       DDI.instance.register(
         factory: ObjectFactory(instance: Future.value('Willian Marchesan')),

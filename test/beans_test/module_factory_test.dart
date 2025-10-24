@@ -10,6 +10,11 @@ import '../clazz_samples/module_factory_singleton.dart';
 
 void main() {
   group('DDI Factory Modules Application Basic Tests', () {
+    tearDownAll(
+      () {
+        expect(ddi.isEmpty, true);
+      },
+    );
     test('Register a Factory Application Module', () {
       ModuleFactoryApplication.new.builder.asApplication();
 

@@ -13,6 +13,15 @@ import '../clazz_samples/undestroyable/singleton_factory_destroy_register.dart';
 
 void main() {
   group('DDI Singleton Factory Basic Tests', () {
+    tearDownAll(
+      () {
+        // Still having 2 Bean, because [canDestroy] is false
+        expect(ddi.isEmpty, false);
+        // SingletonFactoryDestroyGet, SingletonFactoryDestroyRegister
+        expect(ddi.length, 2);
+      },
+    );
+
     void registerBeans() {
       C.new.builder.asSingleton();
       B.new.builder.asSingleton();

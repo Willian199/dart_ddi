@@ -13,6 +13,11 @@ import '../clazz_samples/with_destroy_interceptor.dart';
 
 void main() {
   group('DDI Feature Interceptor Tests', () {
+    tearDownAll(
+      () {
+        expect(ddi.isEmpty, true);
+      },
+    );
     test('ADD Interceptor with Logs Interceptors and Beans', () {
       ddi.register(
         factory: SingletonFactory(

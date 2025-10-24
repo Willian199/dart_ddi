@@ -17,7 +17,7 @@ import 'package:dart_ddi/src/utils/intance_decorators_utils.dart';
 /// * Run the Interceptor for get process.
 ///
 /// `Note`: `PreDispose` and `PreDestroy` mixins will only be called if the instance is in use. Use `Interceptor` if you want to call them regardless.
-class DependentFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {
+class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   DependentFactory({
     required CustomBuilder<FutureOr<BeanT>> builder,
     bool canDestroy = true,

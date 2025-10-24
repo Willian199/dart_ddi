@@ -7,6 +7,12 @@ import '../clazz_samples/f.dart';
 
 void main() {
   group('DDI ADD Decorators Factory Tests', () {
+    tearDownAll(
+      () {
+        expect(ddi.isEmpty, true);
+      },
+    );
+
     void regraSoma() {
       final instance1 = DDI.instance.get<D>();
 

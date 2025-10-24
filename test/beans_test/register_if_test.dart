@@ -6,6 +6,11 @@ import '../clazz_samples/c.dart';
 
 void main() {
   group('DDI Register If tests', () {
+    tearDownAll(
+      () {
+        expect(ddi.isEmpty, true);
+      },
+    );
     test('Register a Singleton bean with canRegister true', () {
       DDI.instance
           .singleton(() => C(), canRegister: () => true, qualifier: 'typeC');

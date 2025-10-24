@@ -20,7 +20,7 @@ class DartDDIQualifier {
     return zoneMap ?? _globalBeansMap;
   }
 
-  DDIBaseFactory<Object>? getFactory<BeanT extends Object>(
+  DDIBaseFactory<BeanT>? getFactory<BeanT extends Object>(
       {required Object qualifier, bool fallback = true}) {
     final Map<Object, DDIBaseFactory<Object>>? zoneMap =
         Zone.current[_beansKey] as Map<Object, DDIBaseFactory<Object>>?;
@@ -74,6 +74,10 @@ class DartDDIQualifier {
 
   Iterable<MapEntry<Object, DDIBaseFactory<Object>>> get entries =>
       _getBeansMap().entries;
+
+  bool get isEmpty => _getBeansMap().isEmpty;
+
+  int get length => _getBeansMap().length;
 
   DDIBaseFactory<Object>? remove(Object? key) {
     return _getBeansMap().remove(key);

@@ -12,6 +12,15 @@ import '../clazz_samples/undestroyable/future_dependent_destroy_get.dart';
 
 void main() {
   group('DDI Dependent Future Basic Tests', () {
+    tearDownAll(
+      () {
+        // Still having 1 Bean, because [canDestroy] is false
+        expect(ddi.isEmpty, false);
+        // FutureDependentDestroyGet
+        expect(ddi.length, 1);
+      },
+    );
+
     void registerDependentBeans() {
       DDI.instance.dependent(() async => A(await DDI.instance.getAsync()));
       DDI.instance.dependent<B>(() => Future.value(B(DDI.instance())));

@@ -13,6 +13,15 @@ import '../clazz_samples/undestroyable/dependent_factory_destroy_register.dart';
 
 void main() {
   group('DDI Dependent Factory Basic Tests', () {
+    tearDownAll(
+      () {
+        // Still having 2 Bean, because [canDestroy] is false
+        expect(ddi.isEmpty, false);
+        // DependentFactoryDestroyGet, DependentFactoryDestroyRegister
+        expect(ddi.length, 2);
+      },
+    );
+
     void registerDependentBeans() {
       MultiInject.new.builder.asDependent();
       A.new.builder.asDependent();
