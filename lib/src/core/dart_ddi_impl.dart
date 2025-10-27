@@ -60,7 +60,6 @@ class _DDIImpl implements DDI {
         factory.setType<BeanT>();
       }
 
-      factory.state = BeanStateEnum.beingRegistered;
       _beans.setFactory(effectiveQualifierName, factory);
 
       final f = factory.register(
@@ -79,10 +78,10 @@ class _DDIImpl implements DDI {
   bool isRegistered<BeanT extends Object>({Object? qualifier}) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    return ![BeanStateEnum.none, BeanStateEnum.beingRegistered].contains(_beans
+    return _beans
             .getFactory(qualifier: effectiveQualifierName, fallback: false)
-            ?.state ??
-        BeanStateEnum.none);
+            ?.isRegistered ??
+        false;
   }
 
   @override
@@ -101,7 +100,7 @@ class _DDIImpl implements DDI {
     final Object effectiveQualifierName = qualifier ?? BeanT;
     if (_beans.getFactory(qualifier: effectiveQualifierName, fallback: false)
         case final DDIBaseFactory<BeanT> factory?) {
-      return factory.isReady && factory.state == BeanStateEnum.created;
+      return factory.isReady;
     }
 
     throw BeanNotFoundException(effectiveQualifierName.toString());
@@ -204,7 +203,6 @@ class _DDIImpl implements DDI {
       Object effectiveQualifierName) async {
     if (_beans.getFactory(qualifier: effectiveQualifierName, fallback: false)
         case final factory?) {
-      factory.state = BeanStateEnum.beingDestroyed;
       return factory.destroy(() => _beans.remove(effectiveQualifierName));
     }
     return null;

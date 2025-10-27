@@ -1,16 +1,17 @@
 import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
+import 'package:dart_ddi/src/exception/bean_destroyed.dart';
 import 'package:dart_ddi/src/exception/bean_not_ready.dart';
 import 'package:dart_ddi/src/exception/factory_already_created.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
 import 'package:dart_ddi/src/utils/instance_destroy_utils.dart';
 import 'package:dart_ddi/src/utils/instance_decorators_utils.dart';
 
-///  Creates a unique instance during registration and reuses it in all subsequent requests.
+/// Creates a unique instance during registration and reuses it in all subsequent requests.
 ///
 /// This scope defines its behavior on the [register] methods.
-/// * It will create the instance.
+/// * It will create the instance during registration
 /// * Run the Interceptor for create process.
 /// * Apply all Decorators to the instance.
 /// * Refresh the qualifier for the Module.
@@ -52,7 +53,13 @@ class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   /// The child objects associated with the Bean, acting as a module.
   Set<Object> _children;
 
+  /// The current _state of this factory in its lifecycle.
+  BeanStateEnum _state = BeanStateEnum.none;
+
   final Completer<void> _created = Completer<void>();
+
+  @override
+  BeanStateEnum get state => _state;
 
   /// Register the instance in [DDI].
   /// When the instance is ready, must call apply function.
@@ -62,8 +69,10 @@ class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       throw FactoryAlreadyCreatedException(BeanT.toString());
     }
 
+    _checkState(type);
+
     try {
-      state = BeanStateEnum.beingCreated;
+      _state = BeanStateEnum.beingCreated;
 
       final FutureOr<BeanT> execInstance = createInstance(builder: _builder);
 
@@ -108,13 +117,13 @@ class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
         result = Future.value();
       }
 
-      state = BeanStateEnum.created;
+      _state = BeanStateEnum.created;
 
       _created.complete();
 
       return result;
     } catch (e) {
-      state = BeanStateEnum.none;
+      _state = BeanStateEnum.none;
       if (!_created.isCompleted) {
         _created.complete();
       }
@@ -133,6 +142,8 @@ class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     required Object qualifier,
     ParameterT? parameter,
   }) {
+    _checkState(type);
+
     if (!isReady) {
       throw BeanNotReadyException(qualifier.toString());
     }
@@ -158,6 +169,8 @@ class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     required Object qualifier,
     ParameterT? parameter,
   }) async {
+    _checkState(type);
+
     if (!isReady) {
       await _created.future;
     }
@@ -184,17 +197,37 @@ class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   @override
   bool get isFuture => _builder.isFuture || BeanT is Future;
 
-  /// Verify if this factory is ready.
+  /// Verify if this factory is ready (Created).
   @override
-  bool get isReady => _instance != null && _created.isCompleted;
+  bool get isReady =>
+      _instance != null &&
+      _created.isCompleted &&
+      _state == BeanStateEnum.created;
+
+  @override
+  bool get isRegistered => [
+        BeanStateEnum.registered,
+        BeanStateEnum.created,
+        BeanStateEnum.beingCreated,
+      ].contains(_state);
 
   /// Removes this instance from [DDI].
   @override
   FutureOr<void> destroy(void Function() apply) {
-    state = BeanStateEnum.beingDestroyed;
+    // Only destroy if canDestroy was registered with true
+    if (!_canDestroy) {
+      return null;
+    }
+
+    if (_state == BeanStateEnum.beingDestroyed ||
+        _state == BeanStateEnum.destroyed) {
+      return null;
+    }
+
+    _state = BeanStateEnum.beingDestroyed;
+
     return InstanceDestroyUtils.destroyInstance<BeanT>(
       apply: apply,
-      canDestroy: _canDestroy,
       instance: _instance,
       interceptors: _interceptors,
       children: _children,
@@ -204,6 +237,11 @@ class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   /// Disposes of the instance of the registered class in [DDI].
   @override
   Future<void> dispose() {
+    if (_state == BeanStateEnum.beingDestroyed ||
+        _state == BeanStateEnum.destroyed) {
+      return Future.value();
+    }
+
     if (children.isNotEmpty) {
       final List<Future<void>> futures = [];
       for (final Object child in children) {
@@ -224,6 +262,12 @@ class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   /// - **Instaces Already Gets:** No changes any Instances that have been get.
   @override
   void addDecorator(ListDecorator<BeanT> newDecorators) {
+    if (newDecorators.isEmpty) {
+      return;
+    }
+
+    _checkState(type);
+
     if (!isReady) {
       throw BeanNotReadyException(BeanT.toString());
     }
@@ -234,14 +278,33 @@ class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
   @override
   void addInterceptor(Set<Object> newInterceptors) {
+    if (newInterceptors.isEmpty) {
+      return;
+    }
+
+    _checkState(type);
+
     _interceptors = {..._interceptors, ...newInterceptors};
   }
 
   @override
   void addChildrenModules(Set<Object> child) {
+    if (child.isEmpty) {
+      return;
+    }
+
+    _checkState(type);
+
     _children = {..._children, ...child};
   }
 
   @override
   Set<Object> get children => _children;
+
+  void _checkState(Object qualifier) {
+    if (_state == BeanStateEnum.beingDestroyed ||
+        _state == BeanStateEnum.destroyed) {
+      throw BeanDestroyedException(qualifier.toString());
+    }
+  }
 }

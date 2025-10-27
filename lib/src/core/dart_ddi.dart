@@ -81,7 +81,7 @@ abstract class DDI {
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
   bool isFuture<BeanT extends Object>({Object? qualifier});
 
-  /// Verify if the factory is ready in [DDI].
+  /// Verify if the factory is ready (Created) in [DDI].
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
   bool isReady<BeanT extends Object>({Object? qualifier});

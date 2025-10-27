@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
+import 'package:dart_ddi/src/exception/bean_destroyed.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
 import 'package:dart_ddi/src/utils/instance_destroy_utils.dart';
 import 'package:dart_ddi/src/utils/instance_decorators_utils.dart';
@@ -46,11 +47,17 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   /// The child objects associated with the Bean, acting as a module.
   Set<Object> _children;
 
+  /// The current _state of this factory in its lifecycle.
+  BeanStateEnum _state = BeanStateEnum.none;
+
+  @override
+  BeanStateEnum get state => _state;
+
   /// Register the instance in [DDI].
   /// When the instance is ready, must call apply function.
   @override
   Future<void> register({required Object qualifier}) async {
-    state = BeanStateEnum.registered;
+    _state = BeanStateEnum.registered;
   }
 
   /// Gets or creates this instance.
@@ -63,6 +70,8 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     required Object qualifier,
     ParameterT? parameter,
   }) {
+    _checkState(qualifier);
+
     BeanT dependentClazz = createInstance<BeanT, ParameterT>(
       builder: _builder,
       parameter: parameter,
@@ -116,6 +125,8 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     required Object qualifier,
     ParameterT? parameter,
   }) async {
+    _checkState(qualifier);
+
     BeanT dependentClazz = await createInstanceAsync<BeanT, ParameterT>(
       builder: _builder,
       parameter: parameter,
@@ -174,19 +185,32 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   @override
   bool get isFuture => _builder.isFuture || BeanT is Future;
 
-  /// Verify if this factory is ready.
+  /// Verify if this factory is ready (Created).
   @override
   bool get isReady => false;
+
+  @override
+  bool get isRegistered => BeanStateEnum.registered == _state;
 
   /// Removes the instance of the registered class in [DDI].
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
   @override
   FutureOr<void> destroy(void Function() apply) {
-    state = BeanStateEnum.beingDestroyed;
+    // Only destroy if canDestroy was registered with true
+    if (!_canDestroy) {
+      return null;
+    }
+
+    if (_state == BeanStateEnum.beingDestroyed ||
+        _state == BeanStateEnum.destroyed) {
+      return null;
+    }
+
+    _state = BeanStateEnum.beingDestroyed;
+
     return InstanceDestroyUtils.destroyInstance<BeanT>(
       apply: apply,
-      canDestroy: _canDestroy,
       instance: null,
       interceptors: _interceptors,
       children: _children,
@@ -196,6 +220,11 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   /// Disposes of the instance of the registered class in [DDI].
   @override
   Future<void> dispose() {
+    if (_state == BeanStateEnum.beingDestroyed ||
+        _state == BeanStateEnum.destroyed) {
+      return Future.value();
+    }
+
     if (children.isNotEmpty) {
       final List<Future<void>> futures = [];
       for (final Object child in children) {
@@ -215,20 +244,45 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   /// - **Order of Execution:** Decorators are applied in the order they are provided.
   /// - **Instaces Already Gets:** No changes any Instances that have been get.
   @override
-  FutureOr<void> addDecorator(ListDecorator<BeanT> newDecorators) {
+  void addDecorator(ListDecorator<BeanT> newDecorators) {
+    if (newDecorators.isEmpty) {
+      return;
+    }
+
+    _checkState(type);
+
     _decorators = [..._decorators, ...newDecorators];
   }
 
   @override
   void addInterceptor(Set<Object> newInterceptors) {
+    if (newInterceptors.isEmpty) {
+      return;
+    }
+
+    _checkState(type);
+
     _interceptors = {..._interceptors, ...newInterceptors};
   }
 
   @override
   void addChildrenModules(Set<Object> child) {
+    if (child.isEmpty) {
+      return;
+    }
+
+    _checkState(type);
+
     _children = {..._children, ...child};
   }
 
   @override
   Set<Object> get children => _children;
+
+  void _checkState(Object qualifier) {
+    if (_state == BeanStateEnum.beingDestroyed ||
+        _state == BeanStateEnum.destroyed) {
+      throw BeanDestroyedException(qualifier.toString());
+    }
+  }
 }

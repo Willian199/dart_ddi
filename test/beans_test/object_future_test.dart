@@ -1,4 +1,5 @@
 import 'package:dart_ddi/dart_ddi.dart';
+import 'package:dart_ddi/src/exception/bean_destroyed.dart';
 import 'package:dart_ddi/src/exception/bean_not_found.dart';
 import 'package:test/test.dart';
 
@@ -179,8 +180,8 @@ void main() {
       DDI.instance.destroy<AsyncAddInterceptor>();
       DDI.instance.destroy<MultiplyInterceptor>();
 
-      expect(
-          () => DDI.instance.get<int>(), throwsA(isA<BeanNotFoundException>()));
+      expect(() => DDI.instance.get<int>(),
+          throwsA(isA<BeanDestroyedException>()));
     });
 
     test('Register an Object class with Future PostConstruct mixin', () async {

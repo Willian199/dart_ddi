@@ -37,7 +37,7 @@ abstract class DDIBaseFactory<BeanT extends Object> with InstanceFactoryMixin {
   void setType<NewType extends Object>() => _type = NewType;
 
   /// The current state of this factory in its lifecycle.
-  BeanStateEnum state = BeanStateEnum.none;
+  BeanStateEnum get state;
 
   /// Registers this factory instance in the DDI container.
   ///
@@ -84,11 +84,15 @@ abstract class DDIBaseFactory<BeanT extends Object> with InstanceFactoryMixin {
   /// `false` for synchronous instances.
   bool get isFuture;
 
-  /// Verifies if this factory is ready to create instances.
+  /// Verifies if this factory is ready (Created).
   ///
-  /// Returns `true` if the factory is properly initialized and ready
-  /// to create instances, `false` otherwise.
+  /// Returns `true` if the factory is properly initialized and
+  /// the instance created, `false` otherwise.
   bool get isReady;
+
+  /// Indicates whether this factory is currently registered in the DDI container.
+  /// Returns `true` if the factory is registered, `false` otherwise.
+  bool get isRegistered;
 
   /// Destroys this factory instance and cleans up resources.
   ///

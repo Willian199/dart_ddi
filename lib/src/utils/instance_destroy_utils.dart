@@ -43,16 +43,10 @@ final class InstanceDestroyUtils {
   /// ```
   static FutureOr<void> destroyInstance<BeanT extends Object>({
     required void Function() apply,
-    required bool canDestroy,
     required BeanT? instance,
     required Set<Object> children,
     required Set<Object> interceptors,
   }) async {
-    // Only destroy if canDestroy was registered with true
-    if (!canDestroy) {
-      return;
-    }
-
     // Should call interceptors even if the instance is null
     for (final interceptor in interceptors) {
       if (ddi.isFuture(qualifier: interceptor)) {
