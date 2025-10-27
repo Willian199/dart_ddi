@@ -149,8 +149,7 @@ void main() {
     });
 
     test('Call register before passing to DDI', () {
-      final c = ObjectFactory(instance: C())
-        ..register(qualifier: C, apply: (_) {});
+      final c = ObjectFactory(instance: C())..register(qualifier: C);
 
       expect(() => ddi.register<C>(factory: c),
           throwsA(isA<FactoryAlreadyCreatedException>()));

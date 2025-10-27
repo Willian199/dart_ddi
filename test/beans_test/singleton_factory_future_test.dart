@@ -111,7 +111,7 @@ void main() {
         factory: SingletonFactory(
           builder: () async {
             final C value =
-                await Future.delayed(const Duration(seconds: 2), C.new);
+                await Future.delayed(const Duration(seconds: 1), C.new);
             return value;
           }.builder,
         ),
@@ -130,7 +130,7 @@ void main() {
         factory: SingletonFactory(
           builder: () async {
             final C value =
-                await Future.delayed(const Duration(seconds: 2), C.new);
+                await Future.delayed(const Duration(seconds: 1), C.new);
             return value;
           }.builder,
         ),
@@ -151,7 +151,7 @@ void main() {
           canDestroy: false,
           builder: () async {
             final FutureSingletonFactoryDestroyGet value = await Future.delayed(
-                const Duration(seconds: 2),
+                const Duration(seconds: 1),
                 FutureSingletonFactoryDestroyGet.new);
             return value;
           }.builder,
@@ -194,7 +194,7 @@ void main() {
         ],
       );
 
-      expect(ddi.isRegistered<D>(), false);
+      expect(ddi.isRegistered<D>(), true);
       await expectLater(
           () async => ddi.getAsync<D>(), throwsA(isA<BeanNotReadyException>()));
       expect(ddi.isRegistered<D>(), false);

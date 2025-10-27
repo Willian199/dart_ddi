@@ -59,11 +59,8 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   /// Register the instance in [DDI].
   /// When the instance is ready, must call apply function.
   @override
-  Future<void> register({
-    required Object qualifier,
-    required void Function(DDIBaseFactory<BeanT>) apply,
-  }) async {
-    return apply(this);
+  Future<void> register({required Object qualifier}) async {
+    state = BeanStateEnum.registered;
   }
 
   /// Gets or creates this instance.
@@ -108,17 +105,27 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
           (_instance as DDIModule).moduleQualifier = qualifier;
         }
 
-        state = BeanStateEnum.created;
-        _created.complete();
-        _runningCreateProcess = false;
         if (_instance is PostConstruct) {
           (_instance as PostConstruct).onPostConstruct();
         } else if (_instance is Future<PostConstruct>) {
           (_instance as Future<PostConstruct>).then(
               (PostConstruct postConstruct) => postConstruct.onPostConstruct());
         }
-      } catch (e) {
+
+        state = BeanStateEnum.created;
+        _runningCreateProcess = false;
         _created.complete();
+      } catch (e) {
+        _runningCreateProcess = false;
+
+        if (!_created.isCompleted) {
+          _created.complete();
+        }
+        // Reset the instance to null in case of error on creation
+        // When the instance is null, the next getWith will try to create again
+        _instance = null;
+        state = BeanStateEnum.registered;
+        _created = Completer.sync();
         rethrow;
       }
     }
@@ -161,11 +168,14 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
         );
 
         /// Verify if the Instance class is Future, and await for it
-        _instance = execInstance is Future ? await execInstance : execInstance;
+        final BeanT instance =
+            execInstance is Future ? await execInstance : execInstance;
 
         if (_created.isCompleted) {
           throw StateError('Another process canceled the creation process.');
         }
+
+        _instance = instance;
 
         /// Run the Interceptor for create process
         for (final interceptor in _interceptors) {
@@ -187,8 +197,8 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
         }
 
         state = BeanStateEnum.created;
-        _runningCreateProcess = false;
         _created.complete();
+        _runningCreateProcess = false;
 
         if (_instance is PostConstruct) {
           await (_instance as PostConstruct).onPostConstruct();
@@ -199,9 +209,17 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
           await postConstruct.onPostConstruct();
         }
       } catch (e) {
+        _runningCreateProcess = false;
+
         if (!_created.isCompleted) {
           _created.complete();
         }
+
+        // Reset the instance to null in case of error on creation
+        // When the instance is null, the next getAsyncWith will try to create again
+        _instance = null;
+        state = BeanStateEnum.registered;
+        _created = Completer.sync();
         rethrow;
       }
     }
@@ -247,6 +265,11 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   /// Disposes of the instance of the registered class in [DDI].
   @override
   Future<void> dispose() async {
+    if (_runningCreateProcess) {
+      /// Wait for the creation process to finish
+      await _created.future.catchError((_) {});
+    }
+
     state = BeanStateEnum.beingDisposed;
     if (!_created.isCompleted) {
       if (_runningCreateProcess) {

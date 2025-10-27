@@ -99,7 +99,7 @@ void main() {
         return C();
       });
 
-      expect(DDI.instance.isRegistered<C>(), false);
+      expect(DDI.instance.isRegistered<C>(), true);
       expect(DDI.instance.isReady<C>(), false);
 
       int count = 0;

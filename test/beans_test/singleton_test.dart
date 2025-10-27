@@ -142,7 +142,7 @@ void main() {
 
     test('Call register before passing to DDI', () {
       final c = SingletonFactory(builder: C.new.builder)
-        ..register(qualifier: C, apply: (_) {});
+        ..register(qualifier: C);
 
       expect(() => ddi.register<C>(factory: c),
           throwsA(isA<FactoryAlreadyCreatedException>()));

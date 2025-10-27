@@ -65,10 +65,6 @@ class _DDIImpl implements DDI {
 
       final f = factory.register(
         qualifier: effectiveQualifierName,
-        apply: (instance) {
-          instance.state = BeanStateEnum.registered;
-          _beans.setFactory(effectiveQualifierName, instance);
-        },
       );
 
       f.onError((e, _) {

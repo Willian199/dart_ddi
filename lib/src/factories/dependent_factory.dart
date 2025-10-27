@@ -49,11 +49,8 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   /// Register the instance in [DDI].
   /// When the instance is ready, must call apply function.
   @override
-  Future<void> register({
-    required Object qualifier,
-    required void Function(DDIBaseFactory<BeanT>) apply,
-  }) async {
-    return apply(this);
+  Future<void> register({required Object qualifier}) async {
+    state = BeanStateEnum.registered;
   }
 
   /// Gets or creates this instance.

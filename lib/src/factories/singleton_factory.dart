@@ -57,23 +57,18 @@ class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   /// Register the instance in [DDI].
   /// When the instance is ready, must call apply function.
   @override
-  Future<void> register({
-    required Object qualifier,
-    required void Function(DDIBaseFactory<BeanT>) apply,
-  }) async {
+  Future<void> register({required Object qualifier}) async {
     if (_created.isCompleted) {
       throw FactoryAlreadyCreatedException(BeanT.toString());
     }
 
     try {
+      state = BeanStateEnum.beingCreated;
+
       final FutureOr<BeanT> execInstance = createInstance(builder: _builder);
 
       BeanT clazz = /*builder!.isFuture &&*/
           execInstance is Future ? await execInstance : execInstance;
-
-      apply(this);
-
-      state = BeanStateEnum.beingCreated;
 
       for (final interceptor in _interceptors) {
         if (ddi.isFuture(qualifier: interceptor)) {
@@ -102,20 +97,27 @@ class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
       _instance = clazz;
 
-      _created.complete();
+      final FutureOr<void> result;
+
+      if (clazz is PostConstruct) {
+        result = clazz.onPostConstruct();
+      } else if (clazz is Future<PostConstruct>) {
+        result = (clazz as Future<PostConstruct>)
+            .then((value) => value.onPostConstruct());
+      } else {
+        result = Future.value();
+      }
 
       state = BeanStateEnum.created;
 
-      if (clazz is PostConstruct) {
-        return clazz.onPostConstruct();
-      } else if (clazz is Future<PostConstruct>) {
-        final PostConstruct postConstruct =
-            await (clazz as Future<PostConstruct>);
-
-        return postConstruct.onPostConstruct();
-      }
-    } catch (e) {
       _created.complete();
+
+      return result;
+    } catch (e) {
+      state = BeanStateEnum.none;
+      if (!_created.isCompleted) {
+        _created.complete();
+      }
       rethrow;
     }
   }

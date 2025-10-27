@@ -12,7 +12,7 @@ void main() {
         expect(ddi.isEmpty, true);
       },
     );
-    test('Regsiter a Singleton bean with PostConstruct  and PreDestroy',
+    test('Register a Singleton bean with PostConstruct  and PreDestroy',
         () async {
       await DDI.instance.singleton(
           () => Future.delayed(const Duration(milliseconds: 200), L.new));
@@ -24,7 +24,7 @@ void main() {
       DDI.instance.destroy<L>();
     });
 
-    test('Regsiter a Applcation bean with PostConstruct  and PreDestroy',
+    test('Register a Applcation bean with PostConstruct  and PreDestroy',
         () async {
       DDI.instance.application(
           () => Future.delayed(const Duration(milliseconds: 200), L.new));
@@ -36,7 +36,7 @@ void main() {
       DDI.instance.destroy<L>();
     });
 
-    test('Regsiter a Dependent bean with PostConstruct  and PreDestroy',
+    test('Register a Dependent bean with PostConstruct  and PreDestroy',
         () async {
       DDI.instance.dependent(
           () => Future.delayed(const Duration(milliseconds: 200), L.new));
@@ -48,9 +48,9 @@ void main() {
       DDI.instance.destroy<L>();
     });
 
-    test('Regsiter a Object bean with PostConstruct  and PreDestroy', () async {
+    test('Register a Object bean with PostConstruct  and PreDestroy', () async {
       Future<L> loadValue() async {
-        await Future.delayed(const Duration(milliseconds: 200));
+        await Future.delayed(const Duration(milliseconds: 20));
 
         return L();
       }

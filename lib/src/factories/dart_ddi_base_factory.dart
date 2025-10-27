@@ -46,10 +46,7 @@ abstract class DDIBaseFactory<BeanT extends Object> with InstanceFactoryMixin {
   ///
   /// - `qualifier`: The qualifier name used to identify this factory in the container.
   /// - `apply`: Function to call when the factory is ready to be registered.
-  Future<void> register({
-    required Object qualifier,
-    required void Function(DDIBaseFactory<BeanT>) apply,
-  });
+  Future<void> register({required Object qualifier});
 
   /// Gets or creates an instance of the registered bean.
   ///
