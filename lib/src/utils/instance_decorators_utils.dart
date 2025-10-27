@@ -54,4 +54,3 @@ final class InstanceDecoratorsUtils {
     return clazz;
   }
 }
-
