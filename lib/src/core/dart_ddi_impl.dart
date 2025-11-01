@@ -10,9 +10,6 @@ class _DDIImpl implements DDI {
       ? DartDDIZoneQualifierImpl()
       : DartDDIDefaultQualifierImpl();
 
-  /// Gets the current zone name.
-  String get zoneName => _beans.zoneName;
-
   @override
   T runInZone<T>(String name, T Function() body) {
     if (!_enableZoneRegistry) {

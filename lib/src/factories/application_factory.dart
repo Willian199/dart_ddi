@@ -226,22 +226,6 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       }
     }
 
-    // Double-check pattern to prevent race conditions
-    if (!isReady && !_created.isCompleted) {
-      // Check again if another process started creation while we were waiting
-      if (_runningCreateProcess) {
-        // Another process started creation, wait for it
-        await _created.future;
-        if (isReady) {
-          return _runGetInterceptors();
-        }
-        // If still not ready after waiting, something went wrong
-        throw StateError(
-          'Creation process completed but instance is not ready',
-        );
-      }
-    }
-
     // If resolutionMap doesn't exist in the current zone, create a new zone with a new map
     if (Zone.current[_resolutionKey] == null) {
       return runZoned(

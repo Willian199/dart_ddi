@@ -6,15 +6,8 @@ import 'package:dart_ddi/src/core/dart_ddi_qualifier.dart';
 /// Instead of Zone-based isolation, this version uses named contexts
 /// to provide isolated bean registries with fallback to a global registry.
 final class DartDDIDefaultQualifierImpl implements DartDDIQualifier {
-  /// Name of the global context.
-  static const String _globalContext = 'root';
-
   /// Map of context names to their bean registries.
   final Map<Object, DDIBaseFactory<Object>> _contexts = {};
-
-  /// Returns the current "zone" name (actually context name here).
-  @override
-  String get zoneName => _globalContext;
 
   @override
   DDIBaseFactory<BeanT>? getFactory<BeanT extends Object>({

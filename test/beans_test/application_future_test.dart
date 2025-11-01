@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/exception/bean_not_found.dart';
+import 'package:dart_ddi/src/exception/future_not_accept.dart';
 import 'package:test/test.dart';
 
 import '../clazz_samples/a.dart';
@@ -499,7 +500,8 @@ void main() {
         return C();
       });
 
-      //expect(() => DDI.instance.get<C>(), throwsA(isA<FutureNotAcceptException>()));
+      expect(() => DDI.instance.get<C>(),
+          throwsA(isA<FutureNotAcceptException>()));
 
       expect(DDI.instance.isReady<C>(), false);
       expect(DDI.instance.isFuture<C>(), true);
@@ -511,6 +513,35 @@ void main() {
 
       expect(identical(first, second), true);
       expect(second.value, 2);
+
+      DDI.instance.destroy<C>();
+
+      expect(DDI.instance.isRegistered<C>(), false);
+    });
+
+    test('Try to get and destroy multiple instances', () async {
+      DDI.instance.application(() async {
+        await Future.delayed(const Duration(milliseconds: 100));
+
+        return C();
+      });
+
+      expect(() => DDI.instance.get<C>(),
+          throwsA(isA<FutureNotAcceptException>()));
+
+      expect(DDI.instance.isReady<C>(), false);
+      expect(DDI.instance.isFuture<C>(), true);
+
+      final [first, second] = await Future.wait<C>([
+        DDI.instance.getAsync<C>().then((c) {
+          DDI.instance.destroy<C>();
+          return c;
+        }),
+        DDI.instance.getAsync<C>(),
+      ]);
+
+      expect(identical(first, second), true);
+      expect(second.value, 1);
 
       DDI.instance.destroy<C>();
 

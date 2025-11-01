@@ -156,6 +156,8 @@ void main() {
         () => DDI.instance.get<int>(),
         throwsA(isA<BeanNotFoundException>()),
       );
+
+      expect(DDI.instance.isRegistered<int>(), false);
     });
 
     test('Call register before passing to DDI', () {
@@ -165,6 +167,10 @@ void main() {
         () => ddi.register<C>(factory: c),
         throwsA(isA<FactoryAlreadyCreatedException>()),
       );
+
+      expect(DDI.instance.isRegistered<C>(), true);
+
+      DDI.instance.destroy<C>();
     });
 
     test('Try to get a Bean using a list Future wait', () async {

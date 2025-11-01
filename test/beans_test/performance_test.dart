@@ -221,6 +221,35 @@ void main() {
       );
     });
 
+    test('Should be fast to add dynamic interceptor on DependentScope', () {
+      final sw = Stopwatch()..start();
+
+      ddi.dependent(ExampleService.new);
+
+      ddi.get<ExampleService>();
+
+      for (var i = 0; i < 100000; i++) {
+        ddi.addInterceptor<ExampleService>({Object()});
+      }
+
+      sw.stop();
+
+      expect(
+        sw.elapsedMilliseconds,
+        lessThan(100),
+        reason: 'Adding interceptors should be extremely fast.',
+      );
+
+      ddi.destroy<ExampleService>();
+
+      expect(ddi.isRegistered<ExampleService>(), false);
+
+      expect(
+        () => ddi.get<ExampleService>(),
+        throwsA(isA<BeanNotFoundException>()),
+      );
+    });
+
     test('Should be fast to add dynamic decorators on ApplicationScope', () {
       final sw = Stopwatch()..start();
 
@@ -260,6 +289,41 @@ void main() {
       final sw = Stopwatch()..start();
 
       ddi.singleton(() => 'teste', qualifier: 'performance_string_decorated');
+
+      expect(ddi.get(qualifier: 'performance_string_decorated'), 'teste');
+
+      for (var i = 0; i < 100000; i++) {
+        ddi.addDecorator(
+          [(String instance) => instance.toUpperCase()],
+          qualifier: 'performance_string_decorated',
+        );
+      }
+
+      sw.stop();
+
+      expect(
+        sw.elapsedMilliseconds,
+        lessThan(100),
+        reason: 'Adding interceptors should be extremely fast.',
+      );
+
+      expect(ddi.get(qualifier: 'performance_string_decorated'), 'TESTE');
+
+      ddi.destroy(qualifier: 'performance_string_decorated');
+
+      expect(
+          ddi.isRegistered(qualifier: 'performance_string_decorated'), false);
+
+      expect(
+        () => ddi.get(qualifier: 'performance_string_decorated'),
+        throwsA(isA<BeanNotFoundException>()),
+      );
+    });
+
+    test('Should be fast to add dynamic decorators on DependentScope', () {
+      final sw = Stopwatch()..start();
+
+      ddi.dependent(() => 'teste', qualifier: 'performance_string_decorated');
 
       expect(ddi.get(qualifier: 'performance_string_decorated'), 'teste');
 

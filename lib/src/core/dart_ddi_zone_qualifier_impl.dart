@@ -13,7 +13,6 @@ final class DartDDIZoneQualifierImpl implements DartDDIQualifier {
   static const _beansKey = #ddi_beans_registry;
 
   /// Gets the current zone name for debugging and identification purposes.
-  @override
   String get zoneName => Zone.current[#zone_name] as String? ?? 'root';
 
   /// Global beans map used as fallback when no zone-specific registry exists.

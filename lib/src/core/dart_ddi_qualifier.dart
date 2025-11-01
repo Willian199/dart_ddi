@@ -6,9 +6,6 @@ import 'package:dart_ddi/dart_ddi.dart';
 /// Dart zones, allowing for isolated dependency injection contexts. It handles
 /// both zone-specific and global bean registrations with proper fallback mechanisms.
 abstract interface class DartDDIQualifier {
-  /// Gets the current zone name for debugging and identification purposes.
-  String get zoneName;
-
   DDIBaseFactory<BeanT>? getFactory<BeanT extends Object>({
     required Object qualifier,
     bool fallback = true,
