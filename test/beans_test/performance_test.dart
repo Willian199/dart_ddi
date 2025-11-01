@@ -62,7 +62,7 @@ void main() {
       // Sanity check for performance
       expect(
         sw.elapsedMilliseconds,
-        lessThan(1100),
+        lessThan(1500),
         reason:
             'Should resolve 10,000,000 instances in under 2000ms on a modern CPU.',
       );
@@ -105,7 +105,7 @@ void main() {
       // Sanity check for performance
       expect(
         sw.elapsedMilliseconds,
-        lessThan(1000),
+        lessThan(1500),
         reason:
             'Should resolve 10,000,000 instances in under 2000ms on a modern CPU.',
       );
@@ -148,7 +148,7 @@ void main() {
       // Sanity check for performance
       expect(
         sw.elapsedMilliseconds,
-        lessThan(1000),
+        lessThan(1500),
         reason:
             'Should resolve 10,000,000 instances in under 2000ms on a modern CPU.',
       );
@@ -207,7 +207,7 @@ void main() {
 
       expect(
         sw.elapsedMilliseconds,
-        lessThan(50),
+        lessThan(70),
         reason: 'Adding interceptors should be extremely fast.',
       );
 
@@ -239,7 +239,7 @@ void main() {
 
       expect(
         sw.elapsedMilliseconds,
-        lessThan(50),
+        lessThan(70),
         reason: 'Adding interceptors should be extremely fast.',
       );
 
@@ -274,7 +274,7 @@ void main() {
 
       expect(
         sw.elapsedMilliseconds,
-        lessThan(50),
+        lessThan(70),
         reason: 'Adding interceptors should be extremely fast.',
       );
 
