@@ -8,20 +8,16 @@ import '../clazz_samples/f.dart';
 
 void main() {
   group('DDI ADD Decorators Tests', () {
-    tearDownAll(
-      () {
-        expect(ddi.isEmpty, true);
-      },
-    );
+    tearDownAll(() {
+      expect(ddi.isEmpty, true);
+    });
 
     void regraSoma() {
       final instance1 = DDI.instance.get<D>();
 
       expect(instance1.value, 'bcdfghi');
 
-      DDI.instance.addDecorator<D>([
-        (instance) => E(instance),
-      ]);
+      DDI.instance.addDecorator<D>([(instance) => E(instance)]);
 
       final instance2 = DDI.instance.get<D>();
 
@@ -33,10 +29,7 @@ void main() {
       ///Where is Singleton, should the register in the correct order
       DDI.instance.singleton(
         () => D(),
-        decorators: [
-          (D instance) => E(instance),
-          (D instance) => F(instance),
-        ],
+        decorators: [(D instance) => E(instance), (D instance) => F(instance)],
       );
 
       regraSoma();
@@ -48,10 +41,7 @@ void main() {
       ///Where is Singleton, should the register in the correct order
       DDI.instance.application(
         () => D(),
-        decorators: [
-          (D instance) => E(instance),
-          (D instance) => F(instance),
-        ],
+        decorators: [(D instance) => E(instance), (D instance) => F(instance)],
       );
 
       regraSoma();
@@ -63,10 +53,7 @@ void main() {
       ///Where is Singleton, should the register in the correct order
       DDI.instance.dependent(
         () => D(),
-        decorators: [
-          (D instance) => E(instance),
-          (D instance) => F(instance),
-        ],
+        decorators: [(D instance) => E(instance), (D instance) => F(instance)],
       );
 
       regraSoma();
@@ -76,10 +63,9 @@ void main() {
 
     test('ADD Decorators to a Bean not registered', () {
       expect(
-          () => ddi.addDecorator<D>([
-                (instance) => E(instance),
-              ]),
-          throwsA(isA<BeanNotFoundException>()));
+        () => ddi.addDecorator<D>([(instance) => E(instance)]),
+        throwsA(isA<BeanNotFoundException>()),
+      );
     });
   });
 }

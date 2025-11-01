@@ -16,14 +16,12 @@ import '../clazz_samples/undestroyable/future_singleton_factory_destroy_get.dart
 
 void main() {
   group('DDI Singleton Factory Future Basic Tests', () {
-    tearDownAll(
-      () {
-        // Still having 1 Bean, because [canDestroy] is false
-        expect(ddi.isEmpty, false);
-        // SingletonFactory
-        expect(ddi.length, 1);
-      },
-    );
+    tearDownAll(() {
+      // Still having 1 Bean, because [canDestroy] is false
+      expect(ddi.isEmpty, false);
+      // SingletonFactory
+      expect(ddi.length, 1);
+    });
 
     Future<void> registerBeans() async {
       C.new.builder.asSingleton();
@@ -69,49 +67,54 @@ void main() {
       removeSingletonBeans();
     });
 
-    test('Retrieve a Factory singleton bean after a "child" bean is diposed',
-        () async {
-      await registerBeans();
+    test(
+      'Retrieve a Factory singleton bean after a "child" bean is diposed',
+      () async {
+        await registerBeans();
 
-      final instance = await DDI.instance.getAsync<MultiInject>();
+        final instance = await DDI.instance.getAsync<MultiInject>();
 
-      DDI.instance.destroy<C>();
-      final instance1 = await DDI.instance.getAsync<A>();
-      expect(instance1, same(instance.a));
-      expect(instance1.b, same(instance.b));
-      expect(instance.b.c, same(instance1.b.c));
-      expect(instance.b.c.value, same(instance1.b.c.value));
+        DDI.instance.destroy<C>();
+        final instance1 = await DDI.instance.getAsync<A>();
+        expect(instance1, same(instance.a));
+        expect(instance1.b, same(instance.b));
+        expect(instance.b.c, same(instance1.b.c));
+        expect(instance.b.c.value, same(instance1.b.c.value));
 
-      DDI.instance.destroy<A>();
-      DDI.instance.destroy<B>();
-      DDI.instance.destroy<MultiInject>();
-    });
+        DDI.instance.destroy<A>();
+        DDI.instance.destroy<B>();
+        DDI.instance.destroy<MultiInject>();
+      },
+    );
 
     test(
-        'Retrieve a Factory singleton bean after a second "child" bean is diposed',
-        () async {
-      await registerBeans();
+      'Retrieve a Factory singleton bean after a second "child" bean is diposed',
+      () async {
+        await registerBeans();
 
-      final instance = await DDI.instance.getAsync<MultiInject>();
+        final instance = await DDI.instance.getAsync<MultiInject>();
 
-      DDI.instance.destroy<B>();
-      DDI.instance.destroy<C>();
-      final instance1 = await DDI.instance.getAsync<A>();
-      expect(instance1, same(instance.a));
-      expect(instance1.b, same(instance.b));
-      expect(instance.b.c, same(instance1.b.c));
-      expect(instance.b.c.value, same(instance1.b.c.value));
+        DDI.instance.destroy<B>();
+        DDI.instance.destroy<C>();
+        final instance1 = await DDI.instance.getAsync<A>();
+        expect(instance1, same(instance.a));
+        expect(instance1.b, same(instance.b));
+        expect(instance.b.c, same(instance1.b.c));
+        expect(instance.b.c.value, same(instance1.b.c.value));
 
-      DDI.instance.destroy<A>();
-      DDI.instance.destroy<MultiInject>();
-    });
+        DDI.instance.destroy<A>();
+        DDI.instance.destroy<MultiInject>();
+      },
+    );
 
     test('Try to retrieve a Factory singleton bean after removed', () async {
       await DDI.instance.register<C>(
         factory: SingletonFactory(
           builder: () async {
-            final C value =
-                await Future.delayed(const Duration(seconds: 2), C.new);
+            final C value = await Future.delayed(
+              const Duration(seconds: 1),
+              C.new,
+            );
             return value;
           }.builder,
         ),
@@ -121,16 +124,20 @@ void main() {
 
       DDI.instance.destroy<C>();
 
-      expect(() => DDI.instance.getAsync<C>(),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(
+        () => DDI.instance.getAsync<C>(),
+        throwsA(isA<BeanNotFoundException>()),
+      );
     });
 
     test('Create, get and remove a Factory qualifier bean', () async {
       await DDI.instance.register<C>(
         factory: SingletonFactory(
           builder: () async {
-            final C value =
-                await Future.delayed(const Duration(seconds: 2), C.new);
+            final C value = await Future.delayed(
+              const Duration(seconds: 1),
+              C.new,
+            );
             return value;
           }.builder,
         ),
@@ -141,8 +148,10 @@ void main() {
 
       DDI.instance.destroy(qualifier: 'typeC');
 
-      expect(() => DDI.instance.getAsync(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(
+        () => DDI.instance.getAsync(qualifier: 'typeC'),
+        throwsA(isA<BeanNotFoundException>()),
+      );
     });
 
     test('Try to destroy a undestroyable Factory Singleton bean', () async {
@@ -151,8 +160,9 @@ void main() {
           canDestroy: false,
           builder: () async {
             final FutureSingletonFactoryDestroyGet value = await Future.delayed(
-                const Duration(seconds: 2),
-                FutureSingletonFactoryDestroyGet.new);
+              const Duration(seconds: 1),
+              FutureSingletonFactoryDestroyGet.new,
+            );
             return value;
           }.builder,
         ),
@@ -171,15 +181,16 @@ void main() {
 
     test('Retrieve Factory Singleton with Custom Parameter', () {
       expectLater(
-          () => DDI.instance.register(
-                factory: SingletonFactory(
-                  builder: (RecordParameter parameter) async {
-                    await Future.delayed(const Duration(milliseconds: 10));
-                    return FactoryParameter(parameter);
-                  }.builder,
-                ),
-              ),
-          throwsA(isA<BeanNotFoundException>()));
+        () => DDI.instance.register(
+          factory: SingletonFactory(
+            builder: (RecordParameter parameter) async {
+              await Future.delayed(const Duration(milliseconds: 10));
+              return FactoryParameter(parameter);
+            }.builder,
+          ),
+        ),
+        throwsA(isA<BeanNotFoundException>()),
+      );
     });
 
     test('Thow error on Factory Singleton', () async {
@@ -194,9 +205,11 @@ void main() {
         ],
       );
 
-      expect(ddi.isRegistered<D>(), false);
+      expect(ddi.isRegistered<D>(), true);
       await expectLater(
-          () async => ddi.getAsync<D>(), throwsA(isA<BeanNotReadyException>()));
+        () async => ddi.getAsync<D>(),
+        throwsA(isA<BeanNotReadyException>()),
+      );
       expect(ddi.isRegistered<D>(), false);
 
       await DDI.instance.destroy<D>();

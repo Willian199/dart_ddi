@@ -1,12 +1,13 @@
 import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
+import 'package:dart_ddi/src/core/dart_ddi_default_qualifier_impl.dart';
 import 'package:dart_ddi/src/core/dart_ddi_qualifier.dart';
+import 'package:dart_ddi/src/core/dart_ddi_zone_qualifier_impl.dart';
 import 'package:dart_ddi/src/exception/bean_not_found.dart';
 import 'package:dart_ddi/src/exception/duplicated_bean.dart';
 import 'package:dart_ddi/src/exception/factory_not_allowed.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
-import 'package:dart_ddi/src/utils/instance_runner_utils.dart';
 
 part 'dart_ddi_impl.dart';
 
@@ -18,13 +19,14 @@ final DDI ddi = DDI.instance;
 /// It provides methods for managing beans.
 abstract class DDI {
   /// Creates the shared instance of the [DDI] class.
-  static final DDI _instance = _DDIImpl();
+  static final DDI _instance = _DDIImpl(enableZoneRegistry: false);
 
   /// Gets the shared instance of the [DDI] class.
   static DDI get instance => _instance;
 
   /// Get a new instance of the [DDI] class.
-  static DDI get newInstance => _DDIImpl();
+  static DDI newInstance({bool enableZoneRegistry = false}) =>
+      _DDIImpl(enableZoneRegistry: enableZoneRegistry);
 
   /// This method creates a new Dart Zone with its own isolated registry of beans. This allows you to
   /// register and manage instances in a separate context without affecting the global DDI container.
@@ -81,7 +83,7 @@ abstract class DDI {
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
   bool isFuture<BeanT extends Object>({Object? qualifier});
 
-  /// Verify if the factory is ready in [DDI].
+  /// Verify if the factory is ready (Created) in [DDI].
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
   bool isReady<BeanT extends Object>({Object? qualifier});
@@ -160,8 +162,9 @@ abstract class DDI {
   /// - **Order of Execution:** Decorators are applied in the order they are provided.
   /// - **Instances Already Retrieved:** No changes are applied to instances that have already been retrieved.
   FutureOr<void> addDecorator<BeanT extends Object>(
-      ListDecorator<BeanT> decorators,
-      {Object? qualifier});
+    ListDecorator<BeanT> decorators, {
+    Object? qualifier,
+  });
 
   /// Allows you to dynamically add interceptors to existing instances.
   ///
@@ -192,8 +195,10 @@ abstract class DDI {
   /// );
   ///
   /// ```
-  void addInterceptor<BeanT extends Object>(Set<Object>? interceptors,
-      {Object? qualifier});
+  void addInterceptor<BeanT extends Object>(
+    Set<Object>? interceptors, {
+    Object? qualifier,
+  });
 
   /// Adds a single child module to a parent module.
   ///
@@ -221,8 +226,10 @@ abstract class DDI {
   /// // When AppModule is disposed, DatabaseModule will also be disposed
   /// await ddi.dispose<AppModule>(qualifier: 'mainApp');
   /// ```
-  void addChildModules<BeanT extends Object>(
-      {required Object child, Object? qualifier});
+  void addChildModules<BeanT extends Object>({
+    required Object child,
+    Object? qualifier,
+  });
 
   /// Adds multiple child modules to a parent module at once.
   ///
@@ -249,8 +256,10 @@ abstract class DDI {
   /// // When AppModule is disposed, all child modules will be disposed
   /// await ddi.dispose<AppModule>(qualifier: 'mainApp');
   /// ```
-  void addChildrenModules<BeanT extends Object>(
-      {required Set<Object> child, Object? qualifier});
+  void addChildrenModules<BeanT extends Object>({
+    required Set<Object> child,
+    Object? qualifier,
+  });
 
   /// Retrieves the set of child modules for a given parent module.
   ///

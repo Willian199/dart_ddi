@@ -13,16 +13,12 @@ import '../clazz_samples/with_destroy_interceptor.dart';
 
 void main() {
   group('DDI Feature Interceptor Tests', () {
-    tearDownAll(
-      () {
-        expect(ddi.isEmpty, true);
-      },
-    );
+    tearDownAll(() {
+      expect(ddi.isEmpty, true);
+    });
     test('ADD Interceptor with Logs Interceptors and Beans', () {
       ddi.register(
-        factory: SingletonFactory(
-          builder: LoggerInterceptor.new.builder,
-        ),
+        factory: SingletonFactory(builder: LoggerInterceptor.new.builder),
       );
 
       ddi.register(
@@ -53,51 +49,50 @@ void main() {
       expect(ddi.isRegistered<LoggerInterceptor>(), false);
     });
 
-    test('ADD Future variation Interceptor with Logs Interceptors and Beans',
-        () async {
-      DatabaseLog.new.builder.asApplication();
+    test(
+      'ADD Future variation Interceptor with Logs Interceptors and Beans',
+      () async {
+        DatabaseLog.new.builder.asApplication();
 
-      ddi.register(
-        factory: ApplicationFactory(
-          builder: LoggerFutureInterceptor.new.builder,
-        ),
-      );
+        ddi.register(
+          factory: ApplicationFactory(
+            builder: LoggerFutureInterceptor.new.builder,
+          ),
+        );
 
-      ddi.register(
-        factory: ApplicationFactory(
-          builder: CustomBuilder.ofFuture(J.new),
-          interceptors: {LoggerFutureInterceptor},
-        ),
-      );
+        ddi.register(
+          factory: ApplicationFactory(
+            builder: CustomBuilder.ofFuture(J.new),
+            interceptors: {LoggerFutureInterceptor},
+          ),
+        );
 
-      ddi.application<G>(
-        H.new,
-        interceptors: {J, LoggerFutureInterceptor},
-      );
+        ddi.application<G>(H.new, interceptors: {J, LoggerFutureInterceptor});
 
-      final G instance = await ddi.getAsync<G>();
+        final G instance = await ddi.getAsync<G>();
 
-      expect(instance.area(), 20);
-      expect(instance is I, true);
+        expect(instance.area(), 20);
+        expect(instance is I, true);
 
-      // Dispose will only call the interceptors, but will stay a valid instance
-      await ddi.dispose<G>();
-      await ddi.destroy<G>();
+        // Dispose will only call the interceptors, but will stay a valid instance
+        await ddi.dispose<G>();
+        await ddi.destroy<G>();
 
-      await ddi.dispose<J>();
-      await ddi.destroy<J>();
+        await ddi.dispose<J>();
+        await ddi.destroy<J>();
 
-      await ddi.dispose<LoggerFutureInterceptor>();
-      await ddi.destroy<LoggerFutureInterceptor>();
+        await ddi.dispose<LoggerFutureInterceptor>();
+        await ddi.destroy<LoggerFutureInterceptor>();
 
-      await ddi.dispose<DatabaseLog>();
-      ddi.destroy<DatabaseLog>();
+        await ddi.dispose<DatabaseLog>();
+        ddi.destroy<DatabaseLog>();
 
-      expect(() => ddi.getAsync<G>(), throwsA(isA<BeanNotFoundException>()));
-      expect(ddi.isRegistered<J>(), false);
-      expect(ddi.isRegistered<LoggerFutureInterceptor>(), false);
-      expect(ddi.isRegistered<DatabaseLog>(), false);
-    });
+        expect(() => ddi.getAsync<G>(), throwsA(isA<BeanNotFoundException>()));
+        expect(ddi.isRegistered<J>(), false);
+        expect(ddi.isRegistered<LoggerFutureInterceptor>(), false);
+        expect(ddi.isRegistered<DatabaseLog>(), false);
+      },
+    );
 
     test('ADD Future Interceptor with Logs Interceptors and Beans', () async {
       ddi.register(

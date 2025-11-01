@@ -10,11 +10,9 @@ typedef RecordInject = (A a, B b, C c);
 
 void main() {
   group('DDI Factory Variation Tests', () {
-    tearDownAll(
-      () {
-        expect(ddi.isEmpty, true);
-      },
-    );
+    tearDownAll(() {
+      expect(ddi.isEmpty, true);
+    });
     void registerBeans() {
       MultiInject.new.builder.asDependent();
       B.new.builder.asApplication();
@@ -66,7 +64,8 @@ void main() {
       expectRegistered();
 
       final instance1 = ddi.getWith<MultiInject, List<Object>>(
-          parameter: [ddi.get<A>(), ddi.get<B>(), ddi.get<C>()]);
+        parameter: [ddi.get<A>(), ddi.get<B>(), ddi.get<C>()],
+      );
       final instance2 = ddi.get<A>();
 
       expect(instance1.a, same(instance2));
@@ -84,11 +83,12 @@ void main() {
       expectRegistered();
 
       final instance1 = ddi.getOptionalWith<MultiInject, List<Object>>(
-          parameter: [
-            ddi.getOptional<A>()!,
-            ddi.getOptional<B>()!,
-            ddi.getOptional<C>()!
-          ])!;
+        parameter: [
+          ddi.getOptional<A>()!,
+          ddi.getOptional<B>()!,
+          ddi.getOptional<C>()!,
+        ],
+      )!;
       final instance2 = ddi.get<A>();
 
       expect(instance1.a, same(instance2));
@@ -111,12 +111,13 @@ void main() {
       ddi.register(
         factory: DependentFactory(
           builder: CustomBuilder<MultiInject>(
-              producer: ({required A a, required B b, required C? c}) {
-                return MultiInject(a, b, c ?? C());
-              },
-              parametersType: [],
-              returnType: MultiInject,
-              isFuture: false),
+            producer: ({required A a, required B b, required C? c}) {
+              return MultiInject(a, b, c ?? C());
+            },
+            parametersType: [],
+            returnType: MultiInject,
+            isFuture: false,
+          ),
         ),
       );
 
@@ -148,20 +149,19 @@ void main() {
       ddi.register(
         factory: DependentFactory(
           builder: CustomBuilder<MultiInject>(
-              producer: ({required B b, required C c}) {
-                return MultiInject(A(b), b, c);
-              },
-              parametersType: [],
-              returnType: MultiInject,
-              isFuture: false),
+            producer: ({required B b, required C c}) {
+              return MultiInject(A(b), b, c);
+            },
+            parametersType: [],
+            returnType: MultiInject,
+            isFuture: false,
+          ),
         ),
       );
 
-      final instance1 =
-          ddi.getWith<MultiInject, Map<Symbol, dynamic>>(parameter: {
-        #b: ddi.getOptional<B>()!,
-        #c: ddi.getOptional<C>()!,
-      });
+      final instance1 = ddi.getWith<MultiInject, Map<Symbol, dynamic>>(
+        parameter: {#b: ddi.getOptional<B>()!, #c: ddi.getOptional<C>()!},
+      );
 
       final instance2 = ddi.get<B>();
 
@@ -193,14 +193,11 @@ void main() {
       expectRegistered();
 
       expect(
-          () => ddi.getWith<MultiInject, Map<dynamic, dynamic>>(
-                parameter: {
-                  A: ddi.get<A>(),
-                  B: ddi.get<B>(),
-                  C: ddi.get<C>(),
-                },
-              ),
-          throwsA(isA<AssertionError>()));
+        () => ddi.getWith<MultiInject, Map<dynamic, dynamic>>(
+          parameter: {A: ddi.get<A>(), B: ddi.get<B>(), C: ddi.get<C>()},
+        ),
+        throwsA(isA<AssertionError>()),
+      );
 
       removeBeans();
     });
@@ -228,11 +225,7 @@ void main() {
 
       final instance1 =
           await ddi.getAsyncWith<MultiInject, Map<Symbol, dynamic>>(
-        parameter: {
-          #a: ddi.get<A>(),
-          #b: ddi.get<B>(),
-          #c: ddi.get<C>(),
-        },
+        parameter: {#a: ddi.get<A>(), #b: ddi.get<B>(), #c: ddi.get<C>()},
       );
 
       final instance2 = ddi.get<A>();
@@ -269,11 +262,7 @@ void main() {
 
       final instance1 =
           await ddi.getOptionalAsyncWith<MultiInject, List<Object>>(
-        parameter: [
-          ddi.get<A>(),
-          ddi.get<B>(),
-          ddi.get<C>(),
-        ],
+        parameter: [ddi.get<A>(), ddi.get<B>(), ddi.get<C>()],
       );
 
       final instance2 = ddi.get<A>();
@@ -288,45 +277,43 @@ void main() {
       removeBeans();
     });
 
-    test('Register a Future and retrieve all Factories using a Record',
-        () async {
-      C.new.builder.asApplication();
-      B.new.builder.asApplication();
-      A.new.builder.asSingleton();
+    test(
+      'Register a Future and retrieve all Factories using a Record',
+      () async {
+        C.new.builder.asApplication();
+        B.new.builder.asApplication();
+        A.new.builder.asSingleton();
 
-      ddi.register<MultiInject>(
-        factory: DependentFactory(
-          builder: CustomBuilder(
-            producer: (RecordInject record) async {
-              await Future.delayed(const Duration(milliseconds: 10));
-              return MultiInject(record.$1, record.$2, record.$3);
-            },
-            parametersType: [],
-            returnType: MultiInject,
-            isFuture: true,
+        ddi.register<MultiInject>(
+          factory: DependentFactory(
+            builder: CustomBuilder(
+              producer: (RecordInject record) async {
+                await Future.delayed(const Duration(milliseconds: 10));
+                return MultiInject(record.$1, record.$2, record.$3);
+              },
+              parametersType: [],
+              returnType: MultiInject,
+              isFuture: true,
+            ),
           ),
-        ),
-      );
+        );
 
-      expectRegistered();
+        expectRegistered();
 
-      final instance1 = await ddi.getAsyncWith<MultiInject, RecordInject>(
-        parameter: (
-          ddi.get<A>(),
-          ddi.get<B>(),
-          ddi.get<C>(),
-        ),
-      );
+        final instance1 = await ddi.getAsyncWith<MultiInject, RecordInject>(
+          parameter: (ddi.get<A>(), ddi.get<B>(), ddi.get<C>()),
+        );
 
-      final instance2 = ddi.get<A>();
+        final instance2 = ddi.get<A>();
 
-      expect(instance1.a, same(instance2));
-      expect(instance1.b, same(instance2.b));
-      expect(instance1.b.c, same(instance2.b.c));
-      expect(instance1.b.c.value, same(instance2.b.c.value));
+        expect(instance1.a, same(instance2));
+        expect(instance1.b, same(instance2.b));
+        expect(instance1.b.c, same(instance2.b.c));
+        expect(instance1.b.c.value, same(instance2.b.c.value));
 
-      disposeBeans();
-      removeBeans();
-    });
+        disposeBeans();
+        removeBeans();
+      },
+    );
   });
 }

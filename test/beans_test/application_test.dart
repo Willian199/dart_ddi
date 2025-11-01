@@ -18,14 +18,12 @@ import '../clazz_samples/payment_service.dart';
 
 void main() {
   group('DDI Application Basic Tests', () {
-    tearDownAll(
-      () {
-        // Still having 2 Bean, because [canDestroy] is false
-        expect(ddi.isEmpty, false);
-        // ApplicationDestroyGet, ApplicationDestroyRegister
-        expect(ddi.length, 2);
-      },
-    );
+    tearDownAll(() {
+      // Still having 2 Bean, because [canDestroy] is false
+      expect(ddi.isEmpty, false);
+      // ApplicationDestroyGet, ApplicationDestroyRegister
+      expect(ddi.length, 2);
+    });
 
     void registerApplicationBeans() {
       DDI.instance.application(() => A(DDI.instance()));
@@ -68,38 +66,42 @@ void main() {
       removeApplicationBeans();
     });
 
-    test('Retrieve Application bean after a second "child" bean is diposed',
-        () {
-      registerApplicationBeans();
+    test(
+      'Retrieve Application bean after a second "child" bean is diposed',
+      () {
+        registerApplicationBeans();
 
-      final instance = DDI.instance.get<A>();
+        final instance = DDI.instance.get<A>();
 
-      DDI.instance.dispose<B>();
-      final instance1 = DDI.instance.get<A>();
-      expect(instance1, same(instance));
-      expect(instance1.b, same(instance.b));
-      expect(instance.b.c, same(instance1.b.c));
-      expect(instance.b.c.value, same(instance1.b.c.value));
+        DDI.instance.dispose<B>();
+        final instance1 = DDI.instance.get<A>();
+        expect(instance1, same(instance));
+        expect(instance1.b, same(instance.b));
+        expect(instance.b.c, same(instance1.b.c));
+        expect(instance.b.c.value, same(instance1.b.c.value));
 
-      removeApplicationBeans();
-    });
+        removeApplicationBeans();
+      },
+    );
 
-    test('Retrieve Application bean after the last "child" bean is diposed',
-        () {
-      registerApplicationBeans();
+    test(
+      'Retrieve Application bean after the last "child" bean is diposed',
+      () {
+        registerApplicationBeans();
 
-      final instance1 = DDI.instance.get<A>();
+        final instance1 = DDI.instance.get<A>();
 
-      DDI.instance.dispose<A>();
-      final instance2 = DDI.instance.get<A>();
+        DDI.instance.dispose<A>();
+        final instance2 = DDI.instance.get<A>();
 
-      expect(false, identical(instance1, instance2));
-      expect(true, identical(instance1.b, instance2.b));
-      expect(true, identical(instance1.b.c, instance2.b.c));
-      expect(instance1.b.c.value, same(instance2.b.c.value));
+        expect(false, identical(instance1, instance2));
+        expect(true, identical(instance1.b, instance2.b));
+        expect(true, identical(instance1.b.c, instance2.b.c));
+        expect(instance1.b.c.value, same(instance2.b.c.value));
 
-      removeApplicationBeans();
-    });
+        removeApplicationBeans();
+      },
+    );
 
     test('Retrieve Application bean after 2 "child" bean is diposed', () {
       registerApplicationBeans();
@@ -158,7 +160,9 @@ void main() {
       DDI.instance.destroy<C>();
 
       expect(
-          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
+        () => DDI.instance.get<C>(),
+        throwsA(isA<BeanNotFoundException>()),
+      );
     });
 
     test('Create, get and remove a qualifier bean', () {
@@ -168,8 +172,10 @@ void main() {
 
       DDI.instance.destroy(qualifier: 'typeC');
 
-      expect(() => DDI.instance.get(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(
+        () => DDI.instance.get(qualifier: 'typeC'),
+        throwsA(isA<BeanNotFoundException>()),
+      );
     });
 
     test('Try to destroy an undestroyable Application bean', () {
@@ -185,15 +191,19 @@ void main() {
     });
 
     test('Try to register again an undestroyable Application bean', () {
-      DDI.instance
-          .application(ApplicationDestroyRegister.new, canDestroy: false);
+      DDI.instance.application(
+        ApplicationDestroyRegister.new,
+        canDestroy: false,
+      );
 
       DDI.instance.get<ApplicationDestroyRegister>();
 
       DDI.instance.destroy<ApplicationDestroyRegister>();
 
-      expect(() => DDI.instance.application(() => ApplicationDestroyRegister()),
-          throwsA(isA<DuplicatedBeanException>()));
+      expect(
+        () => DDI.instance.application(() => ApplicationDestroyRegister()),
+        throwsA(isA<DuplicatedBeanException>()),
+      );
     });
 
     test('Select an Application bean', () {
@@ -253,7 +263,7 @@ void main() {
         expect(instance1.b.c.value, same(instance2.b.c.value));
       }
 
-      final newDdi = DDI.newInstance;
+      final newDdi = DDI.newInstance();
 
       register(ddi);
       register(newDdi);
@@ -266,60 +276,69 @@ void main() {
     });
 
     test(
-        'Register an Application Future class with Future PostConstruct mixin and qualifier',
-        () async {
-      Future<FuturePostConstruct> localTest() async {
-        await Future.delayed(const Duration(milliseconds: 10));
-        return FuturePostConstruct();
-      }
+      'Register an Application Future class with Future PostConstruct mixin and qualifier',
+      () async {
+        Future<FuturePostConstruct> localTest() async {
+          await Future.delayed(const Duration(milliseconds: 10));
+          return FuturePostConstruct();
+        }
 
-      DDI.instance.register<Future<FuturePostConstruct>>(
-        factory: ApplicationFactory(
-          builder: CustomBuilder(
-            producer: localTest,
-            parametersType: [],
-            returnType: FuturePostConstruct,
-            isFuture: true,
+        DDI.instance.register<Future<FuturePostConstruct>>(
+          factory: ApplicationFactory(
+            builder: CustomBuilder(
+              producer: localTest,
+              parametersType: [],
+              returnType: FuturePostConstruct,
+              isFuture: true,
+            ),
           ),
-        ),
-        qualifier: 'FuturePostConstruct',
-      );
+          qualifier: 'FuturePostConstruct',
+        );
 
-      expect(DDI.instance.isFuture(qualifier: 'FuturePostConstruct'), true);
+        expect(DDI.instance.isFuture(qualifier: 'FuturePostConstruct'), true);
 
-      expect(DDI.instance.getByType<Future<FuturePostConstruct>>().length, 1);
+        expect(DDI.instance.getByType<Future<FuturePostConstruct>>().length, 1);
 
-      expect(() => DDI.instance.get(qualifier: 'FuturePostConstruct'),
-          throwsA(isA<FutureNotAcceptException>()));
+        expect(
+          () => DDI.instance.get(qualifier: 'FuturePostConstruct'),
+          throwsA(isA<FutureNotAcceptException>()),
+        );
 
-      final FuturePostConstruct futureInstance =
-          await DDI.instance.getAsync(qualifier: 'FuturePostConstruct');
+        final FuturePostConstruct futureInstance = await DDI.instance.getAsync(
+          qualifier: 'FuturePostConstruct',
+        );
 
-      expect(futureInstance.value, 10);
+        expect(futureInstance.value, 10);
 
-      final FuturePostConstruct cachedInstance = await DDI.instance
-          .get<Future<FuturePostConstruct>>(qualifier: 'FuturePostConstruct');
+        final FuturePostConstruct cachedInstance = await DDI.instance
+            .get<Future<FuturePostConstruct>>(qualifier: 'FuturePostConstruct');
 
-      expect(cachedInstance.value, 10);
+        expect(cachedInstance.value, 10);
 
-      expect(identical(cachedInstance, futureInstance), true);
+        expect(identical(cachedInstance, futureInstance), true);
 
-      DDI.instance.destroy(qualifier: 'FuturePostConstruct');
+        DDI.instance.destroy(qualifier: 'FuturePostConstruct');
 
-      expect(
-          DDI.instance.isRegistered(qualifier: 'FuturePostConstruct'), false);
-    });
+        expect(
+          DDI.instance.isRegistered(qualifier: 'FuturePostConstruct'),
+          false,
+        );
+      },
+    );
 
     test('Try to register again an Object Type Bean', () {
-      expect(() => DDI.instance.application<Object>(() => "Test"),
-          throwsA(isA<FactoryNotAllowedException>()));
+      expect(
+        () => DDI.instance.application<Object>(() => "Test"),
+        throwsA(isA<FactoryNotAllowedException>()),
+      );
     });
 
     test('Register Beans with same interface', () {
       DDI.instance.application<G>(I.new, qualifier: 'First');
       DDI.instance.register<G>(
-          factory: ApplicationFactory<H>(builder: H.new.builder),
-          qualifier: 'Second');
+        factory: ApplicationFactory<H>(builder: H.new.builder),
+        qualifier: 'Second',
+      );
 
       expect(DDI.instance.getByType<G>().length, 2);
 

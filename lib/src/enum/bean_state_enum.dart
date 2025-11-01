@@ -9,13 +9,14 @@ enum BeanStateEnum {
   none,
 
   /// State when a bean is being registered in the container.
-  /// This occurs during the registration process, before the bean is ready for use.
+  /// This occurs during the registration process.
   beingRegistered,
 
   /// State when a bean is registered in the container.
+  /// This occurs after the registration process is complete.
   registered,
 
-  /// State when a bean is being created for the first time.
+  /// State when a bean is being created.
   /// This occurs during the instance creation process, which may involve
   /// calling interceptors, applying decorators, and running lifecycle hooks.
   beingCreated,

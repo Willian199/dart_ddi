@@ -13,6 +13,12 @@ import 'dart:async';
 /// **Default Behavior:**
 /// By default, all interceptor methods return the original instance, allowing you to override only the methods needed.
 ///
+/// **Important Notes:**
+/// - Interceptors are applied in the order they are registered
+/// - Changes made in `onGet` persist for subsequent retrievals
+/// - `onDestroy` and `onDispose` are called even if the instance is null
+/// - Interceptors can be both synchronous and asynchronous
+///
 /// **Example Usage:**
 ///
 /// ```dart

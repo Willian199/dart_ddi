@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:dart_ddi/dart_ddi.dart';
 
 /// Manages qualifier mapping for Zones
@@ -7,63 +5,17 @@ import 'package:dart_ddi/dart_ddi.dart';
 /// This class provides functionality to manage bean registrations across different
 /// Dart zones, allowing for isolated dependency injection contexts. It handles
 /// both zone-specific and global bean registrations with proper fallback mechanisms.
-class DartDDIQualifier {
-  /// Key used to store bean registry data in Zone
-  static const _beansKey = #ddi_beans_registry;
-
-  /// Gets the current zone name for debugging and identification purposes.
-  String get zoneName => Zone.current[#zone_name] as String? ?? 'root';
-
-  /// Global beans map used as fallback when no zone-specific registry exists.
-  final Map<Object, DDIBaseFactory<Object>> _globalBeansMap = {};
-
-  /// Gets the beans map for the current zone, falling back to global registry if needed.
-  ///
-  /// This method returns the appropriate bean registry based on the current zone context.
-  /// If no zone-specific registry exists, it falls back to the global registry.
-  Map<Object, DDIBaseFactory<Object>> _getBeansMap() {
-    final Map<Object, DDIBaseFactory<Object>>? zoneMap =
-        Zone.current[_beansKey] as Map<Object, DDIBaseFactory<Object>>?;
-
-    return zoneMap ?? _globalBeansMap;
-  }
-
-  DDIBaseFactory<BeanT>? getFactory<BeanT extends Object>(
-      {required Object qualifier, bool fallback = true}) {
-    final Map<Object, DDIBaseFactory<Object>>? zoneMap =
-        Zone.current[_beansKey] as Map<Object, DDIBaseFactory<Object>>?;
-
-    if (zoneMap?.containsKey(qualifier) ?? false) {
-      return zoneMap?[qualifier] as DDIBaseFactory<BeanT>;
-    } else if (fallback && Zone.current.parent != null) {
-      Zone zone = Zone.current.parent!;
-
-      while (zone.parent != null && zone[#zone_name] != null) {
-        final Map<Object, DDIBaseFactory<Object>>? parentZoneMap =
-            zone[_beansKey] as Map<Object, DDIBaseFactory<Object>>?;
-
-        if (parentZoneMap?.containsKey(qualifier) ?? false) {
-          return parentZoneMap?[qualifier] as DDIBaseFactory<BeanT>;
-        }
-
-        zone = zone.parent!;
-      }
-    }
-
-    if (fallback || zoneName == 'root') {
-      return _globalBeansMap[qualifier] as DDIBaseFactory<BeanT>?;
-    }
-
-    return null;
-  }
+abstract interface class DartDDIQualifier {
+  DDIBaseFactory<BeanT>? getFactory<BeanT extends Object>({
+    required Object qualifier,
+    bool fallback = true,
+  });
 
   /// Checks if we are currently in a zone with a dedicated registry.
   ///
   /// Returns `true` if the current zone has its own bean registry,
   /// `false` if using the global registry.
-  bool hasZoneRegistry() {
-    return Zone.current[_beansKey] != null;
-  }
+  bool hasZoneRegistry();
 
   /// Executes code in a new zone with dedicated bean registries.
   ///
@@ -73,31 +25,18 @@ class DartDDIQualifier {
   ///
   /// - `name`: Unique identifier for the zone (used for debugging).
   /// - `body`: Function to execute within the new zone context.
-  T runWithZoneRegistry<T>(String name, T Function() body) {
-    return runZoned(
-      body,
-      zoneValues: {
-        #zone_name: name,
-        _beansKey: <Object, DDIBaseFactory<Object>>{},
-      },
-    );
-  }
+  T runWithZoneRegistry<T>(String name, T Function() body);
 
   /// Implementation of required MapBase methods
-  void setFactory(Object key, DDIBaseFactory<Object> value) {
-    _getBeansMap()[key] = value;
-  }
+  void setFactory(Object key, DDIBaseFactory<Object> value);
 
-  Iterable<Object> get keys => _getBeansMap().keys;
+  Iterable<Object> get keys;
 
-  Iterable<MapEntry<Object, DDIBaseFactory<Object>>> get entries =>
-      _getBeansMap().entries;
+  Iterable<MapEntry<Object, DDIBaseFactory<Object>>> get entries;
 
-  bool get isEmpty => _getBeansMap().isEmpty;
+  bool get isEmpty;
 
-  int get length => _getBeansMap().length;
+  int get length;
 
-  DDIBaseFactory<Object>? remove(Object? key) {
-    return _getBeansMap().remove(key);
-  }
+  DDIBaseFactory<Object>? remove(Object? key);
 }

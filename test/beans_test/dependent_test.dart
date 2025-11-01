@@ -11,14 +11,12 @@ import '../clazz_samples/undestroyable/dependent_destroy_register.dart';
 
 void main() {
   group('DDI Dependent Basic Tests', () {
-    tearDownAll(
-      () {
-        // Still having 2 Bean, because [canDestroy] is false
-        expect(ddi.isEmpty, false);
-        // DependentDestroyGet, DependentDestroyRegister
-        expect(ddi.length, 2);
-      },
-    );
+    tearDownAll(() {
+      // Still having 2 Bean, because [canDestroy] is false
+      expect(ddi.isEmpty, false);
+      // DependentDestroyGet, DependentDestroyRegister
+      expect(ddi.length, 2);
+    });
 
     void registerDependentBeans() {
       DDI.instance.dependent(() => A(DDI.instance()));
@@ -94,7 +92,9 @@ void main() {
       DDI.instance.destroy<C>();
 
       expect(
-          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
+        () => DDI.instance.get<C>(),
+        throwsA(isA<BeanNotFoundException>()),
+      );
     });
 
     test('Create, get and remove a qualifier bean', () {
@@ -107,8 +107,10 @@ void main() {
 
       DDI.instance.destroy(qualifier: 'typeC');
 
-      expect(() => DDI.instance.get(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(
+        () => DDI.instance.get(qualifier: 'typeC'),
+        throwsA(isA<BeanNotFoundException>()),
+      );
     });
 
     test('Try to destroy a undestroyable Dependent bean', () {
@@ -125,15 +127,19 @@ void main() {
     });
 
     test('Try to register again a undestroyable Dependent bean', () {
-      DDI.instance
-          .dependent(() => DependentDestroyRegister(), canDestroy: false);
+      DDI.instance.dependent(
+        () => DependentDestroyRegister(),
+        canDestroy: false,
+      );
 
       DDI.instance.get<DependentDestroyRegister>();
 
       DDI.instance.destroy<DependentDestroyRegister>();
 
-      expect(() => DDI.instance.dependent(() => DependentDestroyRegister()),
-          throwsA(isA<DuplicatedBeanException>()));
+      expect(
+        () => DDI.instance.dependent(() => DependentDestroyRegister()),
+        throwsA(isA<DuplicatedBeanException>()),
+      );
     });
   });
 }

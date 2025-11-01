@@ -5,11 +5,9 @@ import '../clazz_samples/custom_interceptors.dart';
 
 void main() {
   group('DDI Interceptor Tests with int values', () {
-    tearDownAll(
-      () {
-        expect(ddi.isEmpty, true);
-      },
-    );
+    tearDownAll(() {
+      expect(ddi.isEmpty, true);
+    });
     setUp(() async {
       // Registro de interceptores
       await ddi.register<AddInterceptor>(
@@ -206,7 +204,7 @@ void main() {
             'SumInterceptor',
             AsyncAddInterceptor,
             'MultiplyInterceptor',
-            MultiplyInterceptor
+            MultiplyInterceptor,
           },
         ),
       );
@@ -271,7 +269,7 @@ void main() {
           interceptors: {
             'SumInterceptor',
             AsyncAddInterceptor,
-            'MultiplyInterceptor'
+            'MultiplyInterceptor',
           },
         ),
       );
@@ -338,7 +336,7 @@ void main() {
           interceptors: {
             'SumInterceptor',
             AsyncAddInterceptor,
-            'MultiplyInterceptor'
+            'MultiplyInterceptor',
           },
         ),
       );
@@ -400,7 +398,7 @@ void main() {
           interceptors: {
             'SumInterceptor',
             AsyncAddInterceptor,
-            'MultiplyInterceptor'
+            'MultiplyInterceptor',
           },
         ),
       );

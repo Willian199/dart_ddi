@@ -9,15 +9,13 @@ import '../clazz_samples/custom_interceptors.dart';
 
 void main() {
   group('DDI Object Basic Tests', () {
-    tearDownAll(
-      () {
-        // Still having 2 Bean, because [canDestroy] is false
-        expect(ddi.isEmpty, false);
-        // qualifier: 'author',
-        // qualifier: 'owner',
-        expect(ddi.length, 2);
-      },
-    );
+    tearDownAll(() {
+      // Still having 2 Bean, because [canDestroy] is false
+      expect(ddi.isEmpty, false);
+      // qualifier: 'author',
+      // qualifier: 'owner',
+      expect(ddi.length, 2);
+    });
     test('Register and retrieve object bean', () {
       DDI.instance.object('Willian Marchesan', qualifier: 'author');
 
@@ -37,8 +35,10 @@ void main() {
 
       DDI.instance.destroy(qualifier: 'author');
 
-      expect(() => DDI.instance.get(qualifier: 'author'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(
+        () => DDI.instance.get(qualifier: 'author'),
+        throwsA(isA<BeanNotFoundException>()),
+      );
     });
 
     test('Try to destroy a undestroyable Object bean', () {
@@ -70,11 +70,9 @@ void main() {
       DDI.instance.destroy(qualifier: 'owner');
 
       expect(
-          () => DDI.instance.object(
-                'Willian Marchesan',
-                qualifier: 'owner',
-              ),
-          throwsA(isA<DuplicatedBeanException>()));
+        () => DDI.instance.object('Willian Marchesan', qualifier: 'owner'),
+        throwsA(isA<DuplicatedBeanException>()),
+      );
     });
 
     test('Register, retrieve and refresh object bean', () {
@@ -98,15 +96,19 @@ void main() {
     });
 
     test('Try to refresh an Object not registered', () {
-      expect(() => DDI.instance.addDecorator([(_) => "new value"]),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(
+        () => DDI.instance.addDecorator([(_) => "new value"]),
+        throwsA(isA<BeanNotFoundException>()),
+      );
     });
 
     test('Try to register a duplicated Object', () {
       DDI.instance.object('Will', qualifier: 'name');
 
-      expect(() => DDI.instance.object('Willian', qualifier: 'name'),
-          throwsA(isA<DuplicatedBeanException>()));
+      expect(
+        () => DDI.instance.object('Willian', qualifier: 'name'),
+        throwsA(isA<DuplicatedBeanException>()),
+      );
 
       DDI.instance.destroy(qualifier: 'name');
     });
@@ -120,23 +122,29 @@ void main() {
 
       DDI.instance.destroy(qualifier: 'name');
 
-      expect(() => DDI.instance.get(qualifier: 'name'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(
+        () => DDI.instance.get(qualifier: 'name'),
+        throwsA(isA<BeanNotFoundException>()),
+      );
     });
 
     test('Register an Object with canRegister false', () {
       DDI.instance.object('Will', qualifier: 'name', canRegister: () => false);
 
-      expect(() => DDI.instance.get(qualifier: 'name'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(
+        () => DDI.instance.get(qualifier: 'name'),
+        throwsA(isA<BeanNotFoundException>()),
+      );
     });
 
     test('Register an Object with Interceptor', () {
       ddi.object(AddInterceptor());
       ddi.object(MultiplyInterceptor());
 
-      DDI.instance
-          .object<int>(15, interceptors: {AddInterceptor, MultiplyInterceptor});
+      DDI.instance.object<int>(
+        15,
+        interceptors: {AddInterceptor, MultiplyInterceptor},
+      );
 
       expect(50, DDI.instance.get<int>());
 
@@ -145,27 +153,36 @@ void main() {
       DDI.instance.destroy<MultiplyInterceptor>();
 
       expect(
-          () => DDI.instance.get<int>(), throwsA(isA<BeanNotFoundException>()));
+        () => DDI.instance.get<int>(),
+        throwsA(isA<BeanNotFoundException>()),
+      );
+
+      expect(DDI.instance.isRegistered<int>(), false);
     });
 
     test('Call register before passing to DDI', () {
-      final c = ObjectFactory(instance: C())
-        ..register(qualifier: C, apply: (_) {});
+      final c = ObjectFactory(instance: C())..register(qualifier: C);
 
-      expect(() => ddi.register<C>(factory: c),
-          throwsA(isA<FactoryAlreadyCreatedException>()));
+      expect(
+        () => ddi.register<C>(factory: c),
+        throwsA(isA<FactoryAlreadyCreatedException>()),
+      );
+
+      expect(DDI.instance.isRegistered<C>(), true);
+
+      DDI.instance.destroy<C>();
     });
 
     test('Try to get a Bean using a list Future wait', () async {
-      Future.wait<dynamic>(
-        [
-          await Future.value(ddi.object<C>(await Future.delayed(
-              const Duration(milliseconds: 10), () => C()))),
-          Future.value(ddi.get<C>()),
-          ddi.getAsync<C>(),
-        ],
-        eagerError: true,
-      );
+      Future.wait<dynamic>([
+        await Future.value(
+          ddi.object<C>(
+            await Future.delayed(const Duration(milliseconds: 10), () => C()),
+          ),
+        ),
+        Future.value(ddi.get<C>()),
+        ddi.getAsync<C>(),
+      ], eagerError: true);
 
       await ddi.destroy<C>();
 

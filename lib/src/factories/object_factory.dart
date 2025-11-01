@@ -1,16 +1,16 @@
 import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
+import 'package:dart_ddi/src/exception/bean_destroyed.dart';
 import 'package:dart_ddi/src/exception/bean_not_ready.dart';
 import 'package:dart_ddi/src/exception/factory_already_created.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
 import 'package:dart_ddi/src/utils/instance_destroy_utils.dart';
-import 'package:dart_ddi/src/utils/instance_decorators_utils.dart';
 
-///  Creates a unique instance during registration and reuses it in all subsequent requests.
+/// Creates a unique instance during registration and reuses it in all subsequent requests.
 ///
 /// This scope defines its behavior on the [register] methods.
-/// * It will create the instance.
+/// * It will process the provided instance during registration.
 /// * Run the Interceptor for create process.
 /// * Apply all Decorators to the instance.
 /// * Refresh the qualifier for the Module.
@@ -49,62 +49,79 @@ class ObjectFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   /// The child objects associated with the Bean, acting as a module.
   Set<Object> _children;
 
+  /// The current _state of this factory in its lifecycle.
+  BeanStateEnum _state = BeanStateEnum.none;
+
   final Completer<void> _created = Completer<void>();
+
+  @override
+  BeanStateEnum get state => _state;
 
   /// Register the instance in [DDI].
   /// When the instance is ready, must call apply function.
   @override
-  Future<void> register({
-    required Object qualifier,
-    required void Function(DDIBaseFactory<BeanT>) apply,
-  }) async {
+  Future<void> register({required Object qualifier}) async {
     if (_created.isCompleted) {
       throw FactoryAlreadyCreatedException(BeanT.toString());
     }
 
     try {
-      apply(this);
+      _state = BeanStateEnum.beingCreated;
+      if (_interceptors.isNotEmpty) {
+        for (final interceptor in _interceptors) {
+          if (ddi.isFuture(qualifier: interceptor)) {
+            final inter =
+                await ddi.getAsync(qualifier: interceptor) as DDIInterceptor;
 
-      state = BeanStateEnum.beingRegistered;
-
-      for (final interceptor in _interceptors) {
-        if (ddi.isFuture(qualifier: interceptor)) {
-          final inter =
-              await ddi.getAsync(qualifier: interceptor) as DDIInterceptor;
-
-          _instance = (await inter.onCreate(_instance)) as BeanT;
-        } else {
-          final inter = ddi.get(qualifier: interceptor) as DDIInterceptor;
-
-          final newInstance = inter.onCreate(_instance);
-          if (newInstance is Future) {
-            _instance = (await newInstance) as BeanT;
+            _instance = (await inter.onCreate(_instance)) as BeanT;
           } else {
-            _instance = newInstance as BeanT;
+            final inter = ddi.get(qualifier: interceptor) as DDIInterceptor;
+
+            final newInstance = inter.onCreate(_instance);
+            if (newInstance is Future) {
+              _instance = (await newInstance) as BeanT;
+            } else {
+              _instance = newInstance as BeanT;
+            }
           }
         }
       }
 
-      _instance = InstanceDecoratorsUtils.executeDecorators<BeanT>(
-          _instance, _decorators);
+      if (_decorators.isNotEmpty) {
+        for (final decorator in _decorators) {
+          _instance = decorator(_instance);
+        }
+
+        // Free memory
+        _decorators.clear();
+      }
 
       if (_instance is DDIModule) {
         (_instance as DDIModule).moduleQualifier = qualifier;
       }
 
-      state = BeanStateEnum.registered;
-      _created.complete();
-
+      final FutureOr<void> result;
       if (_instance is PostConstruct) {
-        return (_instance as PostConstruct).onPostConstruct();
+        result = (_instance as PostConstruct).onPostConstruct();
       } else if (_instance is Future<PostConstruct>) {
-        final PostConstruct postConstruct =
-            await (_instance as Future<PostConstruct>);
-
-        return postConstruct.onPostConstruct();
+        result = (_instance as Future<PostConstruct>).then(
+          (postConstruct) => postConstruct.onPostConstruct(),
+        );
+      } else {
+        result = Future.value();
       }
-    } catch (e) {
+
+      _state = BeanStateEnum.created;
+
       _created.complete();
+
+      return result;
+    } catch (e) {
+      _state = BeanStateEnum.none;
+      if (!_created.isCompleted) {
+        _created.complete();
+      }
+
       rethrow;
     }
   }
@@ -120,6 +137,8 @@ class ObjectFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     required Object qualifier,
     ParameterT? parameter,
   }) {
+    _checkState(qualifier);
+
     if (!isReady) {
       throw BeanNotReadyException(qualifier.toString());
     }
@@ -145,6 +164,8 @@ class ObjectFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     required Object qualifier,
     ParameterT? parameter,
   }) async {
+    _checkState(qualifier);
+
     if (!isReady) {
       await _created.future;
     }
@@ -167,17 +188,33 @@ class ObjectFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   @override
   bool get isFuture => BeanT is Future;
 
-  /// Verify if this factory is ready.
+  /// Verify if this factory is ready (Created).
   @override
-  bool get isReady => _created.isCompleted;
+  bool get isReady => _created.isCompleted && _state == BeanStateEnum.created;
+
+  @override
+  bool get isRegistered => [
+        BeanStateEnum.registered,
+        BeanStateEnum.created,
+        BeanStateEnum.beingCreated,
+      ].contains(_state);
 
   /// Removes this instance from [DDI].
   @override
   FutureOr<void> destroy(void Function() apply) {
-    state = BeanStateEnum.beingDestroyed;
+    // Only destroy if canDestroy was registered with true
+    if (!_canDestroy) {
+      return null;
+    }
+
+    if (_state == BeanStateEnum.beingDestroyed ||
+        _state == BeanStateEnum.destroyed) {
+      return null;
+    }
+
+    _state = BeanStateEnum.beingDestroyed;
     return InstanceDestroyUtils.destroyInstance<BeanT>(
       apply: apply,
-      canDestroy: _canDestroy,
       instance: _instance,
       interceptors: _interceptors,
       children: _children,
@@ -187,11 +224,15 @@ class ObjectFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   /// Disposes of the instance of the registered class in [DDI].
   @override
   Future<void> dispose() {
+    if (_state == BeanStateEnum.beingDestroyed ||
+        _state == BeanStateEnum.destroyed) {
+      return Future.value();
+    }
+
     if (children.isNotEmpty) {
-      final List<Future<void>> futures = [];
-      for (final Object child in children) {
-        futures.add(ddi.dispose(qualifier: child));
-      }
+      final List<Future<void>> futures = [
+        for (final Object child in children) ddi.dispose(qualifier: child)
+      ];
 
       return Future.wait(futures);
     }
@@ -207,24 +248,62 @@ class ObjectFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   /// - **Instaces Already Gets:** No changes any Instances that have been get.
   @override
   void addDecorator(ListDecorator<BeanT> newDecorators) {
+    if (newDecorators.isEmpty) {
+      return;
+    }
+
+    _checkState(type);
+
     if (!isReady) {
       throw BeanNotReadyException(BeanT.toString());
     }
 
-    _instance = InstanceDecoratorsUtils.executeDecorators<BeanT>(
-        _instance, newDecorators);
+    if (newDecorators.isNotEmpty) {
+      for (final decorator in newDecorators) {
+        _instance = decorator(_instance);
+      }
+    }
   }
 
   @override
   void addInterceptor(Set<Object> newInterceptors) {
-    _interceptors = {..._interceptors, ...newInterceptors};
+    if (newInterceptors.isEmpty) {
+      return;
+    }
+
+    _checkState(type);
+
+    if (_interceptors.isEmpty) {
+      _interceptors = newInterceptors;
+      return;
+    }
+
+    _interceptors.addAll(newInterceptors);
   }
 
   @override
   void addChildrenModules(Set<Object> child) {
-    _children = {..._children, ...child};
+    if (child.isEmpty) {
+      return;
+    }
+
+    _checkState(type);
+
+    if (_children.isEmpty) {
+      _children = child;
+      return;
+    }
+
+    _children.addAll(child);
   }
 
   @override
   Set<Object> get children => _children;
+
+  void _checkState(Object qualifier) {
+    if (_state == BeanStateEnum.beingDestroyed ||
+        _state == BeanStateEnum.destroyed) {
+      throw BeanDestroyedException(qualifier.toString());
+    }
+  }
 }

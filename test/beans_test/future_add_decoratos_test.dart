@@ -8,19 +8,15 @@ import '../clazz_samples/f.dart';
 
 void main() {
   group('DDI Future ADD Decorators Tests', () {
-    tearDownAll(
-      () {
-        expect(ddi.isEmpty, true);
-      },
-    );
+    tearDownAll(() {
+      expect(ddi.isEmpty, true);
+    });
     Future<void> regraSoma() async {
       final instance1 = await DDI.instance.getAsync<D>();
 
       expect(instance1.value, 'bcdfghi');
 
-      DDI.instance.addDecorator<D>([
-        (instance) => E(instance),
-      ]);
+      DDI.instance.addDecorator<D>([(instance) => E(instance)]);
 
       final instance2 = await DDI.instance.getAsync<D>();
 
@@ -31,10 +27,7 @@ void main() {
     test('ADD Decorators to a Singleton bean', () async {
       await DDI.instance.singleton<D>(
         () => Future.value(D()),
-        decorators: [
-          (instance) => E(instance),
-          (instance) => F(instance),
-        ],
+        decorators: [(instance) => E(instance), (instance) => F(instance)],
       );
 
       await regraSoma();
@@ -47,10 +40,7 @@ void main() {
     test('ADD Decorators to a Application bean', () async {
       DDI.instance.application<D>(
         () => Future.value(D()),
-        decorators: [
-          (instance) => E(instance),
-          (instance) => F(instance),
-        ],
+        decorators: [(instance) => E(instance), (instance) => F(instance)],
       );
 
       await regraSoma();
@@ -63,10 +53,7 @@ void main() {
     test('ADD Decorators to a Dependent bean', () async {
       DDI.instance.dependent<D>(
         () => Future.value(D()),
-        decorators: [
-          (instance) => E(instance),
-          (instance) => F(instance),
-        ],
+        decorators: [(instance) => E(instance), (instance) => F(instance)],
       );
 
       await regraSoma();
@@ -77,22 +64,15 @@ void main() {
     });
 
     test('ADD Decorators when the Singleton bean is not ready', () async {
-      DDI.instance.singleton<D>(
-        () async {
-          await Future.delayed(const Duration(milliseconds: 20));
-          return D();
-        },
-        decorators: [
-          (instance) => E(instance),
-          (instance) => F(instance),
-        ],
-      );
+      DDI.instance.singleton<D>(() async {
+        await Future.delayed(const Duration(milliseconds: 20));
+        return D();
+      }, decorators: [(instance) => E(instance), (instance) => F(instance)]);
 
       expect(
-          () => DDI.instance.addDecorator<D>([
-                (instance) => E(instance),
-              ]),
-          throwsA(isA<BeanNotReadyException>()));
+        () => DDI.instance.addDecorator<D>([(instance) => E(instance)]),
+        throwsA(isA<BeanNotReadyException>()),
+      );
 
       await DDI.instance.destroy<D>();
 
