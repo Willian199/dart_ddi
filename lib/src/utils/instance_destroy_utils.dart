@@ -52,7 +52,7 @@ final class InstanceDestroyUtils {
     if (interceptors.isNotEmpty) {
       for (final interceptor in interceptors) {
         try {
-          if (ddi.isFuture<BeanT>(qualifier: interceptor)) {
+          if (ddi.isFuture(qualifier: interceptor)) {
             final inter =
                 (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
 

@@ -1,4 +1,5 @@
 import 'package:dart_ddi/dart_ddi.dart';
+import 'package:dart_ddi/src/exception/bean_destroyed.dart';
 import 'package:dart_ddi/src/exception/bean_not_found.dart';
 import 'package:test/test.dart';
 
@@ -196,7 +197,7 @@ void main() {
 
       expect(
         () => DDI.instance.get<int>(),
-        throwsA(isA<BeanNotFoundException>()),
+        throwsA(isA<BeanDestroyedException>()),
       );
     });
 
