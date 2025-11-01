@@ -13,14 +13,12 @@ import '../clazz_samples/undestroyable/singleton_destroy_register.dart';
 
 void main() {
   group('DDI Singleton Basic Tests', () {
-    tearDownAll(
-      () {
-        // Still having 2 Bean, because [canDestroy] is false
-        expect(ddi.isEmpty, false);
-        // SingletonDestroyGet, SingletonDestroyRegister
-        expect(ddi.length, 2);
-      },
-    );
+    tearDownAll(() {
+      // Still having 2 Bean, because [canDestroy] is false
+      expect(ddi.isEmpty, false);
+      // SingletonDestroyGet, SingletonDestroyRegister
+      expect(ddi.length, 2);
+    });
 
     void registerSingletonBeans() {
       ddi.singleton(C.new);
@@ -65,22 +63,24 @@ void main() {
       ddi.destroy<B>();
     });
 
-    test('Retrieve singleton bean after a second "child" bean is destroyed',
-        () {
-      registerSingletonBeans();
+    test(
+      'Retrieve singleton bean after a second "child" bean is destroyed',
+      () {
+        registerSingletonBeans();
 
-      final instance = ddi.get<A>();
+        final instance = ddi.get<A>();
 
-      ddi.destroy<B>();
-      ddi.destroy<C>();
-      final instance1 = ddi.get<A>();
-      expect(instance1, same(instance));
-      expect(instance1.b, same(instance.b));
-      expect(instance.b.c, same(instance1.b.c));
-      expect(instance.b.c.value, same(instance1.b.c.value));
+        ddi.destroy<B>();
+        ddi.destroy<C>();
+        final instance1 = ddi.get<A>();
+        expect(instance1, same(instance));
+        expect(instance1.b, same(instance.b));
+        expect(instance.b.c, same(instance1.b.c));
+        expect(instance.b.c.value, same(instance1.b.c.value));
 
-      ddi.destroy<A>();
-    });
+        ddi.destroy<A>();
+      },
+    );
 
     test('Try to retrieve singleton bean after removed', () {
       ddi.singleton(() => C());
@@ -99,8 +99,10 @@ void main() {
 
       ddi.destroy(qualifier: 'typeC');
 
-      expect(() => ddi.get(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(
+        () => ddi.get(qualifier: 'typeC'),
+        throwsA(isA<BeanNotFoundException>()),
+      );
     });
 
     test('Try to destroy a undestroyable Singleton bean', () {
@@ -122,18 +124,24 @@ void main() {
 
       ddi.destroy<SingletonDestroyRegister>();
 
-      expect(() => ddi.singleton(() => SingletonDestroyRegister()),
-          throwsA(isA<DuplicatedBeanException>()));
+      expect(
+        () => ddi.singleton(() => SingletonDestroyRegister()),
+        throwsA(isA<DuplicatedBeanException>()),
+      );
     });
 
     test('Verify if a Bean not registered is Future', () {
       expect(
-          () => ddi.isFuture<Object>(), throwsA(isA<BeanNotFoundException>()));
+        () => ddi.isFuture<Object>(),
+        throwsA(isA<BeanNotFoundException>()),
+      );
     });
 
     test('Verify if a Bean not registered is Ready', () {
       expect(
-          () => ddi.isReady<Object>(), throwsA(isA<BeanNotFoundException>()));
+        () => ddi.isReady<Object>(),
+        throwsA(isA<BeanNotFoundException>()),
+      );
     });
 
     test('Disponse a Bean not registered', () {
@@ -144,19 +152,22 @@ void main() {
       final c = SingletonFactory(builder: C.new.builder)
         ..register(qualifier: C);
 
-      expect(() => ddi.register<C>(factory: c),
-          throwsA(isA<FactoryAlreadyCreatedException>()));
+      expect(
+        () => ddi.register<C>(factory: c),
+        throwsA(isA<FactoryAlreadyCreatedException>()),
+      );
     });
 
     test('Try to get a Bean using a list Future wait', () async {
       await expectLater(
-          () => Future.wait<dynamic>([
-                ddi.singleton<C>(() async {
-                  return C();
-                }),
-                Future.value(ddi.get<C>()),
-              ], eagerError: true),
-          throwsA(isA<BeanNotReadyException>()));
+        () => Future.wait<dynamic>([
+          ddi.singleton<C>(() async {
+            return C();
+          }),
+          Future.value(ddi.get<C>()),
+        ], eagerError: true),
+        throwsA(isA<BeanNotReadyException>()),
+      );
 
       await ddi.destroy<C>();
 

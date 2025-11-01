@@ -9,74 +9,82 @@ import '../clazz_samples/i.dart';
 
 void main() {
   group('DDI Zone Context Basic Tests', () {
-    tearDownAll(
-      () {
-        expect(ddi.isEmpty, true);
-      },
-    );
+    final newDdi = DDI.newInstance(enableZoneRegistry: true);
+
+    tearDownAll(() {
+      expect(newDdi.isEmpty, true);
+    });
 
     test('Must create the Beans in separated zone', () async {
-      ddi.singleton<G>(H.new);
+      newDdi.singleton<G>(H.new);
 
-      await ddi.runInZone('zone1', () async {
-        ddi.singleton<G>(I.new);
+      await newDdi.runInZone('zone1', () async {
+        newDdi.singleton<G>(I.new);
 
-        expect(ddi.isRegistered<G>(), isTrue);
+        expect(newDdi.isRegistered<G>(), isTrue);
 
-        expect(ddi.get<G>().area(), 20);
+        expect(newDdi.get<G>().area(), 20);
       });
 
-      expect(ddi.get<G>().area(), 10);
+      expect(newDdi.get<G>().area(), 10);
 
-      expect(ddi.isRegistered<G>(), isTrue);
+      expect(newDdi.isRegistered<G>(), isTrue);
 
-      ddi.destroy<G>();
+      newDdi.destroy<G>();
 
-      expect(ddi.isRegistered<G>(), isFalse);
+      expect(newDdi.isRegistered<G>(), isFalse);
     });
 
     test('Create a Global and acess in a zone', () async {
-      ddi.singleton<C>(() => C());
+      newDdi.singleton<C>(() => C());
 
-      expect(ddi.isRegistered<C>(), isTrue);
+      expect(newDdi.isRegistered<C>(), isTrue);
 
-      await ddi.runInZone('zone1', () async {
-        expect(ddi.isRegistered<C>(), isFalse);
+      await newDdi.runInZone('zone1', () async {
+        expect(newDdi.isRegistered<C>(), isFalse);
 
-        ddi.singleton<G>(I.new);
+        newDdi.singleton<G>(I.new);
 
-        expect(ddi.isRegistered<G>(), isTrue);
+        expect(newDdi.isRegistered<G>(), isTrue);
 
-        expect(ddi.get<G>().area(), 20);
+        expect(newDdi.get<G>().area(), 20);
 
-        expect(ddi.get<C>().value, 1);
+        expect(newDdi.get<C>().value, 1);
       });
 
-      ddi.destroy<C>();
-      expect(ddi.isRegistered<G>(), isFalse);
-      expect(ddi.isRegistered<C>(), isFalse);
-      expect(() => ddi.get<G>(), throwsA(isA<BeanNotFoundException>()));
+      newDdi.destroy<C>();
+      expect(newDdi.isRegistered<G>(), isFalse);
+      expect(newDdi.isRegistered<C>(), isFalse);
+      expect(() => newDdi.get<G>(), throwsA(isA<BeanNotFoundException>()));
     });
 
     test('Zones devem ser completamente isoladas umas das outras', () async {
-      ddi.runInZone('zone1', () {
-        ddi.singleton<String>(() => 'Zone 1 String', qualifier: 'zoneString');
+      newDdi.runInZone('zone1', () {
+        newDdi.singleton<String>(() => 'Zone 1 String',
+            qualifier: 'zoneString');
 
-        ddi.runInZone<void>('zone2', () {
-          ddi.singleton<String>(() => 'Zone 2 String', qualifier: 'zoneString');
+        newDdi.runInZone<void>('zone2', () {
+          newDdi.singleton<String>(() => 'Zone 2 String',
+              qualifier: 'zoneString');
 
-          expect(ddi.get<String>(qualifier: 'zoneString'),
-              equals('Zone 2 String'));
+          expect(
+            newDdi.get<String>(qualifier: 'zoneString'),
+            equals('Zone 2 String'),
+          );
 
-          expect(() => ddi.get<String>(qualifier: 'zoneString2'),
-              throwsA(isA<BeanNotFoundException>()));
+          expect(
+            () => newDdi.get<String>(qualifier: 'zoneString2'),
+            throwsA(isA<BeanNotFoundException>()),
+          );
 
-          ddi.destroy<String>(qualifier: 'zoneString');
-          expect(ddi.isRegistered<String>(qualifier: 'zoneString'), false);
+          newDdi.destroy<String>(qualifier: 'zoneString');
+          expect(newDdi.isRegistered<String>(qualifier: 'zoneString'), false);
         });
 
         expect(
-            ddi.get<String>(qualifier: 'zoneString'), equals('Zone 1 String'));
+          newDdi.get<String>(qualifier: 'zoneString'),
+          equals('Zone 1 String'),
+        );
       });
     });
   });

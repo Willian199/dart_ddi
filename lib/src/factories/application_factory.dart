@@ -6,7 +6,6 @@ import 'package:dart_ddi/src/exception/concurrent_creation.dart';
 import 'package:dart_ddi/src/exception/future_not_accept.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
 import 'package:dart_ddi/src/utils/instance_destroy_utils.dart';
-import 'package:dart_ddi/src/utils/instance_decorators_utils.dart';
 
 /// Create an instance when first used and reuses it for all subsequent requests during the application's execution.
 ///
@@ -58,7 +57,14 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   BeanStateEnum _state = BeanStateEnum.none;
 
   bool _runningCreateProcess = false;
-  Completer<void> _created = Completer.sync();
+  Completer<void> _created = Completer();
+
+  // Prevents Circular Dependency Injection during Instance Creation
+  static const _resolutionKey = #_resolutionKey;
+
+  static Set<Object> _getResolutionMap() {
+    return Zone.current[_resolutionKey] as Set<Object>? ?? {};
+  }
 
   @override
   BeanStateEnum get state => _state;
@@ -95,59 +101,95 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       _state = BeanStateEnum.beingCreated;
       _runningCreateProcess = true;
 
-      try {
-        _instance = createInstance<BeanT, ParameterT>(
-          builder: _builder,
-          parameter: parameter,
+      // If resolutionMap doesn't exist in the current zone, create a new zone with a new map
+      if (Zone.current[_resolutionKey] == null) {
+        runZoned(
+          () => _runner<ParameterT>(qualifier: qualifier, parameter: parameter),
+          zoneValues: {_resolutionKey: <Object>{}},
         );
-
-        for (final interceptor in _interceptors) {
-          final ins = ddi.get(qualifier: interceptor) as DDIInterceptor;
-
-          _instance = ins.onCreate(_instance!) as BeanT;
-        }
-
-        _instance = InstanceDecoratorsUtils.executeDecorators<BeanT>(
-            _instance!, _decorators);
-
-        if (_instance is DDIModule) {
-          (_instance as DDIModule).moduleQualifier = qualifier;
-        }
-
-        if (_instance is PostConstruct) {
-          (_instance as PostConstruct).onPostConstruct();
-        } else if (_instance is Future<PostConstruct>) {
-          (_instance as Future<PostConstruct>).then(
-              (PostConstruct postConstruct) => postConstruct.onPostConstruct());
-        }
-
-        _state = BeanStateEnum.created;
-        _runningCreateProcess = false;
-        _created.complete();
-      } catch (e) {
-        _runningCreateProcess = false;
-
-        if (!_created.isCompleted) {
-          _created.complete();
-        }
-        // Reset the instance to null in case of error on creation
-        // When the instance is null, the next getWith will try to create again
-        _instance = null;
-        _state = BeanStateEnum.registered;
-        _created = Completer.sync();
-        rethrow;
+      } else {
+        _runner<ParameterT>(qualifier: qualifier, parameter: parameter);
       }
     }
 
     // Run the Interceptors for the GET process.
     // Must run everytime
-    for (final interceptor in _interceptors) {
-      final ins = ddi.get(qualifier: interceptor) as DDIInterceptor;
-
-      _instance = ins.onGet(_instance!) as BeanT;
+    if (_interceptors.isNotEmpty) {
+      for (final interceptor in _interceptors) {
+        _instance = ddi
+            .get<DDIInterceptor>(qualifier: interceptor)
+            .onGet(_instance!) as BeanT;
+      }
     }
 
     return _instance!;
+  }
+
+  void _runner<ParameterT extends Object>({
+    required Object qualifier,
+    ParameterT? parameter,
+  }) {
+    final resolutionMap = _getResolutionMap();
+
+    if (resolutionMap.contains(qualifier)) {
+      throw ConcurrentCreationException(qualifier.toString());
+    }
+
+    resolutionMap.add(qualifier);
+
+    try {
+      BeanT ins = createInstance<BeanT, ParameterT>(
+        builder: _builder,
+        parameter: parameter,
+      );
+
+      if (_interceptors.isNotEmpty) {
+        for (final interceptor in _interceptors) {
+          ins = ddi.get<DDIInterceptor>(qualifier: interceptor).onCreate(ins)
+              as BeanT;
+        }
+      }
+
+      if (_decorators.isNotEmpty) {
+        for (final decorator in _decorators) {
+          ins = decorator(ins);
+        }
+      }
+
+      _instance = ins;
+
+      if (_instance is DDIModule) {
+        (_instance as DDIModule).moduleQualifier = qualifier;
+      }
+
+      if (_instance is PostConstruct) {
+        (_instance as PostConstruct).onPostConstruct();
+      } else if (_instance is Future<PostConstruct>) {
+        (_instance as Future<PostConstruct>).then(
+          (PostConstruct postConstruct) => postConstruct.onPostConstruct(),
+        );
+      }
+
+      _state = BeanStateEnum.created;
+      _created.complete();
+    } catch (e) {
+      if (!_created.isCompleted) {
+        _created.complete();
+      }
+
+      // Reset the instance to null in case of error on creation
+      // When the instance is null, the next getWith will try to create again
+      _instance = null;
+      if (state != BeanStateEnum.beingDestroyed &&
+          state != BeanStateEnum.destroyed) {
+        _state = BeanStateEnum.registered;
+        _created = Completer();
+      }
+      rethrow;
+    } finally {
+      _runningCreateProcess = false;
+      resolutionMap.remove(qualifier);
+    }
   }
 
   /// Gets or create this instance as Future.
@@ -163,8 +205,19 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   }) async {
     _checkState(type);
 
-    // Wait for any ongoing creation process to complete
+    if (isReady) {
+      // Instance is already ready, proceed to interceptor phase
+      return _runGetInterceptors();
+    }
+
     if (_runningCreateProcess) {
+      final resolutionMap = _getResolutionMap();
+
+      if (resolutionMap.contains(qualifier)) {
+        throw ConcurrentCreationException(qualifier.toString());
+      }
+
+      // Wait for any ongoing creation process to complete
       await _created.future;
       // After waiting, check if instance is ready
       if (isReady) {
@@ -184,98 +237,132 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
         }
         // If still not ready after waiting, something went wrong
         throw StateError(
-            'Creation process completed but instance is not ready');
-      }
-
-      // We are the first process, start creation
-      try {
-        _state = BeanStateEnum.beingCreated;
-        _runningCreateProcess = true;
-
-        /// Create the Instance class
-        final execInstance = createInstanceAsync<BeanT, ParameterT>(
-          builder: _builder,
-          parameter: parameter,
+          'Creation process completed but instance is not ready',
         );
-
-        /// Verify if the Instance class is Future, and await for it
-        final BeanT instance =
-            execInstance is Future ? await execInstance : execInstance;
-
-        // Double-check: another process might have completed creation
-        if (_created.isCompleted) {
-          // Another process completed creation, use that instance
-          if (isReady) {
-            _runningCreateProcess = false;
-            return _runGetInterceptors();
-          } else {
-            throw StateError(
-                'Another process completed creation but instance is not ready');
-          }
-        }
-
-        _instance = instance;
-
-        /// Run the Interceptor for create process
-        for (final interceptor in _interceptors) {
-          final ins =
-              (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
-
-          final exec = ins.onCreate(_instance!);
-
-          _instance = (exec is Future ? await exec : exec) as BeanT;
-        }
-
-        /// Apply all Decorators to the instance
-        _instance = InstanceDecoratorsUtils.executeDecorators<BeanT>(
-            _instance!, _decorators);
-
-        /// Refresh the qualifier for the Module
-        if (_instance is DDIModule) {
-          (_instance as DDIModule).moduleQualifier = qualifier;
-        }
-
-        _state = BeanStateEnum.created;
-        _created.complete();
-        _runningCreateProcess = false;
-
-        if (_instance is PostConstruct) {
-          await (_instance as PostConstruct).onPostConstruct();
-        } else if (_instance is Future<PostConstruct>) {
-          final PostConstruct postConstruct =
-              await (_instance as Future<PostConstruct>);
-
-          await postConstruct.onPostConstruct();
-        }
-      } catch (e) {
-        _runningCreateProcess = false;
-
-        if (!_created.isCompleted) {
-          _created.complete();
-        }
-
-        // Reset the instance to null in case of error on creation
-        // When the instance is null, the next getAsyncWith will try to create again
-        _instance = null;
-        _state = BeanStateEnum.registered;
-        _created = Completer.sync();
-        rethrow;
       }
     }
 
-    return _runGetInterceptors();
+    // If resolutionMap doesn't exist in the current zone, create a new zone with a new map
+    if (Zone.current[_resolutionKey] == null) {
+      return runZoned(
+        () => _runnerAsync<ParameterT>(
+            qualifier: qualifier, parameter: parameter),
+        zoneValues: {_resolutionKey: <Object>{}},
+      );
+    }
+
+    return _runnerAsync<ParameterT>(qualifier: qualifier, parameter: parameter);
+  }
+
+  Future<BeanT> _runnerAsync<ParameterT extends Object>({
+    required Object qualifier,
+    ParameterT? parameter,
+  }) async {
+    final resolutionMap = _getResolutionMap();
+
+    if (resolutionMap.contains(qualifier)) {
+      throw ConcurrentCreationException(qualifier.toString());
+    }
+
+    resolutionMap.add(qualifier);
+
+    // We are the first process, start creation
+    try {
+      _state = BeanStateEnum.beingCreated;
+      _runningCreateProcess = true;
+
+      /// Create the Instance class
+      final execInstance = createInstanceAsync<BeanT, ParameterT>(
+        builder: _builder,
+        parameter: parameter,
+      );
+
+      /// Verify if the Instance class is Future, and await for it
+      BeanT instance =
+          execInstance is Future ? await execInstance : execInstance;
+
+      // Double-check: another process might have completed creation
+      if (_created.isCompleted) {
+        // Another process completed creation, use that instance
+        if (isReady) {
+          _runningCreateProcess = false;
+          return _runGetInterceptors();
+        } else {
+          throw StateError(
+            'Another process completed creation but instance is not ready',
+          );
+        }
+      }
+
+      /// Run the Interceptor for create process
+      for (final interceptor in _interceptors) {
+        final ins =
+            (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
+
+        final exec = ins.onCreate(instance);
+
+        instance = (exec is Future ? await exec : exec) as BeanT;
+      }
+
+      /// Apply all Decorators to the instance
+      if (_decorators.isNotEmpty) {
+        for (final decorator in _decorators) {
+          instance = decorator(instance);
+        }
+      }
+
+      _instance = instance;
+
+      /// Refresh the qualifier for the Module
+      if (_instance is DDIModule) {
+        (_instance as DDIModule).moduleQualifier = qualifier;
+      }
+
+      _state = BeanStateEnum.created;
+      _created.complete();
+
+      if (_instance is PostConstruct) {
+        await (_instance as PostConstruct).onPostConstruct();
+      } else if (_instance is Future<PostConstruct>) {
+        final PostConstruct postConstruct =
+            await (_instance as Future<PostConstruct>);
+
+        await postConstruct.onPostConstruct();
+      }
+
+      return _runGetInterceptors();
+    } catch (e) {
+      if (!_created.isCompleted) {
+        _created.complete();
+      }
+
+      // Reset the instance to null in case of error on creation
+      // When the instance is null, the next getAsyncWith will try to create again
+      _instance = null;
+      if (state != BeanStateEnum.beingDestroyed &&
+          state != BeanStateEnum.destroyed) {
+        _state = BeanStateEnum.registered;
+        _created = Completer();
+      }
+      rethrow;
+    } finally {
+      _runningCreateProcess = false;
+      resolutionMap.remove(qualifier);
+    }
   }
 
   /// Runs the interceptors for the GET process.
   /// This method is extracted to avoid code duplication.
   Future<BeanT> _runGetInterceptors() async {
+    if (_interceptors.isEmpty) {
+      return _instance!;
+    }
+
     /// Run the Interceptors for the GET process.
     /// Must run everytime
     for (final interceptor in _interceptors) {
-      final ins =
-          (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
-
-      final exec = ins.onGet(_instance!);
+      final exec = (await ddi.getAsync<DDIInterceptor>(qualifier: interceptor))
+          .onGet(_instance!);
 
       _instance = (exec is Future ? await exec : exec) as BeanT;
     }
@@ -356,7 +443,6 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     if (!_created.isCompleted) {
       _created.complete();
     }
-    _created = Completer.sync();
 
     // Run interceptors for dispose
     for (final interceptor in _interceptors) {
@@ -364,14 +450,14 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
         final instance =
             (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
 
-        final exec = instance.onDispose(instance);
+        final exec = instance.onDispose(_instance);
         if (exec is Future) {
           await exec;
         }
       } else {
         final instance = ddi.get(qualifier: interceptor) as DDIInterceptor;
 
-        instance.onDispose(instance);
+        instance.onDispose(_instance);
       }
     }
 
@@ -385,10 +471,14 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       await _disposeChildrenAsync();
       _instance = null;
       _state = BeanStateEnum.disposed;
+      _created = Completer();
+      _runningCreateProcess = false;
     } else {
       final disposed = _disposeChildrenAsync();
       _instance = null;
       _state = BeanStateEnum.disposed;
+      _created = Completer();
+      _runningCreateProcess = false;
 
       return disposed;
     }
@@ -401,6 +491,8 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
     _instance = null;
     _state = BeanStateEnum.disposed;
+    _created = Completer();
+    _runningCreateProcess = false;
     return Future.value();
   }
 
@@ -409,10 +501,9 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       return;
     }
 
-    final List<Future<void>> futures = [];
-    for (final Object child in _children) {
-      futures.add(ddi.dispose(qualifier: child));
-    }
+    final List<Future<void>> futures = [
+      for (final Object child in _children) ddi.dispose(qualifier: child),
+    ];
 
     return Future.wait(futures).ignore();
   }
@@ -432,11 +523,19 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     _checkState(type);
 
     if (isReady) {
-      _instance = InstanceDecoratorsUtils.executeDecorators<BeanT>(
-          _instance!, newDecorators);
+      if (newDecorators.isNotEmpty) {
+        for (final decorator in newDecorators) {
+          _instance = decorator(_instance!);
+        }
+      }
     }
 
-    _decorators = [..._decorators, ...newDecorators];
+    if (_decorators.isEmpty) {
+      _decorators = newDecorators;
+      return;
+    }
+
+    _decorators.addAll(newDecorators);
   }
 
   @override
@@ -447,7 +546,12 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
     _checkState(type);
 
-    _interceptors = {..._interceptors, ...newInterceptors};
+    if (_interceptors.isEmpty) {
+      _interceptors = newInterceptors;
+      return;
+    }
+
+    _interceptors.addAll(newInterceptors);
   }
 
   @override
@@ -458,7 +562,12 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
     _checkState(type);
 
-    _children = {..._children, ...child};
+    if (_children.isEmpty) {
+      _children = child;
+      return;
+    }
+
+    _children.addAll(child);
   }
 
   @override

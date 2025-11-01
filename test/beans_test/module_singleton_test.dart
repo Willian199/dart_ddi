@@ -8,11 +8,9 @@ import '../clazz_samples/module_singleton.dart';
 
 void main() {
   group('DDI Modules Singleton Basic Tests', () {
-    tearDownAll(
-      () {
-        expect(ddi.isEmpty, true);
-      },
-    );
+    tearDownAll(() {
+      expect(ddi.isEmpty, true);
+    });
     test('Register a Singleton Module', () {
       DDI.instance.singleton(ModuleSingleton.new);
 
@@ -29,7 +27,9 @@ void main() {
       DDI.instance.destroy<ModuleSingleton>();
 
       expect(
-          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
+        () => DDI.instance.get<C>(),
+        throwsA(isA<BeanNotFoundException>()),
+      );
     });
   });
 }

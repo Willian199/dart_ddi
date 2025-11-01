@@ -6,7 +6,6 @@ import 'package:dart_ddi/src/exception/bean_not_ready.dart';
 import 'package:dart_ddi/src/exception/factory_already_created.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
 import 'package:dart_ddi/src/utils/instance_destroy_utils.dart';
-import 'package:dart_ddi/src/utils/instance_decorators_utils.dart';
 
 /// Creates a unique instance during registration and reuses it in all subsequent requests.
 ///
@@ -79,26 +78,34 @@ class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       BeanT clazz = /*builder!.isFuture &&*/
           execInstance is Future ? await execInstance : execInstance;
 
-      for (final interceptor in _interceptors) {
-        if (ddi.isFuture(qualifier: interceptor)) {
-          final inter =
-              await ddi.getAsync(qualifier: interceptor) as DDIInterceptor;
+      if (_interceptors.isNotEmpty) {
+        for (final interceptor in _interceptors) {
+          if (ddi.isFuture(qualifier: interceptor)) {
+            final inter =
+                await ddi.getAsync(qualifier: interceptor) as DDIInterceptor;
 
-          clazz = (await inter.onCreate(clazz)) as BeanT;
-        } else {
-          final inter = ddi.get(qualifier: interceptor) as DDIInterceptor;
-
-          final newInstance = inter.onCreate(clazz);
-          if (newInstance is Future) {
-            clazz = (await newInstance) as BeanT;
+            clazz = (await inter.onCreate(clazz)) as BeanT;
           } else {
-            clazz = newInstance as BeanT;
+            final inter = ddi.get(qualifier: interceptor) as DDIInterceptor;
+
+            final newInstance = inter.onCreate(clazz);
+            if (newInstance is Future) {
+              clazz = (await newInstance) as BeanT;
+            } else {
+              clazz = newInstance as BeanT;
+            }
           }
         }
       }
 
-      clazz =
-          InstanceDecoratorsUtils.executeDecorators<BeanT>(clazz, _decorators);
+      if (_decorators.isNotEmpty) {
+        for (final decorator in _decorators) {
+          clazz = decorator(clazz);
+        }
+
+        // Clean the decorators list after applying
+        _decorators.clear();
+      }
 
       if (clazz is DDIModule) {
         (clazz as DDIModule).moduleQualifier = qualifier;
@@ -111,8 +118,9 @@ class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       if (clazz is PostConstruct) {
         result = clazz.onPostConstruct();
       } else if (clazz is Future<PostConstruct>) {
-        result = (clazz as Future<PostConstruct>)
-            .then((value) => value.onPostConstruct());
+        result = (clazz as Future<PostConstruct>).then(
+          (value) => value.onPostConstruct(),
+        );
       } else {
         result = Future.value();
       }
@@ -150,9 +158,9 @@ class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
     if (_interceptors.isNotEmpty) {
       for (final interceptor in _interceptors) {
-        final ins = ddi.get(qualifier: interceptor) as DDIInterceptor;
-
-        _instance = ins.onGet(_instance!) as BeanT;
+        _instance = ddi
+            .get<DDIInterceptor>(qualifier: interceptor)
+            .onGet(_instance!) as BeanT;
       }
     }
     return _instance!;
@@ -175,22 +183,22 @@ class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       await _created.future;
     }
 
-    if (_instance != null) {
-      if (_interceptors.isNotEmpty) {
-        for (final interceptor in _interceptors) {
-          final ins =
-              (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
-
-          final exec = ins.onGet(_instance!);
-
-          _instance = (exec is Future ? await exec : exec) as BeanT;
-        }
-      }
-
-      return _instance!;
+    if (_instance == null) {
+      throw BeanNotReadyException(qualifier.toString());
     }
 
-    throw BeanNotReadyException(qualifier.toString());
+    if (_interceptors.isNotEmpty) {
+      for (final interceptor in _interceptors) {
+        final ins =
+            (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
+
+        final exec = ins.onGet(_instance!);
+
+        _instance = (exec is Future ? await exec : exec) as BeanT;
+      }
+    }
+
+    return _instance!;
   }
 
   /// Verify if this factory is a Future.
@@ -272,8 +280,11 @@ class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       throw BeanNotReadyException(BeanT.toString());
     }
 
-    _instance = InstanceDecoratorsUtils.executeDecorators<BeanT>(
-        _instance!, newDecorators);
+    if (newDecorators.isNotEmpty) {
+      for (final decorator in newDecorators) {
+        _instance = decorator(_instance!);
+      }
+    }
   }
 
   @override
@@ -284,7 +295,12 @@ class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
     _checkState(type);
 
-    _interceptors = {..._interceptors, ...newInterceptors};
+    if (_interceptors.isEmpty) {
+      _interceptors = newInterceptors;
+      return;
+    }
+
+    _interceptors.addAll(newInterceptors);
   }
 
   @override
@@ -295,7 +311,12 @@ class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
     _checkState(type);
 
-    _children = {..._children, ...child};
+    if (_children.isEmpty) {
+      _children = child;
+      return;
+    }
+
+    _children.addAll(child);
   }
 
   @override

@@ -13,23 +13,14 @@ import '../clazz_samples/k.dart';
 
 void main() {
   group('DDI Factory Interceptor Tests', () {
-    tearDownAll(
-      () {
-        expect(ddi.isEmpty, true);
-      },
-    );
+    tearDownAll(() {
+      expect(ddi.isEmpty, true);
+    });
     test('ADD Interceptor to a Factory Singleton bean', () {
-      ddi.register<J>(
-        factory: SingletonFactory(
-          builder: J<G>.new.builder,
-        ),
-      );
+      ddi.register<J>(factory: SingletonFactory(builder: J<G>.new.builder));
 
       ddi.register<G>(
-        factory: SingletonFactory(
-          builder: H.new.builder,
-          interceptors: {J},
-        ),
+        factory: SingletonFactory(builder: H.new.builder, interceptors: {J}),
       );
 
       final G instance = ddi.get<G>();
@@ -44,17 +35,10 @@ void main() {
     });
 
     test('ADD Interceptor to a Factory Application bean', () {
-      ddi.register<J>(
-        factory: ApplicationFactory(
-          builder: J<G>.new.builder,
-        ),
-      );
+      ddi.register<J>(factory: ApplicationFactory(builder: J<G>.new.builder));
 
       ddi.register<G>(
-        factory: ApplicationFactory(
-          builder: H.new.builder,
-          interceptors: {J},
-        ),
+        factory: ApplicationFactory(builder: H.new.builder, interceptors: {J}),
       );
 
       final G instance = ddi.get<G>();
@@ -69,18 +53,11 @@ void main() {
     });
 
     test('ADD Interceptor to a Factory Application bean with qualifier', () {
-      ddi.register<J>(
-        factory: ApplicationFactory(
-          builder: J<G>.new.builder,
-        ),
-      );
+      ddi.register<J>(factory: ApplicationFactory(builder: J<G>.new.builder));
 
       ddi.register<G>(
         qualifier: 'qualifier',
-        factory: ApplicationFactory(
-          builder: H.new.builder,
-          interceptors: {J},
-        ),
+        factory: ApplicationFactory(builder: H.new.builder, interceptors: {J}),
       );
 
       final G instance = ddi.get<G>(qualifier: 'qualifier');
@@ -91,22 +68,17 @@ void main() {
       ddi.destroy<G>(qualifier: 'qualifier');
       ddi.destroy<J>();
 
-      expect(() => ddi.get<G>(qualifier: 'qualifier'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(
+        () => ddi.get<G>(qualifier: 'qualifier'),
+        throwsA(isA<BeanNotFoundException>()),
+      );
     });
 
     test('ADD Interceptor to a Factory Dependent bean', () {
-      ddi.register<J>(
-        factory: DependentFactory(
-          builder: J<G>.new.builder,
-        ),
-      );
+      ddi.register<J>(factory: DependentFactory(builder: J<G>.new.builder));
 
       ddi.register<G>(
-        factory: DependentFactory(
-          builder: H.new.builder,
-          interceptors: {J},
-        ),
+        factory: DependentFactory(builder: H.new.builder, interceptors: {J}),
       );
 
       final G instance = ddi.get<G>();
@@ -121,18 +93,10 @@ void main() {
     });
 
     test('ADD Interceptor after registered a Factory Application bean', () {
-      ddi.register<J>(
-        factory: ApplicationFactory(
-          builder: J<G>.new.builder,
-        ),
-      );
+      ddi.register<J>(factory: ApplicationFactory(builder: J<G>.new.builder));
 
       // Don't use [H.new.factory.asApplication()] with interceptor
-      ddi.register(
-        factory: ApplicationFactory<G>(
-          builder: H.new.builder,
-        ),
-      );
+      ddi.register(factory: ApplicationFactory<G>(builder: H.new.builder));
       final G instance = ddi.get<G>();
 
       expect(instance.area(), 10);
@@ -154,11 +118,7 @@ void main() {
     });
 
     test('ADD Decorators and Interceptor to a Factory Singleton bean', () {
-      ddi.register<K>(
-        factory: SingletonFactory(
-          builder: K.new.builder,
-        ),
-      );
+      ddi.register<K>(factory: SingletonFactory(builder: K.new.builder));
 
       ddi.register(
         factory: SingletonFactory(
@@ -175,9 +135,7 @@ void main() {
 
       expect(instance1.value, 'bcconsdfghiGET');
 
-      ddi.addDecorator<D>([
-        (instance) => E(instance),
-      ]);
+      ddi.addDecorator<D>([(instance) => E(instance)]);
 
       final D instance2 = ddi.get<D>();
 
@@ -190,11 +148,7 @@ void main() {
     });
 
     test('ADD Decorators and Interceptor to a Factory Application bean', () {
-      ddi.register<K>(
-        factory: ApplicationFactory(
-          builder: K.new.builder,
-        ),
-      );
+      ddi.register<K>(factory: ApplicationFactory(builder: K.new.builder));
 
       ddi.register(
         factory: ApplicationFactory(
@@ -211,9 +165,7 @@ void main() {
 
       expect(instance1.value, 'bcconsdfghiGET');
 
-      ddi.addDecorator<D>([
-        (instance) => E(instance),
-      ]);
+      ddi.addDecorator<D>([(instance) => E(instance)]);
 
       final D instance2 = ddi.get<D>();
 

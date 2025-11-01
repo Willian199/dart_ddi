@@ -13,17 +13,16 @@ import '../clazz_samples/payment_service.dart';
 
 void main() {
   group('DDI Application Future Basic Tests', () {
-    tearDownAll(
-      () {
-        // Still having 1 Bean, because [canDestroy] is false
-        expect(ddi.isEmpty, false);
-        expect(ddi.length, 1);
-      },
-    );
+    tearDownAll(() {
+      // Still having 1 Bean, because [canDestroy] is false
+      expect(ddi.isEmpty, false);
+      expect(ddi.length, 1);
+    });
 
     void registerApplicationBeans() {
-      DDI.instance
-          .application<A>(() async => A(await DDI.instance.getAsync<B>()));
+      DDI.instance.application<A>(
+        () async => A(await DDI.instance.getAsync<B>()),
+      );
       DDI.instance.application<B>(() async {
         await Future.delayed(const Duration(milliseconds: 200));
         return B(DDI.instance());
@@ -66,38 +65,42 @@ void main() {
       removeApplicationBeans();
     });
 
-    test('Retrieve Application bean after a second "child" bean is diposed',
-        () async {
-      registerApplicationBeans();
+    test(
+      'Retrieve Application bean after a second "child" bean is diposed',
+      () async {
+        registerApplicationBeans();
 
-      final instance = await DDI.instance.getAsync<A>();
+        final instance = await DDI.instance.getAsync<A>();
 
-      DDI.instance.dispose<B>();
-      final instance1 = await DDI.instance.getAsync<A>();
-      expect(instance1, same(instance));
-      expect(instance1.b, same(instance.b));
-      expect(instance.b.c, same(instance1.b.c));
-      expect(instance.b.c.value, same(instance1.b.c.value));
+        DDI.instance.dispose<B>();
+        final instance1 = await DDI.instance.getAsync<A>();
+        expect(instance1, same(instance));
+        expect(instance1.b, same(instance.b));
+        expect(instance.b.c, same(instance1.b.c));
+        expect(instance.b.c.value, same(instance1.b.c.value));
 
-      removeApplicationBeans();
-    });
+        removeApplicationBeans();
+      },
+    );
 
-    test('Retrieve Application bean after the last "child" bean is diposed',
-        () async {
-      registerApplicationBeans();
+    test(
+      'Retrieve Application bean after the last "child" bean is diposed',
+      () async {
+        registerApplicationBeans();
 
-      final instance1 = await DDI.instance.getAsync<A>();
+        final instance1 = await DDI.instance.getAsync<A>();
 
-      DDI.instance.dispose<A>();
-      final instance2 = await DDI.instance.getAsync<A>();
+        DDI.instance.dispose<A>();
+        final instance2 = await DDI.instance.getAsync<A>();
 
-      expect(false, identical(instance1, instance2));
-      expect(true, identical(instance1.b, instance2.b));
-      expect(true, identical(instance1.b.c, instance2.b.c));
-      expect(instance1.b.c.value, same(instance2.b.c.value));
+        expect(false, identical(instance1, instance2));
+        expect(true, identical(instance1.b, instance2.b));
+        expect(true, identical(instance1.b.c, instance2.b.c));
+        expect(instance1.b.c.value, same(instance2.b.c.value));
 
-      removeApplicationBeans();
-    });
+        removeApplicationBeans();
+      },
+    );
 
     test('Retrieve Application bean after 2 "child" bean is diposed', () async {
       registerApplicationBeans();
@@ -166,8 +169,10 @@ void main() {
 
       DDI.instance.destroy<C>();
 
-      expect(() => DDI.instance.getAsync<C>(),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(
+        () => DDI.instance.getAsync<C>(),
+        throwsA(isA<BeanNotFoundException>()),
+      );
       expect(DDI.instance.isRegistered<C>(), false);
     });
 
@@ -176,21 +181,26 @@ void main() {
 
       expect(DDI.instance.isRegistered(qualifier: 'typeC'), true);
 
-      expect(() => DDI.instance.getAsync(qualifier: 'typeC'),
-          throwsA(isA<StateError>()));
+      expect(
+        () => DDI.instance.getAsync(qualifier: 'typeC'),
+        throwsA(isA<StateError>()),
+      );
       expect(DDI.instance.isReady(qualifier: 'typeC'), false);
 
       DDI.instance.destroy(qualifier: 'typeC');
 
-      expect(() => DDI.instance.getAsync(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(
+        () => DDI.instance.getAsync(qualifier: 'typeC'),
+        throwsA(isA<BeanNotFoundException>()),
+      );
       expect(DDI.instance.isRegistered(qualifier: 'typeC'), false);
     });
 
     test('Try to destroy a undestroyable Application bean', () async {
       DDI.instance.application(
-          () => Future.value(FutureApplicationDestroyGet()),
-          canDestroy: false);
+        () => Future.value(FutureApplicationDestroyGet()),
+        canDestroy: false,
+      );
 
       final instance1 =
           await DDI.instance.getAsync<FutureApplicationDestroyGet>();
@@ -239,8 +249,10 @@ void main() {
       DDI.instance.application(C.new);
 
       //This happens because A(await DDI.instance()) transform to A(await DDI.instance<FutureOr<B>>())
-      expect(() => DDI.instance.getAsync<A>(),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(
+        () => DDI.instance.getAsync<A>(),
+        throwsA(isA<BeanNotFoundException>()),
+      );
 
       DDI.instance.destroy<A>();
       DDI.instance.destroy<B>();
@@ -265,26 +277,29 @@ void main() {
       DDI.instance.destroy<C>();
     });
     test(
-        'Retrieve Application bean after a "child" bean is disposed using Future',
-        () async {
-      DDI.instance.application(() async => A(await DDI.instance.getAsync<B>()));
-      DDI.instance.application<B>(() => B(DDI.instance()));
-      DDI.instance.application(C.new);
+      'Retrieve Application bean after a "child" bean is disposed using Future',
+      () async {
+        DDI.instance.application(
+          () async => A(await DDI.instance.getAsync<B>()),
+        );
+        DDI.instance.application<B>(() => B(DDI.instance()));
+        DDI.instance.application(C.new);
 
-      final instance1 = await DDI.instance.getAsync<A>();
+        final instance1 = await DDI.instance.getAsync<A>();
 
-      DDI.instance.dispose<C>();
-      final instance2 = await DDI.instance.getAsync<A>();
+        DDI.instance.dispose<C>();
+        final instance2 = await DDI.instance.getAsync<A>();
 
-      expect(instance1, same(instance2));
-      expect(instance1.b, same(instance2.b));
-      expect(instance1.b.c, same(instance2.b.c));
-      expect(instance1.b.c.value, same(instance2.b.c.value));
+        expect(instance1, same(instance2));
+        expect(instance1.b, same(instance2.b));
+        expect(instance1.b.c, same(instance2.b.c));
+        expect(instance1.b.c.value, same(instance2.b.c.value));
 
-      DDI.instance.destroy<A>();
-      DDI.instance.destroy<B>();
-      DDI.instance.destroy<C>();
-    });
+        DDI.instance.destroy<A>();
+        DDI.instance.destroy<B>();
+        DDI.instance.destroy<C>();
+      },
+    );
 
     test('Retrieve Application bean Stream', () async {
       DDI.instance.application(StreamController<C>.new);
@@ -353,116 +368,129 @@ void main() {
         qualifier: 'FuturePostConstruct',
       );
 
-      final FuturePostConstruct instance =
-          await DDI.instance.getAsync(qualifier: 'FuturePostConstruct');
-
-      expect(instance.value, 10);
-
-      DDI.instance.destroy(qualifier: 'FuturePostConstruct');
-
-      expect(() => DDI.instance.get(qualifier: 'FuturePostConstruct'),
-          throwsA(isA<BeanNotFoundException>()));
-    });
-
-    test('Register an Application class with Future PostConstruct mixin',
-        () async {
-      Future<FuturePostConstruct> localTest() async {
-        await Future.delayed(const Duration(milliseconds: 10));
-        return FuturePostConstruct();
-      }
-
-      DDI.instance.register<FuturePostConstruct>(
-        factory: ApplicationFactory(
-          builder: CustomBuilder(
-            producer: localTest,
-            parametersType: [],
-            returnType: FuturePostConstruct,
-            isFuture: true,
-          ),
-        ),
-      );
-
-      expect(DDI.instance.isFuture<FuturePostConstruct>(), true);
-      expect(DDI.instance.getByType<FuturePostConstruct>().length, 1);
-
-      final FuturePostConstruct instance = await DDI.instance.getAsync();
-
-      expect(instance.value, 10);
-
-      DDI.instance.destroy<FuturePostConstruct>();
-
-      expect(DDI.instance.isRegistered<FuturePostConstruct>(), false);
-    });
-
-    test(
-        'Register an Application class with Future PostConstruct mixin and qualifier',
-        () async {
-      Future<FuturePostConstruct> localTest() async {
-        await Future.delayed(const Duration(milliseconds: 10));
-        return FuturePostConstruct();
-      }
-
-      DDI.instance.register<FuturePostConstruct>(
-        factory: ApplicationFactory(
-          builder: CustomBuilder(
-            producer: localTest,
-            parametersType: [],
-            returnType: FuturePostConstruct,
-            isFuture: true,
-          ),
-        ),
+      final FuturePostConstruct instance = await DDI.instance.getAsync(
         qualifier: 'FuturePostConstruct',
       );
-
-      expect(DDI.instance.isFuture(qualifier: 'FuturePostConstruct'), true);
-
-      expect(DDI.instance.getByType<FuturePostConstruct>().length, 1);
-
-      final FuturePostConstruct instance =
-          await DDI.instance.getAsync(qualifier: 'FuturePostConstruct');
 
       expect(instance.value, 10);
 
       DDI.instance.destroy(qualifier: 'FuturePostConstruct');
 
       expect(
-          DDI.instance.isRegistered(qualifier: 'FuturePostConstruct'), false);
+        () => DDI.instance.get(qualifier: 'FuturePostConstruct'),
+        throwsA(isA<BeanNotFoundException>()),
+      );
     });
 
     test(
-        'Register an Application Future class with Future PostConstruct mixin and qualifier',
-        () async {
-      Future<FuturePostConstruct> localTest() async {
-        await Future.delayed(const Duration(milliseconds: 10));
-        return FuturePostConstruct();
-      }
+      'Register an Application class with Future PostConstruct mixin',
+      () async {
+        Future<FuturePostConstruct> localTest() async {
+          await Future.delayed(const Duration(milliseconds: 10));
+          return FuturePostConstruct();
+        }
 
-      DDI.instance.register<Future<FuturePostConstruct>>(
-        factory: ApplicationFactory(
-          builder: CustomBuilder(
-            producer: localTest,
-            parametersType: [],
-            returnType: FuturePostConstruct,
-            isFuture: true,
+        DDI.instance.register<FuturePostConstruct>(
+          factory: ApplicationFactory(
+            builder: CustomBuilder(
+              producer: localTest,
+              parametersType: [],
+              returnType: FuturePostConstruct,
+              isFuture: true,
+            ),
           ),
-        ),
-        qualifier: 'FuturePostConstruct',
-      );
+        );
 
-      expect(DDI.instance.isFuture(qualifier: 'FuturePostConstruct'), true);
+        expect(DDI.instance.isFuture<FuturePostConstruct>(), true);
+        expect(DDI.instance.getByType<FuturePostConstruct>().length, 1);
 
-      expect(DDI.instance.getByType<Future<FuturePostConstruct>>().length, 1);
+        final FuturePostConstruct instance = await DDI.instance.getAsync();
 
-      final FuturePostConstruct instance =
-          await DDI.instance.getAsync(qualifier: 'FuturePostConstruct');
+        expect(instance.value, 10);
 
-      expect(instance.value, 10);
+        DDI.instance.destroy<FuturePostConstruct>();
 
-      DDI.instance.destroy(qualifier: 'FuturePostConstruct');
+        expect(DDI.instance.isRegistered<FuturePostConstruct>(), false);
+      },
+    );
 
-      expect(
-          DDI.instance.isRegistered(qualifier: 'FuturePostConstruct'), false);
-    });
+    test(
+      'Register an Application class with Future PostConstruct mixin and qualifier',
+      () async {
+        Future<FuturePostConstruct> localTest() async {
+          await Future.delayed(const Duration(milliseconds: 10));
+          return FuturePostConstruct();
+        }
+
+        DDI.instance.register<FuturePostConstruct>(
+          factory: ApplicationFactory(
+            builder: CustomBuilder(
+              producer: localTest,
+              parametersType: [],
+              returnType: FuturePostConstruct,
+              isFuture: true,
+            ),
+          ),
+          qualifier: 'FuturePostConstruct',
+        );
+
+        expect(DDI.instance.isFuture(qualifier: 'FuturePostConstruct'), true);
+
+        expect(DDI.instance.getByType<FuturePostConstruct>().length, 1);
+
+        final FuturePostConstruct instance = await DDI.instance.getAsync(
+          qualifier: 'FuturePostConstruct',
+        );
+
+        expect(instance.value, 10);
+
+        DDI.instance.destroy(qualifier: 'FuturePostConstruct');
+
+        expect(
+          DDI.instance.isRegistered(qualifier: 'FuturePostConstruct'),
+          false,
+        );
+      },
+    );
+
+    test(
+      'Register an Application Future class with Future PostConstruct mixin and qualifier',
+      () async {
+        Future<FuturePostConstruct> localTest() async {
+          await Future.delayed(const Duration(milliseconds: 10));
+          return FuturePostConstruct();
+        }
+
+        DDI.instance.register<Future<FuturePostConstruct>>(
+          factory: ApplicationFactory(
+            builder: CustomBuilder(
+              producer: localTest,
+              parametersType: [],
+              returnType: FuturePostConstruct,
+              isFuture: true,
+            ),
+          ),
+          qualifier: 'FuturePostConstruct',
+        );
+
+        expect(DDI.instance.isFuture(qualifier: 'FuturePostConstruct'), true);
+
+        expect(DDI.instance.getByType<Future<FuturePostConstruct>>().length, 1);
+
+        final FuturePostConstruct instance = await DDI.instance.getAsync(
+          qualifier: 'FuturePostConstruct',
+        );
+
+        expect(instance.value, 10);
+
+        DDI.instance.destroy(qualifier: 'FuturePostConstruct');
+
+        expect(
+          DDI.instance.isRegistered(qualifier: 'FuturePostConstruct'),
+          false,
+        );
+      },
+    );
 
     test('Try to get multiple instances', () async {
       DDI.instance.application(() async {
@@ -476,10 +504,13 @@ void main() {
       expect(DDI.instance.isReady<C>(), false);
       expect(DDI.instance.isFuture<C>(), true);
 
-      final [first, second] = await Future.wait<C>(
-          [DDI.instance.getAsync<C>(), DDI.instance.getAsync<C>()]);
+      final [first, second] = await Future.wait<C>([
+        DDI.instance.getAsync<C>()..then((c) => c.value *= 2),
+        DDI.instance.getAsync<C>(),
+      ]);
 
       expect(identical(first, second), true);
+      expect(second.value, 2);
 
       DDI.instance.destroy<C>();
 

@@ -9,30 +9,34 @@ import '../clazz_samples/mother.dart';
 
 void main() {
   group('DDI Circular Injection Detection tests', () {
-    tearDownAll(
+    tearDownAll(() {
+      expect(ddi.isEmpty, true);
+    });
+
+    test(
+      'Inject a Singleton bean depending from a bean that not exists yet',
       () {
-        expect(ddi.isEmpty, true);
+        expect(
+          () => DDI.instance.singleton(() => Father(mother: DDI.instance())),
+          throwsA(isA<BeanNotFoundException>()),
+        );
       },
     );
 
-    test('Inject a Singleton bean depending from a bean that not exists yet',
-        () {
-      expect(() => DDI.instance.singleton(() => Father(mother: DDI.instance())),
-          throwsA(isA<BeanNotFoundException>()));
-    });
+    test(
+      'Inject a Application bean depending from a bean that not exists yet',
+      () {
+        //This works because it was just registered
+        DDI.instance.application(() => Father(mother: DDI.instance()));
+        DDI.instance.application(() => Mother(father: DDI.instance()));
 
-    test('Inject a Application bean depending from a bean that not exists yet',
-        () {
-      //This works because it was just registered
-      DDI.instance.application(() => Father(mother: DDI.instance()));
-      DDI.instance.application(() => Mother(father: DDI.instance()));
+        expect(DDI.instance.isReady<Father>(), false);
+        expect(DDI.instance.isReady<Mother>(), false);
 
-      expect(DDI.instance.isReady<Father>(), false);
-      expect(DDI.instance.isReady<Mother>(), false);
-
-      DDI.instance.destroy<Mother>();
-      DDI.instance.destroy<Father>();
-    });
+        DDI.instance.destroy<Mother>();
+        DDI.instance.destroy<Father>();
+      },
+    );
 
     test('Inject a Application bean with circular dependency', () {
       DDI.instance.application(() => Father(mother: DDI.instance()));
@@ -41,8 +45,10 @@ void main() {
       expect(DDI.instance.isReady<Father>(), false);
       expect(DDI.instance.isReady<Mother>(), false);
 
-      expect(() => DDI.instance.get<Mother>(),
-          throwsA(isA<ConcurrentCreationException>()));
+      expect(
+        () => DDI.instance.get<Mother>(),
+        throwsA(isA<ConcurrentCreationException>()),
+      );
 
       DDI.instance.destroy<Mother>();
       DDI.instance.destroy<Father>();
@@ -55,8 +61,10 @@ void main() {
       DDI.instance.dependent(() => Father(mother: DDI.instance()));
       DDI.instance.dependent(() => Mother(father: DDI.instance()));
 
-      expect(() => DDI.instance.get<Mother>(),
-          throwsA(isA<ConcurrentCreationException>()));
+      expect(
+        () => DDI.instance.get<Mother>(),
+        throwsA(isA<ConcurrentCreationException>()),
+      );
 
       DDI.instance.destroy<Mother>();
       DDI.instance.destroy<Father>();

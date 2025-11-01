@@ -8,44 +8,48 @@ import '../clazz_samples/mother.dart';
 
 void main() {
   group('DDI Factory Circular Injection Detection tests', () {
-    tearDownAll(
-      () {
-        expect(ddi.isEmpty, true);
+    tearDownAll(() {
+      expect(ddi.isEmpty, true);
+    });
+    test(
+      'Inject a Factory Singleton bean depending from a bean that not exists yet',
+      () async {
+        await expectLater(
+          () => Father.fromMother.builder.asSingleton(),
+          throwsA(isA<BeanNotFoundException>()),
+        );
+        expect(ddi.isRegistered<Father>(), false);
       },
     );
-    test(
-        'Inject a Factory Singleton bean depending from a bean that not exists yet',
-        () async {
-      await expectLater(() => Father.fromMother.builder.asSingleton(),
-          throwsA(isA<BeanNotFoundException>()));
-      expect(ddi.isRegistered<Father>(), false);
-    });
 
     test(
-        'Inject a Factory Application bean depending from a bean that not exists yet',
-        () {
-      Father.fromMother.builder.asApplication();
-      Mother.fromFather.builder.asApplication();
+      'Inject a Factory Application bean depending from a bean that not exists yet',
+      () {
+        Father.fromMother.builder.asApplication();
+        Mother.fromFather.builder.asApplication();
 
-      expect(ddi.isRegistered<Mother>(), true);
-      expect(ddi.isRegistered<Father>(), true);
+        expect(ddi.isRegistered<Mother>(), true);
+        expect(ddi.isRegistered<Father>(), true);
 
-      expect(ddi.isReady<Mother>(), false);
-      expect(ddi.isReady<Father>(), false);
+        expect(ddi.isReady<Mother>(), false);
+        expect(ddi.isReady<Father>(), false);
 
-      ddi.destroy<Mother>();
-      ddi.destroy<Father>();
+        ddi.destroy<Mother>();
+        ddi.destroy<Father>();
 
-      expect(ddi.isRegistered<Mother>(), false);
-      expect(ddi.isRegistered<Father>(), false);
-    });
+        expect(ddi.isRegistered<Mother>(), false);
+        expect(ddi.isRegistered<Father>(), false);
+      },
+    );
 
     test('Inject a Factory Application bean with circular dependency', () {
       Father.fromMother.builder.asApplication();
       Mother.fromFather.builder.asApplication();
 
       expect(
-          () => ddi.get<Mother>(), throwsA(isA<ConcurrentCreationException>()));
+        () => ddi.get<Mother>(),
+        throwsA(isA<ConcurrentCreationException>()),
+      );
 
       ddi.destroy<Mother>();
       ddi.destroy<Father>();
@@ -59,7 +63,9 @@ void main() {
       Mother.fromFather.builder.asDependent();
 
       expect(
-          () => ddi.get<Mother>(), throwsA(isA<ConcurrentCreationException>()));
+        () => ddi.get<Mother>(),
+        throwsA(isA<ConcurrentCreationException>()),
+      );
 
       ddi.destroy<Mother>();
       ddi.destroy<Father>();
@@ -69,107 +75,132 @@ void main() {
     });
 
     test(
-        'Inject a Factory Singleton bean depending from a bean that not exists yet',
-        () {
-      expect(
+      'Inject a Factory Singleton bean depending from a bean that not exists yet',
+      () {
+        expect(
           () => ddi.register(
-                factory: SingletonFactory(
-                  builder: () {
-                    return Future.delayed(const Duration(milliseconds: 10),
-                        () => Father(mother: ddi()));
-                  }.builder,
-                ),
-              ),
-          throwsA(isA<BeanNotFoundException>()));
-    });
+            factory: SingletonFactory(
+              builder: () {
+                return Future.delayed(
+                  const Duration(milliseconds: 10),
+                  () => Father(mother: ddi()),
+                );
+              }.builder,
+            ),
+          ),
+          throwsA(isA<BeanNotFoundException>()),
+        );
+      },
+    );
 
     test(
-        'Inject a Future Factory Application bean depending from a bean that not exists yet',
-        () {
-      //This works because it was just registered
-      ddi.register<Father>(
-        factory: ApplicationFactory(
-          builder: () {
-            return Future.delayed(const Duration(milliseconds: 10),
-                () async => Father(mother: await ddi.getAsync<Mother>()));
-          }.builder,
-        ),
-      );
+      'Inject a Future Factory Application bean depending from a bean that not exists yet',
+      () {
+        //This works because it was just registered
+        ddi.register<Father>(
+          factory: ApplicationFactory(
+            builder: () {
+              return Future.delayed(
+                const Duration(milliseconds: 10),
+                () async => Father(mother: await ddi.getAsync<Mother>()),
+              );
+            }.builder,
+          ),
+        );
 
-      ddi.register<Mother>(
-        factory: ApplicationFactory(
-          builder: () {
-            return Future.delayed(const Duration(milliseconds: 10),
-                () async => Mother(father: await ddi.getAsync<Father>()));
-          }.builder,
-        ),
-      );
+        ddi.register<Mother>(
+          factory: ApplicationFactory(
+            builder: () {
+              return Future.delayed(
+                const Duration(milliseconds: 10),
+                () async => Mother(father: await ddi.getAsync<Father>()),
+              );
+            }.builder,
+          ),
+        );
 
-      ddi.destroy<Mother>();
-      ddi.destroy<Father>();
+        ddi.destroy<Mother>();
+        ddi.destroy<Father>();
 
-      expect(ddi.isRegistered<Mother>(), false);
-      expect(ddi.isRegistered<Father>(), false);
-    });
+        expect(ddi.isRegistered<Mother>(), false);
+        expect(ddi.isRegistered<Father>(), false);
+      },
+    );
 
-    test('Inject a Future Factory Application bean with circular dependency',
-        () async {
-      ddi.register<Father>(
-        factory: ApplicationFactory(
-          builder: () {
-            return Future.delayed(const Duration(milliseconds: 10),
-                () async => Father(mother: await ddi.getAsync<Mother>()));
-          }.builder,
-        ),
-      );
+    test(
+      'Inject a Future Factory Application bean with circular dependency',
+      () async {
+        ddi.register<Father>(
+          factory: ApplicationFactory(
+            builder: () {
+              return Future.delayed(
+                const Duration(milliseconds: 10),
+                () async => Father(mother: await ddi.getAsync<Mother>()),
+              );
+            }.builder,
+          ),
+        );
 
-      ddi.register<Mother>(
-        factory: ApplicationFactory(
-          builder: () {
-            return Future.delayed(const Duration(milliseconds: 10),
-                () async => Mother(father: await ddi.getAsync<Father>()));
-          }.builder,
-        ),
-      );
+        ddi.register<Mother>(
+          factory: ApplicationFactory(
+            builder: () {
+              return Future.delayed(
+                const Duration(milliseconds: 10),
+                () async => Mother(father: await ddi.getAsync<Father>()),
+              );
+            }.builder,
+          ),
+        );
 
-      await expectLater(() => ddi.getAsync<Mother>(),
-          throwsA(isA<ConcurrentCreationException>()));
+        await expectLater(
+          () => ddi.getAsync<Mother>(),
+          throwsA(isA<ConcurrentCreationException>()),
+        );
 
-      ddi.destroy<Mother>();
-      ddi.destroy<Father>();
+        ddi.destroy<Mother>();
+        ddi.destroy<Father>();
 
-      expect(ddi.isRegistered<Mother>(), false);
-      expect(ddi.isRegistered<Father>(), false);
-    });
+        expect(ddi.isRegistered<Mother>(), false);
+        expect(ddi.isRegistered<Father>(), false);
+      },
+    );
 
-    test('Inject a Future Factory Dependent bean with circular dependency',
-        () async {
-      ddi.register<Father>(
-        factory: DependentFactory(
-          builder: () {
-            return Future.delayed(const Duration(milliseconds: 10),
-                () async => Father(mother: await ddi.getAsync<Mother>()));
-          }.builder,
-        ),
-      );
+    test(
+      'Inject a Future Factory Dependent bean with circular dependency',
+      () async {
+        ddi.register<Father>(
+          factory: DependentFactory(
+            builder: () {
+              return Future.delayed(
+                const Duration(milliseconds: 10),
+                () async => Father(mother: await ddi.getAsync<Mother>()),
+              );
+            }.builder,
+          ),
+        );
 
-      ddi.register<Mother>(
-        factory: DependentFactory(
-          builder: () {
-            return Future.delayed(const Duration(milliseconds: 10),
-                () async => Mother(father: await ddi.getAsync<Father>()));
-          }.builder,
-        ),
-      );
+        ddi.register<Mother>(
+          factory: DependentFactory(
+            builder: () {
+              return Future.delayed(
+                const Duration(milliseconds: 10),
+                () async => Mother(father: await ddi.getAsync<Father>()),
+              );
+            }.builder,
+          ),
+        );
 
-      await expectLater(() => ddi.getAsync<Mother>(),
-          throwsA(isA<ConcurrentCreationException>()));
+        await expectLater(
+          () => ddi.getAsync<Mother>(),
+          throwsA(isA<ConcurrentCreationException>()),
+        );
 
-      ddi.destroy<Mother>();
-      ddi.destroy<Father>();
+        ddi.destroy<Mother>();
+        ddi.destroy<Father>();
 
-      expect(ddi.isRegistered<Mother>(), false);
-      expect(ddi.isRegistered<Father>(), false);
-    });
+        expect(ddi.isRegistered<Mother>(), false);
+        expect(ddi.isRegistered<Father>(), false);
+      },
+    );
   });
 }

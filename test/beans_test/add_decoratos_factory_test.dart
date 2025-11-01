@@ -7,20 +7,16 @@ import '../clazz_samples/f.dart';
 
 void main() {
   group('DDI ADD Decorators Factory Tests', () {
-    tearDownAll(
-      () {
-        expect(ddi.isEmpty, true);
-      },
-    );
+    tearDownAll(() {
+      expect(ddi.isEmpty, true);
+    });
 
     void regraSoma() {
       final instance1 = DDI.instance.get<D>();
 
       expect(instance1.value, 'bcdfghi');
 
-      DDI.instance.addDecorator<D>([
-        (instance) => E(instance),
-      ]);
+      DDI.instance.addDecorator<D>([(instance) => E(instance)]);
 
       final instance2 = DDI.instance.get<D>();
 
@@ -33,9 +29,7 @@ void main() {
 
       expect(instance1.value, 'bcdfghi');
 
-      DDI.instance.addDecorator<D>([
-        (instance) => E(instance),
-      ]);
+      DDI.instance.addDecorator<D>([(instance) => E(instance)]);
 
       final instance2 = await DDI.instance.getAsync<D>();
 
@@ -45,10 +39,7 @@ void main() {
 
     test('ADD Decorators to a Factory Singleton bean', () async {
       D.new.builder.asSingleton(
-        decorators: [
-          (instance) => E(instance),
-          (instance) => F(instance),
-        ],
+        decorators: [(instance) => E(instance), (instance) => F(instance)],
       );
 
       regraSoma();
@@ -60,10 +51,7 @@ void main() {
 
     test('ADD Decorators to a Factory Application bean', () async {
       D.new.builder.asApplication(
-        decorators: [
-          (instance) => E(instance),
-          (instance) => F(instance),
-        ],
+        decorators: [(instance) => E(instance), (instance) => F(instance)],
       );
 
       regraSoma();
@@ -75,10 +63,7 @@ void main() {
 
     test('ADD Decorators to a Dependent bean', () async {
       D.new.builder.asDependent(
-        decorators: [
-          (instance) => E(instance),
-          (instance) => F(instance),
-        ],
+        decorators: [(instance) => E(instance), (instance) => F(instance)],
       );
 
       regraSoma();
@@ -95,19 +80,14 @@ void main() {
         await Future.delayed(const Duration(milliseconds: 10));
         return D();
       }.builder.asSingleton(
-        decorators: [
-          (D instance) => E(instance),
-          (D instance) => F(instance),
-        ],
+        decorators: [(D instance) => E(instance), (D instance) => F(instance)],
       );
 
       final instance1 = await DDI.instance.getAsync<D>();
 
       expect(instance1.value, 'bcdfghi');
 
-      DDI.instance.addDecorator<D>([
-        (instance) => E(instance),
-      ]);
+      DDI.instance.addDecorator<D>([(instance) => E(instance)]);
 
       final instance2 = await DDI.instance.getAsync<D>();
 
@@ -126,10 +106,7 @@ void main() {
         await Future.delayed(const Duration(milliseconds: 10));
         return D();
       }.builder.asApplication(
-        decorators: [
-          (instance) => E(instance),
-          (instance) => F(instance),
-        ],
+        decorators: [(instance) => E(instance), (instance) => F(instance)],
       );
 
       await regraSomaAsync();
@@ -146,10 +123,7 @@ void main() {
         await Future.delayed(const Duration(milliseconds: 10));
         return D();
       }.builder.asDependent(
-        decorators: [
-          (instance) => E(instance),
-          (instance) => F(instance),
-        ],
+        decorators: [(instance) => E(instance), (instance) => F(instance)],
       );
 
       await regraSomaAsync();

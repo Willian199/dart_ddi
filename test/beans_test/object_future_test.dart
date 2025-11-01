@@ -1,5 +1,4 @@
 import 'package:dart_ddi/dart_ddi.dart';
-import 'package:dart_ddi/src/exception/bean_destroyed.dart';
 import 'package:dart_ddi/src/exception/bean_not_found.dart';
 import 'package:test/test.dart';
 
@@ -8,23 +7,23 @@ import '../clazz_samples/future_post_construct.dart';
 
 void main() {
   group('DDI Object Future Basic Tests', () {
-    tearDownAll(
-      () {
-        // Still having 1 Bean, because [canDestroy] is false
-        expect(ddi.isEmpty, false);
-        // ObjectFactory
-        expect(ddi.length, 1);
-      },
-    );
+    tearDownAll(() {
+      // Still having 1 Bean, because [canDestroy] is false
+      expect(ddi.isEmpty, false);
+      // ObjectFactory
+      expect(ddi.length, 1);
+    });
     test('Register and retrieve object bean', () async {
       DDI.instance.register(
         factory: ObjectFactory(instance: Future.value('Willian Marchesan')),
         qualifier: 'futureAuthor',
       );
-      final instance1 =
-          await DDI.instance.get<Future<String>>(qualifier: 'futureAuthor');
-      final instance2 =
-          await DDI.instance.get<Future<String>>(qualifier: 'futureAuthor');
+      final instance1 = await DDI.instance.get<Future<String>>(
+        qualifier: 'futureAuthor',
+      );
+      final instance2 = await DDI.instance.get<Future<String>>(
+        qualifier: 'futureAuthor',
+      );
 
       expect('Willian Marchesan', instance1);
       expect(instance1, same(instance2));
@@ -42,8 +41,10 @@ void main() {
 
       DDI.instance.destroy(qualifier: 'futureAuthor');
 
-      expect(() => DDI.instance.get(qualifier: 'futureAuthor'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(
+        () => DDI.instance.get(qualifier: 'futureAuthor'),
+        throwsA(isA<BeanNotFoundException>()),
+      );
     });
 
     test('Try to destroy a undestroyable Object bean', () async {
@@ -55,13 +56,15 @@ void main() {
         qualifier: 'futureAuthor',
       );
 
-      final instance1 =
-          await DDI.instance.get<Future<String>>(qualifier: 'futureAuthor');
+      final instance1 = await DDI.instance.get<Future<String>>(
+        qualifier: 'futureAuthor',
+      );
 
       DDI.instance.destroy(qualifier: 'futureAuthor');
 
-      final String instance2 =
-          await DDI.instance.get(qualifier: 'futureAuthor');
+      final String instance2 = await DDI.instance.get(
+        qualifier: 'futureAuthor',
+      );
 
       expect('Willian Marchesan', instance1);
       expect(instance1, same(instance2));
@@ -73,21 +76,23 @@ void main() {
         qualifier: 'name',
       );
 
-      final instance1 =
-          await DDI.instance.get<Future<String>>(qualifier: 'name');
-      final instance2 =
-          await DDI.instance.get<Future<String>>(qualifier: 'name');
+      final instance1 = await DDI.instance.get<Future<String>>(
+        qualifier: 'name',
+      );
+      final instance2 = await DDI.instance.get<Future<String>>(
+        qualifier: 'name',
+      );
 
       expect('Willian Marchesan', instance1);
       expect(instance1, same(instance2));
 
-      DDI.instance.addDecorator(
-        [(_) => Future.value('Will')],
+      DDI.instance.addDecorator([
+        (_) => Future.value('Will'),
+      ], qualifier: 'name');
+
+      final String instance3 = await DDI.instance.get<Future<String>>(
         qualifier: 'name',
       );
-
-      final String instance3 =
-          await DDI.instance.get<Future<String>>(qualifier: 'name');
 
       expect('Will', instance3);
       expect(false, identical(instance1, instance3));
@@ -105,10 +110,8 @@ void main() {
       await DDI.instance.register(
         factory: ObjectFactory(instance: localTest()),
         qualifier: 'name',
-        canRegister: () => Future.delayed(
-          const Duration(milliseconds: 10),
-          () => true,
-        ),
+        canRegister: () =>
+            Future.delayed(const Duration(milliseconds: 10), () => true),
       );
 
       final value = await DDI.instance.getAsync(qualifier: 'name');
@@ -117,8 +120,10 @@ void main() {
 
       DDI.instance.destroy(qualifier: 'name');
 
-      expect(() => DDI.instance.getAsync(qualifier: 'name'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(
+        () => DDI.instance.getAsync(qualifier: 'name'),
+        throwsA(isA<BeanNotFoundException>()),
+      );
     });
 
     test('Register an Object with canRegister false', () {
@@ -133,8 +138,10 @@ void main() {
         canRegister: () => false,
       );
 
-      expect(() => DDI.instance.getAsync(qualifier: 'name'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(
+        () => DDI.instance.getAsync(qualifier: 'name'),
+        throwsA(isA<BeanNotFoundException>()),
+      );
     });
 
     test('Register a class Object with PostConstruct mixin', () async {
@@ -148,30 +155,37 @@ void main() {
         qualifier: 'FuturePostConstruct',
       );
 
-      final FuturePostConstruct instance =
-          await DDI.instance.getAsync(qualifier: 'FuturePostConstruct');
+      final FuturePostConstruct instance = await DDI.instance.getAsync(
+        qualifier: 'FuturePostConstruct',
+      );
 
       expect(instance.value, 10);
 
       DDI.instance.destroy(qualifier: 'FuturePostConstruct');
 
-      expect(() => DDI.instance.get(qualifier: 'FuturePostConstruct'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(
+        () => DDI.instance.get(qualifier: 'FuturePostConstruct'),
+        throwsA(isA<BeanNotFoundException>()),
+      );
     });
 
     test('Register an Object with Interceptor', () async {
-      DDI.instance
-          .register(factory: ObjectFactory(instance: AsyncAddInterceptor()));
+      DDI.instance.register(
+        factory: ObjectFactory(instance: AsyncAddInterceptor()),
+      );
 
       ddi.application<MultiplyInterceptor>(() {
         return Future.delayed(
-            const Duration(milliseconds: 10), () => MultiplyInterceptor());
+          const Duration(milliseconds: 10),
+          () => MultiplyInterceptor(),
+        );
       });
 
       await DDI.instance.register<int>(
         factory: ObjectFactory(
-            instance: 10,
-            interceptors: {AsyncAddInterceptor, MultiplyInterceptor}),
+          instance: 10,
+          interceptors: {AsyncAddInterceptor, MultiplyInterceptor},
+        ),
       );
 
       expect(DDI.instance.get<int>(), 60);
@@ -180,8 +194,10 @@ void main() {
       DDI.instance.destroy<AsyncAddInterceptor>();
       DDI.instance.destroy<MultiplyInterceptor>();
 
-      expect(() => DDI.instance.get<int>(),
-          throwsA(isA<BeanDestroyedException>()));
+      expect(
+        () => DDI.instance.get<int>(),
+        throwsA(isA<BeanNotFoundException>()),
+      );
     });
 
     test('Register an Object class with Future PostConstruct mixin', () async {
@@ -208,29 +224,33 @@ void main() {
     });
 
     test(
-        'Register an Object class with Future PostConstruct mixin and qualifier',
-        () async {
-      Future<FuturePostConstruct> localTest() async {
-        await Future.delayed(const Duration(milliseconds: 10));
-        return FuturePostConstruct();
-      }
+      'Register an Object class with Future PostConstruct mixin and qualifier',
+      () async {
+        Future<FuturePostConstruct> localTest() async {
+          await Future.delayed(const Duration(milliseconds: 10));
+          return FuturePostConstruct();
+        }
 
-      await DDI.instance.object<Future<FuturePostConstruct>>(
-        localTest(),
-        qualifier: 'FuturePostConstruct',
-      );
+        await DDI.instance.object<Future<FuturePostConstruct>>(
+          localTest(),
+          qualifier: 'FuturePostConstruct',
+        );
 
-      expect(DDI.instance.getByType<Future<FuturePostConstruct>>().length, 1);
+        expect(DDI.instance.getByType<Future<FuturePostConstruct>>().length, 1);
 
-      final FuturePostConstruct instance =
-          await DDI.instance.getAsync(qualifier: 'FuturePostConstruct');
+        final FuturePostConstruct instance = await DDI.instance.getAsync(
+          qualifier: 'FuturePostConstruct',
+        );
 
-      expect(instance.value, 10);
+        expect(instance.value, 10);
 
-      DDI.instance.destroy(qualifier: 'FuturePostConstruct');
+        DDI.instance.destroy(qualifier: 'FuturePostConstruct');
 
-      expect(
-          DDI.instance.isRegistered(qualifier: 'FuturePostConstruct'), false);
-    });
+        expect(
+          DDI.instance.isRegistered(qualifier: 'FuturePostConstruct'),
+          false,
+        );
+      },
+    );
   });
 }

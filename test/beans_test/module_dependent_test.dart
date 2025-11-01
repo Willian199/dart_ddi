@@ -9,18 +9,18 @@ import '../clazz_samples/module_dependent.dart';
 
 void main() {
   group('DDI Modules Dependent Basic Tests', () {
-    tearDownAll(
-      () {
-        expect(ddi.isEmpty, true);
-      },
-    );
+    tearDownAll(() {
+      expect(ddi.isEmpty, true);
+    });
     test('Register a Dependent Module', () async {
       DDI.instance.dependent(ModuleDependent.new);
 
       DDI.instance.get<ModuleDependent>();
 
-      await expectLater(() async => DDI.instance.getAsync<ModuleDependent>(),
-          throwsA(isA<DuplicatedBeanException>()));
+      await expectLater(
+        () async => DDI.instance.getAsync<ModuleDependent>(),
+        throwsA(isA<DuplicatedBeanException>()),
+      );
 
       DDI.instance.destroy<ModuleDependent>();
 
@@ -41,7 +41,9 @@ void main() {
       DDI.instance.destroy<ModuleDependent>();
 
       expect(
-          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
+        () => DDI.instance.get<C>(),
+        throwsA(isA<BeanNotFoundException>()),
+      );
     });
   });
 }

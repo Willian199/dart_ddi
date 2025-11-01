@@ -9,11 +9,9 @@ import '../clazz_samples/module_application.dart';
 
 void main() {
   group('DDI Modules Application Basic Tests', () {
-    tearDownAll(
-      () {
-        expect(ddi.isEmpty, true);
-      },
-    );
+    tearDownAll(() {
+      expect(ddi.isEmpty, true);
+    });
     test('Register an Application Module', () {
       DDI.instance.application(ModuleApplication.new);
 
@@ -35,7 +33,9 @@ void main() {
       DDI.instance.destroy<ModuleApplication>();
 
       expect(
-          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
+        () => DDI.instance.get<C>(),
+        throwsA(isA<BeanNotFoundException>()),
+      );
     });
 
     test('Register a Future Application Module', () async {
@@ -53,13 +53,17 @@ void main() {
       await DDI.instance.destroy<FutureModuleApplication>();
 
       expect(
-          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
+        () => DDI.instance.get<C>(),
+        throwsA(isA<BeanNotFoundException>()),
+      );
       expect(DDI.instance.isRegistered<A>(), false);
     });
 
     test('Add ChildrenModules to a Bean not Registered', () {
-      expect(() => ddi.addChildrenModules<C>(child: {A}),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(
+        () => ddi.addChildrenModules<C>(child: {A}),
+        throwsA(isA<BeanNotFoundException>()),
+      );
     });
 
     test('Get Children from a Bean not Registered', () {
@@ -88,7 +92,9 @@ void main() {
       await DDI.instance.destroy<FutureModuleApplication>();
 
       expect(
-          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
+        () => DDI.instance.get<C>(),
+        throwsA(isA<BeanNotFoundException>()),
+      );
       expect(DDI.instance.isRegistered<A>(), false);
     });
   });

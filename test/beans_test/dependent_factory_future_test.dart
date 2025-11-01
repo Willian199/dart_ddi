@@ -12,11 +12,9 @@ import '../clazz_samples/future_post_construct.dart';
 
 void main() {
   group('DDI Dependent Factory Future Basic Tests', () {
-    tearDownAll(
-      () {
-        expect(ddi.isEmpty, true);
-      },
-    );
+    tearDownAll(() {
+      expect(ddi.isEmpty, true);
+    });
 
     void registerDependentBeans() {
       DDI.instance.register<A>(
@@ -74,21 +72,23 @@ void main() {
       removeDependentBeans();
     });
 
-    test('Retrieve Dependent bean after a second "child" bean is diposed',
-        () async {
-      registerDependentBeans();
+    test(
+      'Retrieve Dependent bean after a second "child" bean is diposed',
+      () async {
+        registerDependentBeans();
 
-      final instance = await DDI.instance.getAsync<A>();
+        final instance = await DDI.instance.getAsync<A>();
 
-      DDI.instance.dispose<B>();
-      final instance1 = await DDI.instance.getAsync<A>();
-      expect(false, identical(instance1, instance));
-      expect(false, identical(instance1.b, instance.b));
-      expect(false, identical(instance1.b.c, instance.b.c));
-      expect(instance.b.c.value, same(instance1.b.c.value));
+        DDI.instance.dispose<B>();
+        final instance1 = await DDI.instance.getAsync<A>();
+        expect(false, identical(instance1, instance));
+        expect(false, identical(instance1.b, instance.b));
+        expect(false, identical(instance1.b.c, instance.b.c));
+        expect(instance.b.c.value, same(instance1.b.c.value));
 
-      removeDependentBeans();
-    });
+        removeDependentBeans();
+      },
+    );
 
     test('Try to retrieve Dependent bean after disposed', () async {
       () {
@@ -116,7 +116,9 @@ void main() {
       DDI.instance.destroy<C>();
 
       expect(
-          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
+        () => DDI.instance.get<C>(),
+        throwsA(isA<BeanNotFoundException>()),
+      );
     });
 
     test('Create, get and remove a qualifier bean', () async {
@@ -131,8 +133,10 @@ void main() {
 
       DDI.instance.destroy(qualifier: 'typeC');
 
-      expect(() => DDI.instance.get(qualifier: 'typeC'),
-          throwsA(isA<BeanNotFoundException>()));
+      expect(
+        () => DDI.instance.get(qualifier: 'typeC'),
+        throwsA(isA<BeanNotFoundException>()),
+      );
     });
 
     test('Register and retrieve Future delayed Dependent bean', () async {
@@ -158,16 +162,19 @@ void main() {
         ),
       );
 
-      final FactoryParameter instance =
-          await DDI.instance.getAsyncWith(parameter: getRecordParameter);
+      final FactoryParameter instance = await DDI.instance.getAsyncWith(
+        parameter: getRecordParameter,
+      );
 
       expect(instance, isA<FactoryParameter>());
       expect(instance.parameter, getRecordParameter);
 
       DDI.instance.destroy<FactoryParameter>();
 
-      expectLater(() => DDI.instance.getAsync<FactoryParameter>(),
-          throwsA(isA<BeanNotFoundException>()));
+      expectLater(
+        () => DDI.instance.getAsync<FactoryParameter>(),
+        throwsA(isA<BeanNotFoundException>()),
+      );
     });
 
     test('Register a Dependent class with PostConstruct mixin', () async {
@@ -181,15 +188,18 @@ void main() {
         qualifier: 'FuturePostConstruct',
       );
 
-      final FuturePostConstruct instance =
-          await DDI.instance.getAsync(qualifier: 'FuturePostConstruct');
+      final FuturePostConstruct instance = await DDI.instance.getAsync(
+        qualifier: 'FuturePostConstruct',
+      );
 
       expect(instance.value, 10);
 
       DDI.instance.destroy(qualifier: 'FuturePostConstruct');
 
       expect(
-          DDI.instance.isRegistered(qualifier: 'FuturePostConstruct'), false);
+        DDI.instance.isRegistered(qualifier: 'FuturePostConstruct'),
+        false,
+      );
     });
   });
 }

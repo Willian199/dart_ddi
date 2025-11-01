@@ -9,43 +9,59 @@ import '../clazz_samples/mother.dart';
 
 void main() {
   group('DDI Future Circular Injection Detection tests', () {
-    tearDownAll(
-      () {
-        expect(ddi.isEmpty, true);
+    tearDownAll(() {
+      expect(ddi.isEmpty, true);
+    });
+    test(
+      'Inject a Singleton bean depending from a bean that not exists yet',
+      () async {
+        await expectLater(
+          () => DDI.instance.singleton(
+            () => Future.value(Father(mother: ddi.get<Mother>())),
+          ),
+          throwsA(isA<BeanNotFoundException>()),
+        );
+        expect(DDI.instance.isRegistered<Father>(), false);
       },
     );
-    test('Inject a Singleton bean depending from a bean that not exists yet',
-        () async {
-      await expectLater(
-          () => DDI.instance
-              .singleton(() => Future.value(Father(mother: ddi.get<Mother>()))),
-          throwsA(isA<BeanNotFoundException>()));
-      expect(DDI.instance.isRegistered<Father>(), false);
-    });
 
-    test('Inject a Application bean depending from a bean that not exists yet',
-        () {
-      //This works because it was just registered
-      DDI.instance.application<Father>(() async =>
-          Future.value(Father(mother: await DDI.instance.getAsync<Mother>())));
-      DDI.instance.application<Mother>(() async =>
-          Future.value(Mother(father: await DDI.instance.getAsync<Father>())));
+    test(
+      'Inject a Application bean depending from a bean that not exists yet',
+      () {
+        //This works because it was just registered
+        DDI.instance.application<Father>(
+          () async => Future.value(
+            Father(mother: await DDI.instance.getAsync<Mother>()),
+          ),
+        );
+        DDI.instance.application<Mother>(
+          () async => Future.value(
+            Mother(father: await DDI.instance.getAsync<Father>()),
+          ),
+        );
 
-      DDI.instance.destroy<Mother>();
-      DDI.instance.destroy<Father>();
+        DDI.instance.destroy<Mother>();
+        DDI.instance.destroy<Father>();
 
-      expect(DDI.instance.isRegistered<Father>(), false);
-      expect(DDI.instance.isRegistered<Mother>(), false);
-    });
+        expect(DDI.instance.isRegistered<Father>(), false);
+        expect(DDI.instance.isRegistered<Mother>(), false);
+      },
+    );
 
     test('Inject a Application bean with circular dependency', () async {
-      DDI.instance.application<Father>(() async =>
-          Future.value(Father(mother: await DDI.instance.getAsync<Mother>())));
-      DDI.instance.application<Mother>(() async =>
-          Future.value(Mother(father: await DDI.instance.getAsync<Father>())));
+      DDI.instance.application<Father>(
+        () async =>
+            Future.value(Father(mother: await DDI.instance.getAsync<Mother>())),
+      );
+      DDI.instance.application<Mother>(
+        () async =>
+            Future.value(Mother(father: await DDI.instance.getAsync<Father>())),
+      );
 
-      await expectLater(() => DDI.instance.getAsync<Mother>(),
-          throwsA(isA<ConcurrentCreationException>()));
+      await expectLater(
+        () => DDI.instance.getAsync<Mother>(),
+        throwsA(isA<ConcurrentCreationException>()),
+      );
 
       DDI.instance.destroy<Mother>();
       DDI.instance.destroy<Father>();
@@ -55,14 +71,20 @@ void main() {
     });
 
     test('Inject a Dependent bean with circular dependency', () {
-      DDI.instance.dependent<Father>(() async =>
-          Future.value(Father(mother: await DDI.instance.getAsync<Mother>())));
+      DDI.instance.dependent<Father>(
+        () async =>
+            Future.value(Father(mother: await DDI.instance.getAsync<Mother>())),
+      );
 
-      DDI.instance.dependent<Mother>(() async =>
-          Future.value(Mother(father: await DDI.instance.getAsync<Father>())));
+      DDI.instance.dependent<Mother>(
+        () async =>
+            Future.value(Mother(father: await DDI.instance.getAsync<Father>())),
+      );
 
-      expectLater(() => DDI.instance.getAsync<Mother>(),
-          throwsA(isA<ConcurrentCreationException>()));
+      expectLater(
+        () => DDI.instance.getAsync<Mother>(),
+        throwsA(isA<ConcurrentCreationException>()),
+      );
 
       DDI.instance.destroy<Mother>();
       DDI.instance.destroy<Father>();

@@ -1,13 +1,26 @@
 part of 'dart_ddi.dart';
 
 class _DDIImpl implements DDI {
-  late final DartDDIQualifier _beans = DartDDIQualifier();
+  _DDIImpl({required bool enableZoneRegistry})
+      : _enableZoneRegistry = enableZoneRegistry;
+
+  final bool _enableZoneRegistry;
+
+  late final DartDDIQualifier _beans = _enableZoneRegistry
+      ? DartDDIZoneQualifierImpl()
+      : DartDDIDefaultQualifierImpl();
 
   /// Gets the current zone name.
   String get zoneName => _beans.zoneName;
 
   @override
   T runInZone<T>(String name, T Function() body) {
+    if (!_enableZoneRegistry) {
+      throw UnsupportedError(
+        'Zones are not supported with the Default Qualifier',
+      );
+    }
+
     return _beans.runWithZoneRegistry<T>(name, () {
       try {
         return body();
@@ -44,8 +57,10 @@ class _DDIImpl implements DDI {
     if (shouldRegister) {
       final Object effectiveQualifierName = qualifier ?? BeanT;
 
-      final fac =
-          _beans.getFactory(qualifier: effectiveQualifierName, fallback: false);
+      final fac = _beans.getFactory(
+        qualifier: effectiveQualifierName,
+        fallback: false,
+      );
 
       if (fac != null) {
         if (BeanStateEnum.none == fac.state) {
@@ -62,9 +77,7 @@ class _DDIImpl implements DDI {
 
       _beans.setFactory(effectiveQualifierName, factory);
 
-      final f = factory.register(
-        qualifier: effectiveQualifierName,
-      );
+      final f = factory.register(qualifier: effectiveQualifierName);
 
       f.onError((e, _) {
         _beans.remove(effectiveQualifierName);
@@ -116,21 +129,15 @@ class _DDIImpl implements DDI {
 
     if (_beans.getFactory(qualifier: effectiveQualifierName)
         case final DDIBaseFactory<BeanT> factory?) {
-      return InstanceRunnerUtils.run<BeanT, ParameterT>(
-        factory: factory,
-        effectiveQualifierName: effectiveQualifierName,
-        parameter: parameter,
-      );
+      return factory.getWith<ParameterT>(
+          parameter: parameter, qualifier: effectiveQualifierName);
     } else if (select != null && BeanT != Object) {
       // Try to find a bean with the selector
       for (final MapEntry(key: _, :value) in _beans.entries) {
         if (value.type == BeanT &&
             (value.selector?.call(select) ?? false) as bool) {
-          return InstanceRunnerUtils.run<BeanT, ParameterT>(
-            factory: value as DDIBaseFactory<BeanT>,
-            effectiveQualifierName: effectiveQualifierName,
-            parameter: parameter,
-          );
+          return (value as DDIBaseFactory<BeanT>).getWith<ParameterT>(
+              parameter: parameter, qualifier: effectiveQualifierName);
         }
       }
     }
@@ -149,32 +156,23 @@ class _DDIImpl implements DDI {
     final reg = _beans.getFactory(qualifier: effectiveQualifierName);
 
     if (reg case final DDIBaseFactory<BeanT> factory?) {
-      final clazz = InstanceRunnerUtils.runAsync<BeanT, ParameterT>(
-        factory: factory,
-        effectiveQualifierName: effectiveQualifierName,
-        parameter: parameter,
-      );
+      final clazz = factory.getAsyncWith<ParameterT>(
+          parameter: parameter, qualifier: effectiveQualifierName);
 
       return clazz is Future<Future> ? await clazz : clazz;
     } else if (reg case final DDIBaseFactory<Future<BeanT>> factory?) {
       // This prevents to return a Future<Future<BeanT>>
       // This was find with the Object Scope
-      return await InstanceRunnerUtils.runAsync<Future<BeanT>, ParameterT>(
-        factory: factory,
-        effectiveQualifierName: effectiveQualifierName,
-        parameter: parameter,
-      );
+      return await factory.getAsyncWith<ParameterT>(
+          parameter: parameter, qualifier: effectiveQualifierName);
     } else if (select != null && BeanT != Object) {
       // Try to find a bean with the selector
       for (final MapEntry(key: _, :value) in _beans.entries) {
         if (value.type == BeanT &&
             value.selector != null &&
             await (value.selector?.call(select) ?? false)) {
-          return InstanceRunnerUtils.runAsync<BeanT, ParameterT>(
-            factory: value as DDIBaseFactory<BeanT>,
-            effectiveQualifierName: effectiveQualifierName,
-            parameter: parameter,
-          );
+          return (value as DDIBaseFactory<BeanT>).getAsyncWith<ParameterT>(
+              parameter: parameter, qualifier: effectiveQualifierName);
         }
       }
     }
@@ -200,7 +198,8 @@ class _DDIImpl implements DDI {
   }
 
   FutureOr<void> _destroy<BeanT extends Object>(
-      Object effectiveQualifierName) async {
+    Object effectiveQualifierName,
+  ) async {
     if (_beans.getFactory(qualifier: effectiveQualifierName, fallback: false)
         case final factory?) {
       return factory.destroy(() => _beans.remove(effectiveQualifierName));
@@ -248,8 +247,10 @@ class _DDIImpl implements DDI {
     if (factory case final DDIScopeFactory<BeanT> f?) {
       return f.addDecorator(decorators);
     }
-    assert(factory == null,
-        'The instance is registered but the Scope doesn\'t support decorators.');
+    assert(
+      factory == null,
+      'The instance is registered but the Scope doesn\'t support decorators.',
+    );
 
     throw BeanNotFoundException(effectiveQualifierName.toString());
   }
@@ -266,15 +267,19 @@ class _DDIImpl implements DDI {
     if (factory case final DDIScopeFactory<BeanT> f?) {
       f.addInterceptor(interceptors ?? {});
     } else {
-      assert(factory == null,
-          'The instance is registered but the Scope doesn\'t support interceptors.');
+      assert(
+        factory == null,
+        'The instance is registered but the Scope doesn\'t support interceptors.',
+      );
       throw BeanNotFoundException(effectiveQualifierName.toString());
     }
   }
 
   @override
-  void addChildModules<BeanT extends Object>(
-      {required Object child, Object? qualifier}) {
+  void addChildModules<BeanT extends Object>({
+    required Object child,
+    Object? qualifier,
+  }) {
     addChildrenModules<BeanT>(child: {child}, qualifier: qualifier);
   }
 
@@ -290,8 +295,10 @@ class _DDIImpl implements DDI {
     if (factory case final DDIScopeFactory<BeanT> f?) {
       f.addChildrenModules(child);
     } else {
-      assert(factory == null,
-          'The instance is registered but the Scope doesn\'t support children.');
+      assert(
+        factory == null,
+        'The instance is registered but the Scope doesn\'t support children.',
+      );
       throw BeanNotFoundException(effectiveQualifierName.toString());
     }
   }
@@ -302,8 +309,10 @@ class _DDIImpl implements DDI {
     if (factory case final DDIScopeFactory<BeanT> f?) {
       return f.children;
     }
-    assert(factory == null,
-        'The instance is registered but the Scope doesn\'t support children.');
+    assert(
+      factory == null,
+      'The instance is registered but the Scope doesn\'t support children.',
+    );
     return {};
   }
 

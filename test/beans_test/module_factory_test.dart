@@ -10,11 +10,9 @@ import '../clazz_samples/module_factory_singleton.dart';
 
 void main() {
   group('DDI Factory Modules Application Basic Tests', () {
-    tearDownAll(
-      () {
-        expect(ddi.isEmpty, true);
-      },
-    );
+    tearDownAll(() {
+      expect(ddi.isEmpty, true);
+    });
     test('Register a Factory Application Module', () {
       ModuleFactoryApplication.new.builder.asApplication();
 
@@ -30,7 +28,9 @@ void main() {
       DDI.instance.destroy<ModuleFactoryApplication>();
 
       expect(
-          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
+        () => DDI.instance.get<C>(),
+        throwsA(isA<BeanNotFoundException>()),
+      );
     });
 
     test('Register a Factory Dependent Module', () {
@@ -48,7 +48,9 @@ void main() {
       DDI.instance.destroy<ModuleFactoryDependent>();
 
       expect(
-          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
+        () => DDI.instance.get<C>(),
+        throwsA(isA<BeanNotFoundException>()),
+      );
     });
 
     test('Register a Factory Singleton Module', () {
@@ -65,7 +67,9 @@ void main() {
       DDI.instance.destroy<ModuleFactorySingleton>();
 
       expect(
-          () => DDI.instance.get<C>(), throwsA(isA<BeanNotFoundException>()));
+        () => DDI.instance.get<C>(),
+        throwsA(isA<BeanNotFoundException>()),
+      );
     });
   });
 }

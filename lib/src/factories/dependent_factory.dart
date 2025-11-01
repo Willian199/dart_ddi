@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/exception/bean_destroyed.dart';
+import 'package:dart_ddi/src/exception/concurrent_creation.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
 import 'package:dart_ddi/src/utils/instance_destroy_utils.dart';
-import 'package:dart_ddi/src/utils/instance_decorators_utils.dart';
 
 /// Create a new instance every time it is requested.
 ///
@@ -50,8 +50,29 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   /// The current _state of this factory in its lifecycle.
   BeanStateEnum _state = BeanStateEnum.none;
 
+  // Prevents Circular Dependency Injection during Instance Creation
+  static const _resolutionKey = #_resolutionKey;
+
+  static Set<Object> _getResolutionMap() {
+    return Zone.current[_resolutionKey] as Set<Object>? ?? {};
+  }
+
   @override
   BeanStateEnum get state => _state;
+
+  /// Verify if this factory is a Future.
+  @override
+  bool get isFuture => _builder.isFuture || BeanT is Future;
+
+  /// Verify if this factory is ready (Created).
+  @override
+  bool get isReady => false;
+
+  @override
+  bool get isRegistered => BeanStateEnum.registered == _state;
+
+  @override
+  Set<Object> get children => _children;
 
   /// Register the instance in [DDI].
   /// When the instance is ready, must call apply function.
@@ -72,47 +93,83 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   }) {
     _checkState(qualifier);
 
-    BeanT dependentClazz = createInstance<BeanT, ParameterT>(
-      builder: _builder,
-      parameter: parameter,
-    );
+    // If resolutionMap doesn't exist in the current zone, create a new zone with a new map
+    if (Zone.current[_resolutionKey] == null) {
+      return runZoned(
+        () => _runner<ParameterT>(qualifier: qualifier, parameter: parameter),
+        zoneValues: {_resolutionKey: <Object>{}},
+      );
+    } else {
+      return _runner<ParameterT>(qualifier: qualifier, parameter: parameter);
+    }
+  }
 
-    for (final interceptor in _interceptors) {
-      final inter = ddi.get(qualifier: interceptor) as DDIInterceptor;
+  BeanT _runner<ParameterT extends Object>({
+    required Object qualifier,
+    ParameterT? parameter,
+  }) {
+    final resolutionMap = _getResolutionMap();
 
-      dependentClazz = inter.onCreate(dependentClazz) as BeanT;
+    if (resolutionMap.contains(qualifier)) {
+      throw ConcurrentCreationException(qualifier.toString());
     }
 
-    assert(
+    resolutionMap.add(qualifier);
+
+    try {
+      BeanT dependentClazz = createInstance<BeanT, ParameterT>(
+        builder: _builder,
+        parameter: parameter,
+      );
+
+      if (_interceptors.isNotEmpty) {
+        for (final interceptor in _interceptors) {
+          dependentClazz = ddi
+              .get<DDIInterceptor>(qualifier: interceptor)
+              .onCreate(dependentClazz) as BeanT;
+        }
+      }
+
+      assert(
         dependentClazz is! PreDispose || dependentClazz is! Future<PreDispose>,
-        'Dependent instances dont support PreDispose. Use Interceptors instead.');
-    assert(
+        'Dependent instances dont support PreDispose. Use Interceptors instead.',
+      );
+      assert(
         dependentClazz is! PreDestroy || dependentClazz is! Future<PreDestroy>,
-        'Dependent instances dont support PreDestroy. Use Interceptors instead.');
+        'Dependent instances dont support PreDestroy. Use Interceptors instead.',
+      );
 
-    dependentClazz = InstanceDecoratorsUtils.executeDecorators<BeanT>(
-        dependentClazz, _decorators);
+      if (_decorators.isNotEmpty) {
+        for (final decorator in _decorators) {
+          dependentClazz = decorator(dependentClazz);
+        }
+      }
 
-    if (dependentClazz is DDIModule) {
-      dependentClazz.moduleQualifier = qualifier;
+      if (dependentClazz is DDIModule) {
+        dependentClazz.moduleQualifier = qualifier;
+      }
+
+      if (dependentClazz is PostConstruct) {
+        dependentClazz.onPostConstruct();
+      } else if (dependentClazz is Future<PostConstruct>) {
+        dependentClazz.then(
+          (PostConstruct postConstruct) => postConstruct.onPostConstruct(),
+        );
+      }
+
+      /// Run the Interceptors for the GET process.
+      /// Must run everytime
+      if (_interceptors.isNotEmpty) {
+        for (final interceptor in _interceptors) {
+          dependentClazz = ddi
+              .get<DDIInterceptor>(qualifier: interceptor)
+              .onGet(dependentClazz) as BeanT;
+        }
+      }
+      return dependentClazz;
+    } finally {
+      resolutionMap.remove(qualifier);
     }
-
-    if (dependentClazz is PostConstruct) {
-      dependentClazz.onPostConstruct();
-    } else if (dependentClazz is Future<PostConstruct>) {
-      dependentClazz.then(
-          (PostConstruct postConstruct) => postConstruct.onPostConstruct());
-    }
-
-    /// Run the Interceptors for the GET process.
-    /// Must run everytime
-    for (final interceptor in _interceptors) {
-      final inter = ddi.get(qualifier: interceptor) as DDIInterceptor;
-
-      dependentClazz = inter.onGet(dependentClazz) as BeanT;
-    }
-
-    return dependentClazz;
   }
 
   /// Gets or create this instance as Future.
@@ -127,70 +184,92 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   }) async {
     _checkState(qualifier);
 
-    BeanT dependentClazz = await createInstanceAsync<BeanT, ParameterT>(
-      builder: _builder,
-      parameter: parameter,
-    );
-
-    /// Run the Interceptor for create process
-    for (final interceptor in _interceptors) {
-      final inter =
-          (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
-
-      final exec = inter.onCreate(dependentClazz);
-
-      dependentClazz = (exec is Future ? await exec : exec) as BeanT;
+    // If resolutionMap doesn't exist in the current zone, create a new zone with a new map
+    if (Zone.current[_resolutionKey] == null) {
+      return runZoned(
+        () => _runnerAsync<ParameterT>(
+            qualifier: qualifier, parameter: parameter),
+        zoneValues: {_resolutionKey: <Object>{}},
+      );
+    } else {
+      return _runnerAsync<ParameterT>(
+          qualifier: qualifier, parameter: parameter);
     }
-
-    assert(
-        dependentClazz is! PreDispose || dependentClazz is! Future<PreDispose>,
-        'Dependent instances dont support PreDispose. Use Interceptors instead.');
-    assert(
-        dependentClazz is! PreDestroy || dependentClazz is! Future<PreDestroy>,
-        'Dependent instances dont support PreDestroy. Use Interceptors instead.');
-
-    /// Apply all Decorators to the instance
-    dependentClazz = InstanceDecoratorsUtils.executeDecorators<BeanT>(
-        dependentClazz, _decorators);
-
-    /// Refresh the qualifier for the Module
-    if (dependentClazz is DDIModule) {
-      dependentClazz.moduleQualifier = qualifier;
-    }
-
-    if (dependentClazz is PostConstruct) {
-      await dependentClazz.onPostConstruct();
-    } else if (dependentClazz is Future<PostConstruct>) {
-      final PostConstruct postConstruct =
-          await (dependentClazz as Future<PostConstruct>);
-
-      await postConstruct.onPostConstruct();
-    }
-
-    /// Run the Interceptors for the GET process.
-    /// Must run everytime
-    for (final interceptor in _interceptors) {
-      final inter =
-          (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
-
-      final exec = inter.onGet(dependentClazz);
-
-      dependentClazz = (exec is Future ? await exec : exec) as BeanT;
-    }
-
-    return dependentClazz;
   }
 
-  /// Verify if this factory is a Future.
-  @override
-  bool get isFuture => _builder.isFuture || BeanT is Future;
+  Future<BeanT> _runnerAsync<ParameterT extends Object>({
+    required Object qualifier,
+    ParameterT? parameter,
+  }) async {
+    final resolutionMap = _getResolutionMap();
 
-  /// Verify if this factory is ready (Created).
-  @override
-  bool get isReady => false;
+    if (resolutionMap.contains(qualifier)) {
+      throw ConcurrentCreationException(qualifier.toString());
+    }
 
-  @override
-  bool get isRegistered => BeanStateEnum.registered == _state;
+    resolutionMap.add(qualifier);
+
+    try {
+      BeanT dependentClazz = await createInstanceAsync<BeanT, ParameterT>(
+        builder: _builder,
+        parameter: parameter,
+      );
+
+      /// Run the Interceptor for create process
+      for (final interceptor in _interceptors) {
+        final inter =
+            (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
+
+        final exec = inter.onCreate(dependentClazz);
+
+        dependentClazz = (exec is Future ? await exec : exec) as BeanT;
+      }
+
+      assert(
+        dependentClazz is! PreDispose || dependentClazz is! Future<PreDispose>,
+        'Dependent instances dont support PreDispose. Use Interceptors instead.',
+      );
+      assert(
+        dependentClazz is! PreDestroy || dependentClazz is! Future<PreDestroy>,
+        'Dependent instances dont support PreDestroy. Use Interceptors instead.',
+      );
+
+      if (_decorators.isNotEmpty) {
+        for (final decorator in _decorators) {
+          dependentClazz = decorator(dependentClazz);
+        }
+      }
+
+      /// Refresh the qualifier for the Module
+      if (dependentClazz is DDIModule) {
+        dependentClazz.moduleQualifier = qualifier;
+      }
+
+      if (dependentClazz is PostConstruct) {
+        await dependentClazz.onPostConstruct();
+      } else if (dependentClazz is Future<PostConstruct>) {
+        final PostConstruct postConstruct =
+            await (dependentClazz as Future<PostConstruct>);
+
+        await postConstruct.onPostConstruct();
+      }
+
+      /// Run the Interceptors for the GET process.
+      /// Must run everytime
+      for (final interceptor in _interceptors) {
+        final inter =
+            (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
+
+        final exec = inter.onGet(dependentClazz);
+
+        dependentClazz = (exec is Future ? await exec : exec) as BeanT;
+      }
+
+      return dependentClazz;
+    } finally {
+      resolutionMap.remove(qualifier);
+    }
+  }
 
   /// Removes the instance of the registered class in [DDI].
   ///
@@ -251,7 +330,12 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
     _checkState(type);
 
-    _decorators = [..._decorators, ...newDecorators];
+    if (_decorators.isEmpty) {
+      _decorators = newDecorators;
+      return;
+    }
+
+    _decorators.addAll(newDecorators);
   }
 
   @override
@@ -262,7 +346,12 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
     _checkState(type);
 
-    _interceptors = {..._interceptors, ...newInterceptors};
+    if (_interceptors.isEmpty) {
+      _interceptors = newInterceptors;
+      return;
+    }
+
+    _interceptors.addAll(newInterceptors);
   }
 
   @override
@@ -273,11 +362,13 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
     _checkState(type);
 
-    _children = {..._children, ...child};
-  }
+    if (_children.isEmpty) {
+      _children = child;
+      return;
+    }
 
-  @override
-  Set<Object> get children => _children;
+    _children.addAll(child);
+  }
 
   void _checkState(Object qualifier) {
     if (_state == BeanStateEnum.beingDestroyed ||
