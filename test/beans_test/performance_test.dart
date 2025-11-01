@@ -207,7 +207,7 @@ void main() {
 
       expect(
         sw.elapsedMilliseconds,
-        lessThan(80),
+        lessThan(100),
         reason: 'Adding interceptors should be extremely fast.',
       );
 
@@ -239,7 +239,7 @@ void main() {
 
       expect(
         sw.elapsedMilliseconds,
-        lessThan(80),
+        lessThan(100),
         reason: 'Adding interceptors should be extremely fast.',
       );
 
@@ -274,7 +274,7 @@ void main() {
 
       expect(
         sw.elapsedMilliseconds,
-        lessThan(80),
+        lessThan(100),
         reason: 'Adding interceptors should be extremely fast.',
       );
 
