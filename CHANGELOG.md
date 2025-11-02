@@ -1,3 +1,11 @@
+## 0.13.0
+
+* Performance improvements  
+* Fixes state management during bean lifecycle.
+
+* Break changes:
+    * Qualifiers now require creating a new DDI instance to support Zone. Use `DDI.newInstance(enableZoneRegistry: true)` for Zone support.
+
 ## 0.12.0
 * This version brings a major rework to be able to use Custom Scopes.
 * Now you can create your own Scopes.

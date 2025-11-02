@@ -1,6 +1,4 @@
 import 'package:dart_ddi/dart_ddi.dart';
-import 'package:dart_ddi/src/exception/bean_not_found.dart';
-import 'package:dart_ddi/src/exception/concurrent_creation.dart';
 import 'package:test/test.dart';
 
 import '../clazz_samples/c.dart';

@@ -162,7 +162,12 @@ final service = ddi.get<MyService>();
 
 Run in a new Zone, making possible to register specific instances in a different context.
 
+**Important:** To use Zone support, you must create a new DDI instance with `enableZoneRegistry: true`. The default `DDI.instance` does not support Zone.
+
 ```dart
+// Create a new DDI instance with Zone support
+final ddi = DDI.newInstance(enableZoneRegistry: true);
+
 T runInZone<T>(String name, T Function() body);
 ```
 
@@ -176,6 +181,9 @@ This method creates a new Dart Zone with its own isolated registry of beans. Thi
 
 Example:
 ```dart
+// Create a DDI instance with Zone support
+final ddi = DDI.newInstance(enableZoneRegistry: true);
+
 final result = ddi.runInZone('test-zone', () {
   // Register instances specific to this zone
   ddi.registerSingleton<TestService>(TestService.new);
