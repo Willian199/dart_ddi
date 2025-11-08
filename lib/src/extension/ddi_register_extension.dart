@@ -74,6 +74,7 @@ extension DDIRegisterExtension on DDI {
     Set<Object> interceptors = const {},
     Set<Object> children = const {},
     FutureOr<bool> Function(Object)? selector,
+    bool useWeakReference = false,
   }) {
     return register<BeanT>(
       factory: ApplicationFactory<BeanT>(
@@ -83,6 +84,7 @@ extension DDIRegisterExtension on DDI {
         decorators: decorators,
         canDestroy: canDestroy,
         selector: selector,
+        useWeakReference: useWeakReference,
       ),
       qualifier: qualifier,
       canRegister: canRegister,

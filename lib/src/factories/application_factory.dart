@@ -26,14 +26,22 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     Set<Object> interceptors = const {},
     Set<Object> children = const {},
     super.selector,
+    bool useWeakReference = false,
   })  : _builder = builder,
         _canDestroy = canDestroy,
         _decorators = decorators,
         _interceptors = interceptors,
-        _children = children;
+        _children = children,
+        _useWeakReference = useWeakReference;
 
   /// The instance of the Bean created by the factory.
   BeanT? _instance;
+
+  /// Whether to use weak reference for the instance.
+  final bool _useWeakReference;
+
+  /// Weak reference to the instance (used when _useWeakReference is true).
+  WeakReference<BeanT>? _weakInstance;
 
   /// The factory builder responsible for creating the Bean.
   final CustomBuilder<FutureOr<BeanT>> _builder;
@@ -86,6 +94,20 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   }) {
     _checkState(type);
 
+    // Check if instance was garbage collected (weak reference)
+    if (_useWeakReference && isReady) {
+      final weakInst = _weakInstance?.target;
+      if (weakInst == null) {
+        // Instance was garbage collected, reset state to allow re-creation
+        _weakInstance = null;
+        _instance = null;
+        _state = BeanStateEnum.registered;
+        _created = Completer();
+        _runningCreateProcess = false;
+        // Continue with normal creation flow
+      }
+    }
+
     if (!isReady) {
       if (isFuture) {
         throw const FutureNotAcceptException();
@@ -111,15 +133,46 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
     // Run the Interceptors for the GET process.
     // Must run everytime
+    BeanT? instanceToReturn;
+    if (_useWeakReference) {
+      // Get instance from weak reference if enabled
+      // Note: We already checked at the beginning of the method, so this should not be null
+      instanceToReturn = _weakInstance?.target;
+      // If null here, it means GC occurred between checks - this should not happen
+      // The initial check should have caught it and recreate the instance
+      if (instanceToReturn == null) {
+        // Instance was garbage collected between checks, reset state
+        _weakInstance = null;
+        _instance = null;
+        _state = BeanStateEnum.registered;
+        _created = Completer();
+        _runningCreateProcess = false;
+        // Throw specific exception - the state is reset, so the next call will recreate
+        throw WeakReferenceCollectedException(type.toString());
+      }
+    } else {
+      instanceToReturn = _instance;
+    }
+
     if (_interceptors.isNotEmpty) {
       for (final interceptor in _interceptors) {
-        _instance = ddi
+        instanceToReturn = ddi
             .get<DDIInterceptor>(qualifier: interceptor)
-            .onGet(_instance!) as BeanT;
+            .onGet(instanceToReturn!) as BeanT;
       }
     }
 
-    return _instance!;
+    // Update storage based on weak reference setting
+    if (_useWeakReference && instanceToReturn != null) {
+      _weakInstance = WeakReference(instanceToReturn);
+      _instance = null; // Ensure _instance is null when using weak reference
+    } else if (!_useWeakReference && instanceToReturn != null) {
+      _instance = instanceToReturn;
+      // Ensure _weakInstance is null when not using weak reference
+      _weakInstance = null;
+    }
+
+    return instanceToReturn!;
   }
 
   void _runner<ParameterT extends Object>({
@@ -153,16 +206,24 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
         }
       }
 
-      _instance = ins;
-
-      if (_instance is DDIModule) {
-        (_instance as DDIModule).moduleQualifier = qualifier;
+      // Store instance based on weak reference setting
+      if (_useWeakReference) {
+        _weakInstance = WeakReference(ins);
+        _instance = null; // Ensure _instance is null when using weak reference
+      } else {
+        _instance = ins;
+        _weakInstance =
+            null; // Ensure _weakInstance is null when not using weak reference
       }
 
-      if (_instance is PostConstruct) {
-        (_instance as PostConstruct).onPostConstruct();
-      } else if (_instance is Future<PostConstruct>) {
-        (_instance as Future<PostConstruct>).then(
+      if (ins is DDIModule) {
+        (ins as DDIModule).moduleQualifier = qualifier;
+      }
+
+      if (ins is PostConstruct) {
+        (ins as PostConstruct).onPostConstruct();
+      } else if (ins is Future<PostConstruct>) {
+        (ins as Future<PostConstruct>).then(
           (PostConstruct postConstruct) => postConstruct.onPostConstruct(),
         );
       }
@@ -177,6 +238,7 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       // Reset the instance to null in case of error on creation
       // When the instance is null, the next getWith will try to create again
       _instance = null;
+      _weakInstance = null;
       if (state != BeanStateEnum.beingDestroyed &&
           state != BeanStateEnum.destroyed) {
         _state = BeanStateEnum.registered;
@@ -202,9 +264,34 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   }) async {
     _checkState(type);
 
+    // Check if instance was garbage collected (weak reference)
+    if (_useWeakReference && isReady) {
+      final weakInst = _weakInstance?.target;
+      if (weakInst == null) {
+        // Instance was garbage collected, reset state to allow re-creation
+        _weakInstance = null;
+        _instance = null;
+        _state = BeanStateEnum.registered;
+        _created = Completer();
+        _runningCreateProcess = false;
+        // Continue with normal creation flow
+      }
+    }
+
     if (isReady) {
       // Instance is already ready, proceed to interceptor phase
-      return _runGetInterceptors();
+      try {
+        final inst = await _runGetInterceptors();
+        return inst;
+      } on WeakReferenceCollectedException {
+        // Instance was garbage collected, reset state and continue with creation
+        _weakInstance = null;
+        _instance = null;
+        _state = BeanStateEnum.registered;
+        _created = Completer();
+        _runningCreateProcess = false;
+        // Continue with normal creation flow below
+      }
     }
 
     if (_runningCreateProcess) {
@@ -219,7 +306,18 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       // After waiting, check if instance is ready
       if (isReady) {
         // Instance was created by another process, proceed to interceptor phase
-        return _runGetInterceptors();
+        try {
+          final instance = await _runGetInterceptors();
+          return instance;
+        } on WeakReferenceCollectedException {
+          // Instance was garbage collected, reset state and continue with creation
+          _weakInstance = null;
+          _instance = null;
+          _state = BeanStateEnum.registered;
+          _created = Completer();
+          _runningCreateProcess = false;
+          // Continue with normal creation flow below
+        }
       }
     }
 
@@ -292,26 +390,38 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
         }
       }
 
-      _instance = instance;
+      // Store instance based on weak reference setting
+      if (_useWeakReference) {
+        _weakInstance = WeakReference(instance);
+        _instance = null; // Ensure _instance is null when using weak reference
+      } else {
+        _instance = instance;
+        // Ensure _weakInstance is null when not using weak reference
+        _weakInstance = null;
+      }
 
       /// Refresh the qualifier for the Module
-      if (_instance is DDIModule) {
-        (_instance as DDIModule).moduleQualifier = qualifier;
+      if (instance is DDIModule) {
+        (instance as DDIModule).moduleQualifier = qualifier;
       }
 
       _state = BeanStateEnum.created;
       _created.complete();
 
-      if (_instance is PostConstruct) {
-        await (_instance as PostConstruct).onPostConstruct();
-      } else if (_instance is Future<PostConstruct>) {
+      final instanceForPostConstruct =
+          _useWeakReference ? _weakInstance?.target : _instance;
+
+      if (instanceForPostConstruct is PostConstruct) {
+        await (instanceForPostConstruct as PostConstruct).onPostConstruct();
+      } else if (instanceForPostConstruct is Future<PostConstruct>) {
         final PostConstruct postConstruct =
-            await (_instance as Future<PostConstruct>);
+            await (instanceForPostConstruct as Future<PostConstruct>);
 
         await postConstruct.onPostConstruct();
       }
 
-      return _runGetInterceptors();
+      final inst = await _runGetInterceptors();
+      return inst;
     } catch (e) {
       if (!_created.isCompleted) {
         _created.complete();
@@ -335,20 +445,48 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   /// Runs the interceptors for the GET process.
   /// This method is extracted to avoid code duplication.
   Future<BeanT> _runGetInterceptors() async {
+    BeanT? instanceToProcess;
+    if (_useWeakReference) {
+      // Get instance from weak reference if enabled
+      instanceToProcess = _weakInstance?.target;
+      if (instanceToProcess == null) {
+        // Instance was garbage collected, reset state to allow re-creation
+        _weakInstance = null;
+        _instance = null;
+        _state = BeanStateEnum.registered;
+        _created = Completer();
+        _runningCreateProcess = false;
+        // Throw specific exception to signal that instance needs to be re-created
+        throw WeakReferenceCollectedException(type.toString());
+      }
+    } else {
+      instanceToProcess = _instance;
+    }
+
     if (_interceptors.isEmpty) {
-      return _instance!;
+      return instanceToProcess!;
     }
 
     /// Run the Interceptors for the GET process.
     /// Must run everytime
     for (final interceptor in _interceptors) {
       final exec = (await ddi.getAsync<DDIInterceptor>(qualifier: interceptor))
-          .onGet(_instance!);
+          .onGet(instanceToProcess!);
 
-      _instance = (exec is Future ? await exec : exec) as BeanT;
+      instanceToProcess = (exec is Future ? await exec : exec) as BeanT;
     }
 
-    return _instance!;
+    // Update storage based on weak reference setting
+    if (_useWeakReference && instanceToProcess != null) {
+      _weakInstance = WeakReference(instanceToProcess);
+      _instance = null; // Ensure _instance is null when using weak reference
+    } else if (!_useWeakReference && instanceToProcess != null) {
+      _instance = instanceToProcess;
+      // Ensure _weakInstance is null when not using weak reference
+      _weakInstance = null;
+    }
+
+    return instanceToProcess!;
   }
 
   /// Verify if this factory is a Future.
@@ -357,10 +495,20 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
   /// Verify if this factory is ready (Created).
   @override
-  bool get isReady =>
-      _instance != null &&
-      _created.isCompleted &&
-      _state == BeanStateEnum.created;
+  bool get isReady {
+    if (_useWeakReference) {
+      // Check weak reference if enabled
+      final weakInst = _weakInstance?.target;
+      return weakInst != null &&
+          _created.isCompleted &&
+          _state == BeanStateEnum.created;
+    }
+
+    // Check strong reference if not using weak reference
+    return _instance != null &&
+        _created.isCompleted &&
+        _state == BeanStateEnum.created;
+  }
 
   @override
   bool get isRegistered => [

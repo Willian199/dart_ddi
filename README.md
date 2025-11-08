@@ -50,25 +50,30 @@ See this [example](https://github.com/Willian199/dart_ddi/blob/master/example/ma
    5. [Common Considerations](#common-considerations)
    6. [Custom Scopes](#custom-scopes)
    7. [Zone Management](#zone-management)
-2. [Factories](#factories)
+2. [Instance Wrapper](#instance-wrapper)
+   1. [Overview](#instance-wrapper-overview)
+   2. [Cache and Weak Reference](#instance-cache-and-weak-reference)
+   3. [Interceptor and Decorator Behavior](#instance-interceptor-and-decorator-behavior)
+   4. [Use Cases](#instance-use-cases)
+3. [Factories](#factories)
    1. [How Factories Work](#how-factories-work)
    2. [Use Cases for Factories](#use-cases-for-factories)
    3. [Considerations](#considerations)
-3. [Qualifiers](#qualifiers)
+4. [Qualifiers](#qualifiers)
    1. [How Qualifiers Work](#how-qualifiers-work)
    2. [Use Cases for Qualifiers](#use-cases-for-qualifiers)
    3. [Considerations](#considerations)
-4. [Extra Customization](#extra-customization)
+5. [Extra Customization](#extra-customization)
    1. [PostConstruct](#postconstruct)
    2. [Decorators](#decorators)
    3. [Interceptor](#interceptor)
    4. [CanRegister](#canregister)
    5. [CanDestroy](#candestroy)
    6. [Selectors](#selector)
-5. [Modules](#modules)
+6. [Modules](#modules)
    1. [Adding a Class](#adding-a-class)
    2. [Adding Multiple Classes](#adding-multiple-classes)
-6. [Mixins](#mixins)
+7. [Mixins](#mixins)
    1. [Post Construct](#post-construct-mixin)
    2. [Pre Destroy](#pre-destroy-mixin)
    3. [Pre Dispose](#pre-dispose-mixin)
@@ -203,6 +208,251 @@ final result = ddi.runInZone('test-zone', () {
 **Nested Instances**: Avoid unintentional coupling by carefully managing instances within larger-scoped objects.
 
 **const and Modifiers**: Take into account the impact of const and other class modifiers on the behavior of instances within different scopes.
+
+# Instance Wrapper
+
+The `Instance<BeanT>` wrapper provides a programmatic way to access beans. It allows you to check if a bean is resolvable, get instances, and destroy them programmatically.
+
+## Instance Wrapper Overview
+
+The `Instance` wrapper is obtained using the `getInstance` method and provides the following capabilities:
+
+- **`isResolvable()`**: Checks if the bean is registered and can be retrieved.
+- **`get<ParameterT>({ParameterT? parameter})`**: Gets the bean instance synchronously, optionally with parameters.
+- **`getAsync<ParameterT>({ParameterT? parameter})`**: Gets the bean instance asynchronously, optionally with parameters.
+- **`destroy()`**: Destroys the bean instance if it exists and can be destroyed.
+- **`dispose()`**: Disposes of the bean instance if it exists.
+
+#### Basic Usage Example
+
+```dart
+// Register a service
+ddi.dependent<MyService>(MyService.new);
+
+// Get an Instance wrapper
+final instance = ddi.getInstance<MyService>();
+
+// Check if resolvable
+if (instance.isResolvable()) {
+  // Get the service instance
+  final service = instance.get();
+  service.doSomething();
+  
+  // Destroy when done
+  await instance.destroy();
+}
+```
+
+#### Example with Qualifier
+
+```dart
+// Register multiple instances with qualifiers
+ddi.dependent<MyService>(MyService.new, qualifier: 'service1');
+ddi.dependent<MyService>(MyService.new, qualifier: 'service2');
+
+// Get Instance wrapper for specific qualifier
+final instance1 = ddi.getInstance<MyService>(qualifier: 'service1');
+final instance2 = ddi.getInstance<MyService>(qualifier: 'service2');
+
+final service1 = instance1.get();
+final service2 = instance2.get();
+```
+
+## Instance Cache and Weak Reference
+
+The `Instance` wrapper supports two optional parameters that control how instances are stored and managed:
+
+- **`cache`**: If `true`, maintains a strong reference to the instance (caching). This prevents the instance from being garbage collected while the Instance wrapper exists.
+- **`useWeakReference`**: If `true`, maintains a weak reference to the instance. This allows the instance to be garbage collected if no other strong references exist.
+
+**Important:** If both `useWeakReference` and `cache` are `true`, `cache` takes precedence (strong reference is maintained).
+
+**⚠️ Memory Management Warning:** When using `cache: true`, the `Instance` wrapper maintains a strong reference to the cached instance, which can lead to memory leaks if not properly managed. Always call `destroy()` or `dispose()` on the `Instance` wrapper when you're done using it to release the cached instance and prevent memory leaks.
+
+#### Example with Cache
+
+```dart
+// Register a service
+ddi.dependent<MyService>(MyService.new);
+
+// Get Instance wrapper with cache enabled
+final instance = ddi.getInstance<MyService>(cache: true);
+
+// First get - instance is created and cached
+final service1 = instance.get();
+
+// Second get - returns cached instance (same reference)
+final service2 = instance.get();
+expect(service1, same(service2)); // true
+
+// Important: Always destroy the Instance wrapper when done to prevent memory leaks
+await instance.destroy();
+```
+
+#### Example with Weak Reference
+
+```dart
+// Register a service
+ddi.dependent<MyService>(MyService.new);
+
+// Get Instance wrapper with weak reference
+final instance = ddi.getInstance<MyService>(useWeakReference: true);
+
+// Get instance - stored as weak reference
+final service1 = instance.get();
+
+// If no other strong references exist, instance may be GC collected
+// Next get will recreate the instance if it was collected
+final service2 = instance.get();
+```
+
+#### Example: Converting WeakReference to Strong Reference
+
+```dart
+// Register ApplicationScope with WeakReference
+ddi.application<MyService>(
+  MyService.new,
+  useWeakReference: true,
+);
+
+// Get Instance wrapper with cache = true
+// This converts the WeakReference to a Strong reference
+final instance = ddi.getInstance<MyService>(cache: true);
+
+// Instance maintains strong reference, preventing GC
+final service1 = instance.get();
+final service2 = instance.get();
+expect(service1, same(service2)); // true
+```
+
+## Instance Interceptor and Decorator Behavior
+
+The `Instance` wrapper interacts with interceptors and decorators in a specific way:
+
+### When `Instance.cache = true` or `Instance.useWeakReference = true`:
+
+- **Interceptors `onGet`**: Called only once (when instance is first retrieved and cached/stored).
+- **Decorators**: Applied only once (during instance creation).
+
+### When `ApplicationScope.useWeakReference = true` (without Instance cache):
+
+- **Interceptors `onGet`**: Called every time.
+- **Decorators**: Applied during instance creation and everytime the GC collect the instance.
+
+### Example with Interceptors
+
+```dart
+// Register interceptor
+ddi.singleton<TrackingInterceptor>(TrackingInterceptor.new);
+
+// Register service with interceptor
+ddi.application<MyService>(
+  MyService.new,
+  interceptors: {TrackingInterceptor},
+);
+
+// Get Instance wrapper with cache
+final instance = ddi.getInstance<MyService>(cache: true);
+
+// First get - interceptor.onGet is called once
+final service1 = instance.get();
+
+// Second get - interceptor.onGet is NOT called again (instance is cached)
+final service2 = instance.get();
+
+final interceptor = ddi.get<TrackingInterceptor>();
+expect(interceptor.getCallCount, equals(1)); // Only called once
+```
+
+## Instance Use Cases
+
+### Lazy Initialization
+
+```dart
+// Get Instance wrapper without creating the service yet
+final instance = ddi.getInstance<MyService>();
+
+// Service is created only when get() is called
+if (someCondition) {
+  final service = instance.get();
+  service.doSomething();
+}
+```
+
+### Conditional Usage
+
+```dart
+final instance = ddi.getInstance<MyService>();
+
+// Check if service is available before using
+if (instance.isResolvable()) {
+  final service = instance.get();
+  service.doSomething();
+} else {
+  // Handle case when service is not registered
+  print('Service not available');
+}
+```
+
+### Programmatic Lifecycle Management
+
+```dart
+final instance = ddi.getInstance<MyService>();
+
+// Use the service
+final service = instance.get();
+service.doSomething();
+
+// Dispose when done
+await instance.dispose();
+
+// Or destroy completely
+await instance.destroy();
+```
+
+**⚠️ Important:** If you used `cache: true` when creating the `Instance` wrapper, it's especially important to call `destroy()` or `dispose()` to release the cached instance and prevent memory leaks.
+
+### Working with Parameters
+
+```dart
+// Register service that accepts parameters
+ddi.dependent<MyService>(
+  (String config) => MyService(config),
+);
+
+// Get Instance wrapper
+final instance = ddi.getInstance<MyService>();
+
+// Get instance with parameter
+final service1 = instance.get(parameter: 'config1');
+final service2 = instance.get(parameter: 'config2');
+// Different parameters create different instances
+expect(service1, isNot(same(service2))); // true
+
+// With cache, only the first retrieved instance is cached
+// ⚠️ Important: Cache does NOT differentiate between parameters
+// The cached instance will ALWAYS be returned, regardless of parameters
+final instanceWithCache = ddi.getInstance<MyService>(cache: true);
+final service3 = instanceWithCache.get(parameter: 'config1');
+// service3 is now cached (created with 'config1')
+
+// If you use the same parameter again, returns the cached instance
+final service4 = instanceWithCache.get(parameter: 'config1');
+expect(service3, same(service4)); // true - same cached instance
+
+// ⚠️ Even if you use a different parameter, it STILL returns the cached instance
+// The parameter is IGNORED when cache is enabled and an instance is already cached
+final service5 = instanceWithCache.get(parameter: 'config2');
+// service5 is the SAME instance as service3 (cached instance, parameter ignored)
+expect(service3, same(service5)); // true - same cached instance
+expect(service4, same(service5)); // true - same cached instance
+
+// The cached instance (created with 'config1') is always returned
+// regardless of what parameter you pass
+final service6 = instanceWithCache.get(parameter: 'config2');
+expect(service5, same(service6)); // true - same cached instance
+expect(service3, same(service6)); // true - same cached instance
+```
 
 # Factories
 

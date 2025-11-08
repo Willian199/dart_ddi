@@ -1,3 +1,12 @@
+## 0.14.0
+
+* Added `Instance<BeanT>` wrapper for programmatic bean access. Also provides methods: `isResolvable()`, `get()`, `getAsync()`, `destroy()`, and `dispose()`.
+* Added support for `cache` and `useWeakReference` parameters in `getInstance` method.
+* When `Instance.cache = true` or `Instance.useWeakReference = true`, interceptors `onGet` are called only once (when instance is cached/stored).
+* When `ApplicationScope.useWeakReference = true`, interceptors `onGet` are called every time (instance may be recreated if GC collected).
+* `Instance.cache = true` takes precedence over `Instance.useWeakReference = true` (maintains strong reference).
+* `Instance.cache = true` can convert `ApplicationScope` WeakReference to Strong reference.
+
 ## 0.13.0
 
 * Performance improvements  

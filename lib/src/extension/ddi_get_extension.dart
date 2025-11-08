@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:dart_ddi/dart_ddi.dart';
+import 'package:dart_ddi/src/features/instance_wrapper.dart';
 
 /// Extension for [DDI] to retrieve instances of registered classes.
 ///
@@ -146,5 +149,60 @@ extension DDIGetExtension on DDI {
     }
 
     return null;
+  }
+
+  /// Gets an [Instance] wrapper for programmatic bean access, similar to CDI's Instance\<BeanT>.
+  ///
+  /// This method returns an [Instance] object that provides programmatic access to beans,
+  /// allowing you to check if a bean is resolvable, get instances, and destroy them.
+  ///
+  /// - `qualifier`: Optional qualifier to identify a specific bean instance.
+  /// - `useWeakReference`: If `true`, maintains a weak reference to the instance.
+  ///   This allows the instance to be garbage collected if no other strong references exist.
+  ///   Note: If `cache` is `true`, this parameter is ignored (cache takes precedence).
+  /// - `cache`: If `true`, maintains a strong reference to the instance (caching).
+  ///   This prevents the instance from being garbage collected while the Instance wrapper exists.
+  ///   Takes precedence over `useWeakReference`.
+  ///
+  /// **Important:** If both `useWeakReference` and `cache` are `true`, `cache` takes precedence
+  /// (strong reference is maintained). This is useful when you want to ensure the instance
+  /// is not garbage collected even if the ApplicationScope uses WeakReference.
+  ///
+  /// Example:
+  /// ```dart
+  /// final instance = ddi.getInstance<MyService>();
+  /// if (instance.isResolvable()) {
+  ///   final service = instance.get();
+  ///   service.doSomething();
+  /// }
+  /// ```
+  ///
+  /// Example with cache (strong reference):
+  /// ```dart
+  /// // ApplicationScope with WeakReference, but Instance with cache = true
+  /// // This ensures the instance is not garbage collected while Instance exists
+  /// final instance = ddi.getInstance<MyService>(cache: true);
+  /// final service = instance.get(); // Instance is cached (strong reference)
+  /// ```
+  Instance<BeanT> getInstance<BeanT extends Object>({
+    Object? qualifier,
+    bool useWeakReference = false,
+    bool cache = false,
+  }) {
+    final Object effectiveQualifierName = qualifier ?? BeanT;
+
+    // Check if bean is registered
+    if (!isRegistered<BeanT>(qualifier: qualifier)) {
+      throw BeanNotFoundException(effectiveQualifierName.toString());
+    }
+
+    // Create a wrapper that uses getWith internally
+    // This avoids needing direct access to the private _beans field
+    return InstanceWrapper<BeanT>(
+      qualifier: effectiveQualifierName,
+      ddi: this,
+      useWeakReference: useWeakReference,
+      cache: cache,
+    );
   }
 }

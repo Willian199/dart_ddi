@@ -63,7 +63,7 @@ void main() {
         sw.elapsedMilliseconds,
         lessThan(1500),
         reason:
-            'Should resolve 10,000,000 instances in under 2000ms on a modern CPU.',
+            'Should resolve 10,000,000 instances in under 1500ms on a modern CPU.',
       );
 
       ddi.destroy<ExampleService>();
@@ -106,7 +106,7 @@ void main() {
         sw.elapsedMilliseconds,
         lessThan(1500),
         reason:
-            'Should resolve 10,000,000 instances in under 2000ms on a modern CPU.',
+            'Should resolve 10,000,000 instances in under 1500ms on a modern CPU.',
       );
 
       ddi.destroy<ExampleService>();
@@ -149,7 +149,7 @@ void main() {
         sw.elapsedMilliseconds,
         lessThan(1500),
         reason:
-            'Should resolve 10,000,000 instances in under 2000ms on a modern CPU.',
+            'Should resolve 10,000,000 instances in under 1500ms on a modern CPU.',
       );
 
       ddi.destroy<ExampleService>();
@@ -179,7 +179,7 @@ void main() {
         sw.elapsedMilliseconds,
         lessThan(15000),
         reason:
-            'Should resolve 10,000,000 instances in under 10000ms on a modern CPU.',
+            'Should resolve 10,000,000 instances in under 15000ms on a modern CPU.',
       );
 
       ddi.destroy<ExampleService>();
@@ -350,6 +350,151 @@ void main() {
 
       expect(
         () => ddi.get(qualifier: 'performance_string_decorated'),
+        throwsA(isA<BeanNotFoundException>()),
+      );
+    });
+
+    test('Instance with cache should be efficient', () async {
+      final sw = Stopwatch()..start();
+
+      ddi.application(ExampleInterceptor.new);
+      ddi.application(ExampleService.new, interceptors: {ExampleInterceptor});
+
+      // Get Instance wrapper with cache
+      final instance = ddi.getInstance<ExampleService>(cache: true);
+
+      // Simulate 10,000,000 dependency resolutions using cached instance
+      for (var i = 0; i < interaction; i++) {
+        instance.get();
+      }
+
+      sw.stop();
+
+      final interceptor = ddi.get<ExampleInterceptor>();
+      // Validation
+      expect(
+        interceptor.onCreateCalled,
+        1,
+        reason: 'Creation should occur only once.',
+      );
+      // With cache, interceptor.onGet is called only once (when first cached)
+      expect(
+        interceptor.onGetCalled,
+        equals(1),
+        reason:
+            'Interceptor onGet should be called only once when using cache.',
+      );
+
+      // Sanity check for performance
+      // With cache, should be very fast as it just returns the cached instance
+      expect(
+        sw.elapsedMilliseconds,
+        lessThan(500),
+        reason:
+            'Should resolve 10,000,000 cached instances in under 500ms on a modern CPU.',
+      );
+
+      await instance.destroy();
+      ddi.destroy<ExampleInterceptor>();
+
+      expect(
+        () => ddi.get<ExampleService>(),
+        throwsA(isA<BeanNotFoundException>()),
+      );
+    });
+
+    test('Instance without cache should be efficient', () async {
+      final sw = Stopwatch()..start();
+
+      ddi.application(ExampleInterceptor.new);
+      ddi.application(ExampleService.new, interceptors: {ExampleInterceptor});
+
+      // Get Instance wrapper without cache
+      final instance = ddi.getInstance<ExampleService>();
+
+      // Simulate 10,000,000 dependency resolutions
+      for (var i = 0; i < interaction; i++) {
+        instance.get();
+      }
+
+      sw.stop();
+
+      final interceptor = ddi.get<ExampleInterceptor>();
+      // Validation
+      expect(
+        interceptor.onCreateCalled,
+        1,
+        reason: 'Creation should occur only once.',
+      );
+      expect(
+        interceptor.onGetCalled,
+        equals(interaction),
+        reason: 'Interceptor should run on each get.',
+      );
+
+      // Sanity check for performance
+      // Without cache, should have similar performance to direct get
+      expect(
+        sw.elapsedMilliseconds,
+        lessThan(1600),
+        reason:
+            'Should resolve 10,000,000 instances in under 1600ms on a modern CPU.',
+      );
+
+      await instance.destroy();
+      ddi.destroy<ExampleInterceptor>();
+
+      expect(
+        () => ddi.get<ExampleService>(),
+        throwsA(isA<BeanNotFoundException>()),
+      );
+    });
+
+    test('Instance with useWeakReference should be efficient', () async {
+      final sw = Stopwatch()..start();
+
+      ddi.application(ExampleInterceptor.new);
+      ddi.application(ExampleService.new, interceptors: {ExampleInterceptor});
+
+      // Get Instance wrapper with useWeakReference
+      final instance = ddi.getInstance<ExampleService>(useWeakReference: true);
+
+      // Simulate 10,000,000 dependency resolutions
+      for (var i = 0; i < interaction; i++) {
+        instance.get();
+      }
+
+      sw.stop();
+
+      final interceptor = ddi.get<ExampleInterceptor>();
+      // Validation
+      expect(
+        interceptor.onCreateCalled,
+        1,
+        reason: 'Creation should occur only once.',
+      );
+      // With useWeakReference, interceptor.onGet is called only once (when first stored)
+      expect(
+        interceptor.onGetCalled,
+        equals(1),
+        reason:
+            'Interceptor onGet should be called only once when using useWeakReference.',
+      );
+
+      // Sanity check for performance
+      // With useWeakReference, should be fast as it returns the weak referenced instance
+      expect(
+        sw.elapsedMilliseconds,
+        lessThan(500),
+        reason:
+            'Should resolve 10,000,000 instances with weak reference in under 500ms on a modern CPU.',
+      );
+
+      await instance.destroy();
+      ddi.destroy<ExampleInterceptor>();
+
+      expect(
+        () => ddi.get<ExampleService>(),
         throwsA(isA<BeanNotFoundException>()),
       );
     });
