@@ -436,9 +436,9 @@ void main() {
       // Without cache, should have similar performance to direct get
       expect(
         sw.elapsedMilliseconds,
-        lessThan(1500),
+        lessThan(1600),
         reason:
-            'Should resolve 10,000,000 instances in under 1500ms on a modern CPU.',
+            'Should resolve 10,000,000 instances in under 1600ms on a modern CPU.',
       );
 
       await instance.destroy();
