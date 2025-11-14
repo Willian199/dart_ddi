@@ -70,6 +70,7 @@ See this [example](https://github.com/Willian199/dart_ddi/blob/master/example/ma
    4. [CanRegister](#canregister)
    5. [CanDestroy](#candestroy)
    6. [Selectors](#selector)
+   7. [Required Dependencies](#required-dependencies)
 6. [Modules](#modules)
    1. [Adding a Class](#adding-a-class)
    2. [Adding Multiple Classes](#adding-multiple-classes)
@@ -92,11 +93,13 @@ This scope creates a single instance during registration and reuses it in all su
 
 **Use Case**: Sharing a configuration manager, a logging service, or a global state manager.
 
+**Required Dependencies**: You can use the `required` parameter to ensure dependencies are registered and ready before instance creation. Validation occurs during `register()`.      
+
 **Note**: 
 
  * `Interceptor.onDispose` and `PreDispose` mixin are not supported. You can just destroy the instance. 
 
- * If you call dispose, only the Application children will be disposed.      
+ * If you call dispose, only the Application children will be disposed.
 
 ## Application
 Generates an instance when first used and reuses it for all subsequent requests during the application's execution.
@@ -107,6 +110,8 @@ Generates an instance when first used and reuses it for all subsequent requests 
 
 **Note**: `PreDispose` and `PreDestroy` mixins will only be called if the instance is in use. Use `Interceptor` if you want to call them regardless.
 
+**Required Dependencies**: You can use the `required` parameter to ensure dependencies are registered and ready before instance creation. Validation occurs during `getWith()` or `getAsyncWith()`.
+
 ## Dependent
 Produces a new instance every time it is requested, ensuring independence and uniqueness.
 
@@ -114,11 +119,13 @@ Produces a new instance every time it is requested, ensuring independence and un
 
 **Use Case**: Creating instances of transient objects like data repositories or request handlers.
 
+**Required Dependencies**: You can use the `required` parameter to ensure dependencies are registered before instance creation. Validation occurs during `getWith()` or `getAsyncWith()`. 
+
 **Note**:
 
  * `Dispose` functions, `Interceptor.onDispose` and `PreDispose` mixin are not supported.
 
- * `PreDestroy` mixins are not supported. Use `Interceptor.onDestroy` instead. 
+ * `PreDestroy` mixins are not supported. Use `Interceptor.onDestroy` instead.
 
 ## Object
 Registers an Object in the Object Scope, ensuring it is created once and shared throughout the entire application, working like Singleton.
@@ -126,6 +133,8 @@ Registers an Object in the Object Scope, ensuring it is created once and shared 
 **Recommendation**: Suitable for objects that are stateless or have shared state across the entire application.
 
 **Use Case**: Application or device properties, like platform or dark mode settings, where the object's state needs to be consistent across the entire application.
+
+**Required Dependencies**: You can use the `required` parameter to ensure dependencies are registered and ready before instance creation. Validation occurs during `register()`.
 
 **Note**:
 
@@ -729,6 +738,30 @@ void main() {
 }
 ```
 
+## Required Dependencies
+The `required` parameter allows you to explicitly declare which qualifiers or types must be registered before an instance can be created. This ensures that all necessary dependencies are available and ready before the factory attempts to create an instance.
+
+**Behavior:**
+- **Singleton/Object**: Validation occurs during `register()`. If a dependency is not ready, it will be created automatically.
+- **Application/Dependent**: Validation occurs during `getWith()` or `getAsyncWith()`. For Application scope, dependencies are created if not ready.
+- If a required dependency is not registered, a `MissingDependenciesException` will be thrown.
+
+#### Example Usage:
+```dart
+// Register dependencies first
+ddi.singleton<Database>(Database.new);
+ddi.application<Logger>(Logger.new);
+
+// Register a service that requires Database and Logger
+ddi.application<MyService>(
+  MyService.new,
+  required: {Database, Logger},
+);
+
+// MyService will only be created after Database and Logger are ready
+final service = ddi.get<MyService>();
+```
+
 ## Modules
 
 Modules offer a convenient way to modularize and organize dependency injection configuration in your application. Through the use of the `addChildModules` and `addChildrenModules` methods, you can add and configure specific modules, grouping related dependencies and facilitating management of your dependency injection container.
@@ -873,10 +906,18 @@ class AppModule with DDIModule {
   @override
   void onPostConstruct() {
     // Registering instances with different scopes
-    registerSingleton(() => Database('main_database'), qualifier: 'mainDatabase');
-    registerApplication(() => Logger(), qualifier: 'appLogger');
-    registerObject('https://api.example.com', qualifier: 'apiUrl');
-    registerDependent(() => ApiService(inject.get(qualifier: 'apiUrl')), qualifier: 'dependentApiService');
+    singleton(() => Database('main_database'), qualifier: 'mainDatabase');
+    application(() => Logger(), qualifier: 'appLogger');
+    object('https://api.example.com', qualifier: 'apiUrl');
+    
+    // Register a service with required dependencies
+    application(
+      () => ApiService(ddi.get(qualifier: 'apiUrl')),
+      qualifier: 'apiService',
+      required: {'mainDatabase', 'appLogger'},
+    );
+    
+    dependent(() => TransientService(), qualifier: 'transientService');
   }
 }
 ```
