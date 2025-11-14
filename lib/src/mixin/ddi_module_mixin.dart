@@ -28,7 +28,32 @@ mixin DDIModule implements PostConstruct {
     _internalQualifier = value;
   }
 
-  Set<Object> get children => ddi.getChildren(qualifier: moduleQualifier);
+  /// Getter for the DDI instance to use.
+  ///
+  /// By default, returns [DDI.instance]. Classes using this mixin can override
+  /// this getter to use a different DDI container (e.g., [DDI.newInstance()]).
+  ///
+  /// Alternatively, the DDI instance can be set via the [ddiInstance] setter
+  /// when the module is created by a factory.
+  ///
+  /// Example:
+  /// ```dart
+  /// class MyModule with DDIModule {
+  ///   final DDI _customDdi = DDI.newInstance();
+  ///
+  ///   @override
+  ///   DDI get ddi => _customDdi;
+  ///
+  ///   @override
+  ///   void onPostConstruct() {
+  ///     singleton<MyService>(MyService.new);
+  ///   }
+  /// }
+  /// ```
+  DDI get ddiContainer => DDI.instance;
+
+  Set<Object> get children =>
+      ddiContainer.getChildren(qualifier: moduleQualifier);
 
   /// Registers an instance as a Singleton.
   ///
@@ -41,6 +66,7 @@ mixin DDIModule implements PostConstruct {
   /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to link multiple classes under a single parent module.
   /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
   ///
+  /// Obs: If you want to capture the error during the registration, you must await for it.
   Future<void> singleton<BeanT extends Object>(
     BeanRegister<BeanT> clazzRegister, {
     Object? qualifier,
@@ -50,8 +76,8 @@ mixin DDIModule implements PostConstruct {
     FutureOrBoolCallback? canRegister,
     bool canDestroy = true,
     FutureOr<bool> Function(Object)? selector,
-  }) {
-    final bean = ddi.singleton<BeanT>(
+  }) async {
+    final bean = ddiContainer.singleton<BeanT>(
       clazzRegister,
       qualifier: qualifier,
       decorators: decorators,
@@ -62,7 +88,14 @@ mixin DDIModule implements PostConstruct {
       selector: selector,
     );
 
-    ddi.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
+    // Ensure the module is registered before adding children
+    // Also throws the error if registration failed
+    if (!ddiContainer.isRegistered(qualifier: moduleQualifier)) {
+      await bean;
+    }
+
+    ddiContainer.addChildModules(
+        child: qualifier ?? BeanT, qualifier: moduleQualifier);
 
     return bean;
   }
@@ -87,8 +120,8 @@ mixin DDIModule implements PostConstruct {
     FutureOrBoolCallback? canRegister,
     bool canDestroy = true,
     FutureOr<bool> Function(Object)? selector,
-  }) {
-    final bean = ddi.application<BeanT>(
+  }) async {
+    final bean = ddiContainer.application<BeanT>(
       clazzRegister,
       qualifier: qualifier,
       decorators: decorators,
@@ -99,7 +132,14 @@ mixin DDIModule implements PostConstruct {
       selector: selector,
     );
 
-    ddi.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
+    // Ensure the module is registered before adding children
+    // Also throws the error if registration failed
+    if (!ddiContainer.isRegistered(qualifier: moduleQualifier)) {
+      await bean;
+    }
+
+    ddiContainer.addChildModules(
+        child: qualifier ?? BeanT, qualifier: moduleQualifier);
 
     return bean;
   }
@@ -124,8 +164,8 @@ mixin DDIModule implements PostConstruct {
     Set<Object> interceptors = const {},
     Set<Object> children = const {},
     FutureOr<bool> Function(Object)? selector,
-  }) {
-    final bean = ddi.dependent<BeanT>(
+  }) async {
+    final bean = ddiContainer.dependent<BeanT>(
       clazzRegister,
       qualifier: qualifier,
       decorators: decorators,
@@ -136,7 +176,14 @@ mixin DDIModule implements PostConstruct {
       selector: selector,
     );
 
-    ddi.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
+    // Ensure the module is registered before adding children
+    // Also throws the error if registration failed
+    if (!ddiContainer.isRegistered(qualifier: moduleQualifier)) {
+      await bean;
+    }
+
+    ddiContainer.addChildModules(
+        child: qualifier ?? BeanT, qualifier: moduleQualifier);
 
     return bean;
   }
@@ -152,6 +199,7 @@ mixin DDIModule implements PostConstruct {
   /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to link multiple classes under a single parent module.
   /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
   ///
+  /// Obs: If you want to capture the error during the registration, you must await for it.
   Future<void> object<BeanT extends Object>(
     BeanT instance, {
     Object? qualifier,
@@ -161,8 +209,8 @@ mixin DDIModule implements PostConstruct {
     FutureOrBoolCallback? canRegister,
     bool canDestroy = true,
     FutureOr<bool> Function(Object)? selector,
-  }) {
-    final bean = ddi.object<BeanT>(
+  }) async {
+    final bean = ddiContainer.object<BeanT>(
       instance,
       qualifier: qualifier,
       decorators: decorators,
@@ -173,7 +221,14 @@ mixin DDIModule implements PostConstruct {
       selector: selector,
     );
 
-    ddi.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
+    // Ensure the module is registered before adding children
+    // Also throws the error if registration failed
+    if (!ddiContainer.isRegistered(qualifier: moduleQualifier)) {
+      await bean;
+    }
+
+    ddiContainer.addChildModules(
+        child: qualifier ?? BeanT, qualifier: moduleQualifier);
 
     return bean;
   }
@@ -184,18 +239,26 @@ mixin DDIModule implements PostConstruct {
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
   /// - `canRegister`: Optional function to conditionally register the instance.
   ///
+  /// Obs: If you want to capture the error during the registration, you must await for it.
   Future<void> register<BeanT extends Object>({
     required DDIBaseFactory<BeanT> factory,
     Object? qualifier,
     FutureOrBoolCallback? canRegister,
-  }) {
-    final bean = ddi.register(
+  }) async {
+    final bean = ddiContainer.register(
       factory: factory,
       qualifier: qualifier,
       canRegister: canRegister,
     );
 
-    ddi.addChildModules(child: qualifier ?? BeanT, qualifier: moduleQualifier);
+    // Ensure the module is registered before adding children
+    // Also throws the error if registration failed
+    if (!ddiContainer.isRegistered(qualifier: moduleQualifier)) {
+      await bean;
+    }
+
+    ddiContainer.addChildModules(
+        child: qualifier ?? BeanT, qualifier: moduleQualifier);
 
     return bean;
   }

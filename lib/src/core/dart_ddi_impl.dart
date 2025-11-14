@@ -74,7 +74,10 @@ class _DDIImpl implements DDI {
 
       _beans.setFactory(effectiveQualifierName, factory);
 
-      final f = factory.register(qualifier: effectiveQualifierName);
+      final f = factory.register(
+        qualifier: effectiveQualifierName,
+        ddiInstance: this,
+      );
 
       f.onError((e, _) {
         _beans.remove(effectiveQualifierName);
@@ -127,14 +130,20 @@ class _DDIImpl implements DDI {
     if (_beans.getFactory(qualifier: effectiveQualifierName)
         case final DDIBaseFactory<BeanT> factory?) {
       return factory.getWith<ParameterT>(
-          parameter: parameter, qualifier: effectiveQualifierName);
+        parameter: parameter,
+        qualifier: effectiveQualifierName,
+        ddiInstance: this,
+      );
     } else if (select != null && BeanT != Object) {
       // Try to find a bean with the selector
       for (final MapEntry(key: _, :value) in _beans.entries) {
         if (value.type == BeanT &&
             (value.selector?.call(select) ?? false) as bool) {
           return (value as DDIBaseFactory<BeanT>).getWith<ParameterT>(
-              parameter: parameter, qualifier: effectiveQualifierName);
+            parameter: parameter,
+            qualifier: effectiveQualifierName,
+            ddiInstance: this,
+          );
         }
       }
     }
@@ -154,14 +163,20 @@ class _DDIImpl implements DDI {
 
     if (reg case final DDIBaseFactory<BeanT> factory?) {
       final clazz = factory.getAsyncWith<ParameterT>(
-          parameter: parameter, qualifier: effectiveQualifierName);
+        parameter: parameter,
+        qualifier: effectiveQualifierName,
+        ddiInstance: this,
+      );
 
       return clazz is Future<Future> ? await clazz : clazz;
     } else if (reg case final DDIBaseFactory<Future<BeanT>> factory?) {
       // This prevents to return a Future<Future<BeanT>>
       // This was find with the Object Scope
       return await factory.getAsyncWith<ParameterT>(
-          parameter: parameter, qualifier: effectiveQualifierName);
+        parameter: parameter,
+        qualifier: effectiveQualifierName,
+        ddiInstance: this,
+      );
     } else if (select != null && BeanT != Object) {
       // Try to find a bean with the selector
       for (final MapEntry(key: _, :value) in _beans.entries) {
@@ -169,7 +184,10 @@ class _DDIImpl implements DDI {
             value.selector != null &&
             await (value.selector?.call(select) ?? false)) {
           return (value as DDIBaseFactory<BeanT>).getAsyncWith<ParameterT>(
-              parameter: parameter, qualifier: effectiveQualifierName);
+            parameter: parameter,
+            qualifier: effectiveQualifierName,
+            ddiInstance: this,
+          );
         }
       }
     }
@@ -199,7 +217,10 @@ class _DDIImpl implements DDI {
   ) async {
     if (_beans.getFactory(qualifier: effectiveQualifierName, fallback: false)
         case final factory?) {
-      return factory.destroy(() => _beans.remove(effectiveQualifierName));
+      return factory.destroy(
+        apply: () => _beans.remove(effectiveQualifierName),
+        ddiInstance: this,
+      );
     }
     return null;
   }
@@ -219,7 +240,7 @@ class _DDIImpl implements DDI {
 
     if (_beans.getFactory(qualifier: effectiveQualifierName, fallback: false)
         case final DDIBaseFactory<BeanT> factory?) {
-      return factory.dispose();
+      return factory.dispose(ddiInstance: this);
     }
 
     throw BeanNotFoundException(effectiveQualifierName.toString());
@@ -228,7 +249,7 @@ class _DDIImpl implements DDI {
   @override
   void disposeByType<BeanT extends Object>() {
     for (final MapEntry(key: _, :value) in _beans.entries) {
-      value.dispose();
+      value.dispose(ddiInstance: this);
     }
   }
 

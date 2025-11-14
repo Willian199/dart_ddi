@@ -158,7 +158,8 @@ void main() {
     });
 
     test('Call register before passing to DDI', () {
-      final c = ObjectFactory(instance: C())..register(qualifier: C);
+      final c = ObjectFactory(instance: C())
+        ..register(qualifier: C, ddiInstance: ddi);
 
       expect(
         () => ddi.register<C>(factory: c),
@@ -171,15 +172,18 @@ void main() {
     });
 
     test('Try to get a Bean using a list Future wait', () async {
-      Future.wait<dynamic>([
-        await Future.value(
-          ddi.object<C>(
-            await Future.delayed(const Duration(milliseconds: 10), () => C()),
-          ),
-        ),
+      final [a, b, c] = await Future.wait<dynamic>([
+        ddi.object<C>(
+          await Future.delayed(const Duration(milliseconds: 10), () => C()),
+        ) as Future,
         Future.value(ddi.get<C>()),
         ddi.getAsync<C>(),
       ], eagerError: true);
+
+      expect(a, isNull);
+      expect(b, isA<C>());
+      expect(c, isA<C>());
+      expect(b, c);
 
       await ddi.destroy<C>();
 

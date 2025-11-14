@@ -45,8 +45,11 @@ abstract class DDIBaseFactory<BeanT extends Object> with InstanceFactoryMixin {
   /// in the DDI container. The [apply] function is called when the instance is ready.
   ///
   /// - `qualifier`: The qualifier name used to identify this factory in the container.
-  /// - `apply`: Function to call when the factory is ready to be registered.
-  Future<void> register({required Object qualifier});
+  /// - `ddiInstance`: DDI instance to use for dependency validation.
+  Future<void> register({
+    required Object qualifier,
+    required DDI ddiInstance,
+  });
 
   /// Gets or creates an instance of the registered bean.
   ///
@@ -55,11 +58,13 @@ abstract class DDIBaseFactory<BeanT extends Object> with InstanceFactoryMixin {
   ///
   /// - `qualifier`: Qualifier name to identify the specific bean instance.
   /// - `parameter`: Optional parameter to pass during instance creation.
+  /// - `ddiInstance`: DDI instance to use for dependency validation.
   ///
   /// **Note:** The `parameter` can be ignored if the instance is already created
   /// or the constructor doesn't match the parameter type.
   BeanT getWith<ParameterT extends Object>({
     required Object qualifier,
+    required DDI ddiInstance,
     ParameterT? parameter,
   });
 
@@ -70,11 +75,13 @@ abstract class DDIBaseFactory<BeanT extends Object> with InstanceFactoryMixin {
   ///
   /// - `qualifier`: Qualifier name to identify the specific bean instance.
   /// - `parameter`: Optional parameter to pass during instance creation.
+  /// - `ddiInstance`: DDI instance to use for dependency validation.
   ///
   /// **Note:** The `parameter` can be ignored if the instance is already created
   /// or the constructor doesn't match the parameter type.
   Future<BeanT> getAsyncWith<ParameterT extends Object>({
     required Object qualifier,
+    required DDI ddiInstance,
     ParameterT? parameter,
   });
 
@@ -100,11 +107,17 @@ abstract class DDIBaseFactory<BeanT extends Object> with InstanceFactoryMixin {
   /// perform any necessary cleanup operations.
   ///
   /// - `apply`: Function to call after successful destruction.
-  FutureOr<void> destroy(void Function() apply);
+  /// - `ddiInstance`: The DDI instance to use for operations.
+  FutureOr<void> destroy({
+    required void Function() apply,
+    required DDI ddiInstance,
+  });
 
   /// Disposes of this factory instance and its resources.
   ///
   /// This method performs cleanup operations and releases any resources
   /// held by this factory instance.
-  Future<void> dispose();
+  ///
+  /// - `ddiInstance`: The DDI instance to use for operations.
+  Future<void> dispose({required DDI ddiInstance});
 }
