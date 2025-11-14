@@ -46,18 +46,20 @@ final class InstanceDestroyUtils {
     required BeanT? instance,
     required Set<Object> children,
     required Set<Object> interceptors,
+    required DDI ddiInstance,
   }) async {
     // Should call interceptors even if the instance is null
     if (interceptors.isNotEmpty) {
       for (final interceptor in interceptors) {
         try {
-          if (ddi.isFuture(qualifier: interceptor)) {
-            final inter =
-                (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
+          if (ddiInstance.isFuture(qualifier: interceptor)) {
+            final inter = (await ddiInstance.getAsync(qualifier: interceptor))
+                as DDIInterceptor;
 
             await inter.onDestroy(instance);
           } else {
-            final inter = ddi.get(qualifier: interceptor) as DDIInterceptor;
+            final inter =
+                ddiInstance.get(qualifier: interceptor) as DDIInterceptor;
 
             inter.onDestroy(instance);
           }
@@ -68,12 +70,17 @@ final class InstanceDestroyUtils {
     }
 
     if (instance case final clazz? when clazz is PreDestroy) {
-      return _runFutureOrPreDestroy<BeanT>(clazz, children, apply);
+      return _runFutureOrPreDestroy<BeanT>(
+        clazz: clazz,
+        children: children,
+        apply: apply,
+        ddiInstance: ddiInstance,
+      );
     } else if (instance is DDIModule) {
       if (children.isNotEmpty) {
         final List<Future<void>> futures = [];
         for (final Object child in children) {
-          futures.add(ddi.destroy(qualifier: child) as Future<void>);
+          futures.add(ddiInstance.destroy(qualifier: child) as Future<void>);
         }
         return Future.wait(
           futures,
@@ -84,7 +91,7 @@ final class InstanceDestroyUtils {
       }
     }
 
-    _destroyChildren<BeanT>(children);
+    _destroyChildren<BeanT>(children: children, ddiInstance: ddiInstance);
     apply();
   }
 
@@ -97,12 +104,14 @@ final class InstanceDestroyUtils {
   ///
   /// Example:
   /// ```dart
-  /// InstanceDestroyUtils._destroyChildren({'child1', 'child2'});
+  /// InstanceDestroyUtils._destroyChildren(children: {'child1', 'child2'});
   /// ```
-  static FutureOr<void> _destroyChildren<BeanT extends Object>(
-      Set<Object> children) {
+  static FutureOr<void> _destroyChildren<BeanT extends Object>({
+    required Set<Object> children,
+    required DDI ddiInstance,
+  }) {
     for (final Object child in children) {
-      ddi.destroy(qualifier: child);
+      ddiInstance.destroy(qualifier: child);
     }
   }
 
@@ -119,15 +128,19 @@ final class InstanceDestroyUtils {
   /// Example:
   /// ```dart
   /// await InstanceDestroyUtils._runFutureOrPreDestroy(
-  ///   myService,
-  ///   {'child1'},
-  ///   () => ddi.remove<MyService>(),
+  ///   clazz: myService,
+  ///   children: {'child1'},
+  ///   apply: () => ddi.remove<MyService>(),
   /// );
   /// ```
-  static Future<void> _runFutureOrPreDestroy<BeanT extends Object>(
-      PreDestroy clazz, Set<Object> children, void Function() apply) async {
+  static Future<void> _runFutureOrPreDestroy<BeanT extends Object>({
+    required PreDestroy clazz,
+    required Set<Object> children,
+    required void Function() apply,
+    required DDI ddiInstance,
+  }) async {
     for (final Object child in children) {
-      await ddi.destroy(qualifier: child);
+      await ddiInstance.destroy(qualifier: child);
     }
 
     await clazz.onPreDestroy();

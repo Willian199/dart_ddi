@@ -146,7 +146,7 @@ void main() {
 
     test('Call register before passing to DDI', () {
       final c = SingletonFactory(builder: C.new.builder)
-        ..register(qualifier: C);
+        ..register(qualifier: C, ddiInstance: ddi);
 
       expect(
         () => ddi.register<C>(factory: c),
@@ -159,7 +159,7 @@ void main() {
         () => Future.wait<dynamic>([
           ddi.singleton<C>(() async {
             return C();
-          }),
+          }) as Future,
           Future.value(ddi.get<C>()),
         ], eagerError: true),
         throwsA(isA<BeanNotReadyException>()),

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
+import 'package:dart_ddi/src/utils/dependency_validator.dart';
 import 'package:dart_ddi/src/utils/instance_destroy_utils.dart';
 
 /// Create an instance when first used and reuses it for all subsequent requests during the application's execution.
@@ -27,12 +28,14 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     Set<Object> children = const {},
     super.selector,
     bool useWeakReference = false,
+    Set<Object>? required,
   })  : _builder = builder,
         _canDestroy = canDestroy,
         _decorators = decorators,
         _interceptors = interceptors,
         _children = children,
-        _useWeakReference = useWeakReference;
+        _useWeakReference = useWeakReference,
+        _required = required;
 
   /// The instance of the Bean created by the factory.
   BeanT? _instance;
@@ -58,6 +61,12 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   /// The child objects associated with the Bean, acting as a module.
   Set<Object> _children;
 
+  /// Required qualifiers or types that must be registered before creating an instance.
+  final Set<Object>? _required;
+
+  /// Flag to track if dependencies have been validated.
+  bool _dependenciesValidated = false;
+
   /// The current _state of this factory in its lifecycle.
   BeanStateEnum _state = BeanStateEnum.none;
 
@@ -77,7 +86,10 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   /// Register the instance in [DDI].
   /// When the instance is ready, must call apply function.
   @override
-  Future<void> register({required Object qualifier}) async {
+  Future<void> register({
+    required Object qualifier,
+    required DDI ddiInstance,
+  }) async {
     _state = BeanStateEnum.registered;
   }
 
@@ -90,9 +102,18 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   @override
   BeanT getWith<ParameterT extends Object>({
     required Object qualifier,
+    required DDI ddiInstance,
     ParameterT? parameter,
   }) {
     _checkState(type);
+
+    if (!_dependenciesValidated && _required != null && _required.isNotEmpty) {
+      DependencyValidator.validateDependencies(
+        required: _required,
+        ddiInstance: ddiInstance,
+      );
+      _dependenciesValidated = true;
+    }
 
     // Check if instance was garbage collected (weak reference)
     if (_useWeakReference && isReady) {
@@ -123,11 +144,19 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       // If resolutionMap doesn't exist in the current zone, create a new zone with a new map
       if (Zone.current[_resolutionKey] == null) {
         runZoned(
-          () => _runner<ParameterT>(qualifier: qualifier, parameter: parameter),
+          () => _runner<ParameterT>(
+            qualifier: qualifier,
+            parameter: parameter,
+            ddiInstance: ddiInstance,
+          ),
           zoneValues: {_resolutionKey: <Object>{}},
         );
       } else {
-        _runner<ParameterT>(qualifier: qualifier, parameter: parameter);
+        _runner<ParameterT>(
+          qualifier: qualifier,
+          parameter: parameter,
+          ddiInstance: ddiInstance,
+        );
       }
     }
 
@@ -177,6 +206,7 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
   void _runner<ParameterT extends Object>({
     required Object qualifier,
+    required DDI ddiInstance,
     ParameterT? parameter,
   }) {
     final resolutionMap = _getResolutionMap();
@@ -191,12 +221,14 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       BeanT ins = createInstance<BeanT, ParameterT>(
         builder: _builder,
         parameter: parameter,
+        ddiInstance: ddiInstance,
       );
 
       if (_interceptors.isNotEmpty) {
         for (final interceptor in _interceptors) {
-          ins = ddi.get<DDIInterceptor>(qualifier: interceptor).onCreate(ins)
-              as BeanT;
+          ins = ddiInstance
+              .get<DDIInterceptor>(qualifier: interceptor)
+              .onCreate(ins) as BeanT;
         }
       }
 
@@ -260,9 +292,22 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   @override
   Future<BeanT> getAsyncWith<ParameterT extends Object>({
     required Object qualifier,
+    required DDI ddiInstance,
     ParameterT? parameter,
   }) async {
     _checkState(type);
+
+    if (!_dependenciesValidated && (_required?.isEmpty ?? false)) {
+      final validation = DependencyValidator.validateDependenciesAsync(
+        required: _required!,
+        ddiInstance: ddiInstance,
+      );
+
+      if (validation is Future) {
+        await validation;
+      }
+      _dependenciesValidated = true;
+    }
 
     // Check if instance was garbage collected (weak reference)
     if (_useWeakReference && isReady) {
@@ -281,7 +326,7 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     if (isReady) {
       // Instance is already ready, proceed to interceptor phase
       try {
-        final inst = await _runGetInterceptors();
+        final inst = await _runGetInterceptors(ddiInstance: ddiInstance);
         return inst;
       } on WeakReferenceCollectedException {
         // Instance was garbage collected, reset state and continue with creation
@@ -307,7 +352,7 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       if (isReady) {
         // Instance was created by another process, proceed to interceptor phase
         try {
-          final instance = await _runGetInterceptors();
+          final instance = await _runGetInterceptors(ddiInstance: ddiInstance);
           return instance;
         } on WeakReferenceCollectedException {
           // Instance was garbage collected, reset state and continue with creation
@@ -325,16 +370,24 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     if (Zone.current[_resolutionKey] == null) {
       return runZoned(
         () => _runnerAsync<ParameterT>(
-            qualifier: qualifier, parameter: parameter),
+          qualifier: qualifier,
+          parameter: parameter,
+          ddiInstance: ddiInstance,
+        ),
         zoneValues: {_resolutionKey: <Object>{}},
       );
     }
 
-    return _runnerAsync<ParameterT>(qualifier: qualifier, parameter: parameter);
+    return _runnerAsync<ParameterT>(
+      qualifier: qualifier,
+      parameter: parameter,
+      ddiInstance: ddiInstance,
+    );
   }
 
   Future<BeanT> _runnerAsync<ParameterT extends Object>({
     required Object qualifier,
+    required DDI ddiInstance,
     ParameterT? parameter,
   }) async {
     final resolutionMap = _getResolutionMap();
@@ -354,6 +407,7 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       final execInstance = createInstanceAsync<BeanT, ParameterT>(
         builder: _builder,
         parameter: parameter,
+        ddiInstance: ddiInstance,
       );
 
       /// Verify if the Instance class is Future, and await for it
@@ -365,7 +419,7 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
         // Another process completed creation, use that instance
         if (isReady) {
           _runningCreateProcess = false;
-          return _runGetInterceptors();
+          return _runGetInterceptors(ddiInstance: ddiInstance);
         } else {
           throw StateError(
             'Another process completed creation but instance is not ready',
@@ -375,8 +429,8 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
       /// Run the Interceptor for create process
       for (final interceptor in _interceptors) {
-        final ins =
-            (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
+        final ins = (await ddiInstance.getAsync(qualifier: interceptor))
+            as DDIInterceptor;
 
         final exec = ins.onCreate(instance);
 
@@ -420,7 +474,7 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
         await postConstruct.onPostConstruct();
       }
 
-      final inst = await _runGetInterceptors();
+      final inst = await _runGetInterceptors(ddiInstance: ddiInstance);
       return inst;
     } catch (e) {
       if (!_created.isCompleted) {
@@ -444,7 +498,7 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
   /// Runs the interceptors for the GET process.
   /// This method is extracted to avoid code duplication.
-  Future<BeanT> _runGetInterceptors() async {
+  Future<BeanT> _runGetInterceptors({required DDI ddiInstance}) async {
     BeanT? instanceToProcess;
     if (_useWeakReference) {
       // Get instance from weak reference if enabled
@@ -470,8 +524,9 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     /// Run the Interceptors for the GET process.
     /// Must run everytime
     for (final interceptor in _interceptors) {
-      final exec = (await ddi.getAsync<DDIInterceptor>(qualifier: interceptor))
-          .onGet(instanceToProcess!);
+      final exec =
+          (await ddiInstance.getAsync<DDIInterceptor>(qualifier: interceptor))
+              .onGet(instanceToProcess!);
 
       instanceToProcess = (exec is Future ? await exec : exec) as BeanT;
     }
@@ -521,7 +576,8 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
   /// Removes this instance of the registered class in [DDI].
   @override
-  FutureOr<void> destroy(void Function() apply) {
+  FutureOr<void> destroy(
+      {required void Function() apply, required DDI ddiInstance}) {
     // Only destroy if canDestroy was registered with true
     if (!_canDestroy) {
       return null;
@@ -543,12 +599,13 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       instance: _instance,
       interceptors: _interceptors,
       children: _children,
+      ddiInstance: ddiInstance,
     );
   }
 
   /// Disposes of the instance of the registered class in [DDI].
   @override
-  Future<void> dispose() async {
+  Future<void> dispose({required DDI ddiInstance}) async {
     if (_state == BeanStateEnum.beingDestroyed ||
         _state == BeanStateEnum.destroyed ||
         _state == BeanStateEnum.beingDisposed ||
@@ -575,16 +632,17 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
     // Run interceptors for dispose
     for (final interceptor in _interceptors) {
-      if (ddi.isFuture(qualifier: interceptor)) {
-        final instance =
-            (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
+      if (ddiInstance.isFuture(qualifier: interceptor)) {
+        final instance = (await ddiInstance.getAsync(qualifier: interceptor))
+            as DDIInterceptor;
 
         final exec = instance.onDispose(_instance);
         if (exec is Future) {
           await exec;
         }
       } else {
-        final instance = ddi.get(qualifier: interceptor) as DDIInterceptor;
+        final instance =
+            ddiInstance.get(qualifier: interceptor) as DDIInterceptor;
 
         instance.onDispose(_instance);
       }
@@ -592,18 +650,18 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
     // Handle PreDispose lifecycle
     if (_instance case final clazz? when clazz is PreDispose) {
-      return _runFutureOrPreDispose(clazz);
+      return _runFutureOrPreDispose(clazz: clazz, ddiInstance: ddiInstance);
     }
 
     // Handle DDIModule cleanup
     if (_instance is DDIModule && _children.isNotEmpty) {
-      await _disposeChildrenAsync();
+      await _disposeChildrenAsync(ddiInstance: ddiInstance);
       _instance = null;
       _state = BeanStateEnum.disposed;
       _created = Completer();
       _runningCreateProcess = false;
     } else {
-      final disposed = _disposeChildrenAsync();
+      final disposed = _disposeChildrenAsync(ddiInstance: ddiInstance);
       _instance = null;
       _state = BeanStateEnum.disposed;
       _created = Completer();
@@ -613,10 +671,13 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     }
   }
 
-  Future<void> _runFutureOrPreDispose(PreDispose clazz) async {
+  Future<void> _runFutureOrPreDispose({
+    required PreDispose clazz,
+    required DDI ddiInstance,
+  }) async {
     await clazz.onPreDispose();
 
-    await _disposeChildrenAsync();
+    await _disposeChildrenAsync(ddiInstance: ddiInstance);
 
     _instance = null;
     _state = BeanStateEnum.disposed;
@@ -625,13 +686,14 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     return Future.value();
   }
 
-  Future<void> _disposeChildrenAsync() async {
+  Future<void> _disposeChildrenAsync({required DDI ddiInstance}) async {
     if (_children.isEmpty) {
       return;
     }
 
     final List<Future<void>> futures = [
-      for (final Object child in _children) ddi.dispose(qualifier: child),
+      for (final Object child in _children)
+        ddiInstance.dispose(qualifier: child),
     ];
 
     return Future.wait(futures).ignore();

@@ -54,6 +54,7 @@ final class CustomBuilder<BeanT extends Object> {
   /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
   /// - `canRegister`: Optional function to conditionally register the instance.
+  /// - `required`: Optional set of qualifiers or types that must be registered before creating an instance.
   Future<void> asApplication({
     ListDecorator<BeanT> decorators = const [],
     bool canDestroy = true,
@@ -61,6 +62,7 @@ final class CustomBuilder<BeanT extends Object> {
     FutureOr<bool> Function(Object)? selector,
     Object? qualifier,
     FutureOr<bool> Function()? canRegister,
+    Set<Object>? required,
   }) {
     return DDI.instance.register<BeanT>(
       factory: ApplicationFactory<BeanT>(
@@ -69,6 +71,7 @@ final class CustomBuilder<BeanT extends Object> {
         canDestroy: canDestroy,
         children: children,
         selector: selector,
+        required: required,
       ),
       qualifier: qualifier,
       canRegister: canRegister,
@@ -83,6 +86,7 @@ final class CustomBuilder<BeanT extends Object> {
   /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
   /// - `canRegister`: Optional function to conditionally register the instance.
+  /// - `required`: Optional set of qualifiers or types that must be registered before creating an instance.
   Future<void> asDependent({
     ListDecorator<BeanT> decorators = const [],
     bool canDestroy = true,
@@ -90,6 +94,7 @@ final class CustomBuilder<BeanT extends Object> {
     FutureOr<bool> Function(Object)? selector,
     Object? qualifier,
     FutureOr<bool> Function()? canRegister,
+    Set<Object>? required,
   }) {
     return DDI.instance.register<BeanT>(
       factory: DependentFactory<BeanT>(
@@ -98,6 +103,7 @@ final class CustomBuilder<BeanT extends Object> {
         canDestroy: canDestroy,
         children: children,
         selector: selector,
+        required: required,
       ),
       qualifier: qualifier,
       canRegister: canRegister,
@@ -112,6 +118,7 @@ final class CustomBuilder<BeanT extends Object> {
   /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
   /// - `canRegister`: Optional function to conditionally register the instance.
+  /// - `required`: Optional set of qualifiers or types that must be registered before creating an instance.
   Future<void> asSingleton({
     ListDecorator<BeanT> decorators = const [],
     bool canDestroy = true,
@@ -119,6 +126,7 @@ final class CustomBuilder<BeanT extends Object> {
     FutureOr<bool> Function(Object)? selector,
     Object? qualifier,
     FutureOr<bool> Function()? canRegister,
+    Set<Object>? required,
   }) {
     return DDI.instance.register<BeanT>(
       factory: SingletonFactory<BeanT>(
@@ -127,6 +135,7 @@ final class CustomBuilder<BeanT extends Object> {
         canDestroy: canDestroy,
         children: children,
         selector: selector,
+        required: required,
       ),
       qualifier: qualifier,
       canRegister: canRegister,

@@ -34,17 +34,18 @@ mixin InstanceFactoryMixin {
   /// ```
   BeanT createInstance<BeanT extends Object, ParameterT extends Object>({
     required CustomBuilder<FutureOr<BeanT>> builder,
+    required DDI ddiInstance,
     ParameterT? parameter,
   }) {
     return switch (builder.producer) {
       final BeanT Function() s => s.call(),
       final BeanT Function(ParameterT) c =>
-        c.call(parameter ?? ddi.get<ParameterT>()),
+        c.call(parameter ?? ddiInstance.get<ParameterT>()),
       final Function f when parameter != null && parameter is Iterable =>
         Function.apply(f, parameter.toList()) as BeanT,
       final Function f when parameter != null && parameter is Map =>
         Function.apply(f, null, _getMap(parameter)) as BeanT,
-      final _ => _autoInject(builder),
+      final _ => _autoInject(builder: builder, ddiInstance: ddiInstance),
     };
   }
 
@@ -73,10 +74,13 @@ Ex:
   /// ```dart
   /// // If builder.parametersType == [A, B], this will call builder.producer(ddi.get<A>(), ddi.get<B>())
   /// ```
-  BeanT _autoInject<BeanT extends Object>(
-      CustomBuilder<FutureOr<BeanT>> builder) {
+  BeanT _autoInject<BeanT extends Object>({
+    required CustomBuilder<FutureOr<BeanT>> builder,
+    required DDI ddiInstance,
+  }) {
     final instances = [
-      for (final inject in builder.parametersType) ddi.get(qualifier: inject)
+      for (final inject in builder.parametersType)
+        ddiInstance.get(qualifier: inject)
     ];
 
     return Function.apply(builder.producer, instances) as BeanT;
@@ -85,27 +89,30 @@ Ex:
   FutureOr<BeanT>
       createInstanceAsync<BeanT extends Object, ParameterT extends Object>({
     required CustomBuilder<FutureOr<BeanT>> builder,
+    required DDI ddiInstance,
     ParameterT? parameter,
   }) async {
     return switch (builder.producer) {
       final FutureOr<BeanT> Function() s => s.call(),
       final FutureOr<BeanT> Function(ParameterT) c =>
-        c.call(parameter ?? await ddi.getAsync<ParameterT>()),
+        c.call(parameter ?? await ddiInstance.getAsync<ParameterT>()),
       final Function f when parameter != null && parameter is Iterable =>
         Function.apply(f, parameter.toList()) as FutureOr<BeanT>,
       final Function f when parameter != null && parameter is Map =>
         Function.apply(f, null, _getMap(parameter)) as FutureOr<BeanT>,
-      final _ => _autoInjectAsync(builder),
+      final _ => _autoInjectAsync(builder: builder, ddiInstance: ddiInstance),
     };
   }
 
-  FutureOr<BeanT> _autoInjectAsync<BeanT extends Object>(
-      CustomBuilder<FutureOr<BeanT>> builder) async {
+  FutureOr<BeanT> _autoInjectAsync<BeanT extends Object>({
+    required CustomBuilder<FutureOr<BeanT>> builder,
+    required DDI ddiInstance,
+  }) async {
     /// Must await each injection individually.
     /// If using await Future.wait([]) could create different instances for the same type.
     final instances = [
       for (final inject in builder.parametersType)
-        await ddi.getAsync(qualifier: inject)
+        await ddiInstance.getAsync(qualifier: inject)
     ];
 
     return Function.apply(builder.producer, instances) as FutureOr<BeanT>;

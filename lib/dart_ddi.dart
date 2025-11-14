@@ -11,6 +11,7 @@ export 'src/exception/duplicated_bean.dart';
 export 'src/exception/factory_already_created.dart';
 export 'src/exception/factory_not_allowed.dart';
 export 'src/exception/future_not_accept.dart';
+export 'src/exception/missing_dependencies_exception.dart';
 export 'src/exception/weak_reference_collected.dart';
 export 'src/extension/ddi_get_extension.dart';
 export 'src/extension/ddi_register_extension.dart';

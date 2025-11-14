@@ -25,11 +25,13 @@ class ObjectFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     Set<Object> interceptors = const {},
     Set<Object> children = const {},
     super.selector,
+    Set<Object>? required,
   })  : _instance = instance,
         _canDestroy = canDestroy,
         _decorators = decorators,
         _interceptors = interceptors,
-        _children = children;
+        _children = children,
+        _required = required;
 
   /// The instance of the Bean created by the factory.
   BeanT _instance;
@@ -46,6 +48,12 @@ class ObjectFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   /// The child objects associated with the Bean, acting as a module.
   Set<Object> _children;
 
+  /// Required qualifiers or types that must be registered before creating an instance.
+  final Set<Object>? _required;
+
+  /// Flag to track if dependencies have been validated.
+  bool _dependenciesValidated = false;
+
   /// The current _state of this factory in its lifecycle.
   BeanStateEnum _state = BeanStateEnum.none;
 
@@ -57,22 +65,48 @@ class ObjectFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   /// Register the instance in [DDI].
   /// When the instance is ready, must call apply function.
   @override
-  Future<void> register({required Object qualifier}) async {
+  Future<void> register({
+    required Object qualifier,
+    required DDI ddiInstance,
+  }) async {
     if (_created.isCompleted) {
       throw FactoryAlreadyCreatedException(BeanT.toString());
     }
 
     try {
+      if (!_dependenciesValidated &&
+          _required != null &&
+          _required.isNotEmpty) {
+        for (final dep in _required) {
+          if (!ddiInstance.isRegistered(qualifier: dep)) {
+            throw MissingDependenciesException(
+              'Required dependency "${dep.toString()}" is not registered',
+            );
+          }
+
+          if (!ddiInstance.isReady(qualifier: dep)) {
+            if (ddiInstance.isFuture(qualifier: dep)) {
+              await ddiInstance.getAsyncWith(qualifier: dep);
+            } else {
+              ddiInstance.getWith(qualifier: dep);
+            }
+          }
+        }
+
+        _dependenciesValidated = true;
+      }
+
       _state = BeanStateEnum.beingCreated;
       if (_interceptors.isNotEmpty) {
         for (final interceptor in _interceptors) {
-          if (ddi.isFuture(qualifier: interceptor)) {
-            final inter =
-                await ddi.getAsync(qualifier: interceptor) as DDIInterceptor;
+          if (ddiInstance.isFuture(qualifier: interceptor)) {
+            final inter = await ddiInstance.getAsync(qualifier: interceptor)
+                as DDIInterceptor;
 
             _instance = (await inter.onCreate(_instance)) as BeanT;
           } else {
-            final inter = ddi.get(qualifier: interceptor) as DDIInterceptor;
+            final inter =
+                ddiInstance.get(qualifier: interceptor) as DDIInterceptor;
 
             final newInstance = inter.onCreate(_instance);
             if (newInstance is Future) {
@@ -132,6 +166,7 @@ class ObjectFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   @override
   BeanT getWith<ParameterT extends Object>({
     required Object qualifier,
+    required DDI ddiInstance,
     ParameterT? parameter,
   }) {
     _checkState(qualifier);
@@ -142,7 +177,7 @@ class ObjectFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
     if (_interceptors.isNotEmpty) {
       for (final interceptor in _interceptors) {
-        final ins = ddi.get(qualifier: interceptor) as DDIInterceptor;
+        final ins = ddiInstance.get(qualifier: interceptor) as DDIInterceptor;
 
         _instance = ins.onGet(_instance) as BeanT;
       }
@@ -159,6 +194,7 @@ class ObjectFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   @override
   Future<BeanT> getAsyncWith<ParameterT extends Object>({
     required Object qualifier,
+    required DDI ddiInstance,
     ParameterT? parameter,
   }) async {
     _checkState(qualifier);
@@ -169,8 +205,8 @@ class ObjectFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
     if (_interceptors.isNotEmpty) {
       for (final interceptor in _interceptors) {
-        final ins =
-            (await ddi.getAsync(qualifier: interceptor)) as DDIInterceptor;
+        final ins = (await ddiInstance.getAsync(qualifier: interceptor))
+            as DDIInterceptor;
 
         final exec = ins.onGet(_instance);
 
@@ -198,7 +234,8 @@ class ObjectFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
   /// Removes this instance from [DDI].
   @override
-  FutureOr<void> destroy(void Function() apply) {
+  FutureOr<void> destroy(
+      {required void Function() apply, required DDI ddiInstance}) {
     // Only destroy if canDestroy was registered with true
     if (!_canDestroy) {
       return null;
@@ -215,12 +252,13 @@ class ObjectFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       instance: _instance,
       interceptors: _interceptors,
       children: _children,
+      ddiInstance: ddiInstance,
     );
   }
 
   /// Disposes of the instance of the registered class in [DDI].
   @override
-  Future<void> dispose() {
+  Future<void> dispose({required DDI ddiInstance}) {
     if (_state == BeanStateEnum.beingDestroyed ||
         _state == BeanStateEnum.destroyed) {
       return Future.value();
@@ -228,7 +266,8 @@ class ObjectFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
     if (children.isNotEmpty) {
       final List<Future<void>> futures = [
-        for (final Object child in children) ddi.dispose(qualifier: child)
+        for (final Object child in children)
+          ddiInstance.dispose(qualifier: child)
       ];
 
       return Future.wait(futures);
