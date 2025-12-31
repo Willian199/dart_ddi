@@ -25,13 +25,13 @@ class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     Set<Object> interceptors = const {},
     Set<Object> children = const {},
     super.selector,
-    Set<Object>? required,
+    Set<Object>? requires,
   })  : _builder = builder,
         _canDestroy = canDestroy,
         _decorators = decorators,
         _interceptors = interceptors,
         _children = children,
-        _required = required;
+        _requires = requires;
 
   /// The instance of the Bean created by the factory.
   BeanT? _instance;
@@ -51,8 +51,8 @@ class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   /// The child objects associated with the Bean, acting as a module.
   Set<Object> _children;
 
-  /// Required qualifiers or types that must be registered before creating an instance.
-  final Set<Object>? _required;
+  /// requires qualifiers or types that must be registered before creating an instance.
+  final Set<Object>? _requires;
 
   /// Flag to track if dependencies have been validated.
   bool _dependenciesValidated = false;
@@ -80,9 +80,9 @@ class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
     try {
       if (!_dependenciesValidated &&
-          _required != null &&
-          _required.isNotEmpty) {
-        for (final dep in _required) {
+          _requires != null &&
+          _requires.isNotEmpty) {
+        for (final dep in _requires) {
           if (!ddiInstance.isRegistered(qualifier: dep)) {
             throw MissingDependenciesException(
               'Required dependency "${dep.toString()}" is not registered',

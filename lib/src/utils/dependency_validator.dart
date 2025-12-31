@@ -10,20 +10,20 @@ import 'package:dart_ddi/dart_ddi.dart';
 class DependencyValidator {
   /// Validates that all required dependencies are registered (synchronous version).
   ///
-  /// This method checks if all qualifiers/types in [required] are registered
+  /// This method checks if all qualifiers/types in [requires] are registered
   /// in the DDI container. If any dependency is missing, it throws
   /// [MissingDependenciesException].
   ///
-  /// **Note:** This method assumes that [required] is not null and not empty.
+  /// **Note:** This method assumes that [requires] is not null and not empty.
   /// The factory should check this before calling this method.
   ///
-  /// - `required`: Set of qualifiers or types that must be registered (must not be null or empty).
+  /// - `requires`: Set of qualifiers or types that must be registered (must not be null or empty).
   /// - `ddiInstance`: The DDI instance to use for validation (defaults to `DDI.instance`).
   static void validateDependencies({
-    required Set<Object> required,
+    required Set<Object> requires,
     required DDI ddiInstance,
   }) {
-    for (final dep in required) {
+    for (final dep in requires) {
       if (!ddiInstance.isRegistered(qualifier: dep)) {
         throw MissingDependenciesException(
           'Required dependency "${dep.toString()}" is not registered',
@@ -43,23 +43,23 @@ class DependencyValidator {
 
   /// Validates that all required dependencies are registered (asynchronous version).
   ///
-  /// This method checks if all qualifiers/types in [required] are registered
+  /// This method checks if all qualifiers/types in [requires] are registered
   /// in the DDI container. If any dependency is missing, it throws
   /// [MissingDependenciesException]. For async dependencies, it waits for them to be ready.
   ///
-  /// **Note:** This method assumes that [required] is not null and not empty.
+  /// **Note:** This method assumes that [requires] is not null and not empty.
   /// The factory should check this before calling this method.
   ///
-  /// - `required`: Set of qualifiers or types that must be registered (must not be null or empty).
+  /// - `requires`: Set of qualifiers or types that must be registered (must not be null or empty).
   /// - `ddiInstance`: The DDI instance to use for validation (defaults to `DDI.instance`).
   ///
   /// Returns `FutureOr<void>` - The return type is `FutureOr<void>` to maintain compatibility
   /// with existing code that may need to await the result conditionally.
   static FutureOr<void> validateDependenciesAsync({
-    required Set<Object> required,
+    required Set<Object> requires,
     required DDI ddiInstance,
   }) async {
-    for (final dep in required) {
+    for (final dep in requires) {
       if (!ddiInstance.isRegistered(qualifier: dep)) {
         throw MissingDependenciesException(
           'Required dependency "${dep.toString()}" is not registered',

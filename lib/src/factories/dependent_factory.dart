@@ -25,13 +25,13 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     Set<Object> interceptors = const {},
     Set<Object> children = const {},
     super.selector,
-    Set<Object>? required,
+    Set<Object>? requires,
   })  : _builder = builder,
         _canDestroy = canDestroy,
         _decorators = decorators,
         _interceptors = interceptors,
         _children = children,
-        _required = required;
+        _requires = requires;
 
   /// The factory builder responsible for creating the Bean.
   final CustomBuilder<FutureOr<BeanT>> _builder;
@@ -49,7 +49,7 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   Set<Object> _children;
 
   /// Required qualifiers or types that must be registered before creating an instance.
-  final Set<Object>? _required;
+  final Set<Object>? _requires;
 
   /// Flag to track if dependencies have been validated.
   bool _dependenciesValidated = false;
@@ -138,10 +138,10 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
     try {
       if (!_dependenciesValidated &&
-          _required != null &&
-          _required.isNotEmpty) {
+          _requires != null &&
+          _requires.isNotEmpty) {
         DependencyValidator.validateDependencies(
-          required: _required,
+          requires: _requires,
           ddiInstance: ddiInstance,
         );
         _dependenciesValidated = true;
@@ -249,9 +249,9 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     resolutionMap.add(qualifier);
 
     try {
-      if (!_dependenciesValidated && (_required?.isEmpty ?? false)) {
+      if (!_dependenciesValidated && (_requires?.isEmpty ?? false)) {
         final validation = DependencyValidator.validateDependenciesAsync(
-          required: _required!,
+          requires: _requires!,
           ddiInstance: ddiInstance,
         );
 

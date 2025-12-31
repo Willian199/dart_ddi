@@ -1,7 +1,6 @@
 ## 0.14.0
 
-
-* Added `required` parameter to factory registration methods. Defining Beans that must be registered and loaded before instance creation.
+* Added `requires` parameter to factory registration methods. Defining Beans that must be registered and loaded before instance creation.
 * Added `Instance<BeanT>` wrapper for programmatic bean access. Also provides methods: `isResolvable()`, `get()`, `getAsync()`, `destroy()`, and `dispose()`.
 * Added support for `cache` and `useWeakReference` parameters in `getInstance` method.
 * When `Instance.cache = true` or `Instance.useWeakReference = true`, interceptors `onGet` are called only once (when instance is cached/stored).

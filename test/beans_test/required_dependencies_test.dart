@@ -6,7 +6,7 @@ import '../clazz_samples/b.dart';
 import '../clazz_samples/c.dart';
 
 void main() {
-  group('DDI Required Dependencies Tests', () {
+  group('DDI required Dependencies Tests', () {
     tearDown(() {
       ddi.destroyByType<A>();
       ddi.destroyByType<B>();
@@ -25,7 +25,7 @@ void main() {
           () => ddi.register<A>(
             factory: SingletonFactory(
               builder: A.new.builder,
-              required: {B},
+              requires: {B},
             ),
           ),
           throwsA(isA<MissingDependenciesException>()),
@@ -41,7 +41,7 @@ void main() {
         ddi.register<A>(
           factory: SingletonFactory(
             builder: A.new.builder,
-            required: {B},
+            requires: {B},
           ),
         );
 
@@ -66,7 +66,7 @@ void main() {
         ddi.register<A>(
           factory: SingletonFactory(
             builder: A.new.builder,
-            required: {B, C},
+            requires: {B, C},
           ),
         );
 
@@ -89,7 +89,7 @@ void main() {
           () => ddi.register<A>(
             factory: SingletonFactory(
               builder: A.new.builder,
-              required: {B, C},
+              requires: {B, C},
             ),
           ),
           throwsA(isA<MissingDependenciesException>()),
@@ -108,7 +108,7 @@ void main() {
           () => A(
             ddi.get<B>(qualifier: 'bQualifier'),
           ),
-          required: {'bQualifier'},
+          requires: {'bQualifier'},
         );
 
         expect(ddi.isRegistered<A>(), true);
@@ -125,14 +125,14 @@ void main() {
       });
     });
 
-    group('Application Factory with Required Dependencies', () {
+    group('Application Factory with required Dependencies', () {
       test(
           'Should throw MissingDependenciesException when required dependency is not registered',
           () {
         ddi.register<A>(
           factory: ApplicationFactory(
             builder: A.new.builder,
-            required: {B},
+            requires: {B},
           ),
         );
 
@@ -155,7 +155,7 @@ void main() {
         ddi.register<A>(
           factory: ApplicationFactory(
             builder: A.new.builder,
-            required: {B},
+            requires: {B},
           ),
         );
 
@@ -180,7 +180,7 @@ void main() {
         ddi.register<A>(
           factory: ApplicationFactory(
             builder: A.new.builder,
-            required: {B},
+            requires: {B},
           ),
         );
 
@@ -204,7 +204,7 @@ void main() {
         ddi.register<A>(
           factory: ApplicationFactory(
             builder: A.new.builder,
-            required: {B},
+            requires: {B},
           ),
         );
 
@@ -219,14 +219,14 @@ void main() {
       });
     });
 
-    group('Dependent Factory with Required Dependencies', () {
+    group('Dependent Factory with required Dependencies', () {
       test(
           'Should throw MissingDependenciesException when required dependency is not registered',
           () {
         ddi.register<A>(
           factory: DependentFactory(
             builder: A.new.builder,
-            required: {B},
+            requires: {B},
           ),
         );
 
@@ -248,7 +248,7 @@ void main() {
         ddi.register<A>(
           factory: DependentFactory(
             builder: A.new.builder,
-            required: {B},
+            requires: {B},
           ),
         );
 
@@ -273,7 +273,7 @@ void main() {
         ddi.register<A>(
           factory: DependentFactory(
             builder: A.new.builder,
-            required: {B},
+            requires: {B},
           ),
         );
 
@@ -293,7 +293,7 @@ void main() {
       });
     });
 
-    group('Object Factory with Required Dependencies', () {
+    group('Object Factory with required Dependencies', () {
       test(
           'Should throw MissingDependenciesException when required dependency is not registered',
           () {
@@ -301,7 +301,7 @@ void main() {
           () => ddi.register<C>(
             factory: ObjectFactory(
               instance: C(),
-              required: {B},
+              requires: {B},
             ),
           ),
           throwsA(isA<MissingDependenciesException>()),
@@ -317,7 +317,7 @@ void main() {
         ddi.register<A>(
           factory: ObjectFactory(
             instance: A(ddi.get<B>()),
-            required: {B},
+            requires: {B},
           ),
         );
 
@@ -348,11 +348,11 @@ void main() {
         newDdi.singleton<C>(C.new);
         newDdi.singleton<B>(() => B(newDdi()));
 
-        // Register A in new instance with required B
+        // Register A in new instance with requires B
         newDdi.register<A>(
           factory: SingletonFactory(
             builder: A.new.builder,
-            required: {B},
+            requires: {B},
           ),
         );
 
@@ -389,7 +389,7 @@ void main() {
           () => newDdi.register<A>(
             factory: SingletonFactory(
               builder: A.new.builder,
-              required: {B},
+              requires: {B},
             ),
           ),
           throwsA(isA<MissingDependenciesException>()),
@@ -409,7 +409,7 @@ void main() {
         ddi.register<A>(
           factory: ApplicationFactory(
             builder: A.new.builder,
-            required: {B},
+            requires: {B},
           ),
         );
 
@@ -434,7 +434,7 @@ void main() {
         ddi.register<A>(
           factory: ApplicationFactory(
             builder: A.new.builder,
-            required: {B},
+            requires: {B},
           ),
         );
 
@@ -453,11 +453,11 @@ void main() {
     });
 
     group('Required Dependencies with Empty Set', () {
-      test('Should work with empty required set', () {
+      test('Should work with empty requires set', () {
         ddi.register<C>(
           factory: SingletonFactory(
             builder: C.new.builder,
-            required: {},
+            requires: {},
           ),
         );
 
@@ -469,7 +469,7 @@ void main() {
         expect(ddi.isRegistered<C>(), false);
       });
 
-      test('Should work with null required', () {
+      test('Should work with null requires', () {
         ddi.register<C>(
           factory: SingletonFactory(
             builder: C.new.builder,
