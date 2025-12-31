@@ -93,7 +93,7 @@ This scope creates a single instance during registration and reuses it in all su
 
 **Use Case**: Sharing a configuration manager, a logging service, or a global state manager.
 
-**Required Dependencies**: You can use the `required` parameter to ensure dependencies are registered and ready before instance creation. Validation occurs during `register()`.      
+**Required Dependencies**: You can use the `requires` parameter to ensure dependencies are registered and ready before instance creation. Validation occurs during `register()`.      
 
 **Note**: 
 
@@ -110,7 +110,7 @@ Generates an instance when first used and reuses it for all subsequent requests 
 
 **Note**: `PreDispose` and `PreDestroy` mixins will only be called if the instance is in use. Use `Interceptor` if you want to call them regardless.
 
-**Required Dependencies**: You can use the `required` parameter to ensure dependencies are registered and ready before instance creation. Validation occurs during `getWith()` or `getAsyncWith()`.
+**Required Dependencies**: You can use the `requires` parameter to ensure dependencies are registered and ready before instance creation. Validation occurs during `getWith()` or `getAsyncWith()`.
 
 ## Dependent
 Produces a new instance every time it is requested, ensuring independence and uniqueness.
@@ -119,7 +119,7 @@ Produces a new instance every time it is requested, ensuring independence and un
 
 **Use Case**: Creating instances of transient objects like data repositories or request handlers.
 
-**Required Dependencies**: You can use the `required` parameter to ensure dependencies are registered before instance creation. Validation occurs during `getWith()` or `getAsyncWith()`. 
+**Required Dependencies**: You can use the `requires` parameter to ensure dependencies are registered before instance creation. Validation occurs during `getWith()` or `getAsyncWith()`. 
 
 **Note**:
 
@@ -134,7 +134,7 @@ Registers an Object in the Object Scope, ensuring it is created once and shared 
 
 **Use Case**: Application or device properties, like platform or dark mode settings, where the object's state needs to be consistent across the entire application.
 
-**Required Dependencies**: You can use the `required` parameter to ensure dependencies are registered and ready before instance creation. Validation occurs during `register()`.
+**Required Dependencies**: You can use the `requires` parameter to ensure dependencies are registered and ready before instance creation. Validation occurs during `register()`.
 
 **Note**:
 
@@ -739,7 +739,7 @@ void main() {
 ```
 
 ## Required Dependencies
-The `required` parameter allows you to explicitly declare which qualifiers or types must be registered before an instance can be created. This ensures that all necessary dependencies are available and ready before the factory attempts to create an instance.
+The `requires` parameter allows you to explicitly declare which qualifiers or types must be registered before an instance can be created. This ensures that all necessary dependencies are available and ready before the factory attempts to create an instance.
 
 **Behavior:**
 - **Singleton/Object**: Validation occurs during `register()`. If a dependency is not ready, it will be created automatically.
@@ -755,7 +755,7 @@ ddi.application<Logger>(Logger.new);
 // Register a service that requires Database and Logger
 ddi.application<MyService>(
   MyService.new,
-  required: {Database, Logger},
+  requires: {Database, Logger},
 );
 
 // MyService will only be created after Database and Logger are ready
@@ -914,7 +914,7 @@ class AppModule with DDIModule {
     application(
       () => ApiService(ddi.get(qualifier: 'apiUrl')),
       qualifier: 'apiService',
-      required: {'mainDatabase', 'appLogger'},
+      requires: {'mainDatabase', 'appLogger'},
     );
     
     dependent(() => TransientService(), qualifier: 'transientService');

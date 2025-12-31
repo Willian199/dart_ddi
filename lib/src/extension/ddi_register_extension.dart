@@ -14,7 +14,7 @@ extension DDIRegisterExtension on DDI {
   /// - `canDestroy`: Optional parameter to make the instance indestructible.
   /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module.
   /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
-  /// - `required`: Optional set of qualifiers or types that must be registered before creating an instance.
+  /// - `requires`: Optional set of qualifiers or types that must be registered before creating an instance.
   ///
   /// **Singleton Scope:**
   /// - Ensures that only one instance of the registered class is created and shared throughout the entire application.
@@ -32,7 +32,7 @@ extension DDIRegisterExtension on DDI {
     Set<Object> interceptors = const {},
     Set<Object> children = const {},
     FutureOr<bool> Function(Object)? selector,
-    Set<Object>? required,
+    Set<Object>? requires,
   }) {
     return register<BeanT>(
       factory: SingletonFactory<BeanT>(
@@ -42,7 +42,7 @@ extension DDIRegisterExtension on DDI {
         decorators: decorators,
         canDestroy: canDestroy,
         selector: selector,
-        required: required,
+        requires: requires,
       ),
       qualifier: qualifier,
       canRegister: canRegister,
@@ -59,7 +59,7 @@ extension DDIRegisterExtension on DDI {
   /// - `canDestroy`: Optional parameter to make the instance indestructible.
   /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module.
   /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
-  /// - `required`: Optional set of qualifiers or types that must be registered before creating an instance.
+  /// - `requires`: Optional set of qualifiers or types that must be registered before creating an instance.
   ///
   /// **Application Scope:**
   /// - Ensures that only one instance of the registered class is created and shared throughout the entire application.
@@ -79,7 +79,7 @@ extension DDIRegisterExtension on DDI {
     Set<Object> children = const {},
     FutureOr<bool> Function(Object)? selector,
     bool useWeakReference = false,
-    Set<Object>? required,
+    Set<Object>? requires,
   }) {
     return register<BeanT>(
       factory: ApplicationFactory<BeanT>(
@@ -90,7 +90,7 @@ extension DDIRegisterExtension on DDI {
         canDestroy: canDestroy,
         selector: selector,
         useWeakReference: useWeakReference,
-        required: required,
+        requires: requires,
       ),
       qualifier: qualifier,
       canRegister: canRegister,
@@ -107,7 +107,7 @@ extension DDIRegisterExtension on DDI {
   /// - `canDestroy`: Optional parameter to make the instance indestructible.
   /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module
   /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
-  /// - `required`: Optional set of qualifiers or types that must be registered before creating an instance.
+  /// - `requires`: Optional set of qualifiers or types that must be registered before creating an instance.
   ///
   /// **Dependent Scope:**
   /// - Creates a new instance every time it is requested.
@@ -125,7 +125,7 @@ extension DDIRegisterExtension on DDI {
     Set<Object> interceptors = const {},
     Set<Object> children = const {},
     FutureOr<bool> Function(Object)? selector,
-    Set<Object>? required,
+    Set<Object>? requires,
   }) {
     return register<BeanT>(
       factory: DependentFactory<BeanT>(
@@ -135,7 +135,7 @@ extension DDIRegisterExtension on DDI {
         decorators: decorators,
         canDestroy: canDestroy,
         selector: selector,
-        required: required,
+        requires: requires,
       ),
       qualifier: qualifier,
       canRegister: canRegister,
@@ -152,7 +152,7 @@ extension DDIRegisterExtension on DDI {
   /// - `canDestroy`: Optional parameter to make the instance indestructible.
   /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to register multiple classes under a single parent module.
   /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
-  /// - `required`: Optional set of qualifiers or types that must be registered before creating an instance.
+  /// - `requires`: Optional set of qualifiers or types that must be registered before creating an instance.
   ///
   /// **Singleton Scope:**
   /// - Ensures that only one instance of the registered class is created and shared throughout the entire application.
@@ -170,7 +170,7 @@ extension DDIRegisterExtension on DDI {
     Set<Object> interceptors = const {},
     Set<Object> children = const {},
     FutureOr<bool> Function(Object)? selector,
-    Set<Object>? required,
+    Set<Object>? requires,
   }) {
     return register<BeanT>(
       factory: ObjectFactory<BeanT>(
@@ -180,7 +180,7 @@ extension DDIRegisterExtension on DDI {
         decorators: decorators,
         canDestroy: canDestroy,
         selector: selector,
-        required: required,
+        requires: requires,
       ),
       qualifier: qualifier,
       canRegister: canRegister,

@@ -18,7 +18,7 @@ void main() {
       test('should throw when dependency is not registered', () {
         expect(
           () => DependencyValidator.validateDependencies(
-            required: {TestService},
+            requires: {TestService},
             ddiInstance: ddi,
           ),
           throwsA(isA<MissingDependenciesException>()),
@@ -35,7 +35,7 @@ void main() {
 
         expect(
           () => DependencyValidator.validateDependencies(
-            required: {TestService},
+            requires: {TestService},
             ddiInstance: ddi,
           ),
           throwsA(isA<MissingDependenciesException>()),
@@ -48,7 +48,7 @@ void main() {
 
         expect(
           () => DependencyValidator.validateDependencies(
-            required: {TestService},
+            requires: {TestService},
             ddiInstance: ddi,
           ),
           returnsNormally,
@@ -61,7 +61,7 @@ void main() {
         // Don't call get() so it's registered but not ready
 
         DependencyValidator.validateDependencies(
-          required: {TestService},
+          requires: {TestService},
           ddiInstance: ddi,
         );
 
@@ -74,7 +74,7 @@ void main() {
       test('should throw when dependency is not registered', () async {
         await expectLater(
           DependencyValidator.validateDependenciesAsync(
-            required: {TestService},
+            requires: {TestService},
             ddiInstance: ddi,
           ),
           throwsA(isA<MissingDependenciesException>()),
@@ -90,7 +90,7 @@ void main() {
         func.builder.asApplication();
 
         await DependencyValidator.validateDependenciesAsync(
-          required: {TestService},
+          requires: {TestService},
           ddiInstance: ddi,
         );
 
@@ -103,7 +103,7 @@ void main() {
         // Don't call get() so it's registered but not ready
 
         await DependencyValidator.validateDependenciesAsync(
-          required: {TestService},
+          requires: {TestService},
           ddiInstance: ddi,
         );
 
@@ -117,7 +117,7 @@ void main() {
 
         await expectLater(
           DependencyValidator.validateDependenciesAsync(
-            required: {TestService},
+            requires: {TestService},
             ddiInstance: ddi,
           ),
           completes,
@@ -134,7 +134,7 @@ void main() {
 
         await expectLater(
           DependencyValidator.validateDependenciesAsync(
-            required: {TestService, qualifier2},
+            requires: {TestService, qualifier2},
             ddiInstance: ddi,
           ),
           completes,

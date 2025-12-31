@@ -28,14 +28,14 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     Set<Object> children = const {},
     super.selector,
     bool useWeakReference = false,
-    Set<Object>? required,
+    Set<Object>? requires,
   })  : _builder = builder,
         _canDestroy = canDestroy,
         _decorators = decorators,
         _interceptors = interceptors,
         _children = children,
         _useWeakReference = useWeakReference,
-        _required = required;
+        _requires = requires;
 
   /// The instance of the Bean created by the factory.
   BeanT? _instance;
@@ -62,7 +62,7 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   Set<Object> _children;
 
   /// Required qualifiers or types that must be registered before creating an instance.
-  final Set<Object>? _required;
+  final Set<Object>? _requires;
 
   /// Flag to track if dependencies have been validated.
   bool _dependenciesValidated = false;
@@ -107,9 +107,9 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   }) {
     _checkState(type);
 
-    if (!_dependenciesValidated && _required != null && _required.isNotEmpty) {
+    if (!_dependenciesValidated && _requires != null && _requires.isNotEmpty) {
       DependencyValidator.validateDependencies(
-        required: _required,
+        requires: _requires,
         ddiInstance: ddiInstance,
       );
       _dependenciesValidated = true;
@@ -297,9 +297,9 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   }) async {
     _checkState(type);
 
-    if (!_dependenciesValidated && (_required?.isEmpty ?? false)) {
+    if (!_dependenciesValidated && (_requires?.isEmpty ?? false)) {
       final validation = DependencyValidator.validateDependenciesAsync(
-        required: _required!,
+        requires: _requires!,
         ddiInstance: ddiInstance,
       );
 

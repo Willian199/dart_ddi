@@ -106,7 +106,7 @@ void main() {
         ddi.register<TestService>(
           factory: ApplicationFactory<TestService>(
             builder: TestService.new.builder,
-            required: {TestService},
+            requires: {TestService},
           ),
           qualifier: 'dependent',
         );
