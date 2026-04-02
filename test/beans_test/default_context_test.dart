@@ -1,6 +1,17 @@
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:test/test.dart';
 
+class _AsyncPreDestroyBean with PreDestroy {
+  _AsyncPreDestroyBean(this.origin);
+
+  final String origin;
+
+  @override
+  Future<void> onPreDestroy() async {
+    await Future<void>.delayed(const Duration(milliseconds: 1));
+  }
+}
+
 void main() {
   group('DDI Default Context Tests', () {
     test(
@@ -22,6 +33,106 @@ void main() {
         expect(
           newDdi.get<String>(qualifier: 'message'),
           equals('global'),
+        );
+      },
+    );
+
+    test(
+      'default qualifier should expose the active context during overlapping async callbacks',
+      () async {
+        final newDdi = DDI.newInstance();
+
+        final contextFuture = newDdi.runInContext('context-1', () async {
+          await newDdi.singleton<String>(() => 'context', qualifier: 'message');
+
+          await Future<void>.delayed(const Duration(milliseconds: 5));
+
+          expect(
+            newDdi.get<String>(qualifier: 'message'),
+            equals('context'),
+          );
+
+          return 'done';
+        });
+
+        await Future<void>.delayed(const Duration(milliseconds: 1));
+
+        // TODO maybe to fix. Shouldn't be possible to find a async bean outside the context or should find if the current context still the same(eg. not finished ye)?
+        expect(
+          newDdi.isRegistered<String>(qualifier: 'message'),
+          isTrue,
+        );
+
+        expect(await contextFuture, equals('done'));
+        expect(
+          newDdi.isRegistered<String>(qualifier: 'message'),
+          isFalse,
+        );
+      },
+    );
+
+    test(
+      'default qualifier should serialize concurrent async contexts safely',
+      () async {
+        final newDdi = DDI.newInstance();
+
+        final futureA = newDdi.runInContext('context-A', () async {
+          await newDdi.singleton<String>(() => 'A', qualifier: 'message');
+          await Future<void>.delayed(const Duration(milliseconds: 5));
+          return newDdi.get<String>(qualifier: 'message');
+        });
+
+        final futureB = newDdi.runInContext('context-B', () async {
+          await newDdi.singleton<String>(() => 'B', qualifier: 'message');
+          await Future<void>.delayed(const Duration(milliseconds: 1));
+          return newDdi.get<String>(qualifier: 'message');
+        });
+
+        expect(await Future.wait([futureA, futureB]), equals(['A', 'B']));
+        expect(newDdi.isRegistered<String>(qualifier: 'message'), isFalse);
+      },
+    );
+
+    test(
+      'runInContext should support async bodies and cleanup the contextual bean afterwards',
+      () async {
+        final newDdi = DDI.newInstance();
+
+        final value = await newDdi.runInContext('context-1', () async {
+          await newDdi.singleton<String>(() => 'value', qualifier: 'message');
+          return newDdi.get<String>(qualifier: 'message');
+        });
+
+        expect(value, equals('value'));
+        expect(
+          newDdi.isRegistered<String>(qualifier: 'message'),
+          isFalse,
+        );
+      },
+    );
+
+    test(
+      'async cleanup started by runInContext should preserve the root bean after context cleanup',
+      () async {
+        final newDdi = DDI.newInstance();
+
+        await newDdi.object<_AsyncPreDestroyBean>(
+          _AsyncPreDestroyBean('root'),
+          qualifier: 'bean',
+        );
+
+        newDdi.runInContext('context-1', () {
+          newDdi.object<_AsyncPreDestroyBean>(
+            _AsyncPreDestroyBean('context'),
+            qualifier: 'bean',
+          );
+        });
+
+        await Future<void>.delayed(const Duration(milliseconds: 5));
+
+        expect(
+          newDdi.get<_AsyncPreDestroyBean>(qualifier: 'bean').origin,
+          equals('root'),
         );
       },
     );

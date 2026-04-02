@@ -22,8 +22,7 @@ class InstanceWrapper<BeanT extends Object> implements Instance<BeanT> {
   })  : _useWeakReference =
             useWeakReference && !cache, // cache takes precedence
         _cache = cache,
-        // TODO get current context from DDI when is implemented
-        context = null;
+        context = ddi.currentContext;
 
   final Object qualifier;
   final DDI ddi;

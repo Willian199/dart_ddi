@@ -64,10 +64,10 @@ final class DartDDIZoneQualifierImpl implements DartDDIQualifier {
   }
 
   @override
-  Object? captureContext() => null;
+  void restoreContext(Object? context) {}
 
   @override
-  void restoreContext(Object? context) {}
+  Object? get currentContext => null;
 
   /// Checks if we are currently in a zone with a dedicated registry.
   ///
@@ -115,7 +115,7 @@ final class DartDDIZoneQualifierImpl implements DartDDIQualifier {
   int get length => _getBeansMap().length;
 
   @override
-  DDIBaseFactory<Object>? remove(Object? key) {
+  DDIBaseFactory<Object>? remove(Object? key, {Object? context}) {
     return _getBeansMap().remove(key);
   }
 }

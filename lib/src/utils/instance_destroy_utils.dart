@@ -80,7 +80,14 @@ final class InstanceDestroyUtils {
       if (children.isNotEmpty) {
         final List<Future<void>> futures = [];
         for (final Object child in children) {
-          futures.add(ddiInstance.destroy(qualifier: child) as Future<void>);
+          futures.add(
+            Future<void>.sync(() {
+              return ddiInstance.destroy(
+                qualifier: child,
+                context: instance.contextQualifier,
+              );
+            }),
+          );
         }
         return Future.wait(
           futures,
@@ -91,7 +98,11 @@ final class InstanceDestroyUtils {
       }
     }
 
-    _destroyChildren<BeanT>(children: children, ddiInstance: ddiInstance);
+    _destroyChildren<BeanT>(
+      children: children,
+      ddiInstance: ddiInstance,
+      context: instance is DDIModule ? instance.contextQualifier : null,
+    );
     apply();
   }
 
@@ -109,9 +120,10 @@ final class InstanceDestroyUtils {
   static FutureOr<void> _destroyChildren<BeanT extends Object>({
     required Set<Object> children,
     required DDI ddiInstance,
+    Object? context,
   }) {
     for (final Object child in children) {
-      ddiInstance.destroy(qualifier: child);
+      ddiInstance.destroy(qualifier: child, context: context);
     }
   }
 
@@ -139,8 +151,14 @@ final class InstanceDestroyUtils {
     required void Function() apply,
     required DDI ddiInstance,
   }) async {
+    final Object? context =
+        clazz is DDIModule ? (clazz as DDIModule).contextQualifier : null;
+
     for (final Object child in children) {
-      await ddiInstance.destroy(qualifier: child);
+      await ddiInstance.destroy(
+        qualifier: child,
+        context: context,
+      );
     }
 
     await clazz.onPreDestroy();

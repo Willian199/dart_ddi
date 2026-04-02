@@ -94,6 +94,52 @@ void main() {
         expect(entries.any((e) => e.key == TestService), true);
         expect(entries.any((e) => e.key == 'qualifier1'), true);
       });
+
+      test(
+          'getFactory should resolve a named context explicitly using contextQualifier',
+          () {
+        final qualifier = DartDDIDefaultQualifierImpl();
+        final parentFactory = ApplicationFactory<TestService>(
+          builder: TestService.new.builder,
+        );
+        final childFactory = ApplicationFactory<TestService>(
+          builder: TestService.new.builder,
+        );
+
+        qualifier.runWithContext('parent', () {
+          qualifier.setFactory('parentService', parentFactory);
+
+          qualifier.runWithContext('child', () {
+            qualifier.setFactory('childService', childFactory);
+            return Object();
+          });
+
+          return Object();
+        });
+
+        expect(
+          qualifier.getFactory<TestService>(
+            qualifier: 'parentService',
+            contextQualifier: 'parent',
+          ),
+          same(parentFactory),
+        );
+        expect(
+          qualifier.getFactory<TestService>(
+            qualifier: 'childService',
+            contextQualifier: 'child',
+          ),
+          same(childFactory),
+        );
+        expect(
+          qualifier.getFactory<TestService>(
+            qualifier: 'childService',
+            contextQualifier: 'parent',
+            fallback: false,
+          ),
+          isNull,
+        );
+      });
     });
 
     group('DartDDIZoneQualifierImpl', () {
@@ -157,6 +203,54 @@ void main() {
           expect(entries.any((e) => e.key == 'qualifier1'), true);
         });
       });
+
+      // TODO
+      /*test(
+          'getFactory should resolve a named zone context explicitly using contextQualifier',
+          () {
+        final qualifier = DartDDIZoneQualifierImpl();
+        final parentFactory = ApplicationFactory<TestService>(
+          builder: TestService.new.builder,
+        );
+        final childFactory = ApplicationFactory<TestService>(
+          builder: TestService.new.builder,
+        );
+
+        qualifier.runWithContext('parent', () {
+          qualifier.setFactory('parentService', parentFactory);
+
+          qualifier.runWithContext('child', () {
+            qualifier.setFactory('childService', childFactory);
+
+            expect(
+              qualifier.getFactory<TestService>(
+                qualifier: 'parentService',
+                contextQualifier: 'parent',
+              ),
+              same(parentFactory),
+            );
+            expect(
+              qualifier.getFactory<TestService>(
+                qualifier: 'childService',
+                contextQualifier: 'child',
+              ),
+              same(childFactory),
+            );
+            expect(
+              qualifier.getFactory<TestService>(
+                qualifier: 'childService',
+                contextQualifier: 'parent',
+                fallback: false,
+              ),
+              isNull,
+            );
+            return Object();
+          });
+
+          return Object();
+        });
+
+      });*/
 
       test('isEmpty should return true when zone is empty', () {
         final qualifier = DartDDIZoneQualifierImpl();

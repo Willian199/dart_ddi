@@ -63,17 +63,24 @@ final class DartDDIDefaultQualifierImpl implements DartDDIQualifier {
   }
 
   @override
-  Object? captureContext() => _currentContext;
-
-  @override
   void restoreContext(Object? context) {
-    if (context case final _QualifierContext qualifierContext) {
+    if (context == null) {
+      _currentContext = _rootContext;
+      return;
+    }
+
+    final _QualifierContext? qualifierContext = _contexts[context];
+
+    if (qualifierContext != null) {
       _currentContext = qualifierContext;
       return;
     }
 
     _currentContext = _rootContext;
   }
+
+  @override
+  Object? get currentContext => _currentContext.qualifier;
 
   @override
   bool get hasContext => !identical(_currentContext, _rootContext);
@@ -120,7 +127,10 @@ final class DartDDIDefaultQualifierImpl implements DartDDIQualifier {
     }
 
     return _contexts.putIfAbsent(qualifier, () {
-      return _QualifierContext(parent: _currentContext);
+      return _QualifierContext(
+        parent: _currentContext,
+        qualifier: qualifier,
+      );
     });
   }
 
@@ -149,7 +159,12 @@ final class DartDDIDefaultQualifierImpl implements DartDDIQualifier {
   }
 
   @override
-  DDIBaseFactory<Object>? remove(Object? key) => _activeFactories().remove(key);
+  DDIBaseFactory<Object>? remove(Object? key, {Object? context}) {
+    final _QualifierContext targetContext =
+        context == null ? _rootContext : (_contexts[context] ?? _rootContext);
+
+    return targetContext.factories.remove(key);
+  }
 
   @override
   Iterable<Object> get keys => _activeFactories().keys;
@@ -166,13 +181,15 @@ final class DartDDIDefaultQualifierImpl implements DartDDIQualifier {
 }
 
 final class _QualifierContext {
-  _QualifierContext({required this.parent})
+  _QualifierContext({required this.parent, required this.qualifier})
       : factories = <Object, DDIBaseFactory<Object>>{};
 
   _QualifierContext.root()
       : parent = null,
+        qualifier = null,
         factories = <Object, DDIBaseFactory<Object>>{};
 
   final _QualifierContext? parent;
+  final Object? qualifier;
   final Map<Object, DDIBaseFactory<Object>> factories;
 }

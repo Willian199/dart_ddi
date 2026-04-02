@@ -290,9 +290,12 @@ class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     }
 
     if (children.isNotEmpty) {
+      final Object? context = _instance is DDIModule
+          ? (_instance as DDIModule).contextQualifier
+          : null;
       final List<Future<void>> futures = [];
       for (final Object child in children) {
-        futures.add(ddiInstance.dispose(qualifier: child));
+        futures.add(ddiInstance.dispose(qualifier: child, context: context));
       }
 
       return Future.wait(futures);

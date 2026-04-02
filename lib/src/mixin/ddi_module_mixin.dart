@@ -28,6 +28,12 @@ mixin DDIModule implements PostConstruct {
     _internalQualifier = value;
   }
 
+  /// Optional context used to register and resolve the module children.
+  ///
+  /// Override this when the module should keep its beans in a dedicated
+  /// contextual registry instead of the global registry.
+  Object? get contextQualifier => null;
+
   /// Getter for the DDI instance to use.
   ///
   /// By default, returns [DDI.instance]. Classes using this mixin can override

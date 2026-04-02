@@ -58,6 +58,11 @@ abstract class DDI {
   /// ```
   BeanT runInContext<BeanT>(Object name, BeanT Function() body);
 
+  /// Returns the qualifier of the current active context.
+  ///
+  /// When the root context is active, returns `null`.
+  Object? get currentContext;
+
   /// Registers a factory to create an instance of the class [BeanT].
   ///
   /// - `factory`: Factory to create the instance.

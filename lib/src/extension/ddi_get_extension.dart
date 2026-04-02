@@ -192,7 +192,7 @@ extension DDIGetExtension on DDI {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
     // Check if bean is registered
-    if (!isRegistered<BeanT>(qualifier: qualifier)) {
+    if (!isRegistered<BeanT>(qualifier: qualifier, context: currentContext)) {
       throw BeanNotFoundException(effectiveQualifierName.toString());
     }
 

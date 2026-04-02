@@ -691,9 +691,12 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       return;
     }
 
+    final Object? context = _instance is DDIModule
+        ? (_instance as DDIModule).contextQualifier
+        : null;
     final List<Future<void>> futures = [
       for (final Object child in _children)
-        ddiInstance.dispose(qualifier: child),
+        ddiInstance.dispose(qualifier: child, context: context),
     ];
 
     return Future.wait(futures).ignore();

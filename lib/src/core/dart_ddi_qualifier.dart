@@ -12,11 +12,13 @@ abstract interface class DartDDIQualifier {
     Object? contextQualifier,
   });
 
-  /// Captures the current context so the caller can restore it later.
-  Object? captureContext();
-
   /// Restores a previously captured context.
   void restoreContext(Object? context);
+
+  /// Returns the qualifier of the current active context.
+  ///
+  /// When the root context is active, returns `null`.
+  Object? get currentContext;
 
   /// Checks if we are currently in a zone with a dedicated registry.
   ///
@@ -45,5 +47,5 @@ abstract interface class DartDDIQualifier {
 
   int get length;
 
-  DDIBaseFactory<Object>? remove(Object? key);
+  DDIBaseFactory<Object>? remove(Object? key, {Object? context});
 }
