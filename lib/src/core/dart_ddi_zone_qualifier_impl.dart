@@ -36,7 +36,8 @@ final class DartDDIZoneQualifierImpl implements DartDDIQualifier {
     Object? contextQualifier,
   }) {
     final Map<Object, DDIBaseFactory<Object>>? zoneMap =
-        Zone.current[contextQualifier ?? _beansKey] as Map<Object, DDIBaseFactory<Object>>?;
+        Zone.current[contextQualifier ?? _beansKey]
+            as Map<Object, DDIBaseFactory<Object>>?;
 
     if (zoneMap?.containsKey(qualifier) ?? false) {
       return zoneMap?[qualifier] as DDIBaseFactory<BeanT>;
@@ -62,6 +63,12 @@ final class DartDDIZoneQualifierImpl implements DartDDIQualifier {
     return null;
   }
 
+  @override
+  Object? captureContext() => null;
+
+  @override
+  void restoreContext(Object? context) {}
+
   /// Checks if we are currently in a zone with a dedicated registry.
   ///
   /// Returns `true` if the current zone has its own bean registry,
@@ -78,7 +85,7 @@ final class DartDDIZoneQualifierImpl implements DartDDIQualifier {
   /// - `name`: Unique identifier for the zone (used for debugging).
   /// - `body`: Function to execute within the new zone context.
   @override
-  BeanT  runWithContext<BeanT>(Object name, BeanT Function() body) {
+  BeanT runWithContext<BeanT>(Object name, BeanT Function() body) {
     return runZoned(
       body,
       zoneValues: {

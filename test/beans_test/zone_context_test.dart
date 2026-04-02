@@ -17,7 +17,7 @@ void main() {
     test('Must create the Beans in separated zone', () async {
       newDdi.singleton<G>(H.new);
 
-      await newDdi.runInZone('zone1', () async {
+      await newDdi.runInContext('zone1', () async {
         newDdi.singleton<G>(I.new);
 
         expect(newDdi.isRegistered<G>(), isTrue);
@@ -39,7 +39,7 @@ void main() {
 
       expect(newDdi.isRegistered<C>(), isTrue);
 
-      await newDdi.runInZone('zone1', () async {
+      await newDdi.runInContext('zone1', () async {
         expect(newDdi.isRegistered<C>(), isFalse);
 
         newDdi.singleton<G>(I.new);
@@ -58,11 +58,11 @@ void main() {
     });
 
     test('Zones devem ser completamente isoladas umas das outras', () async {
-      newDdi.runInZone('zone1', () {
+      newDdi.runInContext('zone1', () {
         newDdi.singleton<String>(() => 'Zone 1 String',
             qualifier: 'zoneString');
 
-        newDdi.runInZone<void>('zone2', () {
+        newDdi.runInContext<void>('zone2', () {
           newDdi.singleton<String>(() => 'Zone 2 String',
               qualifier: 'zoneString');
 
@@ -86,5 +86,87 @@ void main() {
         );
       });
     });
+
+    test(
+      'beans registered in an async context should remain available until the async body completes',
+      () async {
+        final localDdi = DDI.newInstance(enableZoneRegistry: true);
+
+        await localDdi.runInContext('zone-async', () async {
+          await localDdi.singleton<String>(
+            () => 'inside-context',
+            qualifier: 'asyncString',
+          );
+
+          expect(
+            localDdi.isRegistered<String>(qualifier: 'asyncString'),
+            isTrue,
+          );
+          expect(
+            localDdi.get<String>(qualifier: 'asyncString'),
+            equals('inside-context'),
+          );
+
+          await Future<void>.delayed(const Duration(milliseconds: 1));
+
+          expect(
+            localDdi.isRegistered<String>(qualifier: 'asyncString'),
+            isTrue,
+          );
+          expect(
+            localDdi.get<String>(qualifier: 'asyncString'),
+            equals('inside-context'),
+          );
+        });
+
+        expect(
+          localDdi.isRegistered<String>(qualifier: 'asyncString'),
+          isFalse,
+        );
+      },
+    );
+
+    test(
+      'nested async contexts should restore the parent zone after the child completes',
+      () async {
+        final localDdi = DDI.newInstance(enableZoneRegistry: true);
+
+        await localDdi.runInContext('outer-zone', () async {
+          await localDdi.singleton<String>(
+            () => 'outer',
+            qualifier: 'nestedString',
+          );
+
+          await localDdi.runInContext('inner-zone', () async {
+            await localDdi.singleton<String>(
+              () => 'inner',
+              qualifier: 'nestedString',
+            );
+
+            expect(
+              localDdi.get<String>(qualifier: 'nestedString'),
+              equals('inner'),
+            );
+
+            await Future<void>.delayed(const Duration(milliseconds: 1));
+
+            expect(
+              localDdi.get<String>(qualifier: 'nestedString'),
+              equals('inner'),
+            );
+          });
+
+          expect(
+            localDdi.get<String>(qualifier: 'nestedString'),
+            equals('outer'),
+          );
+        });
+
+        expect(
+          localDdi.isRegistered<String>(qualifier: 'nestedString'),
+          isFalse,
+        );
+      },
+    );
   });
 }

@@ -8,17 +8,62 @@ import '../clazz_samples/test_service.dart';
 void main() {
   group('Qualifier Tests', () {
     group('DartDDIDefaultQualifierImpl', () {
-      test('hasZoneRegistry should return false', () {
+      test('hasContext should return false when no context is active', () {
         final qualifier = DartDDIDefaultQualifierImpl();
-        expect(qualifier.hasZoneRegistry(), false);
+        expect(qualifier.hasContext, false);
       });
 
-      test('runWithZoneRegistry should throw UnsupportedError', () {
+      test('runWithContext should activate a context and fallback to root', () {
         final qualifier = DartDDIDefaultQualifierImpl();
-        expect(
-          () => qualifier.runWithZoneRegistry('test', () => 42),
-          throwsA(isA<UnsupportedError>()),
+        final rootFactory = ApplicationFactory<TestService>(
+          builder: TestService.new.builder,
         );
+
+        qualifier.setFactory(TestService, rootFactory);
+
+        qualifier.runWithContext('test', () {
+          expect(
+            qualifier.getFactory<TestService>(qualifier: TestService),
+            same(rootFactory),
+          );
+          expect(qualifier.hasContext, true);
+          return Object();
+        });
+      });
+
+      test(
+          'runWithContext should reuse an existing context instead of duplicating it',
+          () {
+        final qualifier = DartDDIDefaultQualifierImpl();
+        final contextFactory = ApplicationFactory<TestService>(
+          builder: TestService.new.builder,
+        );
+        final siblingFactory = ApplicationFactory<TestService>(
+          builder: TestService.new.builder,
+        );
+
+        qualifier.runWithContext('A', () {
+          qualifier.setFactory('serviceA', contextFactory);
+          return Object();
+        });
+
+        qualifier.runWithContext('B', () {
+          qualifier.setFactory('serviceB', siblingFactory);
+
+          qualifier.runWithContext('A', () {
+            expect(
+              qualifier.getFactory<TestService>(qualifier: 'serviceA'),
+              same(contextFactory),
+            );
+            expect(
+              qualifier.getFactory<TestService>(qualifier: 'serviceB'),
+              isNull,
+            );
+            return Object();
+          });
+
+          return Object();
+        });
       });
 
       test('keys should return all qualifiers', () {
@@ -60,11 +105,11 @@ void main() {
         );
 
         // Register in a parent zone
-        qualifier.runWithZoneRegistry('parent', () {
+        qualifier.runWithContext('parent', () {
           qualifier.setFactory(TestService, factory);
 
           // Try to get from child zone with fallback (nested zones)
-          qualifier.runWithZoneRegistry('child', () {
+          qualifier.runWithContext('child', () {
             final retrievedFactory = qualifier.getFactory<TestService>(
               qualifier: TestService,
             );
@@ -82,11 +127,11 @@ void main() {
         );
 
         // Register in a parent zone
-        qualifier.runWithZoneRegistry('parent', () {
+        qualifier.runWithContext('parent', () {
           qualifier.setFactory(TestService, factory);
 
           // Try to get from child zone without fallback (nested zones)
-          qualifier.runWithZoneRegistry('child', () {
+          qualifier.runWithContext('child', () {
             final retrievedFactory = qualifier.getFactory<TestService>(
               qualifier: TestService,
               fallback: false,
@@ -102,7 +147,7 @@ void main() {
           builder: TestService.new.builder,
         );
 
-        qualifier.runWithZoneRegistry('zone1', () {
+        qualifier.runWithContext('zone1', () {
           qualifier.setFactory(TestService, factory);
           qualifier.setFactory('qualifier1', factory);
 
@@ -116,7 +161,7 @@ void main() {
       test('isEmpty should return true when zone is empty', () {
         final qualifier = DartDDIZoneQualifierImpl();
 
-        qualifier.runWithZoneRegistry('zone1', () {
+        qualifier.runWithContext('zone1', () {
           expect(qualifier.isEmpty, true);
         });
       });
@@ -127,7 +172,7 @@ void main() {
           builder: TestService.new.builder,
         );
 
-        qualifier.runWithZoneRegistry('zone1', () {
+        qualifier.runWithContext('zone1', () {
           qualifier.setFactory(TestService, factory);
           expect(qualifier.isEmpty, false);
         });
@@ -139,7 +184,7 @@ void main() {
           builder: TestService.new.builder,
         );
 
-        qualifier.runWithZoneRegistry('zone1', () {
+        qualifier.runWithContext('zone1', () {
           expect(qualifier.length, 0);
           qualifier.setFactory(TestService, factory);
           expect(qualifier.length, 1);

@@ -12,23 +12,90 @@ class _DDIImpl implements DDI {
 
   @override
   BeanT runInContext<BeanT>(Object name, BeanT Function() body) {
-    if (!_enableZoneRegistry) {
-      throw UnsupportedError(
-        'Zones are not supported with the Default Qualifier',
-      );
+    if (_enableZoneRegistry) {
+      return _beans.runWithContext<BeanT>(name, () {
+        final BeanT result;
+
+        try {
+          result = body();
+        } catch (_) {
+          _destroyCurrentContextSync();
+          rethrow;
+        }
+
+        if (result is Future) {
+          return (result as Future).whenComplete(() async {
+            await _destroyCurrentContextAsync();
+          }) as BeanT;
+        }
+
+        try {
+          return result;
+        } finally {
+          _destroyCurrentContextSync();
+        }
+      });
     }
 
+    final Object? previousContext = _beans.captureContext();
     return _beans.runWithContext<BeanT>(name, () {
+      final BeanT result;
+
       try {
-        return body();
-      } finally {
-        if (_beans.hasContext) {
-          for (final key in _beans.keys.toList()) {
-            _destroy(key);
+        result = body();
+      } catch (_) {
+        try {
+          _destroyCurrentContextSync();
+        } finally {
+          _beans.restoreContext(previousContext);
+        }
+        rethrow;
+      }
+
+      if (result is Future) {
+        return (result as Future).whenComplete(() async {
+          try {
+            await _destroyCurrentContextAsync();
+          } finally {
+            _beans.restoreContext(previousContext);
           }
+        }) as BeanT;
+      }
+
+      try {
+        return result;
+      } finally {
+        try {
+          _destroyCurrentContextSync();
+        } finally {
+          _beans.restoreContext(previousContext);
         }
       }
     });
+  }
+
+  void _destroyCurrentContextSync() {
+    if (!_beans.hasContext) {
+      return;
+    }
+
+    for (final key in _beans.keys.toList()) {
+      _destroy(key);
+    }
+  }
+
+  Future<void> _destroyCurrentContextAsync() async {
+    if (!_beans.hasContext) {
+      return;
+    }
+
+    for (final key in _beans.keys.toList()) {
+      final destroyResult = _destroy(key);
+
+      if (destroyResult is Future) {
+        await destroyResult;
+      }
+    }
   }
 
   @override

@@ -63,6 +63,19 @@ final class DartDDIDefaultQualifierImpl implements DartDDIQualifier {
   }
 
   @override
+  Object? captureContext() => _currentContext;
+
+  @override
+  void restoreContext(Object? context) {
+    if (context case final _QualifierContext qualifierContext) {
+      _currentContext = qualifierContext;
+      return;
+    }
+
+    _currentContext = _rootContext;
+  }
+
+  @override
   bool get hasContext => !identical(_currentContext, _rootContext);
 
   @override
