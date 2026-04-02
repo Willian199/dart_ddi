@@ -11,7 +11,7 @@ class _DDIImpl implements DDI {
       : DartDDIDefaultQualifierImpl();
 
   @override
-  Object? get currentContext => _beans.currentContext;
+  Object get currentContext => _beans.currentContext;
 
   @override
   BeanT runInContext<BeanT>(Object name, BeanT Function() body) {
@@ -40,7 +40,7 @@ class _DDIImpl implements DDI {
       });
     }
 
-    final Object? previousContext = _beans.currentContext;
+    final Object previousContext = _beans.currentContext;
     return _beans.runWithContext<BeanT>(name, () {
       final BeanT result;
 
@@ -105,6 +105,7 @@ class _DDIImpl implements DDI {
   Future<void> register<BeanT extends Object>({
     required DDIBaseFactory<BeanT> factory,
     Object? qualifier,
+    Object? context,
     FutureOrBoolCallback? canRegister,
   }) async {
     if (BeanT == Object) {
@@ -124,16 +125,21 @@ class _DDIImpl implements DDI {
     if (shouldRegister) {
       final Object effectiveQualifierName = qualifier ?? BeanT;
 
+      if (!_enableZoneRegistry && context != null) {
+        _beans.createContext(context);
+      }
+
       final fac = _beans.getFactory(
         qualifier: effectiveQualifierName,
         fallback: false,
+        contextQualifier: context,
       );
 
       if (fac != null) {
         if (BeanStateEnum.none == fac.state) {
           _beans.remove(
             effectiveQualifierName,
-            context: currentContext,
+            context: context,
           );
         } else {
           throw DuplicatedBeanException(effectiveQualifierName.toString());
@@ -155,7 +161,7 @@ class _DDIImpl implements DDI {
       f.onError((e, _) {
         _beans.remove(
           effectiveQualifierName,
-          context: currentContext,
+          context: context,
         );
       });
 
@@ -167,8 +173,8 @@ class _DDIImpl implements DDI {
   bool isRegistered<BeanT extends Object>(
       {Object? qualifier, Object? context}) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
-    final Object? effectiveContext = context ?? currentContext;
-    final bool fallbackToRoot = context == null && effectiveContext != null;
+    final Object effectiveContext = context ?? currentContext;
+    final bool fallbackToRoot = context == null && _beans.hasContext;
 
     return _beans
             .getFactory(
@@ -183,7 +189,7 @@ class _DDIImpl implements DDI {
   @override
   bool isFuture<BeanT extends Object>({Object? qualifier, Object? context}) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
-    final Object? effectiveContext = context ?? currentContext;
+    final Object effectiveContext = context ?? currentContext;
     if (_beans.getFactory(
       qualifier: effectiveQualifierName,
       contextQualifier: effectiveContext,
@@ -198,7 +204,7 @@ class _DDIImpl implements DDI {
   @override
   bool isReady<BeanT extends Object>({Object? qualifier, Object? context}) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
-    final Object? effectiveContext = context ?? currentContext;
+    final Object effectiveContext = context ?? currentContext;
     if (_beans.getFactory(
       qualifier: effectiveQualifierName,
       contextQualifier: effectiveContext,
@@ -218,7 +224,7 @@ class _DDIImpl implements DDI {
     Object? context,
   }) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
-    final Object? effectiveContext = context ?? currentContext;
+    final Object effectiveContext = context ?? currentContext;
 
     if (_beans.getFactory(
       qualifier: effectiveQualifierName,
@@ -255,7 +261,7 @@ class _DDIImpl implements DDI {
     Object? context,
   }) async {
     final Object effectiveQualifierName = qualifier ?? BeanT;
-    final Object? effectiveContext = context ?? currentContext;
+    final Object effectiveContext = context ?? currentContext;
 
     final reg = _beans.getFactory(
       qualifier: effectiveQualifierName,
@@ -318,8 +324,8 @@ class _DDIImpl implements DDI {
     Object effectiveQualifierName,
     Object? context,
   ) async {
-    final Object? effectiveContext = context ?? currentContext;
-    final bool fallbackToRoot = context == null && effectiveContext != null;
+    final Object effectiveContext = context ?? currentContext;
+    final bool fallbackToRoot = context == null && _beans.hasContext;
 
     if (_beans.getFactory(
       qualifier: effectiveQualifierName,
@@ -351,8 +357,8 @@ class _DDIImpl implements DDI {
   Future<void> dispose<BeanT extends Object>(
       {Object? qualifier, Object? context}) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
-    final Object? effectiveContext = context ?? currentContext;
-    final bool fallbackToRoot = context == null && effectiveContext != null;
+    final Object effectiveContext = context ?? currentContext;
+    final bool fallbackToRoot = context == null && _beans.hasContext;
 
     if (_beans.getFactory(
       qualifier: effectiveQualifierName,

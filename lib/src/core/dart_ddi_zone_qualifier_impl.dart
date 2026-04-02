@@ -11,6 +11,7 @@ import 'package:dart_ddi/src/core/dart_ddi_qualifier.dart';
 final class DartDDIZoneQualifierImpl implements DartDDIQualifier {
   /// Key used to store bean registry data in Zone
   static const _beansKey = #ddi_beans_registry;
+  static const _rootContext = #ddi_zone_root_context;
 
   /// Gets the current zone name for debugging and identification purposes.
   String get zoneName => Zone.current[#zone_name] as String? ?? 'root';
@@ -35,9 +36,16 @@ final class DartDDIZoneQualifierImpl implements DartDDIQualifier {
     bool fallback = true,
     Object? contextQualifier,
   }) {
+    if (contextQualifier == _rootContext) {
+      return _globalBeansMap[qualifier] as DDIBaseFactory<BeanT>?;
+    }
+
     final Map<Object, DDIBaseFactory<Object>>? zoneMap =
-        Zone.current[contextQualifier ?? _beansKey]
-            as Map<Object, DDIBaseFactory<Object>>?;
+        switch (contextQualifier) {
+      final Map<Object, DDIBaseFactory<Object>> explicitMap => explicitMap,
+      _ => Zone.current[contextQualifier ?? _beansKey]
+          as Map<Object, DDIBaseFactory<Object>>?,
+    };
 
     if (zoneMap?.containsKey(qualifier) ?? false) {
       return zoneMap?[qualifier] as DDIBaseFactory<BeanT>;
@@ -67,7 +75,9 @@ final class DartDDIZoneQualifierImpl implements DartDDIQualifier {
   void restoreContext(Object? context) {}
 
   @override
-  Object? get currentContext => null;
+  Object get currentContext =>
+      Zone.current[_beansKey] as Map<Object, DDIBaseFactory<Object>>? ??
+      _rootContext;
 
   /// Checks if we are currently in a zone with a dedicated registry.
   ///
@@ -95,6 +105,9 @@ final class DartDDIZoneQualifierImpl implements DartDDIQualifier {
     );
   }
 
+  @override
+  void createContext(Object name) {}
+
   /// Implementation of required MapBase methods
   @override
   void setFactory(Object key, DDIBaseFactory<Object> value) {
@@ -116,6 +129,14 @@ final class DartDDIZoneQualifierImpl implements DartDDIQualifier {
 
   @override
   DDIBaseFactory<Object>? remove(Object? key, {Object? context}) {
+    if (context == _rootContext) {
+      return _globalBeansMap.remove(key);
+    }
+
+    if (context case final Map<Object, DDIBaseFactory<Object>> explicitMap) {
+      return explicitMap.remove(key);
+    }
+
     return _getBeansMap().remove(key);
   }
 }

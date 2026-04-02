@@ -86,6 +86,7 @@ mixin DDIModule implements PostConstruct {
     final bean = ddiContainer.singleton<BeanT>(
       clazzRegister,
       qualifier: qualifier,
+      context: contextQualifier,
       decorators: decorators,
       interceptors: interceptors,
       canDestroy: canDestroy,
@@ -130,6 +131,7 @@ mixin DDIModule implements PostConstruct {
     final bean = ddiContainer.application<BeanT>(
       clazzRegister,
       qualifier: qualifier,
+      context: contextQualifier,
       decorators: decorators,
       interceptors: interceptors,
       canDestroy: canDestroy,
@@ -174,6 +176,7 @@ mixin DDIModule implements PostConstruct {
     final bean = ddiContainer.dependent<BeanT>(
       clazzRegister,
       qualifier: qualifier,
+      context: contextQualifier,
       decorators: decorators,
       interceptors: interceptors,
       canDestroy: canDestroy,
@@ -219,6 +222,7 @@ mixin DDIModule implements PostConstruct {
     final bean = ddiContainer.object<BeanT>(
       instance,
       qualifier: qualifier,
+      context: contextQualifier,
       decorators: decorators,
       interceptors: interceptors,
       canDestroy: canDestroy,
@@ -254,6 +258,7 @@ mixin DDIModule implements PostConstruct {
     final bean = ddiContainer.register(
       factory: factory,
       qualifier: qualifier,
+      context: contextQualifier,
       canRegister: canRegister,
     );
 

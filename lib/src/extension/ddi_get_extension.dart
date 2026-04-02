@@ -190,17 +190,12 @@ extension DDIGetExtension on DDI {
     bool cache = false,
   }) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
+    final Object capturedContext = currentContext;
 
-    // Check if bean is registered
-    if (!isRegistered<BeanT>(qualifier: qualifier, context: currentContext)) {
-      throw BeanNotFoundException(effectiveQualifierName.toString());
-    }
-
-    // Create a wrapper that uses getWith internally
-    // This avoids needing direct access to the private _beans field
     return InstanceWrapper<BeanT>(
       qualifier: effectiveQualifierName,
       ddi: this,
+      context: capturedContext,
       useWeakReference: useWeakReference,
       cache: cache,
     );

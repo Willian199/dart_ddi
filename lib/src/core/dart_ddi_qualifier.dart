@@ -15,10 +15,10 @@ abstract interface class DartDDIQualifier {
   /// Restores a previously captured context.
   void restoreContext(Object? context);
 
-  /// Returns the qualifier of the current active context.
+  /// Returns a token representing the current active context.
   ///
-  /// When the root context is active, returns `null`.
-  Object? get currentContext;
+  /// This always returns a valid context object, including the root context.
+  Object get currentContext;
 
   /// Checks if we are currently in a zone with a dedicated registry.
   ///
@@ -35,6 +35,9 @@ abstract interface class DartDDIQualifier {
   /// - `name`: Unique identifier for the zone (used for debugging).
   /// - `body`: Function to execute within the new zone context.
   BeanT runWithContext<BeanT>(Object name, BeanT Function() body);
+
+  /// Creates or activates a persistent context without executing a body.
+  void createContext(Object name);
 
   /// Implementation of required MapBase methods
   void setFactory(Object key, DDIBaseFactory<Object> value);

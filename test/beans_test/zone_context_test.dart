@@ -6,6 +6,17 @@ import '../clazz_samples/g.dart';
 import '../clazz_samples/h.dart';
 import '../clazz_samples/i.dart';
 
+class _AsyncZonePreDestroyBean with PreDestroy {
+  _AsyncZonePreDestroyBean(this.origin);
+
+  final String origin;
+
+  @override
+  Future<void> onPreDestroy() async {
+    await Future<void>.delayed(const Duration(milliseconds: 1));
+  }
+}
+
 void main() {
   group('DDI Zone Context Basic Tests', () {
     final newDdi = DDI.newInstance(enableZoneRegistry: true);
@@ -40,7 +51,7 @@ void main() {
       expect(newDdi.isRegistered<C>(), isTrue);
 
       await newDdi.runInContext('zone1', () async {
-        expect(newDdi.isRegistered<C>(), isFalse);
+        expect(newDdi.isRegistered<C>(), isTrue);
 
         newDdi.singleton<G>(I.new);
 
@@ -77,7 +88,7 @@ void main() {
           );
 
           newDdi.destroy<String>(qualifier: 'zoneString');
-          expect(newDdi.isRegistered<String>(qualifier: 'zoneString'), false);
+          expect(newDdi.isRegistered<String>(qualifier: 'zoneString'), true);
         });
 
         expect(
@@ -165,6 +176,32 @@ void main() {
         expect(
           localDdi.isRegistered<String>(qualifier: 'nestedString'),
           isFalse,
+        );
+      },
+    );
+
+    test(
+      'async cleanup started by runInContext should not remove the root bean after context restore',
+      () async {
+        final localDdi = DDI.newInstance(enableZoneRegistry: true);
+
+        await localDdi.object<_AsyncZonePreDestroyBean>(
+          _AsyncZonePreDestroyBean('root'),
+          qualifier: 'bean',
+        );
+
+        localDdi.runInContext('zone-1', () {
+          localDdi.object<_AsyncZonePreDestroyBean>(
+            _AsyncZonePreDestroyBean('context'),
+            qualifier: 'bean',
+          );
+        });
+
+        await Future<void>.delayed(const Duration(milliseconds: 5));
+
+        expect(
+          localDdi.get<_AsyncZonePreDestroyBean>(qualifier: 'bean').origin,
+          equals('root'),
         );
       },
     );

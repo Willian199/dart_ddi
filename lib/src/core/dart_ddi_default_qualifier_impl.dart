@@ -80,7 +80,7 @@ final class DartDDIDefaultQualifierImpl implements DartDDIQualifier {
   }
 
   @override
-  Object? get currentContext => _currentContext.qualifier;
+  Object get currentContext => _currentContext.qualifier;
 
   @override
   bool get hasContext => !identical(_currentContext, _rootContext);
@@ -114,6 +114,10 @@ final class DartDDIDefaultQualifierImpl implements DartDDIQualifier {
       _currentContext.factories;
 
   _QualifierContext? _resolveContext(Object? contextQualifier) {
+    if (contextQualifier == _rootQualifier) {
+      return _rootContext;
+    }
+
     if (contextQualifier == null) {
       return _currentContext;
     }
@@ -132,6 +136,11 @@ final class DartDDIDefaultQualifierImpl implements DartDDIQualifier {
         qualifier: qualifier,
       );
     });
+  }
+
+  @override
+  void createContext(Object name) {
+    _currentContext = _activateContext(name);
   }
 
   DDIBaseFactory<BeanT>? _findInParents<BeanT extends Object>({
@@ -163,7 +172,15 @@ final class DartDDIDefaultQualifierImpl implements DartDDIQualifier {
     final _QualifierContext targetContext =
         context == null ? _rootContext : (_contexts[context] ?? _rootContext);
 
-    return targetContext.factories.remove(key);
+    final DDIBaseFactory<Object>? removedFactory =
+        targetContext.factories.remove(key);
+
+    if (identical(targetContext, _currentContext) &&
+        targetContext.factories.isEmpty) {
+      _currentContext = _rootContext;
+    }
+
+    return removedFactory;
   }
 
   @override
@@ -186,10 +203,10 @@ final class _QualifierContext {
 
   _QualifierContext.root()
       : parent = null,
-        qualifier = null,
+        qualifier = DartDDIDefaultQualifierImpl._rootQualifier,
         factories = <Object, DDIBaseFactory<Object>>{};
 
   final _QualifierContext? parent;
-  final Object? qualifier;
+  final Object qualifier;
   final Map<Object, DDIBaseFactory<Object>> factories;
 }

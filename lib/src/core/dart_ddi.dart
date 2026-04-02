@@ -58,10 +58,10 @@ abstract class DDI {
   /// ```
   BeanT runInContext<BeanT>(Object name, BeanT Function() body);
 
-  /// Returns the qualifier of the current active context.
+  /// Returns a token representing the current active context.
   ///
-  /// When the root context is active, returns `null`.
-  Object? get currentContext;
+  /// This always returns a valid context object, including the root context.
+  Object get currentContext;
 
   /// Registers a factory to create an instance of the class [BeanT].
   ///
@@ -72,6 +72,7 @@ abstract class DDI {
   Future<void> register<BeanT extends Object>({
     required DDIBaseFactory<BeanT> factory,
     Object? qualifier,
+    Object? context,
     FutureOrBoolCallback? canRegister,
   });
 

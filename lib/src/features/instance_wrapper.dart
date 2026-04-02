@@ -17,15 +17,16 @@ class InstanceWrapper<BeanT extends Object> implements Instance<BeanT> {
   InstanceWrapper({
     required this.qualifier,
     required this.ddi,
+    required this.context,
     bool useWeakReference = false,
     bool cache = false,
   })  : _useWeakReference =
             useWeakReference && !cache, // cache takes precedence
-        _cache = cache,
-        context = ddi.currentContext;
+        _cache = cache;
 
   final Object qualifier;
   final DDI ddi;
+  final Object context;
 
   /// Whether to use weak reference for the instance.
   /// Only effective if `cache` is `false`.
@@ -41,8 +42,6 @@ class InstanceWrapper<BeanT extends Object> implements Instance<BeanT> {
   /// Weak reference to the instance (used when `_useWeakReference` is true and `_cache` is false).
   WeakReference<BeanT>? _weakCachedInstance;
 
-  final Object? context;
-
   @override
   bool isResolvable() {
     return ddi.isRegistered<BeanT>(qualifier: qualifier, context: context);
@@ -50,7 +49,10 @@ class InstanceWrapper<BeanT extends Object> implements Instance<BeanT> {
 
   @override
   BeanT get<ParameterT extends Object>({ParameterT? parameter}) {
-    // Fast path for the default wrapper behavior: just delegate to DDI.
+    if (!isResolvable()) {
+      throw BeanNotFoundException(BeanT.toString());
+    }
+
     if (!_cache && !_useWeakReference) {
       return ddi.getWith<BeanT, ParameterT>(
         qualifier: qualifier,
@@ -59,29 +61,24 @@ class InstanceWrapper<BeanT extends Object> implements Instance<BeanT> {
       );
     }
 
-    // Check cache first if enabled
     if (_cache && _cachedInstance != null) {
       return _cachedInstance!;
     }
 
-    // Check weak reference if configured
     if (_useWeakReference && _weakCachedInstance != null) {
       final weakInstance = _weakCachedInstance?.target;
       if (weakInstance != null) {
         return weakInstance;
       }
-      // Weak reference was collected, clear it
       _weakCachedInstance = null;
     }
 
-    // Get instance from DDI
     final instance = ddi.getWith<BeanT, ParameterT>(
       qualifier: qualifier,
       parameter: parameter,
       context: context,
     );
 
-    // Update cache/weak reference based on configuration
     _updateCache(instance);
 
     return instance;
@@ -90,7 +87,10 @@ class InstanceWrapper<BeanT extends Object> implements Instance<BeanT> {
   @override
   Future<BeanT> getAsync<ParameterT extends Object>(
       {ParameterT? parameter}) async {
-    // Fast path for the default wrapper behavior: just delegate to DDI.
+    if (!isResolvable()) {
+      throw BeanNotFoundException(BeanT.toString());
+    }
+
     if (!_cache && !_useWeakReference) {
       return ddi.getAsyncWith<BeanT, ParameterT>(
         qualifier: qualifier,
@@ -99,46 +99,37 @@ class InstanceWrapper<BeanT extends Object> implements Instance<BeanT> {
       );
     }
 
-    // Check cache first if enabled
     if (_cache && _cachedInstance != null) {
       return _cachedInstance!;
     }
 
-    // Check weak reference if configured
     if (_useWeakReference && _weakCachedInstance != null) {
       final weakInstance = _weakCachedInstance?.target;
       if (weakInstance != null) {
         return weakInstance;
       }
-      // Weak reference was collected, clear it
       _weakCachedInstance = null;
     }
 
-    // Get instance from DDI
     final instance = await ddi.getAsyncWith<BeanT, ParameterT>(
       qualifier: qualifier,
       parameter: parameter,
       context: context,
     );
 
-    // Update cache/weak reference based on configuration
     _updateCache(instance);
 
     return instance;
   }
 
-  /// Updates the cache/weak reference based on the configuration.
   void _updateCache(BeanT instance) {
     if (_cache) {
-      // Cache takes precedence: maintain strong reference
       _cachedInstance = instance;
       _weakCachedInstance = null;
     } else if (_useWeakReference) {
-      // Use weak reference: allow GC collection
       _weakCachedInstance = WeakReference(instance);
       _cachedInstance = null;
     } else {
-      // No caching: clear both
       _cachedInstance = null;
       _weakCachedInstance = null;
     }
@@ -146,7 +137,6 @@ class InstanceWrapper<BeanT extends Object> implements Instance<BeanT> {
 
   @override
   FutureOr<void> destroy() {
-    // Clear cache before destroying
     _cachedInstance = null;
     _weakCachedInstance = null;
     return ddi.destroy<BeanT>(qualifier: qualifier, context: context);
@@ -154,7 +144,6 @@ class InstanceWrapper<BeanT extends Object> implements Instance<BeanT> {
 
   @override
   Future<void> dispose() {
-    // Clear cache before disposing
     _cachedInstance = null;
     _weakCachedInstance = null;
     return ddi.dispose<BeanT>(qualifier: qualifier, context: context);
