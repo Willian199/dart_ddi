@@ -177,7 +177,9 @@ class ObjectFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
     if (_interceptors.isNotEmpty) {
       for (final interceptor in _interceptors) {
-        final ins = ddiInstance.get(qualifier: interceptor) as DDIInterceptor;
+        final ins = ddiInstance.getWith<DDIInterceptor, Object>(
+          qualifier: interceptor,
+        );
 
         _instance = ins.onGet(_instance) as BeanT;
       }

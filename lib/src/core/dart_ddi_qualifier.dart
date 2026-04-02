@@ -9,13 +9,14 @@ abstract interface class DartDDIQualifier {
   DDIBaseFactory<BeanT>? getFactory<BeanT extends Object>({
     required Object qualifier,
     bool fallback = true,
+    Object? contextQualifier,
   });
 
   /// Checks if we are currently in a zone with a dedicated registry.
   ///
   /// Returns `true` if the current zone has its own bean registry,
   /// `false` if using the global registry.
-  bool hasZoneRegistry();
+  bool get hasContext;
 
   /// Executes code in a new zone with dedicated bean registries.
   ///
@@ -25,7 +26,7 @@ abstract interface class DartDDIQualifier {
   ///
   /// - `name`: Unique identifier for the zone (used for debugging).
   /// - `body`: Function to execute within the new zone context.
-  T runWithZoneRegistry<T>(String name, T Function() body);
+  BeanT  runWithContext<BeanT>(Object name, BeanT Function() body);
 
   /// Implementation of required MapBase methods
   void setFactory(Object key, DDIBaseFactory<Object> value);

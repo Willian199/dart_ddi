@@ -185,9 +185,9 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
     if (_interceptors.isNotEmpty) {
       for (final interceptor in _interceptors) {
-        instanceToReturn = ddi
-            .get<DDIInterceptor>(qualifier: interceptor)
-            .onGet(instanceToReturn!) as BeanT;
+        instanceToReturn = (ddiInstance.getWith<DDIInterceptor, Object>(
+          qualifier: interceptor,
+        )).onGet(instanceToReturn!) as BeanT;
       }
     }
 
@@ -226,9 +226,9 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
       if (_interceptors.isNotEmpty) {
         for (final interceptor in _interceptors) {
-          ins = ddiInstance
-              .get<DDIInterceptor>(qualifier: interceptor)
-              .onCreate(ins) as BeanT;
+          ins = (ddiInstance.getWith<DDIInterceptor, Object>(
+            qualifier: interceptor,
+          )).onCreate(ins) as BeanT;
         }
       }
 

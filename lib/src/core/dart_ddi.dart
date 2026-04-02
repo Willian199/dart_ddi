@@ -56,7 +56,7 @@ abstract class DDI {
   /// });
   /// // Zone instances are automatically destroyed here
   /// ```
-  T runInZone<T>(String name, T Function() body);
+  BeanT runInContext<BeanT>(Object name, BeanT Function() body);
 
   /// Registers a factory to create an instance of the class [BeanT].
   ///

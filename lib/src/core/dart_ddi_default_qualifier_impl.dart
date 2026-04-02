@@ -3,52 +3,163 @@ import 'package:dart_ddi/src/core/dart_ddi_qualifier.dart';
 
 /// Implementation of [DartDDIQualifier] without using Zones.
 ///
-/// Instead of Zone-based isolation, this version uses named contexts
-/// to provide isolated bean registries with fallback to a global registry.
+/// Instead of Zone-based isolation, this version uses named contexts arranged
+/// as a tree.
+///
+/// The active context is always the last context activated successfully.
+/// Local operations remain O(1), while fallback lookups only walk through the
+/// ancestor chain of the active context.
+///
+/// Important: because this implementation does not use `Zone`, async flows only
+/// stay isolated when used linearly (for example, with `await`). Concurrent
+/// async execution sharing the same qualifier instance can still interleave the
+/// active context.
 final class DartDDIDefaultQualifierImpl implements DartDDIQualifier {
-  /// Map of context names to their bean registries.
-  final Map<Object, DDIBaseFactory<Object>> _contexts = {};
+  DartDDIDefaultQualifierImpl._({
+    required _QualifierContext rootContext,
+    required Map<Object, _QualifierContext> contexts,
+  })  : _rootContext = rootContext,
+        _contexts = contexts,
+        _currentContext = rootContext;
+
+  factory DartDDIDefaultQualifierImpl() {
+    final rootContext = _QualifierContext.root();
+
+    return DartDDIDefaultQualifierImpl._(
+      rootContext: rootContext,
+      contexts: <Object, _QualifierContext>{_rootQualifier: rootContext},
+    );
+  }
+
+  static const Object _rootQualifier = #ddi_default_root_context;
+
+  final _QualifierContext _rootContext;
+  final Map<Object, _QualifierContext> _contexts;
+  _QualifierContext _currentContext;
 
   @override
   DDIBaseFactory<BeanT>? getFactory<BeanT extends Object>({
     required Object qualifier,
     bool fallback = true,
+    Object? contextQualifier,
   }) {
-    return _contexts[qualifier] as DDIBaseFactory<BeanT>?;
-  }
+    final _QualifierContext? context = _resolveContext(contextQualifier);
 
-  @override
-  void setFactory(Object qualifier, DDIBaseFactory<Object> value) {
-    _contexts[qualifier] = value;
-  }
+    if (context == null) {
+      return null;
+    }
 
-  @override
-  bool hasZoneRegistry() {
-    return false;
-  }
+    final DDIBaseFactory<Object>? explicitFactory =
+        context.factories[qualifier];
 
-  @override
-  T runWithZoneRegistry<T>(String name, T Function() body) {
-    throw UnsupportedError(
-      'Zones are not supported with the Default Qualifier',
+    if (explicitFactory != null || !fallback) {
+      return explicitFactory as DDIBaseFactory<BeanT>?;
+    }
+
+    return _findInParents<BeanT>(
+      qualifier: qualifier,
+      startAt: context.parent,
     );
   }
 
   @override
-  DDIBaseFactory<Object>? remove(Object? key) {
-    return _contexts.remove(key);
+  bool get hasContext => !identical(_currentContext, _rootContext);
+
+  @override
+  BeanT runWithContext<BeanT>(Object name, BeanT Function() body) {
+    final _QualifierContext previousContext = _currentContext;
+    final _QualifierContext context = _activateContext(name);
+    _currentContext = context;
+
+    final BeanT result;
+
+    try {
+      result = body();
+    } catch (_) {
+      _currentContext = previousContext;
+      rethrow;
+    }
+
+    if (result is Future<Object?>) {
+      return result.catchError((Object error, StackTrace stackTrace) {
+        _currentContext = previousContext;
+        Error.throwWithStackTrace(error, stackTrace);
+      }) as BeanT;
+    }
+
+    return result;
+  }
+
+  Map<Object, DDIBaseFactory<Object>> _activeFactories() =>
+      _currentContext.factories;
+
+  _QualifierContext? _resolveContext(Object? contextQualifier) {
+    if (contextQualifier == null) {
+      return _currentContext;
+    }
+
+    return _contexts[contextQualifier];
+  }
+
+  _QualifierContext _activateContext(Object qualifier) {
+    if (qualifier == _rootQualifier) {
+      return _rootContext;
+    }
+
+    return _contexts.putIfAbsent(qualifier, () {
+      return _QualifierContext(parent: _currentContext);
+    });
+  }
+
+  DDIBaseFactory<BeanT>? _findInParents<BeanT extends Object>({
+    required Object qualifier,
+    required _QualifierContext? startAt,
+  }) {
+    _QualifierContext? parent = startAt;
+
+    while (parent != null) {
+      final DDIBaseFactory<Object>? factory = parent.factories[qualifier];
+
+      if (factory != null) {
+        return factory as DDIBaseFactory<BeanT>;
+      }
+
+      parent = parent.parent;
+    }
+
+    return null;
   }
 
   @override
-  Iterable<Object> get keys => _contexts.keys;
+  void setFactory(Object qualifier, DDIBaseFactory<Object> value) {
+    _activeFactories()[qualifier] = value;
+  }
+
+  @override
+  DDIBaseFactory<Object>? remove(Object? key) => _activeFactories().remove(key);
+
+  @override
+  Iterable<Object> get keys => _activeFactories().keys;
 
   @override
   Iterable<MapEntry<Object, DDIBaseFactory<Object>>> get entries =>
-      _contexts.entries;
+      _activeFactories().entries;
 
   @override
-  bool get isEmpty => _contexts.isEmpty;
+  bool get isEmpty => _activeFactories().isEmpty;
 
   @override
-  int get length => _contexts.length;
+  int get length => _activeFactories().length;
+}
+
+final class _QualifierContext {
+  _QualifierContext({required this.parent})
+      : factories = <Object, DDIBaseFactory<Object>>{};
+
+  _QualifierContext.root()
+      : parent = null,
+        factories = <Object, DDIBaseFactory<Object>>{};
+
+  final _QualifierContext? parent;
+  final Map<Object, DDIBaseFactory<Object>> factories;
 }

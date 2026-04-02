@@ -11,18 +11,18 @@ class _DDIImpl implements DDI {
       : DartDDIDefaultQualifierImpl();
 
   @override
-  T runInZone<T>(String name, T Function() body) {
+  BeanT runInContext<BeanT>(Object name, BeanT Function() body) {
     if (!_enableZoneRegistry) {
       throw UnsupportedError(
         'Zones are not supported with the Default Qualifier',
       );
     }
 
-    return _beans.runWithZoneRegistry<T>(name, () {
+    return _beans.runWithContext<BeanT>(name, () {
       try {
         return body();
       } finally {
-        if (_beans.hasZoneRegistry()) {
+        if (_beans.hasContext) {
           for (final key in _beans.keys.toList()) {
             _destroy(key);
           }

@@ -47,6 +47,14 @@ class InstanceWrapper<BeanT extends Object> implements Instance<BeanT> {
 
   @override
   BeanT get<ParameterT extends Object>({ParameterT? parameter}) {
+    // Fast path for the default wrapper behavior: just delegate to DDI.
+    if (!_cache && !_useWeakReference) {
+      return ddi.getWith<BeanT, ParameterT>(
+        qualifier: qualifier,
+        parameter: parameter,
+      );
+    }
+
     // Check cache first if enabled
     if (_cache && _cachedInstance != null) {
       return _cachedInstance!;
@@ -77,6 +85,14 @@ class InstanceWrapper<BeanT extends Object> implements Instance<BeanT> {
   @override
   Future<BeanT> getAsync<ParameterT extends Object>(
       {ParameterT? parameter}) async {
+    // Fast path for the default wrapper behavior: just delegate to DDI.
+    if (!_cache && !_useWeakReference) {
+      return ddi.getAsyncWith<BeanT, ParameterT>(
+        qualifier: qualifier,
+        parameter: parameter,
+      );
+    }
+
     // Check cache first if enabled
     if (_cache && _cachedInstance != null) {
       return _cachedInstance!;

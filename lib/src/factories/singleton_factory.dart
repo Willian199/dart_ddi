@@ -192,9 +192,9 @@ class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
     if (_interceptors.isNotEmpty) {
       for (final interceptor in _interceptors) {
-        _instance = ddi
-            .get<DDIInterceptor>(qualifier: interceptor)
-            .onGet(_instance!) as BeanT;
+        _instance = (ddiInstance.getWith<DDIInterceptor, Object>(
+          qualifier: interceptor,
+        )).onGet(_instance!) as BeanT;
       }
     }
     return _instance!;

@@ -155,9 +155,9 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
       if (_interceptors.isNotEmpty) {
         for (final interceptor in _interceptors) {
-          dependentClazz = ddiInstance
-              .get<DDIInterceptor>(qualifier: interceptor)
-              .onCreate(dependentClazz) as BeanT;
+          dependentClazz = (ddiInstance.getWith<DDIInterceptor, Object>(
+            qualifier: interceptor,
+          )).onCreate(dependentClazz) as BeanT;
         }
       }
 
@@ -192,9 +192,9 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       /// Must run everytime
       if (_interceptors.isNotEmpty) {
         for (final interceptor in _interceptors) {
-          dependentClazz = ddiInstance
-              .get<DDIInterceptor>(qualifier: interceptor)
-              .onGet(dependentClazz) as BeanT;
+          dependentClazz = (ddiInstance.getWith<DDIInterceptor, Object>(
+            qualifier: interceptor,
+          )).onGet(dependentClazz) as BeanT;
         }
       }
       return dependentClazz;
