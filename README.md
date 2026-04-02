@@ -172,20 +172,20 @@ await ddi.register<MyService>(
 final service = ddi.get<MyService>();
 ```
 
-## Zone Management
+## Context Management
 
-Run in a new Zone, making possible to register specific instances in a different context.
+Run in a new context, making possible to register specific instances in a different scope.
 
-**Important:** To use Zone support, you must create a new DDI instance with `enableZoneRegistry: true`. The default `DDI.instance` does not support Zone.
+**Important:** Both `DDI.instance` and `DDI.newInstance()` support contexts. Enabling `enableZoneRegistry: true` changes the internal isolation strategy, but the public context API remains the same.
 
 ```dart
-// Create a new DDI instance with Zone support
-final ddi = DDI.newInstance(enableZoneRegistry: true);
+final ddi = DDI.newInstance();
 
-T runInZone<T>(String name, T Function() body);
+T runInContext<T>(Object name, T Function() body);
+Future<T> runInAsyncContext<T>(Object name, FutureOr<T> Function() body);
 ```
 
-This method creates a new Dart Zone with its own isolated registry of beans. This allows you to register and manage instances in a separate context without affecting the global DDI container. When the zone completes, all registered instances in that zone are automatically destroyed.
+These methods create a dedicated bean registry for the active context. This allows you to register and manage instances in a separate scope without affecting the global DDI container. When the context completes, all registered instances in that context are automatically destroyed.
 
 **Use cases:**
 - Testing scenarios where you need isolated instances
@@ -195,18 +195,17 @@ This method creates a new Dart Zone with its own isolated registry of beans. Thi
 
 Example:
 ```dart
-// Create a DDI instance with Zone support
-final ddi = DDI.newInstance(enableZoneRegistry: true);
+final ddi = DDI.newInstance();
 
-final result = ddi.runInZone('test-zone', () {
-  // Register instances specific to this zone
-  ddi.registerSingleton<TestService>(TestService.new);
+final result = ddi.runInContext('test-context', () {
+  // Register instances specific to this context
+  ddi.singleton<TestService>(TestService.new);
 
-  // Use the zone-specific instance
+  // Use the context-specific instance
   final service = ddi.get<TestService>();
   return service.process();
 });
-// Zone instances are automatically destroyed here
+// Context instances are automatically destroyed here
 ```
 
 ## Common Considerations:

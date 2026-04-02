@@ -80,7 +80,7 @@ class _DDIImpl implements DDI {
     }
 
     for (final key in _beans.keys.toList()) {
-      _destroy(key);
+      _destroy(key, null);
     }
   }
 
@@ -90,7 +90,7 @@ class _DDIImpl implements DDI {
     }
 
     for (final key in _beans.keys.toList()) {
-      final destroyResult = _destroy(key);
+      final destroyResult = _destroy(key, null);
 
       if (destroyResult is Future) {
         await destroyResult;
@@ -155,19 +155,28 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  bool isRegistered<BeanT extends Object>({Object? qualifier}) {
+  bool isRegistered<BeanT extends Object>(
+      {Object? qualifier, Object? context}) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
     return _beans
-            .getFactory(qualifier: effectiveQualifierName, fallback: false)
+            .getFactory(
+              qualifier: effectiveQualifierName,
+              contextQualifier: context,
+              fallback: false,
+            )
             ?.isRegistered ??
         false;
   }
 
   @override
-  bool isFuture<BeanT extends Object>({Object? qualifier}) {
+  bool isFuture<BeanT extends Object>({Object? qualifier, Object? context}) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
-    if (_beans.getFactory(qualifier: effectiveQualifierName, fallback: false)
+    if (_beans.getFactory(
+      qualifier: effectiveQualifierName,
+      contextQualifier: context,
+      fallback: false,
+    )
         case final DDIBaseFactory<BeanT> factory?) {
       return factory.isFuture;
     }
@@ -176,9 +185,13 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  bool isReady<BeanT extends Object>({Object? qualifier}) {
+  bool isReady<BeanT extends Object>({Object? qualifier, Object? context}) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
-    if (_beans.getFactory(qualifier: effectiveQualifierName, fallback: false)
+    if (_beans.getFactory(
+      qualifier: effectiveQualifierName,
+      contextQualifier: context,
+      fallback: false,
+    )
         case final DDIBaseFactory<BeanT> factory?) {
       return factory.isReady;
     }
@@ -191,10 +204,14 @@ class _DDIImpl implements DDI {
     ParameterT? parameter,
     Object? qualifier,
     Object? select,
+    Object? context,
   }) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    if (_beans.getFactory(qualifier: effectiveQualifierName)
+    if (_beans.getFactory(
+      qualifier: effectiveQualifierName,
+      contextQualifier: context,
+    )
         case final DDIBaseFactory<BeanT> factory?) {
       return factory.getWith<ParameterT>(
         parameter: parameter,
@@ -223,10 +240,14 @@ class _DDIImpl implements DDI {
     ParameterT? parameter,
     Object? qualifier,
     Object? select,
+    Object? context,
   }) async {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    final reg = _beans.getFactory(qualifier: effectiveQualifierName);
+    final reg = _beans.getFactory(
+      qualifier: effectiveQualifierName,
+      contextQualifier: context,
+    );
 
     if (reg case final DDIBaseFactory<BeanT> factory?) {
       final clazz = factory.getAsyncWith<ParameterT>(
@@ -273,16 +294,22 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  FutureOr<void> destroy<BeanT extends Object>({Object? qualifier}) {
+  FutureOr<void> destroy<BeanT extends Object>(
+      {Object? qualifier, Object? context}) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    return _destroy<BeanT>(effectiveQualifierName);
+    return _destroy<BeanT>(effectiveQualifierName, context);
   }
 
   FutureOr<void> _destroy<BeanT extends Object>(
     Object effectiveQualifierName,
+    Object? context,
   ) async {
-    if (_beans.getFactory(qualifier: effectiveQualifierName, fallback: false)
+    if (_beans.getFactory(
+      qualifier: effectiveQualifierName,
+      contextQualifier: context,
+      fallback: false,
+    )
         case final factory?) {
       return factory.destroy(
         apply: () => _beans.remove(effectiveQualifierName),
@@ -293,19 +320,24 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  void destroyByType<BeanT extends Object>() {
+  void destroyByType<BeanT extends Object>([Object? context]) {
     final keys = getByType<BeanT>();
 
     for (final key in keys) {
-      _destroy(key);
+      _destroy(key, context);
     }
   }
 
   @override
-  Future<void> dispose<BeanT extends Object>({Object? qualifier}) {
+  Future<void> dispose<BeanT extends Object>(
+      {Object? qualifier, Object? context}) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    if (_beans.getFactory(qualifier: effectiveQualifierName, fallback: false)
+    if (_beans.getFactory(
+      qualifier: effectiveQualifierName,
+      contextQualifier: context,
+      fallback: false,
+    )
         case final DDIBaseFactory<BeanT> factory?) {
       return factory.dispose(ddiInstance: this);
     }

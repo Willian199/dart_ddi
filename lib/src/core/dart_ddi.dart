@@ -73,17 +73,17 @@ abstract class DDI {
   /// Verify if an instance is already registered in [DDI].
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
-  bool isRegistered<BeanT extends Object>({Object? qualifier});
+  bool isRegistered<BeanT extends Object>({Object? qualifier, Object? context});
 
   /// Verify if the factory is a Future in [DDI].
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
-  bool isFuture<BeanT extends Object>({Object? qualifier});
+  bool isFuture<BeanT extends Object>({Object? qualifier, Object? context});
 
   /// Verify if the factory is ready (Created) in [DDI].
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
-  bool isReady<BeanT extends Object>({Object? qualifier});
+  bool isReady<BeanT extends Object>({Object? qualifier, Object? context});
 
   /// Gets an instance of the registered class in [DDI].
   ///
@@ -96,6 +96,7 @@ abstract class DDI {
     ParameterT? parameter,
     Object? qualifier,
     Object? select,
+    Object? context,
   });
 
   /// Gets an instance of the registered class in [DDI].
@@ -109,6 +110,7 @@ abstract class DDI {
     ParameterT? parameter,
     Object? qualifier,
     Object? select,
+    Object? context,
   });
 
   /// Retrieves a list of keys associated with objects of a specific type `BeanT`.
@@ -139,15 +141,17 @@ abstract class DDI {
   /// Removes the instance of the registered class in [DDI].
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
-  FutureOr<void> destroy<BeanT extends Object>({Object? qualifier});
+  FutureOr<void> destroy<BeanT extends Object>(
+      {Object? qualifier, Object? context});
 
   /// Removes all the instance registered as type `BeanT`.
-  void destroyByType<BeanT extends Object>();
+  void destroyByType<BeanT extends Object>([Object? context]);
 
   /// Disposes of the instance of the registered class in [DDI].
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
-  Future<void> dispose<BeanT extends Object>({Object? qualifier});
+  Future<void> dispose<BeanT extends Object>(
+      {Object? qualifier, Object? context});
 
   /// Disposes all the instance registered as type `BeanT`.
   void disposeByType<BeanT extends Object>();
