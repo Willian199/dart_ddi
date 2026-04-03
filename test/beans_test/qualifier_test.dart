@@ -89,10 +89,37 @@ void main() {
         qualifier.setFactory(TestService, factory);
         qualifier.setFactory('qualifier1', factory);
 
-        final entries = qualifier.entries.toList();
+        final entries = qualifier.entries().toList();
         expect(entries.length, 2);
         expect(entries.any((e) => e.key == TestService), true);
         expect(entries.any((e) => e.key == 'qualifier1'), true);
+      });
+
+      test('entries should return entries from an explicit named context', () {
+        final qualifier = DartDDIDefaultQualifierImpl();
+        final rootFactory = ApplicationFactory<TestService>(
+          builder: TestService.new.builder,
+        );
+        final contextFactory = ApplicationFactory<TestService>(
+          builder: TestService.new.builder,
+        );
+        final rootContext = qualifier.currentContext;
+
+        qualifier.setFactory('rootService', rootFactory);
+
+        qualifier.runWithContext('named-context', () {
+          qualifier.setFactory('contextService', contextFactory);
+          return Object();
+        });
+
+        final rootEntries = qualifier.entries(context: rootContext).toList();
+        final contextEntries =
+            qualifier.entries(context: 'named-context').toList();
+
+        expect(rootEntries.any((e) => e.key == 'rootService'), true);
+        expect(rootEntries.any((e) => e.key == 'contextService'), false);
+        expect(contextEntries.any((e) => e.key == 'contextService'), true);
+        expect(contextEntries.any((e) => e.key == 'rootService'), false);
       });
 
       test(
@@ -197,11 +224,53 @@ void main() {
           qualifier.setFactory(TestService, factory);
           qualifier.setFactory('qualifier1', factory);
 
-          final entries = qualifier.entries.toList();
+          final entries = qualifier.entries().toList();
           expect(entries.length, 2);
           expect(entries.any((e) => e.key == TestService), true);
           expect(entries.any((e) => e.key == 'qualifier1'), true);
         });
+      });
+
+      test('entries should return entries from an explicit zone context', () {
+        final qualifier = DartDDIZoneQualifierImpl();
+        final parentEntries = <MapEntry<Object, DDIBaseFactory<Object>>>[];
+        Object? parentContext;
+
+        qualifier.runWithContext('parent', () {
+          qualifier.setFactory(
+            'parentService',
+            ApplicationFactory<TestService>(builder: TestService.new.builder),
+          );
+
+          parentContext = qualifier.currentContext;
+          parentEntries.addAll(qualifier.entries().toList());
+
+          qualifier.runWithContext('child', () {
+            qualifier.setFactory(
+              'childService',
+              ApplicationFactory<TestService>(builder: TestService.new.builder),
+            );
+
+            final childEntries = qualifier.entries().toList();
+            final explicitParentEntries =
+                qualifier.entries(context: parentContext).toList();
+
+            expect(childEntries.any((e) => e.key == 'childService'), true);
+            expect(childEntries.any((e) => e.key == 'parentService'), false);
+            expect(
+                explicitParentEntries.any((e) => e.key == 'parentService'),
+                true);
+            expect(
+                explicitParentEntries.any((e) => e.key == 'childService'),
+                false);
+
+            return Object();
+          });
+
+          return Object();
+        });
+
+        expect(parentEntries.any((e) => e.key == 'parentService'), true);
       });
 
       // TODO

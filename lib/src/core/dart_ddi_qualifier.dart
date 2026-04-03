@@ -50,7 +50,7 @@ abstract interface class DartDDIQualifier {
   Iterable<Object> get keys;
 
   @pragma('vm:prefer-inline')
-  Iterable<MapEntry<Object, DDIBaseFactory<Object>>> get entries;
+  Iterable<MapEntry<Object, DDIBaseFactory<Object>>> entries({Object? context});
 
   @pragma('vm:prefer-inline')
   bool get isEmpty;

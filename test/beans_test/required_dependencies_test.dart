@@ -5,6 +5,20 @@ import '../clazz_samples/a.dart';
 import '../clazz_samples/b.dart';
 import '../clazz_samples/c.dart';
 
+class _AsyncRequiresProbe {
+  const _AsyncRequiresProbe();
+}
+
+class _RequiresReadyStateProbe {
+  const _RequiresReadyStateProbe(this.dependencyWasReadyWhenCreated);
+
+  final bool dependencyWasReadyWhenCreated;
+}
+
+class _AsyncDependencyProbe {
+  const _AsyncDependencyProbe();
+}
+
 void main() {
   group('DDI required Dependencies Tests', () {
     tearDown(() {
@@ -402,6 +416,53 @@ void main() {
     });
 
     group('Required Dependencies with Async', () {
+      test(
+          'ApplicationFactory getAsyncWith should validate missing required dependency before creating the bean',
+          () async {
+        ddi.register<_AsyncRequiresProbe>(
+          factory: ApplicationFactory(
+            builder: _AsyncRequiresProbe.new.builder,
+            requires: {'missing-dependency'},
+          ),
+        );
+
+        await expectLater(
+          ddi.getAsync<_AsyncRequiresProbe>(),
+          throwsA(isA<MissingDependenciesException>()),
+        );
+
+        ddi.destroy<_AsyncRequiresProbe>();
+        expect(ddi.isRegistered<_AsyncRequiresProbe>(), false);
+      });
+
+      test(
+          'DependentFactory getAsyncWith should await async required dependencies before creating the bean',
+          () async {
+        var dependencyReady = false;
+
+        ddi.application<_AsyncDependencyProbe>(
+          () async {
+            await Future<void>.delayed(const Duration(milliseconds: 1));
+            dependencyReady = true;
+            return const _AsyncDependencyProbe();
+          },
+          qualifier: 'async-dependency',
+        );
+
+        ddi.register<_RequiresReadyStateProbe>(
+          factory: DependentFactory(
+            builder: (() => _RequiresReadyStateProbe(dependencyReady)).builder,
+            requires: {'async-dependency'},
+          ),
+        );
+
+        final instance = await ddi.getAsync<_RequiresReadyStateProbe>();
+        expect(instance.dependencyWasReadyWhenCreated, isTrue);
+
+        ddi.destroy<_RequiresReadyStateProbe>();
+        ddi.destroy<_AsyncDependencyProbe>(qualifier: 'async-dependency');
+      });
+
       test('Should wait for async dependencies in getAsyncWith', () async {
         ddi.singleton<C>(C.new);
         ddi.singleton<B>(() async => B(ddi()));

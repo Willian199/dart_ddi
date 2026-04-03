@@ -255,9 +255,11 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     resolutionMap.add(qualifier);
 
     try {
-      if (!_dependenciesValidated && (_requires?.isEmpty ?? false)) {
+      if (!_dependenciesValidated &&
+          _requires != null &&
+          _requires.isNotEmpty) {
         final validation = DependencyValidator.validateDependenciesAsync(
-          requires: _requires!,
+          requires: _requires,
           ddiInstance: ddiInstance,
         );
 

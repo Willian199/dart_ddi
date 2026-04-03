@@ -46,6 +46,7 @@ final class _BenchmarkResult {
 }
 
 typedef _BenchmarkExercise = void Function(DDI ddi);
+typedef _AsyncBenchmarkExercise = FutureOr<void> Function(DDI ddi);
 
 Future<void> _setupScope(DDI ddi, _ScopeKind scope) async {
   switch (scope) {
@@ -116,6 +117,55 @@ Future<List<_BenchmarkResult>> _measureMany({
   for (var i = 0; i < runs; i++) {
     results.add(await _runBenchmark(
       scope: scope,
+      exercise: exercise,
+    ));
+  }
+
+  return results;
+}
+
+Future<_BenchmarkResult> _runContextModuleBenchmark({
+  required _AsyncBenchmarkExercise exercise,
+}) async {
+  final ddi = DDI.newInstance();
+  await ddi.singleton(() => ContextualBenchmarkModule(ddi));
+
+  final module = ddi.get<ContextualBenchmarkModule>();
+
+  final sw = Stopwatch()..start();
+  await exercise(ddi);
+  sw.stop();
+
+  final interceptor = ddi.getWith<BenchmarkInterceptor, Object>(
+    context: module.contextQualifier,
+  );
+
+  await ddi.destroy<ContextualBenchmarkService>(
+      context: module.contextQualifier);
+  await ddi.destroy<BenchmarkInterceptor>(context: module.contextQualifier);
+  await ddi.destroy<ContextualBenchmarkModule>();
+
+  return _BenchmarkResult(
+    elapsedMilliseconds: sw.elapsedMilliseconds,
+    onCreateCalled: interceptor.onCreateCalled,
+    onGetCalled: interceptor.onGetCalled,
+  );
+}
+
+Future<List<_BenchmarkResult>> _measureContextModuleMany({
+  required int warmups,
+  required int runs,
+  required _AsyncBenchmarkExercise exercise,
+}) async {
+  for (var i = 0; i < warmups; i++) {
+    await _runContextModuleBenchmark(
+      exercise: exercise,
+    );
+  }
+
+  final results = <_BenchmarkResult>[];
+  for (var i = 0; i < runs; i++) {
+    results.add(await _runContextModuleBenchmark(
       exercise: exercise,
     ));
   }
@@ -276,5 +326,118 @@ void main() {
         );
       }
     }
+
+    test(
+      'Contextual module direct get vs captured Instance should stay close',
+      () async {
+        const interaction = 500000;
+        const maxRelativeDelta = 0.25;
+
+        final directResults = await _measureContextModuleMany(
+          warmups: warmups,
+          runs: runs,
+          exercise: (ddi) {
+            final module = ddi.get<ContextualBenchmarkModule>();
+
+            for (var i = 0; i < interaction; i++) {
+              final service = ddi.getWith<ContextualBenchmarkService, Object>(
+                context: module.contextQualifier,
+              );
+              expect(service.origin, 'module-context');
+            }
+          },
+        );
+
+        final instanceResults = await _measureContextModuleMany(
+          warmups: warmups,
+          runs: runs,
+          exercise: (ddi) {
+            final module = ddi.get<ContextualBenchmarkModule>();
+            final instance = module.contextualInstance;
+
+            for (var i = 0; i < interaction; i++) {
+              final service = instance.get();
+              expect(service.origin, 'module-context');
+            }
+          },
+        );
+
+        final directMedian = _medianMillis(directResults);
+        final instanceMedian = _medianMillis(instanceResults);
+        final relativeDelta =
+            (instanceMedian - directMedian).abs() / directMedian;
+
+        _printBenchmarkSummary(
+          'Contextual module direct get',
+          directResults,
+          interaction,
+        );
+        _printBenchmarkSummary(
+          'Contextual module captured Instance',
+          instanceResults,
+          interaction,
+        );
+
+        expect(
+          directResults.every((result) => result.onCreateCalled == 1),
+          isTrue,
+        );
+        expect(
+          directResults.every((result) => result.onGetCalled == interaction),
+          isTrue,
+        );
+        expect(
+          instanceResults.every((result) => result.onCreateCalled == 1),
+          isTrue,
+        );
+        expect(
+          instanceResults.every((result) => result.onGetCalled == interaction),
+          isTrue,
+        );
+        expect(
+          relativeDelta,
+          lessThan(maxRelativeDelta),
+          reason:
+              'Contextual module direct get and captured Instance should stay close.',
+        );
+      },
+    );
+
+    test(
+      'Contextual module captured Instance with cache should minimize onGet',
+      () async {
+        const interaction = 500000;
+
+        final results = await _measureContextModuleMany(
+          warmups: warmups,
+          runs: runs,
+          exercise: (ddi) {
+            final module = ddi.get<ContextualBenchmarkModule>();
+            final contextualInstance = module.cachedContextualInstance;
+            for (var i = 0; i < interaction; i++) {
+              final service = contextualInstance.get();
+              expect(service.origin, 'module-context');
+            }
+          },
+        );
+
+        _printBenchmarkSummary(
+          'Contextual module captured Instance with cache',
+          results,
+          interaction,
+        );
+
+        expect(
+          results.every((result) => result.onCreateCalled == 1),
+          isTrue,
+        );
+        expect(
+          results.every((result) => result.onGetCalled == 1),
+          isTrue,
+          reason:
+              'Contextual module captured Instance with cache should call onGet only once.',
+        );
+      },
+    );
   });
 }

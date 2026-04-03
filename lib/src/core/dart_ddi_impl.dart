@@ -191,9 +191,11 @@ class _DDIImpl implements DDI {
   bool isFuture<BeanT extends Object>({Object? qualifier, Object? context}) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
     final Object effectiveContext = context ?? currentContext;
+    final bool fallbackToRoot = context == null && _beans.hasContext;
     if (_beans.getFactory(
       qualifier: effectiveQualifierName,
       contextQualifier: effectiveContext,
+      fallback: fallbackToRoot,
     )
         case final DDIBaseFactory<BeanT> factory?) {
       return factory.isFuture;
@@ -206,9 +208,11 @@ class _DDIImpl implements DDI {
   bool isReady<BeanT extends Object>({Object? qualifier, Object? context}) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
     final Object effectiveContext = context ?? currentContext;
+    final bool fallbackToRoot = context == null && _beans.hasContext;
     if (_beans.getFactory(
       qualifier: effectiveQualifierName,
       contextQualifier: effectiveContext,
+      fallback: fallbackToRoot,
     )
         case final DDIBaseFactory<BeanT> factory?) {
       return factory.isReady;
@@ -226,10 +230,12 @@ class _DDIImpl implements DDI {
   }) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
     final Object effectiveContext = context ?? currentContext;
+    final bool fallbackToRoot = context == null && _beans.hasContext;
 
     if (_beans.getFactory(
       qualifier: effectiveQualifierName,
       contextQualifier: effectiveContext,
+      fallback: fallbackToRoot,
     )
         case final DDIBaseFactory<BeanT> factory?) {
       return factory.getWith<ParameterT>(
@@ -239,7 +245,7 @@ class _DDIImpl implements DDI {
       );
     } else if (select != null && BeanT != Object) {
       // Try to find a bean with the selector
-      for (final MapEntry(key: _, :value) in _beans.entries) {
+      for (final MapEntry(key: _, :value) in _beans.entries(context: context)) {
         if (value.type == BeanT &&
             (value.selector?.call(select) ?? false) as bool) {
           return (value as DDIBaseFactory<BeanT>).getWith<ParameterT>(
@@ -263,10 +269,12 @@ class _DDIImpl implements DDI {
   }) async {
     final Object effectiveQualifierName = qualifier ?? BeanT;
     final Object effectiveContext = context ?? currentContext;
+    final bool fallbackToRoot = context == null && _beans.hasContext;
 
     final reg = _beans.getFactory(
       qualifier: effectiveQualifierName,
       contextQualifier: effectiveContext,
+      fallback: fallbackToRoot,
     );
 
     if (reg case final DDIBaseFactory<BeanT> factory?) {
@@ -287,7 +295,7 @@ class _DDIImpl implements DDI {
       );
     } else if (select != null && BeanT != Object) {
       // Try to find a bean with the selector
-      for (final MapEntry(key: _, :value) in _beans.entries) {
+      for (final MapEntry(key: _, :value) in _beans.entries(context: context)) {
         if (value.type == BeanT &&
             value.selector != null &&
             await (value.selector?.call(select) ?? false)) {
@@ -307,7 +315,7 @@ class _DDIImpl implements DDI {
   List<Object> getByType<BeanT extends Object>() {
     final Type type = BeanT;
 
-    return _beans.entries
+    return _beans.entries()
         .where((element) => element.value.type == type)
         .map((e) => e.key)
         .toList();
@@ -375,7 +383,7 @@ class _DDIImpl implements DDI {
 
   @override
   void disposeByType<BeanT extends Object>() {
-    for (final MapEntry(key: _, :value) in _beans.entries) {
+    for (final MapEntry(key: _, :value) in _beans.entries()) {
       value.dispose(ddiInstance: this);
     }
   }

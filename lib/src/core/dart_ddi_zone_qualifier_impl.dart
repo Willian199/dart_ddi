@@ -30,6 +30,21 @@ final class DartDDIZoneQualifierImpl implements DartDDIQualifier {
     return zoneMap ?? _globalBeansMap;
   }
 
+  Map<Object, DDIBaseFactory<Object>> _getBeansMapForContext(Object? context) {
+    if (context == _rootContext) {
+      return _globalBeansMap;
+    }
+
+    if (context case final Map<Object, DDIBaseFactory<Object>> explicitMap) {
+      return explicitMap;
+    }
+
+    return switch (Zone.current[context ?? _beansKey]) {
+      final Map<Object, DDIBaseFactory<Object>> zoneMap => zoneMap,
+      _ => <Object, DDIBaseFactory<Object>>{},
+    };
+  }
+
   @override
   DDIBaseFactory<BeanT>? getFactory<BeanT extends Object>({
     required Object qualifier,
@@ -64,7 +79,7 @@ final class DartDDIZoneQualifierImpl implements DartDDIQualifier {
       }
     }
 
-    if (fallback || zoneName == 'root') {
+    if (fallback || (contextQualifier == null && zoneName == 'root')) {
       return _globalBeansMap[qualifier] as DDIBaseFactory<BeanT>?;
     }
 
@@ -118,8 +133,9 @@ final class DartDDIZoneQualifierImpl implements DartDDIQualifier {
   Iterable<Object> get keys => _getBeansMap().keys;
 
   @override
-  Iterable<MapEntry<Object, DDIBaseFactory<Object>>> get entries =>
-      _getBeansMap().entries;
+  Iterable<MapEntry<Object, DDIBaseFactory<Object>>> entries({Object? context}) {
+    return _getBeansMapForContext(context).entries;
+  }
 
   @override
   bool get isEmpty => _getBeansMap().isEmpty;
