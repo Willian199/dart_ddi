@@ -23,7 +23,7 @@ void main() {
 
         qualifier.runWithContext('test', () {
           expect(
-            qualifier.getFactory<TestService>(qualifier: TestService),
+            qualifier.getFactory<TestService>(qualifier: TestService)?.factory,
             same(rootFactory),
           );
           expect(qualifier.hasContext, true);
@@ -52,11 +52,11 @@ void main() {
 
           qualifier.runWithContext('A', () {
             expect(
-              qualifier.getFactory<TestService>(qualifier: 'serviceA'),
+              qualifier.getFactory<TestService>(qualifier: 'serviceA')?.factory,
               same(contextFactory),
             );
             expect(
-              qualifier.getFactory<TestService>(qualifier: 'serviceB'),
+              qualifier.getFactory<TestService>(qualifier: 'serviceB')?.factory,
               isNull,
             );
             return Object();
@@ -64,6 +64,215 @@ void main() {
 
           return Object();
         });
+      });
+
+      test(
+          'remove should prune an empty named context so a new activation can bind a new parent',
+          () {
+        final qualifier = DartDDIDefaultQualifierImpl();
+        final oldParentFactory = ApplicationFactory<TestService>(
+          builder: TestService.new.builder,
+        );
+        final newParentFactory = ApplicationFactory<TestService>(
+          builder: TestService.new.builder,
+        );
+        final childFactory = ApplicationFactory<TestService>(
+          builder: TestService.new.builder,
+        );
+
+        qualifier.runWithContext('old-parent', () {
+          qualifier.setFactory('old-parent-service', oldParentFactory);
+
+          qualifier.runWithContext('shared-child', () {
+            qualifier.setFactory('child-service', childFactory);
+            return Object();
+          });
+
+          return Object();
+        });
+
+        qualifier.remove('child-service', context: 'shared-child');
+        qualifier.restoreContext(null);
+
+        qualifier.runWithContext('new-parent', () {
+          qualifier.setFactory('new-parent-service', newParentFactory);
+
+          qualifier.runWithContext('shared-child', () {
+            expect(
+              qualifier
+                  .getFactory<TestService>(qualifier: 'new-parent-service')
+                  ?.factory,
+              same(newParentFactory),
+            );
+            expect(
+              qualifier
+                  .getFactory<TestService>(qualifier: 'old-parent-service')
+                  ?.factory,
+              isNull,
+            );
+            return Object();
+          });
+
+          return Object();
+        });
+      });
+
+      test(
+          'remove should restore the current context to the immediate parent when deepest context becomes empty',
+          () {
+        final qualifier = DartDDIDefaultQualifierImpl();
+        final deepFactory = ApplicationFactory<TestService>(
+          builder: TestService.new.builder,
+        );
+
+        qualifier.createContext('A');
+        qualifier.createContext('B');
+        qualifier.createContext('C');
+        qualifier.createContext('D');
+
+        qualifier.setFactory('deep-service', deepFactory);
+        qualifier.remove('deep-service', context: 'D');
+
+        expect(qualifier.currentContext, equals('C'));
+      });
+
+      test(
+          'remove should prune descendant contexts when an intermediate context becomes empty',
+          () {
+        final qualifier = DartDDIDefaultQualifierImpl();
+        final parentFactory = ApplicationFactory<TestService>(
+          builder: TestService.new.builder,
+        );
+        final childFactory = ApplicationFactory<TestService>(
+          builder: TestService.new.builder,
+        );
+
+        qualifier.createContext('A');
+        qualifier.createContext('B');
+        qualifier.setFactory('service-b', parentFactory);
+        qualifier.createContext('C');
+        qualifier.setFactory('service-c', childFactory);
+
+        qualifier.remove('service-b', context: 'B');
+
+        expect(
+          qualifier
+              .getFactory<TestService>(
+                qualifier: 'service-c',
+                contextQualifier: 'C',
+                fallback: false,
+              )
+              ?.factory,
+          isNull,
+        );
+
+        qualifier.restoreContext('A');
+        qualifier.createContext('C');
+        expect(
+          qualifier.getFactory<TestService>(qualifier: 'service-b')?.factory,
+          isNull,
+        );
+      });
+
+      test('remove should cascade prune all descendants of the removed context',
+          () {
+        final qualifier = DartDDIDefaultQualifierImpl();
+        final factoryB = ApplicationFactory<TestService>(
+          builder: TestService.new.builder,
+        );
+        final factoryC = ApplicationFactory<TestService>(
+          builder: TestService.new.builder,
+        );
+        final factoryD = ApplicationFactory<TestService>(
+          builder: TestService.new.builder,
+        );
+
+        qualifier.createContext('A');
+        qualifier.createContext('B');
+        qualifier.setFactory('service-b', factoryB);
+        qualifier.createContext('C');
+        qualifier.setFactory('service-c', factoryC);
+        qualifier.createContext('D');
+        qualifier.setFactory('service-d', factoryD);
+
+        qualifier.remove('service-b', context: 'B');
+
+        expect(
+          qualifier
+              .getFactory<TestService>(
+                qualifier: 'service-c',
+                contextQualifier: 'C',
+                fallback: false,
+              )
+              ?.factory,
+          isNull,
+        );
+        expect(
+          qualifier
+              .getFactory<TestService>(
+                qualifier: 'service-d',
+                contextQualifier: 'D',
+                fallback: false,
+              )
+              ?.factory,
+          isNull,
+        );
+      });
+
+      test(
+          'remove should restore current context to parent of removed node when current is an orphan descendant',
+          () {
+        final qualifier = DartDDIDefaultQualifierImpl();
+        final factoryB = ApplicationFactory<TestService>(
+          builder: TestService.new.builder,
+        );
+        final factoryC = ApplicationFactory<TestService>(
+          builder: TestService.new.builder,
+        );
+
+        qualifier.createContext('A');
+        qualifier.createContext('B');
+        qualifier.setFactory('service-b', factoryB);
+        qualifier.createContext('C');
+        qualifier.setFactory('service-c', factoryC);
+
+        expect(qualifier.currentContext, equals('C'));
+
+        qualifier.remove('service-b', context: 'B');
+
+        expect(qualifier.currentContext, equals('A'));
+      });
+
+      test(
+          'remove should not prune sibling branches when removing an intermediate context',
+          () {
+        final qualifier = DartDDIDefaultQualifierImpl();
+        final factoryB = ApplicationFactory<TestService>(
+          builder: TestService.new.builder,
+        );
+        final siblingFactory = ApplicationFactory<TestService>(
+          builder: TestService.new.builder,
+        );
+
+        qualifier.createContext('A');
+        qualifier.createContext('B');
+        qualifier.setFactory('service-b', factoryB);
+        qualifier.restoreContext('A');
+        qualifier.createContext('X');
+        qualifier.setFactory('service-x', siblingFactory);
+
+        qualifier.remove('service-b', context: 'B');
+
+        expect(
+          qualifier
+              .getFactory<TestService>(
+                qualifier: 'service-x',
+                contextQualifier: 'X',
+                fallback: false,
+              )
+              ?.factory,
+          same(siblingFactory),
+        );
       });
 
       test('keys should return all qualifiers', () {
@@ -145,25 +354,31 @@ void main() {
         });
 
         expect(
-          qualifier.getFactory<TestService>(
-            qualifier: 'parentService',
-            contextQualifier: 'parent',
-          ),
+          qualifier
+              .getFactory<TestService>(
+                qualifier: 'parentService',
+                contextQualifier: 'parent',
+              )
+              ?.factory,
           same(parentFactory),
         );
         expect(
-          qualifier.getFactory<TestService>(
-            qualifier: 'childService',
-            contextQualifier: 'child',
-          ),
+          qualifier
+              .getFactory<TestService>(
+                qualifier: 'childService',
+                contextQualifier: 'child',
+              )
+              ?.factory,
           same(childFactory),
         );
         expect(
-          qualifier.getFactory<TestService>(
-            qualifier: 'childService',
-            contextQualifier: 'parent',
-            fallback: false,
-          ),
+          qualifier
+              .getFactory<TestService>(
+                qualifier: 'childService',
+                contextQualifier: 'parent',
+                fallback: false,
+              )
+              ?.factory,
           isNull,
         );
       });

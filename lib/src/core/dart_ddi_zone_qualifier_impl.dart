@@ -46,13 +46,21 @@ final class DartDDIZoneQualifierImpl implements DartDDIQualifier {
   }
 
   @override
-  DDIBaseFactory<BeanT>? getFactory<BeanT extends Object>({
+  ({DDIBaseFactory<BeanT> factory, Object context})?
+      getFactory<BeanT extends Object>({
     required Object qualifier,
     bool fallback = true,
     Object? contextQualifier,
   }) {
     if (contextQualifier == _rootContext) {
-      return _globalBeansMap[qualifier] as DDIBaseFactory<BeanT>?;
+      final rootFactory = _globalBeansMap[qualifier];
+      if (rootFactory == null) {
+        return null;
+      }
+      return (
+        factory: rootFactory as DDIBaseFactory<BeanT>,
+        context: _rootContext
+      );
     }
 
     final Map<Object, DDIBaseFactory<Object>>? zoneMap =
@@ -63,7 +71,10 @@ final class DartDDIZoneQualifierImpl implements DartDDIQualifier {
     };
 
     if (zoneMap?.containsKey(qualifier) ?? false) {
-      return zoneMap?[qualifier] as DDIBaseFactory<BeanT>;
+      return (
+        factory: zoneMap![qualifier] as DDIBaseFactory<BeanT>,
+        context: zoneMap
+      );
     } else if (fallback && Zone.current.parent != null) {
       Zone zone = Zone.current.parent!;
 
@@ -72,7 +83,10 @@ final class DartDDIZoneQualifierImpl implements DartDDIQualifier {
             zone[_beansKey] as Map<Object, DDIBaseFactory<Object>>?;
 
         if (parentZoneMap?.containsKey(qualifier) ?? false) {
-          return parentZoneMap?[qualifier] as DDIBaseFactory<BeanT>;
+          return (
+            factory: parentZoneMap![qualifier] as DDIBaseFactory<BeanT>,
+            context: parentZoneMap
+          );
         }
 
         zone = zone.parent!;
@@ -80,7 +94,14 @@ final class DartDDIZoneQualifierImpl implements DartDDIQualifier {
     }
 
     if (fallback || (contextQualifier == null && zoneName == 'root')) {
-      return _globalBeansMap[qualifier] as DDIBaseFactory<BeanT>?;
+      final rootFactory = _globalBeansMap[qualifier];
+      if (rootFactory == null) {
+        return null;
+      }
+      return (
+        factory: rootFactory as DDIBaseFactory<BeanT>,
+        context: _rootContext
+      );
     }
 
     return null;

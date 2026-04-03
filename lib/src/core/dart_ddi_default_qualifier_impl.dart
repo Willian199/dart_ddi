@@ -38,7 +38,8 @@ final class DartDDIDefaultQualifierImpl implements DartDDIQualifier {
   _QualifierContext _currentContext;
 
   @override
-  DDIBaseFactory<BeanT>? getFactory<BeanT extends Object>({
+  ({DDIBaseFactory<BeanT> factory, Object context})?
+      getFactory<BeanT extends Object>({
     required Object qualifier,
     bool fallback = true,
     Object? contextQualifier,
@@ -53,13 +54,42 @@ final class DartDDIDefaultQualifierImpl implements DartDDIQualifier {
         context.factories[qualifier];
 
     if (explicitFactory != null || !fallback) {
-      return explicitFactory as DDIBaseFactory<BeanT>?;
+      if (explicitFactory == null) {
+        return null;
+      }
+      return (
+        factory: explicitFactory as DDIBaseFactory<BeanT>,
+        context: context.qualifier
+      );
     }
 
     return _findInParents<BeanT>(
       qualifier: qualifier,
       startAt: context.parent,
     );
+  }
+
+  ({DDIBaseFactory<BeanT> factory, Object context})?
+      _findInParents<BeanT extends Object>({
+    required Object qualifier,
+    required _QualifierContext? startAt,
+  }) {
+    _QualifierContext? parent = startAt;
+
+    while (parent != null) {
+      final DDIBaseFactory<Object>? factory = parent.factories[qualifier];
+
+      if (factory != null) {
+        return (
+          factory: factory as DDIBaseFactory<BeanT>,
+          context: parent.qualifier
+        );
+      }
+
+      parent = parent.parent;
+    }
+
+    return null;
   }
 
   @override
@@ -143,25 +173,6 @@ final class DartDDIDefaultQualifierImpl implements DartDDIQualifier {
     _currentContext = _activateContext(name);
   }
 
-  DDIBaseFactory<BeanT>? _findInParents<BeanT extends Object>({
-    required Object qualifier,
-    required _QualifierContext? startAt,
-  }) {
-    _QualifierContext? parent = startAt;
-
-    while (parent != null) {
-      final DDIBaseFactory<Object>? factory = parent.factories[qualifier];
-
-      if (factory != null) {
-        return factory as DDIBaseFactory<BeanT>;
-      }
-
-      parent = parent.parent;
-    }
-
-    return null;
-  }
-
   @override
   @pragma('vm:prefer-inline')
   void setFactory(Object qualifier, DDIBaseFactory<Object> value) {
@@ -173,12 +184,36 @@ final class DartDDIDefaultQualifierImpl implements DartDDIQualifier {
     final _QualifierContext targetContext =
         context == null ? _rootContext : (_contexts[context] ?? _rootContext);
 
-    final DDIBaseFactory<Object>? removedFactory =
-        targetContext.factories.remove(key);
+    final removedFactory = targetContext.factories.remove(key);
+    final didEmptyAfterRemoval =
+        removedFactory != null && targetContext.factories.isEmpty;
 
-    if (identical(targetContext, _currentContext) &&
-        targetContext.factories.isEmpty) {
-      _currentContext = _rootContext;
+    if (didEmptyAfterRemoval) {
+      if (!identical(targetContext, _rootContext)) {
+        final Set<Object> removedQualifiers = <Object>{targetContext.qualifier};
+
+        for (final MapEntry<Object, _QualifierContext> entry
+            in _contexts.entries) {
+          if (identical(entry.value, _rootContext) ||
+              identical(entry.value, targetContext)) {
+            continue;
+          }
+
+          if (_isDescendantOf(entry.value, targetContext)) {
+            removedQualifiers.add(entry.key);
+          }
+        }
+
+        if (removedQualifiers.contains(_currentContext.qualifier)) {
+          _currentContext = targetContext.parent ?? _rootContext;
+        }
+
+        for (final qualifier in removedQualifiers) {
+          _contexts.remove(qualifier);
+        }
+      } else if (identical(targetContext, _currentContext)) {
+        _currentContext = _rootContext;
+      }
     }
 
     return removedFactory;
@@ -203,6 +238,20 @@ final class DartDDIDefaultQualifierImpl implements DartDDIQualifier {
   @override
   @pragma('vm:prefer-inline')
   int get length => _currentContext.factories.length;
+
+  bool _isDescendantOf(
+      _QualifierContext candidate, _QualifierContext ancestor) {
+    _QualifierContext? current = candidate.parent;
+
+    while (current != null) {
+      if (identical(current, ancestor)) {
+        return true;
+      }
+      current = current.parent;
+    }
+
+    return false;
+  }
 }
 
 final class _QualifierContext {

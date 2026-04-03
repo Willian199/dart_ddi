@@ -57,7 +57,7 @@ void main() {
 
         await Future<void>.delayed(const Duration(milliseconds: 1));
 
-        // TODO maybe to fix. Shouldn't be possible to find a async bean outside the context or should find if the current context still the same(eg. not finished ye)?
+        // TODO maybe to fix. Shouldn't be possible to find a async bean outside the context or it should be found if the current context still the same(eg. not finished yet)?
         expect(
           newDdi.isRegistered<String>(qualifier: 'message'),
           isTrue,

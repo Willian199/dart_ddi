@@ -130,14 +130,16 @@ class _DDIImpl implements DDI {
         _beans.createContext(context);
       }
 
-      final fac = _beans.getFactory(
+      final Object registrationContext = context ?? _beans.currentContext;
+
+      final fac = _beans.getFactory<BeanT>(
         qualifier: effectiveQualifierName,
         fallback: false,
-        contextQualifier: context,
+        contextQualifier: registrationContext,
       );
 
       if (fac != null) {
-        if (BeanStateEnum.none == fac.state) {
+        if (BeanStateEnum.none == fac.factory.state) {
           _beans.remove(
             effectiveQualifierName,
             context: context,
@@ -162,7 +164,7 @@ class _DDIImpl implements DDI {
       f.onError((e, _) {
         _beans.remove(
           effectiveQualifierName,
-          context: context,
+          context: registrationContext,
         );
       });
 
@@ -183,7 +185,8 @@ class _DDIImpl implements DDI {
               contextQualifier: effectiveContext,
               fallback: fallbackToRoot,
             )
-            ?.isRegistered ??
+            ?.factory
+            .isRegistered ??
         false;
   }
 
@@ -192,13 +195,13 @@ class _DDIImpl implements DDI {
     final Object effectiveQualifierName = qualifier ?? BeanT;
     final Object effectiveContext = context ?? currentContext;
     final bool fallbackToRoot = context == null && _beans.hasContext;
-    if (_beans.getFactory(
+    final located = _beans.getFactory<BeanT>(
       qualifier: effectiveQualifierName,
       contextQualifier: effectiveContext,
       fallback: fallbackToRoot,
-    )
-        case final DDIBaseFactory<BeanT> factory?) {
-      return factory.isFuture;
+    );
+    if (located != null) {
+      return located.factory.isFuture;
     }
 
     throw BeanNotFoundException(effectiveQualifierName.toString());
@@ -209,13 +212,13 @@ class _DDIImpl implements DDI {
     final Object effectiveQualifierName = qualifier ?? BeanT;
     final Object effectiveContext = context ?? currentContext;
     final bool fallbackToRoot = context == null && _beans.hasContext;
-    if (_beans.getFactory(
+    final located = _beans.getFactory<BeanT>(
       qualifier: effectiveQualifierName,
       contextQualifier: effectiveContext,
       fallback: fallbackToRoot,
-    )
-        case final DDIBaseFactory<BeanT> factory?) {
-      return factory.isReady;
+    );
+    if (located != null) {
+      return located.factory.isReady;
     }
 
     throw BeanNotFoundException(effectiveQualifierName.toString());
@@ -232,13 +235,13 @@ class _DDIImpl implements DDI {
     final Object effectiveContext = context ?? currentContext;
     final bool fallbackToRoot = context == null && _beans.hasContext;
 
-    if (_beans.getFactory(
+    final located = _beans.getFactory<BeanT>(
       qualifier: effectiveQualifierName,
       contextQualifier: effectiveContext,
       fallback: fallbackToRoot,
-    )
-        case final DDIBaseFactory<BeanT> factory?) {
-      return factory.getWith<ParameterT>(
+    );
+    if (located != null) {
+      return located.factory.getWith<ParameterT>(
         parameter: parameter,
         qualifier: effectiveQualifierName,
         ddiInstance: this,
@@ -271,11 +274,13 @@ class _DDIImpl implements DDI {
     final Object effectiveContext = context ?? currentContext;
     final bool fallbackToRoot = context == null && _beans.hasContext;
 
-    final reg = _beans.getFactory(
-      qualifier: effectiveQualifierName,
-      contextQualifier: effectiveContext,
-      fallback: fallbackToRoot,
-    );
+    final reg = _beans
+        .getFactory(
+          qualifier: effectiveQualifierName,
+          contextQualifier: effectiveContext,
+          fallback: fallbackToRoot,
+        )
+        ?.factory;
 
     if (reg case final DDIBaseFactory<BeanT> factory?) {
       final clazz = factory.getAsyncWith<ParameterT>(
@@ -337,16 +342,17 @@ class _DDIImpl implements DDI {
     final Object effectiveContext = context ?? currentContext;
     final bool fallbackToRoot = context == null && _beans.hasContext;
 
-    if (_beans.getFactory(
+    final located = _beans.getFactory(
       qualifier: effectiveQualifierName,
       contextQualifier: effectiveContext,
       fallback: fallbackToRoot,
-    )
-        case final factory?) {
-      return factory.destroy(
+    );
+
+    if (located != null) {
+      return located.factory.destroy(
         apply: () => _beans.remove(
           effectiveQualifierName,
-          context: effectiveContext,
+          context: located.context,
         ),
         ddiInstance: this,
       );
@@ -370,13 +376,14 @@ class _DDIImpl implements DDI {
     final Object effectiveContext = context ?? currentContext;
     final bool fallbackToRoot = context == null && _beans.hasContext;
 
-    if (_beans.getFactory(
+    final located = _beans.getFactory<BeanT>(
       qualifier: effectiveQualifierName,
       contextQualifier: effectiveContext,
       fallback: fallbackToRoot,
-    )
-        case final DDIBaseFactory<BeanT> factory?) {
-      return factory.dispose(ddiInstance: this);
+    );
+
+    if (located != null) {
+      return located.factory.dispose(ddiInstance: this);
     }
 
     throw BeanNotFoundException(effectiveQualifierName.toString());
@@ -396,7 +403,8 @@ class _DDIImpl implements DDI {
   }) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    final factory = _beans.getFactory<BeanT>(qualifier: effectiveQualifierName);
+    final factory =
+        _beans.getFactory<BeanT>(qualifier: effectiveQualifierName)?.factory;
 
     if (factory case final DDIScopeFactory<BeanT> f?) {
       return f.addDecorator(decorators);
@@ -416,7 +424,8 @@ class _DDIImpl implements DDI {
   }) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    final factory = _beans.getFactory(qualifier: effectiveQualifierName);
+    final factory =
+        _beans.getFactory<BeanT>(qualifier: effectiveQualifierName)?.factory;
 
     if (factory case final DDIScopeFactory<BeanT> f?) {
       f.addInterceptor(interceptors ?? {});
@@ -444,7 +453,8 @@ class _DDIImpl implements DDI {
   }) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    final factory = _beans.getFactory(qualifier: effectiveQualifierName);
+    final factory =
+        _beans.getFactory<BeanT>(qualifier: effectiveQualifierName)?.factory;
 
     if (factory case final DDIScopeFactory<BeanT> f?) {
       f.addChildrenModules(child);
@@ -459,7 +469,8 @@ class _DDIImpl implements DDI {
 
   @override
   Set<Object> getChildren<BeanT extends Object>({Object? qualifier}) {
-    final factory = _beans.getFactory(qualifier: qualifier ?? BeanT);
+    final factory =
+        _beans.getFactory<BeanT>(qualifier: qualifier ?? BeanT)?.factory;
     if (factory case final DDIScopeFactory<BeanT> f?) {
       return f.children;
     }
