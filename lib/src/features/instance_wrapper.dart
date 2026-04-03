@@ -49,10 +49,6 @@ class InstanceWrapper<BeanT extends Object> implements Instance<BeanT> {
 
   @override
   BeanT get<ParameterT extends Object>({ParameterT? parameter}) {
-    if (!isResolvable()) {
-      throw BeanNotFoundException(BeanT.toString());
-    }
-
     if (!_cache && !_useWeakReference) {
       return ddi.getWith<BeanT, ParameterT>(
         qualifier: qualifier,
@@ -87,10 +83,6 @@ class InstanceWrapper<BeanT extends Object> implements Instance<BeanT> {
   @override
   Future<BeanT> getAsync<ParameterT extends Object>(
       {ParameterT? parameter}) async {
-    if (!isResolvable()) {
-      throw BeanNotFoundException(BeanT.toString());
-    }
-
     if (!_cache && !_useWeakReference) {
       return ddi.getAsyncWith<BeanT, ParameterT>(
         qualifier: qualifier,
