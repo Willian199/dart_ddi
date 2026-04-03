@@ -52,5 +52,6 @@ abstract class DDIScopeFactory<BeanT extends Object>
   ///
   /// Returns all child modules that have been registered under this parent module.
   /// This is useful for discovering the module hierarchy and managing child modules.
+  @pragma('vm:prefer-inline')
   Set<Object> get children;
 }

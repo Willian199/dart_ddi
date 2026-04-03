@@ -80,9 +80,11 @@ final class DartDDIDefaultQualifierImpl implements DartDDIQualifier {
   }
 
   @override
+  @pragma('vm:prefer-inline')
   Object get currentContext => _currentContext.qualifier;
 
   @override
+  @pragma('vm:prefer-inline')
   bool get hasContext => !identical(_currentContext, _rootContext);
 
   @override
@@ -139,6 +141,7 @@ final class DartDDIDefaultQualifierImpl implements DartDDIQualifier {
   }
 
   @override
+  @pragma('vm:prefer-inline')
   void createContext(Object name) {
     _currentContext = _activateContext(name);
   }
@@ -163,6 +166,7 @@ final class DartDDIDefaultQualifierImpl implements DartDDIQualifier {
   }
 
   @override
+  @pragma('vm:prefer-inline')
   void setFactory(Object qualifier, DDIBaseFactory<Object> value) {
     _activeFactories()[qualifier] = value;
   }
@@ -184,16 +188,20 @@ final class DartDDIDefaultQualifierImpl implements DartDDIQualifier {
   }
 
   @override
+  @pragma('vm:prefer-inline')
   Iterable<Object> get keys => _activeFactories().keys;
 
   @override
+  @pragma('vm:prefer-inline')
   Iterable<MapEntry<Object, DDIBaseFactory<Object>>> get entries =>
       _activeFactories().entries;
 
   @override
+  @pragma('vm:prefer-inline')
   bool get isEmpty => _activeFactories().isEmpty;
 
   @override
+  @pragma('vm:prefer-inline')
   int get length => _activeFactories().length;
 }
 

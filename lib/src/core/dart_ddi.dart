@@ -19,9 +19,11 @@ abstract class DDI {
   static final DDI _instance = _DDIImpl(enableZoneRegistry: false);
 
   /// Gets the shared instance of the [DDI] class.
+  @pragma('vm:prefer-inline')
   static DDI get instance => _instance;
 
   /// Get a new instance of the [DDI] class.
+  @pragma('vm:prefer-inline')
   static DDI newInstance({bool enableZoneRegistry = false}) =>
       _DDIImpl(enableZoneRegistry: enableZoneRegistry);
 
@@ -61,6 +63,7 @@ abstract class DDI {
   /// Returns a token representing the current active context.
   ///
   /// This always returns a valid context object, including the root context.
+  @pragma('vm:prefer-inline')
   Object get currentContext;
 
   /// Registers a factory to create an instance of the class [BeanT].
@@ -79,16 +82,19 @@ abstract class DDI {
   /// Verify if an instance is already registered in [DDI].
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
+  @pragma('vm:prefer-inline')
   bool isRegistered<BeanT extends Object>({Object? qualifier, Object? context});
 
   /// Verify if the factory is a Future in [DDI].
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
+  @pragma('vm:prefer-inline')
   bool isFuture<BeanT extends Object>({Object? qualifier, Object? context});
 
   /// Verify if the factory is ready (Created) in [DDI].
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
+  @pragma('vm:prefer-inline')
   bool isReady<BeanT extends Object>({Object? qualifier, Object? context});
 
   /// Gets an instance of the registered class in [DDI].
@@ -293,11 +299,13 @@ abstract class DDI {
   /// Returns `true` if no beans are currently registered in the DDI container,
   /// `false` otherwise.
   ///
+  @pragma('vm:prefer-inline')
   bool get isEmpty;
 
   /// Retrieves the number of registered beans in the [DDI] instance.
   ///
   /// Returns the total count of all registered beans across all types and qualifiers.
   ///
+  @pragma('vm:prefer-inline')
   int get length;
 }

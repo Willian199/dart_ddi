@@ -81,11 +81,13 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   }
 
   @override
+  @pragma('vm:prefer-inline')
   BeanStateEnum get state => _state;
 
   /// Register the instance in [DDI].
   /// When the instance is ready, must call apply function.
   @override
+  @pragma('vm:prefer-inline')
   Future<void> register({
     required Object qualifier,
     required DDI ddiInstance,
@@ -546,6 +548,7 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
   /// Verify if this factory is a Future.
   @override
+  @pragma('vm:prefer-inline')
   bool get isFuture => _builder.isFuture || BeanT is Future;
 
   /// Verify if this factory is ready (Created).
@@ -565,14 +568,17 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
         _state == BeanStateEnum.created;
   }
 
+  static const _registeredStates = {
+    BeanStateEnum.registered,
+    BeanStateEnum.created,
+    BeanStateEnum.beingCreated,
+    BeanStateEnum.beingDisposed,
+    BeanStateEnum.disposed,
+  };
+
   @override
-  bool get isRegistered => [
-        BeanStateEnum.registered,
-        BeanStateEnum.created,
-        BeanStateEnum.beingCreated,
-        BeanStateEnum.beingDisposed,
-        BeanStateEnum.disposed,
-      ].contains(_state);
+  @pragma('vm:prefer-inline')
+  bool get isRegistered => _registeredStates.contains(_state);
 
   /// Removes this instance of the registered class in [DDI].
   @override
@@ -765,6 +771,7 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   }
 
   @override
+  @pragma('vm:prefer-inline')
   Set<Object> get children => _children;
 
   void _checkState(Object qualifier) {

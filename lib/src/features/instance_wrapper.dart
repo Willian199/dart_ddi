@@ -43,11 +43,13 @@ class InstanceWrapper<BeanT extends Object> implements Instance<BeanT> {
   WeakReference<BeanT>? _weakCachedInstance;
 
   @override
+  @pragma('vm:prefer-inline')
   bool isResolvable() {
     return ddi.isRegistered<BeanT>(qualifier: qualifier, context: context);
   }
 
   @override
+  @pragma('vm:prefer-inline')
   BeanT get<ParameterT extends Object>({ParameterT? parameter}) {
     if (!_cache && !_useWeakReference) {
       return ddi.getWith<BeanT, ParameterT>(
@@ -114,6 +116,7 @@ class InstanceWrapper<BeanT extends Object> implements Instance<BeanT> {
     return instance;
   }
 
+  @pragma('vm:prefer-inline')
   void _updateCache(BeanT instance) {
     if (_cache) {
       _cachedInstance = instance;

@@ -11,6 +11,7 @@ class _DDIImpl implements DDI {
       : DartDDIDefaultQualifierImpl();
 
   @override
+  @pragma('vm:prefer-inline')
   Object get currentContext => _beans.currentContext;
 
   @override
@@ -461,8 +462,10 @@ class _DDIImpl implements DDI {
   }
 
   @override
+  @pragma('vm:prefer-inline')
   bool get isEmpty => _beans.isEmpty;
 
   @override
+  @pragma('vm:prefer-inline')
   int get length => _beans.length;
 }

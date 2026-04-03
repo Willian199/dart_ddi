@@ -63,6 +63,7 @@ class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   final Completer<void> _created = Completer<void>();
 
   @override
+  @pragma('vm:prefer-inline')
   BeanStateEnum get state => _state;
 
   /// Register the instance in [DDI].
@@ -238,21 +239,26 @@ class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
   /// Verify if this factory is a Future.
   @override
+  @pragma('vm:prefer-inline')
   bool get isFuture => _builder.isFuture || BeanT is Future;
 
   /// Verify if this factory is ready (Created).
   @override
+  @pragma('vm:prefer-inline')
   bool get isReady =>
       _instance != null &&
       _created.isCompleted &&
       _state == BeanStateEnum.created;
 
+  static const _registeredState = {
+    BeanStateEnum.registered,
+    BeanStateEnum.created,
+    BeanStateEnum.beingCreated,
+  };
+
   @override
-  bool get isRegistered => [
-        BeanStateEnum.registered,
-        BeanStateEnum.created,
-        BeanStateEnum.beingCreated,
-      ].contains(_state);
+  @pragma('vm:prefer-inline')
+  bool get isRegistered => _registeredState.contains(_state);
 
   /// Removes this instance from [DDI].
   @override
@@ -362,6 +368,7 @@ class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   }
 
   @override
+  @pragma('vm:prefer-inline')
   Set<Object> get children => _children;
 
   void _checkState(Object qualifier) {

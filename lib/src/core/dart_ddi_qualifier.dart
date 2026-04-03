@@ -18,12 +18,14 @@ abstract interface class DartDDIQualifier {
   /// Returns a token representing the current active context.
   ///
   /// This always returns a valid context object, including the root context.
+  @pragma('vm:prefer-inline')
   Object get currentContext;
 
   /// Checks if we are currently in a zone with a dedicated registry.
   ///
   /// Returns `true` if the current zone has its own bean registry,
   /// `false` if using the global registry.
+  @pragma('vm:prefer-inline')
   bool get hasContext;
 
   /// Executes code in a new zone with dedicated bean registries.
@@ -37,17 +39,23 @@ abstract interface class DartDDIQualifier {
   BeanT runWithContext<BeanT>(Object name, BeanT Function() body);
 
   /// Creates or activates a persistent context without executing a body.
+  @pragma('vm:prefer-inline')
   void createContext(Object name);
 
   /// Implementation of required MapBase methods
+  @pragma('vm:prefer-inline')
   void setFactory(Object key, DDIBaseFactory<Object> value);
 
+  @pragma('vm:prefer-inline')
   Iterable<Object> get keys;
 
+  @pragma('vm:prefer-inline')
   Iterable<MapEntry<Object, DDIBaseFactory<Object>>> get entries;
 
+  @pragma('vm:prefer-inline')
   bool get isEmpty;
 
+  @pragma('vm:prefer-inline')
   int get length;
 
   DDIBaseFactory<Object>? remove(Object? key, {Object? context});

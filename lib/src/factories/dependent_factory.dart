@@ -65,25 +65,31 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   }
 
   @override
+  @pragma('vm:prefer-inline')
   BeanStateEnum get state => _state;
 
   /// Verify if this factory is a Future.
   @override
+  @pragma('vm:prefer-inline')
   bool get isFuture => _builder.isFuture || BeanT is Future;
 
   /// Verify if this factory is ready (Created).
   @override
+  @pragma('vm:prefer-inline')
   bool get isReady => false;
 
   @override
+  @pragma('vm:prefer-inline')
   bool get isRegistered => BeanStateEnum.registered == _state;
 
   @override
+  @pragma('vm:prefer-inline')
   Set<Object> get children => _children;
 
   /// Register the instance in [DDI].
   /// When the instance is ready, must call apply function.
   @override
+  @pragma('vm:prefer-inline')
   Future<void> register({
     required Object qualifier,
     required DDI ddiInstance,
