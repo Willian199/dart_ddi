@@ -257,11 +257,9 @@ void main() {
 
             expect(childEntries.any((e) => e.key == 'childService'), true);
             expect(childEntries.any((e) => e.key == 'parentService'), false);
-            expect(
-                explicitParentEntries.any((e) => e.key == 'parentService'),
+            expect(explicitParentEntries.any((e) => e.key == 'parentService'),
                 true);
-            expect(
-                explicitParentEntries.any((e) => e.key == 'childService'),
+            expect(explicitParentEntries.any((e) => e.key == 'childService'),
                 false);
 
             return Object();

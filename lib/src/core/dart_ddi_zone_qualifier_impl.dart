@@ -133,7 +133,8 @@ final class DartDDIZoneQualifierImpl implements DartDDIQualifier {
   Iterable<Object> get keys => _getBeansMap().keys;
 
   @override
-  Iterable<MapEntry<Object, DDIBaseFactory<Object>>> entries({Object? context}) {
+  Iterable<MapEntry<Object, DDIBaseFactory<Object>>> entries(
+      {Object? context}) {
     return _getBeansMapForContext(context).entries;
   }
 

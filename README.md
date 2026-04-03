@@ -49,7 +49,7 @@ See this [example](https://github.com/Willian199/dart_ddi/blob/master/example/ma
    4. [Object](#object)
    5. [Common Considerations](#common-considerations)
    6. [Custom Scopes](#custom-scopes)
-   7. [Zone Management](#zone-management)
+   7. [Context Management](#context-management)
 2. [Instance Wrapper](#instance-wrapper)
    1. [Overview](#instance-wrapper-overview)
    2. [Cache and Weak Reference](#instance-cache-and-weak-reference)
@@ -174,38 +174,135 @@ final service = ddi.get<MyService>();
 
 ## Context Management
 
-Run in a new context, making possible to register specific instances in a different scope.
+Contexts let you isolate registrations without creating a separate DDI container for every scenario.
 
-**Important:** Both `DDI.instance` and `DDI.newInstance()` support contexts. Enabling `enableZoneRegistry: true` changes the internal isolation strategy, but the public context API remains the same.
+**Important:** Both `DDI.instance` and `DDI.newInstance()` support contexts. Enabling `enableZoneRegistry: true` changes the internal isolation strategy, but the public API remains `runInContext(...)`.
 
 ```dart
 final ddi = DDI.newInstance();
 
 T runInContext<T>(Object name, T Function() body);
-Future<T> runInAsyncContext<T>(Object name, FutureOr<T> Function() body);
 ```
 
-These methods create a dedicated bean registry for the active context. This allows you to register and manage instances in a separate scope without affecting the global DDI container. When the context completes, all registered instances in that context are automatically destroyed.
+`runInContext(...)` accepts both synchronous and asynchronous bodies. When the body completes, all beans registered in that context are automatically destroyed.
 
-**Use cases:**
-- Testing scenarios where you need isolated instances
-- Temporary registrations that shouldn't persist
-- Scoped dependency injection for specific operations
-- Avoiding conflicts between different parts of the application
+### Context Strategies
 
-Example:
+- `DDI.newInstance()` uses a named-context strategy.
+- `DDI.newInstance(enableZoneRegistry: true)` uses Dart Zones for context isolation.
+- In both cases, the public API is `runInContext(...)`.
+
+### Explicit Context Operations
+
+Most registration and resolution APIs accept a `context:` parameter:
+
 ```dart
 final ddi = DDI.newInstance();
 
-final result = ddi.runInContext('test-context', () {
-  // Register instances specific to this context
-  ddi.singleton<TestService>(TestService.new);
+await ddi.application<ApiClient>(
+  ApiClient.new,
+  context: 'request-A',
+);
 
-  // Use the context-specific instance
-  final service = ddi.get<TestService>();
-  return service.process();
+final client = ddi.getWith<ApiClient, Object>(context: 'request-A');
+```
+
+This is especially useful when:
+
+- You need to resolve a bean from a specific context while another context is active.
+- You want to register the same qualifier in multiple isolated registries.
+- You want to destroy or dispose only the contextual instance of a bean.
+
+### currentContext
+
+The `currentContext` property exposes a token for the currently active context:
+
+```dart
+final contextToken = ddi.currentContext;
+```
+
+This token always contains a valid context object, including the root context.
+It can be reused in explicit `context:` operations when needed.
+
+### Contextual Instance Wrapper
+
+`getInstance<T>()` captures the current context at the time the wrapper is created. This means the `Instance<T>` keeps resolving against the same contextual registry instead of following whatever context becomes active later.
+
+`getInstance<T>()` itself does not force resolution. It creates a handle that can be checked later with `isResolvable()` and resolved later with `get()` or `getAsync()`.
+
+```dart
+await ddi.runInContext('feature-context', () async {
+  await ddi.application<MyService>(MyService.new);
+
+  final instance = ddi.getInstance<MyService>();
+  final service = instance.get();
+  service.doSomething();
 });
-// Context instances are automatically destroyed here
+```
+
+This behavior is particularly useful for contextual modules and delayed resolution flows.
+
+### Context With DDIModule
+
+`DDIModule` also supports contextual registrations through `contextQualifier`.
+
+By default, module children are registered in the same registry used by the container. If you override `contextQualifier`, every `singleton`, `application`, `dependent`, `object`, and `register` call made through the module is forwarded with that explicit context.
+
+For the default registry strategy, this also creates and keeps the module context alive while the module exists. This allows the module to register the same qualifier as the root registry without collisions.
+
+```dart
+class FeatureModule with DDIModule {
+  @override
+  Object? get contextQualifier => moduleQualifier;
+
+  @override
+  Future<void> onPostConstruct() async {
+    await application<ApiClient>(ApiClient.new);
+    await object<String>('feature-context', qualifier: 'featureName');
+  }
+}
+```
+
+This is useful when:
+
+- A module should keep its children isolated from root registrations.
+- The same qualifier must exist both globally and inside the module.
+- A module should expose contextual `Instance<T>` wrappers that continue resolving from the module registry.
+
+When a contextual module is destroyed, its contextual children are destroyed using the same module context.
+
+### Selectors With Explicit Context
+
+Selectors also support explicit contextual resolution:
+
+```dart
+await ddi.application<PaymentService>(
+  CreditCardPaymentService.new,
+  qualifier: 'credit-card',
+  context: 'checkout',
+  selector: (value) => value == 'credit-card',
+);
+
+final paymentService = ddi.getWith<PaymentService, Object>(
+  select: 'credit-card',
+  context: 'checkout',
+);
+```
+
+When `context:` is provided, selector lookup is performed against that specific context.
+
+### Breaking Change
+
+If you were previously using `runInZone(...)`, it has been renamed to `runInContext(...)`.
+
+Example:
+```dart
+final ddi = DDI.newInstance(enableZoneRegistry: true);
+
+final result = await ddi.runInContext('test-context', () async {
+  await ddi.singleton<TestService>(TestService.new);
+  return ddi.get<TestService>();
+});
 ```
 
 ## Common Considerations:
@@ -225,11 +322,17 @@ The `Instance<BeanT>` wrapper provides a programmatic way to access beans. It al
 
 The `Instance` wrapper is obtained using the `getInstance` method and provides the following capabilities:
 
-- **`isResolvable()`**: Checks if the bean is registered and can be retrieved.
+- **`isResolvable()`**: Checks if the bean is currently resolvable from the captured context.
 - **`get<ParameterT>({ParameterT? parameter})`**: Gets the bean instance synchronously, optionally with parameters.
 - **`getAsync<ParameterT>({ParameterT? parameter})`**: Gets the bean instance asynchronously, optionally with parameters.
 - **`destroy()`**: Destroys the bean instance if it exists and can be destroyed.
 - **`dispose()`**: Disposes of the bean instance if it exists.
+
+Important characteristics:
+
+- `getInstance<T>()` captures the current context when the wrapper is created.
+- `getInstance<T>()` does not throw just because the bean is not registered yet.
+- `get()` and `getAsync()` use the same resolution strategy as `ddi.get()` and `ddi.getAsync()`.
 
 #### Basic Usage Example
 
@@ -242,11 +345,8 @@ final instance = ddi.getInstance<MyService>();
 
 // Check if resolvable
 if (instance.isResolvable()) {
-  // Get the service instance
   final service = instance.get();
   service.doSomething();
-  
-  // Destroy when done
   await instance.destroy();
 }
 ```
@@ -274,6 +374,8 @@ The `Instance` wrapper supports two optional parameters that control how instanc
 - **`useWeakReference`**: If `true`, maintains a weak reference to the instance. This allows the instance to be garbage collected if no other strong references exist.
 
 **Important:** If both `useWeakReference` and `cache` are `true`, `cache` takes precedence (strong reference is maintained).
+
+When `cache` or `useWeakReference` is enabled, the wrapper first reuses the stored value and only goes back to DDI when needed. This keeps repeated `instance.get()` calls fast.
 
 **⚠️ Memory Management Warning:** When using `cache: true`, the `Instance` wrapper maintains a strong reference to the cached instance, which can lead to memory leaks if not properly managed. Always call `destroy()` or `dispose()` on the `Instance` wrapper when you're done using it to release the cached instance and prevent memory leaks.
 
@@ -377,7 +479,7 @@ expect(interceptor.getCallCount, equals(1)); // Only called once
 ### Lazy Initialization
 
 ```dart
-// Get Instance wrapper without creating the service yet
+// Get Instance wrapper without forcing immediate resolution
 final instance = ddi.getInstance<MyService>();
 
 // Service is created only when get() is called
@@ -397,7 +499,7 @@ if (instance.isResolvable()) {
   final service = instance.get();
   service.doSomething();
 } else {
-  // Handle case when service is not registered
+  // Handle case when service is not registered yet
   print('Service not available');
 }
 ```
@@ -920,6 +1022,31 @@ class AppModule with DDIModule {
   }
 }
 ```
+
+#### Contextual Modules
+
+If a module should isolate its internal registrations, override `contextQualifier`.
+
+```dart
+class ContextualAppModule with DDIModule {
+  @override
+  Object? get contextQualifier => moduleQualifier;
+
+  @override
+  Future<void> onPostConstruct() async {
+    await application<Logger>(Logger.new);
+    await application<ApiService>(
+      () => ApiService(ddiContainer.get<Logger>(context: contextQualifier)),
+    );
+  }
+}
+```
+
+With this setup:
+
+- Module children are registered in the module context instead of the root registry.
+- The same bean type or qualifier can exist both globally and inside the module without collisions.
+- `destroy()` and `dispose()` keep using the module context for its children.
 
 ### `DDIInject`, `DDIInjectAsync` and `DDIComponentInject` Mixins
 

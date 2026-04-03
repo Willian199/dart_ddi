@@ -315,7 +315,8 @@ class _DDIImpl implements DDI {
   List<Object> getByType<BeanT extends Object>() {
     final Type type = BeanT;
 
-    return _beans.entries()
+    return _beans
+        .entries()
         .where((element) => element.value.type == type)
         .map((e) => e.key)
         .toList();

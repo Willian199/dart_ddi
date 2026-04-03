@@ -2,6 +2,7 @@ import 'package:dart_ddi/dart_ddi.dart';
 import 'package:test/test.dart';
 
 import '../clazz_samples/contextual_instance_modules.dart';
+import '../clazz_samples/nested_contextual_modules.dart';
 
 void main() {
   group('DDI Module Context Instance Tests', () {
@@ -17,6 +18,12 @@ void main() {
       }
       if (ddi.isRegistered<AsyncContextModuleC>()) {
         await ddi.destroy<AsyncContextModuleC>();
+      }
+      if (ddi.isRegistered<NestedParentModule>()) {
+        await ddi.destroy<NestedParentModule>();
+      }
+      if (ddi.isRegistered<NestedContextValue>()) {
+        await ddi.destroy<NestedContextValue>();
       }
     });
 
@@ -66,6 +73,70 @@ void main() {
       expect(identical(globalB, contextualAsyncB), isFalse);
       expect(identical(contextualB, contextualAsyncB), isFalse);
       // expect(ddi.currentContextPath, isEmpty);
+    });
+
+    test(
+        'nested contextual modules should isolate parent and child beans in different contexts and destroy them correctly',
+        () async {
+      final Object rootContext = ddi.currentContext;
+
+      await ddi.object<NestedContextValue>(NestedContextValue('root'));
+      await ddi.singleton(NestedParentModule.new);
+
+      final parentModule = ddi.get<NestedParentModule>();
+      final childModule = ddi.getWith<NestedChildModule, Object>();
+
+      final parentContext = parentModule.contextQualifier!;
+      final childContext = childModule.contextQualifier!;
+
+      final rootValue = ddi.getWith<NestedContextValue, Object>(
+        context: rootContext,
+      );
+
+      // The current context is the child context, so it should resolve the child without needing to specify the context.
+      final childValue = ddi.getWith<NestedContextValue, Object>();
+
+      final parentValue = ddi.getWith<NestedContextValue, Object>(
+        context: parentContext,
+      );
+
+      expect(rootValue.origin, 'root');
+      expect(parentValue.origin, 'parent');
+      expect(childValue.origin, 'child');
+
+      expect(
+        ddi.isRegistered<NestedChildModule>(context: parentContext),
+        isTrue,
+      );
+      expect(
+        ddi.isRegistered<NestedContextValue>(),
+        isTrue,
+      );
+
+      await ddi.destroy<NestedParentModule>(context: rootContext);
+
+      expect(
+        ddi.isRegistered<NestedParentModule>(context: rootContext),
+        isFalse,
+      );
+      expect(
+        ddi.isRegistered<NestedChildModule>(context: parentContext),
+        isFalse,
+      );
+      expect(
+        ddi.isRegistered<NestedContextValue>(context: parentContext),
+        isFalse,
+      );
+      expect(
+        ddi.isRegistered<NestedContextValue>(context: childContext),
+        isFalse,
+      );
+      expect(
+        ddi.getWith<NestedContextValue, Object>(context: rootContext).origin,
+        'root',
+      );
+
+      await ddi.destroy<NestedContextValue>(context: rootContext);
     });
   });
 }

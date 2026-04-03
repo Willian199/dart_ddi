@@ -190,8 +190,10 @@ final class DartDDIDefaultQualifierImpl implements DartDDIQualifier {
 
   @override
   @pragma('vm:prefer-inline')
-  Iterable<MapEntry<Object, DDIBaseFactory<Object>>> entries({Object? context}) {
-    return _resolveContext(context)?.factories.entries ?? const Iterable.empty();
+  Iterable<MapEntry<Object, DDIBaseFactory<Object>>> entries(
+      {Object? context}) {
+    return _resolveContext(context)?.factories.entries ??
+        const Iterable.empty();
   }
 
   @override

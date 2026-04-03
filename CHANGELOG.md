@@ -1,3 +1,17 @@
+## 0.15.0
+
+* Added context support across default and zone-based registries.
+* `currentContext` now always returns a valid context token, including the root context.
+* `Instance<BeanT>` now captures the active context when `getInstance()` is created, keeping later resolutions pinned to the same registry.
+* `getInstance()` now behaves as a lazy handle and no longer requires the bean to be registered at creation time.
+* Improved `Instance<BeanT>` cache and weak-reference performance for repeated `get()` calls.
+* Added contextual module support through `DDIModule.contextQualifier`.
+* `DDIModule` can now register module-local beans in their own context, allowing the same qualifier to coexist with root registrations.
+
+### Breaking Changes
+
+* `runInZone(...)` has been renamed to `runInContext(...)`.
+
 ## 0.14.0
 
 * Added `requires` parameter to factory registration methods. Defining Beans that must be registered and loaded before instance creation.
