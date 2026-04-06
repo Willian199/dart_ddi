@@ -152,7 +152,8 @@ final class DartDDIZoneQualifierImpl implements DartDDIQualifier {
 
     return Zone.current[#zone_name] == name ||
         ((Zone.current[_beansKey] as Map<Object, DDIBaseFactory<Object>>?)
-            ?.isNotEmpty ?? false);
+                ?.isNotEmpty ??
+            false);
   }
 
   @override
