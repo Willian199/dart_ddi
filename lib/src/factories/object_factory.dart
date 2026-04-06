@@ -128,8 +128,14 @@ class ObjectFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
         _decorators.clear();
       }
 
-      if (_instance is DDIModule) {
-        (_instance as DDIModule).moduleQualifier = qualifier;
+      if (_instance case final DDIModule module) {
+        module.moduleQualifier = qualifier;
+
+        final Object? moduleContext = module.contextQualifier;
+        if (moduleContext != null &&
+            !ddiInstance.contextExists(moduleContext)) {
+          ddiInstance.createContext(moduleContext);
+        }
       }
 
       final FutureOr<void> result;
@@ -240,6 +246,10 @@ class ObjectFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   @pragma('vm:prefer-inline')
   bool get isRegistered => _registeredState.contains(_state);
 
+  @override
+  @pragma('vm:prefer-inline')
+  bool get canDestroy => _canDestroy;
+
   /// Removes this instance from [DDI].
   @override
   FutureOr<void> destroy(
@@ -272,19 +282,23 @@ class ObjectFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       return Future.value();
     }
 
+    final Object? context = _instance is DDIModule
+        ? (_instance as DDIModule).contextQualifier
+        : null;
+
     if (children.isNotEmpty) {
-      final Object? context = _instance is DDIModule
-          ? (_instance as DDIModule).contextQualifier
-          : null;
       final List<Future<void>> futures = [
         for (final Object child in children)
           ddiInstance.dispose(qualifier: child, context: context)
       ];
 
-      return Future.wait(futures);
+      return Future.wait(futures).then((_) => _destroyContextIfExists(
+            ddiInstance: ddiInstance,
+            context: context,
+          ));
     }
 
-    return Future.value();
+    return _destroyContextIfExists(ddiInstance: ddiInstance, context: context);
   }
 
   /// Allows to dynamically add a Decorators.
@@ -347,6 +361,20 @@ class ObjectFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   @override
   @pragma('vm:prefer-inline')
   Set<Object> get children => _children;
+
+  Future<void> _destroyContextIfExists({
+    required DDI ddiInstance,
+    required Object? context,
+  }) async {
+    if (context == null || !ddiInstance.contextExists(context)) {
+      return;
+    }
+
+    final destroyResult = ddiInstance.destroyContext(context);
+    if (destroyResult is Future) {
+      await destroyResult;
+    }
+  }
 
   void _checkState(Object qualifier) {
     if (_state == BeanStateEnum.beingDestroyed ||

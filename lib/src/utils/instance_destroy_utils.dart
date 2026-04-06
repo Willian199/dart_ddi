@@ -77,25 +77,37 @@ final class InstanceDestroyUtils {
         ddiInstance: ddiInstance,
       );
     } else if (instance is DDIModule) {
+      final Object? moduleContext = instance.contextQualifier;
+
       if (children.isNotEmpty) {
-        final List<Future<void>> futures = [];
-        for (final Object child in children) {
-          futures.add(
+        final List<Future<void>> futures = [
+          for (final Object child in children)
             Future<void>.sync(() {
               return ddiInstance.destroy(
                 qualifier: child,
-                context: instance.contextQualifier,
+                context: moduleContext,
               );
             }),
-          );
-        }
+        ];
+
         return Future.wait(
           futures,
           eagerError: true,
         ).then(
-          (_) => apply(),
+          (_) async {
+            await _destroyModuleContext(
+              ddiInstance: ddiInstance,
+              context: moduleContext,
+            );
+            apply();
+          },
         );
       }
+
+      return _destroyModuleContext(
+        ddiInstance: ddiInstance,
+        context: moduleContext,
+      ).then((_) => apply());
     }
 
     _destroyChildren<BeanT>(
@@ -162,6 +174,21 @@ final class InstanceDestroyUtils {
     }
 
     await clazz.onPreDestroy();
+    await _destroyModuleContext(ddiInstance: ddiInstance, context: context);
     apply();
+  }
+
+  static Future<void> _destroyModuleContext({
+    required DDI ddiInstance,
+    required Object? context,
+  }) async {
+    if (context == null || !ddiInstance.contextExists(context)) {
+      return;
+    }
+
+    final destroyResult = ddiInstance.destroyContext(context);
+    if (destroyResult is Future) {
+      await destroyResult;
+    }
   }
 }

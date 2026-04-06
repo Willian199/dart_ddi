@@ -5,6 +5,8 @@ class _DDIImpl implements DDI {
       : _enableZoneRegistry = enableZoneRegistry;
 
   final bool _enableZoneRegistry;
+  Future<void> _contextWriteQueue = Future<void>.value();
+  final Set<Object> _contextsBeingDestroyed = <Object>{};
 
   late final DartDDIQualifier _beans = _enableZoneRegistry
       ? DartDDIZoneQualifierImpl()
@@ -13,6 +15,86 @@ class _DDIImpl implements DDI {
   @override
   @pragma('vm:prefer-inline')
   Object get currentContext => _beans.currentContext;
+
+  @override
+  @pragma('vm:prefer-inline')
+  void createContext(Object context) {
+    if (_contextsBeingDestroyed.contains(context)) {
+      throw StateError('Context "$context" is being destroyed.');
+    }
+    _beans.createContext(context);
+  }
+
+  @override
+  FutureOr<void> destroyContext(Object context) {
+    // Re-entrant destroy from module cleanup for the same context should be a no-op.
+    // This avoids deadlocks when a context destroy flow triggers another
+    // destroyContext(context) before the first one completes.
+    if (_contextsBeingDestroyed.contains(context)) {
+      return null;
+    }
+
+    return _runContextWriteLocked(() async {
+      if (!_beans.hasContextQualifier(context)) {
+        throw ContextNotFoundException(context.toString());
+      }
+
+      // Preflight: validate the full tree before destroying anything,
+      // avoiding partial destruction.
+      if (_beans.contextHasDestroyBlockers(context)) {
+        throw StateError(
+          'Context "$context" contains non-destroyable factories.',
+        );
+      }
+
+      final List<Object> contextOrder =
+          _beans.contextDestroyOrder(context).toList();
+
+      _contextsBeingDestroyed.addAll(contextOrder);
+
+      try {
+        for (final contextKey in contextOrder) {
+          if (!_beans.hasContextQualifier(contextKey)) {
+            continue;
+          }
+
+          final List<Object> keys =
+              _beans.entries(context: contextKey).map((e) => e.key).toList();
+
+          for (final key in keys) {
+            final destroyResult = _destroy(key, contextKey);
+            if (destroyResult is Future) {
+              await destroyResult;
+            }
+          }
+        }
+
+        for (final contextKey in contextOrder) {
+          if (!_beans.hasContextQualifier(contextKey)) {
+            continue;
+          }
+
+          if (_beans.entries(context: contextKey).isNotEmpty) {
+            throw StateError(
+              'Context "$context" still contains factories after destroy operation.',
+            );
+          }
+        }
+
+        if (_beans.hasContextQualifier(context)) {
+          _beans.destroyContext(context);
+        }
+      } finally {
+        for (final contextKey in contextOrder) {
+          _contextsBeingDestroyed.remove(contextKey);
+        }
+      }
+    });
+  }
+
+  @override
+  @pragma('vm:prefer-inline')
+  bool contextExists(Object context) => _beans.hasContextQualifier(context);
 
   @override
   BeanT runInContext<BeanT>(Object name, BeanT Function() body) {
@@ -126,11 +208,16 @@ class _DDIImpl implements DDI {
     if (shouldRegister) {
       final Object effectiveQualifierName = qualifier ?? BeanT;
 
-      if (!_enableZoneRegistry && context != null) {
-        _beans.createContext(context);
+      if (context != null && !_beans.hasContextQualifier(context)) {
+        throw ContextNotFoundException(context.toString());
       }
 
       final Object registrationContext = context ?? _beans.currentContext;
+      if (_contextsBeingDestroyed.contains(registrationContext)) {
+        throw StateError(
+          'Context "$registrationContext" is being destroyed.',
+        );
+      }
 
       final fac = _beans.getFactory<BeanT>(
         qualifier: effectiveQualifierName,
@@ -140,9 +227,9 @@ class _DDIImpl implements DDI {
 
       if (fac != null) {
         if (BeanStateEnum.none == fac.factory.state) {
-          _beans.remove(
+          _beans.removeFactory(
             effectiveQualifierName,
-            context: context,
+            context: registrationContext,
           );
         } else {
           throw DuplicatedBeanException(effectiveQualifierName.toString());
@@ -154,7 +241,11 @@ class _DDIImpl implements DDI {
         factory.setType<BeanT>();
       }
 
-      _beans.setFactory(effectiveQualifierName, factory);
+      _beans.setFactory(
+        effectiveQualifierName,
+        factory,
+        context: registrationContext,
+      );
 
       final f = factory.register(
         qualifier: effectiveQualifierName,
@@ -162,7 +253,7 @@ class _DDIImpl implements DDI {
       );
 
       f.onError((e, _) {
-        _beans.remove(
+        _beans.removeFactory(
           effectiveQualifierName,
           context: registrationContext,
         );
@@ -170,6 +261,20 @@ class _DDIImpl implements DDI {
 
       return f;
     }
+  }
+
+  Future<T> _runContextWriteLocked<T>(FutureOr<T> Function() action) {
+    final previous = _contextWriteQueue;
+    final completer = Completer<void>();
+    _contextWriteQueue = completer.future;
+
+    return previous.catchError((_) {}).then((_) async {
+      try {
+        return await action();
+      } finally {
+        completer.complete();
+      }
+    });
   }
 
   @override
@@ -350,7 +455,7 @@ class _DDIImpl implements DDI {
 
     if (located != null) {
       return located.factory.destroy(
-        apply: () => _beans.remove(
+        apply: () => _beans.removeFactory(
           effectiveQualifierName,
           context: located.context,
         ),

@@ -43,9 +43,21 @@ abstract interface class DartDDIQualifier {
   @pragma('vm:prefer-inline')
   void createContext(Object name);
 
-  /// Implementation of required MapBase methods
   @pragma('vm:prefer-inline')
-  void setFactory(Object key, DDIBaseFactory<Object> value);
+  bool hasContextQualifier(Object name);
+
+  /// Returns the context and all linked descendants in destroy order.
+  ///
+  /// The first entries must be the deepest contexts.
+  Iterable<Object> contextDestroyOrder(Object name);
+
+  /// Returns `true` when context destroy is blocked by non-destroyable factories.
+  bool contextHasDestroyBlockers(Object name);
+
+  void destroyContext(Object name);
+
+  /// Implementation of required MapBase methods
+  void setFactory(Object key, DDIBaseFactory<Object> value, {Object? context});
 
   @pragma('vm:prefer-inline')
   Iterable<Object> get keys;
@@ -59,5 +71,5 @@ abstract interface class DartDDIQualifier {
   @pragma('vm:prefer-inline')
   int get length;
 
-  DDIBaseFactory<Object>? remove(Object? key, {Object? context});
+  DDIBaseFactory<Object>? removeFactory(Object? key, {Object? context});
 }

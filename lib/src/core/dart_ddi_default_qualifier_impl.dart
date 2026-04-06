@@ -168,55 +168,106 @@ final class DartDDIDefaultQualifierImpl implements DartDDIQualifier {
   }
 
   @override
-  @pragma('vm:prefer-inline')
   void createContext(Object name) {
+    if (hasContextQualifier(name)) {
+      throw DuplicatedContextException(name.toString());
+    }
+
     _currentContext = _activateContext(name);
   }
 
   @override
   @pragma('vm:prefer-inline')
-  void setFactory(Object qualifier, DDIBaseFactory<Object> value) {
-    _currentContext.factories[qualifier] = value;
+  bool hasContextQualifier(Object name) => _resolveContext(name) != null;
+
+  @override
+  Iterable<Object> contextDestroyOrder(Object name) {
+    final _QualifierContext? targetContext = _contexts[name];
+    if (targetContext == null) {
+      return const Iterable.empty();
+    }
+
+    final List<_QualifierContext> contextsToDestroy = [
+      for (final qualifierContext in _contexts.values)
+        if (identical(qualifierContext, targetContext) ||
+            _isDescendantOf(qualifierContext, targetContext))
+          qualifierContext,
+    ];
+
+    contextsToDestroy.sort(
+      (a, b) => _depthOf(b).compareTo(_depthOf(a)),
+    );
+
+    return contextsToDestroy.map((context) => context.qualifier);
   }
 
   @override
-  DDIBaseFactory<Object>? remove(Object? key, {Object? context}) {
-    final _QualifierContext targetContext =
-        context == null ? _rootContext : (_contexts[context] ?? _rootContext);
+  bool contextHasDestroyBlockers(Object name) {
+    final _QualifierContext? targetContext = _contexts[name];
+    if (targetContext == null) {
+      return false;
+    }
 
-    final removedFactory = targetContext.factories.remove(key);
-    final didEmptyAfterRemoval =
-        removedFactory != null && targetContext.factories.isEmpty;
-
-    if (didEmptyAfterRemoval) {
-      if (!identical(targetContext, _rootContext)) {
-        final Set<Object> removedQualifiers = <Object>{targetContext.qualifier};
-
-        for (final MapEntry<Object, _QualifierContext> entry
-            in _contexts.entries) {
-          if (identical(entry.value, _rootContext) ||
-              identical(entry.value, targetContext)) {
-            continue;
-          }
-
-          if (_isDescendantOf(entry.value, targetContext)) {
-            removedQualifiers.add(entry.key);
-          }
+    for (final qualifierContext in _contexts.values) {
+      if (identical(qualifierContext, targetContext) ||
+          _isDescendantOf(qualifierContext, targetContext)) {
+        if (qualifierContext.hasNonDestroyableFactories) {
+          return true;
         }
-
-        if (removedQualifiers.contains(_currentContext.qualifier)) {
-          _currentContext = targetContext.parent ?? _rootContext;
-        }
-
-        for (final qualifier in removedQualifiers) {
-          _contexts.remove(qualifier);
-        }
-      } else if (identical(targetContext, _currentContext)) {
-        _currentContext = _rootContext;
       }
     }
 
-    return removedFactory;
+    return false;
+  }
+
+  @override
+  void destroyContext(Object name) {
+    if (name == _rootQualifier) {
+      throw ArgumentError.value(
+          name, 'name', 'Root context cannot be destroyed.');
+    }
+
+    final _QualifierContext? targetContext = _contexts[name];
+    if (targetContext == null) {
+      throw ContextNotFoundException(name.toString());
+    }
+
+    final Set<Object> removedQualifiers = <Object>{targetContext.qualifier};
+
+    for (final MapEntry<Object, _QualifierContext> entry in _contexts.entries) {
+      if (identical(entry.value, _rootContext) ||
+          identical(entry.value, targetContext)) {
+        continue;
+      }
+
+      if (_isDescendantOf(entry.value, targetContext)) {
+        removedQualifiers.add(entry.key);
+      }
+    }
+
+    if (removedQualifiers.contains(_currentContext.qualifier)) {
+      _currentContext = targetContext.parent ?? _rootContext;
+    }
+
+    for (final qualifier in removedQualifiers) {
+      _contexts.remove(qualifier);
+    }
+  }
+
+  @override
+  void setFactory(Object qualifier, DDIBaseFactory<Object> value,
+      {Object? context}) {
+    final _QualifierContext targetContext =
+        _resolveContext(context) ?? _currentContext;
+    targetContext.setFactory(qualifier, value);
+  }
+
+  @override
+  DDIBaseFactory<Object>? removeFactory(Object? key, {Object? context}) {
+    final _QualifierContext targetContext =
+        context == null ? _rootContext : (_contexts[context] ?? _rootContext);
+
+    return targetContext.removeFactory(key);
   }
 
   @override
@@ -252,6 +303,18 @@ final class DartDDIDefaultQualifierImpl implements DartDDIQualifier {
 
     return false;
   }
+
+  int _depthOf(_QualifierContext context) {
+    int depth = 0;
+    _QualifierContext? current = context.parent;
+
+    while (current != null) {
+      depth++;
+      current = current.parent;
+    }
+
+    return depth;
+  }
 }
 
 final class _QualifierContext {
@@ -266,4 +329,40 @@ final class _QualifierContext {
   final _QualifierContext? parent;
   final Object qualifier;
   final Map<Object, DDIBaseFactory<Object>> factories;
+  bool _hasNonDestroyableFactories = false;
+
+  bool get hasNonDestroyableFactories => _hasNonDestroyableFactories;
+
+  void setFactory(Object key, DDIBaseFactory<Object> value) {
+    final existing = factories[key];
+    factories[key] = value;
+
+    if (!value.canDestroy) {
+      _hasNonDestroyableFactories = true;
+      return;
+    }
+
+    // Recalculate only when replacing a previous non-destroyable entry.
+    if (existing != null &&
+        !existing.canDestroy &&
+        _hasNonDestroyableFactories) {
+      _hasNonDestroyableFactories =
+          factories.values.any((factory) => !factory.canDestroy);
+    }
+  }
+
+  DDIBaseFactory<Object>? removeFactory(Object? key) {
+    final removed = factories.remove(key);
+    if (factories.isEmpty) {
+      _hasNonDestroyableFactories = false;
+      return removed;
+    }
+
+    // Recalculate only when a non-destroyable factory was removed.
+    if (removed != null && !removed.canDestroy && _hasNonDestroyableFactories) {
+      _hasNonDestroyableFactories =
+          factories.values.any((factory) => !factory.canDestroy);
+    }
+    return removed;
+  }
 }

@@ -153,6 +153,8 @@ To create a custom scope, you need to extend `DDIBaseFactory<BeanT>` and impleme
 class CustomScopeFactory<BeanT extends Object> extends DDIBaseFactory<BeanT> {...}
 ```
 
+`DDIBaseFactory` now also requires `canDestroy` so the container can enforce destroy rules consistently (including contextual destroy operations).
+
 ### Using Custom Scopes
 
 Once you've created a custom scope factory, you can register it using the standard `register` method:
@@ -207,11 +209,41 @@ await ddi.application<ApiClient>(
 final client = ddi.getWith<ApiClient, Object>(context: 'request-A');
 ```
 
+For named contexts in the default strategy, create them first:
+
+```dart
+final ddi = DDI.newInstance();
+
+ddi.createContext('request-A');
+await ddi.application<ApiClient>(ApiClient.new, context: 'request-A');
+```
+
+If you try to register with an explicit `context:` that does not exist, a `ContextNotFoundException` is thrown.
+
 This is especially useful when:
 
 - You need to resolve a bean from a specific context while another context is active.
 - You want to register the same qualifier in multiple isolated registries.
 - You want to destroy or dispose only the contextual instance of a bean.
+
+### Context Lifecycle API
+
+You can manage named contexts explicitly:
+
+```dart
+ddi.createContext('feature');
+final exists = ddi.contextExists('feature'); // true
+await ddi.destroyContext('feature');
+```
+
+`destroyContext(...)` behavior:
+
+- Destroys using normal `ddi.destroy(...)` rules (scope-aware).
+- Runs from deepest child context to parent context.
+- Validates the full context tree before starting destruction to avoid partial cleanup.
+- If any factory in that tree has `canDestroy: false`, it throws and keeps all contexts/factories untouched.
+- While destruction is running, write operations targeting those contexts are blocked (for example, `register` and `createContext`).
+- Reentrant `destroyContext(...)` calls for a context already being destroyed are treated as no-op.
 
 ### currentContext
 
@@ -795,6 +827,8 @@ ddi.registerSingleton<MyService>(
 
 ## CanDestroy 
 The canDestroy parameter, is optional and can be set to false if you want to make the registered instance indestructible. When set to false, the instance cannot be removed using the `destroy` or `destroyByType` methods.
+
+In contextual mode, a non-destroyable instance also blocks `destroyContext(...)` for that context tree.
 
 #### Example Usage:
 ```dart

@@ -252,6 +252,12 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
       if (ins is DDIModule) {
         (ins as DDIModule).moduleQualifier = qualifier;
+
+        final Object? moduleContext = ins.contextQualifier;
+        if (moduleContext != null &&
+            !ddiInstance.contextExists(moduleContext)) {
+          ddiInstance.createContext(moduleContext);
+        }
       }
 
       if (ins is PostConstruct) {
@@ -263,7 +269,9 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       }
 
       _state = BeanStateEnum.created;
-      _created.complete();
+      if (!_created.isCompleted) {
+        _created.complete();
+      }
     } catch (e) {
       if (!_created.isCompleted) {
         _created.complete();
@@ -459,10 +467,18 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       /// Refresh the qualifier for the Module
       if (instance is DDIModule) {
         (instance as DDIModule).moduleQualifier = qualifier;
+
+        final Object? moduleContext = instance.contextQualifier;
+        if (moduleContext != null &&
+            !ddiInstance.contextExists(moduleContext)) {
+          ddiInstance.createContext(moduleContext);
+        }
       }
 
       _state = BeanStateEnum.created;
-      _created.complete();
+      if (!_created.isCompleted) {
+        _created.complete();
+      }
 
       final instanceForPostConstruct =
           _useWeakReference ? _weakInstance?.target : _instance;
@@ -580,6 +596,10 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   @pragma('vm:prefer-inline')
   bool get isRegistered => _registeredStates.contains(_state);
 
+  @override
+  @pragma('vm:prefer-inline')
+  bool get canDestroy => _canDestroy;
+
   /// Removes this instance of the registered class in [DDI].
   @override
   FutureOr<void> destroy(
@@ -659,19 +679,37 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       return _runFutureOrPreDispose(clazz: clazz, ddiInstance: ddiInstance);
     }
 
+    final Object? moduleContext = _instance is DDIModule
+        ? (_instance as DDIModule).contextQualifier
+        : null;
+    final bool isModuleInstance = _instance is DDIModule;
+
+    // Preserve behavior for callers that do not await dispose():
+    // clear local state before awaiting async cleanup.
+    _instance = null;
+    _state = BeanStateEnum.disposed;
+    _created = Completer();
+    _runningCreateProcess = false;
+
     // Handle DDIModule cleanup
-    if (_instance is DDIModule && _children.isNotEmpty) {
-      await _disposeChildrenAsync(ddiInstance: ddiInstance);
-      _instance = null;
-      _state = BeanStateEnum.disposed;
-      _created = Completer();
-      _runningCreateProcess = false;
+    if (isModuleInstance && _children.isNotEmpty) {
+      await _disposeChildrenAsync(
+        ddiInstance: ddiInstance,
+        context: moduleContext,
+      );
+      await _destroyContextIfExists(
+        ddiInstance: ddiInstance,
+        context: moduleContext,
+      );
     } else {
-      final disposed = _disposeChildrenAsync(ddiInstance: ddiInstance);
-      _instance = null;
-      _state = BeanStateEnum.disposed;
-      _created = Completer();
-      _runningCreateProcess = false;
+      final disposed = _disposeChildrenAsync(
+        ddiInstance: ddiInstance,
+        context: moduleContext,
+      );
+      await _destroyContextIfExists(
+        ddiInstance: ddiInstance,
+        context: moduleContext,
+      );
 
       return disposed;
     }
@@ -683,7 +721,10 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   }) async {
     await clazz.onPreDispose();
 
-    await _disposeChildrenAsync(ddiInstance: ddiInstance);
+    final Object? context =
+        clazz is DDIModule ? (clazz as DDIModule).contextQualifier : null;
+    await _disposeChildrenAsync(ddiInstance: ddiInstance, context: context);
+    await _destroyContextIfExists(ddiInstance: ddiInstance, context: context);
 
     _instance = null;
     _state = BeanStateEnum.disposed;
@@ -692,20 +733,34 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     return Future.value();
   }
 
-  Future<void> _disposeChildrenAsync({required DDI ddiInstance}) async {
+  Future<void> _disposeChildrenAsync({
+    required DDI ddiInstance,
+    required Object? context,
+  }) async {
     if (_children.isEmpty) {
       return;
     }
 
-    final Object? context = _instance is DDIModule
-        ? (_instance as DDIModule).contextQualifier
-        : null;
     final List<Future<void>> futures = [
       for (final Object child in _children)
         ddiInstance.dispose(qualifier: child, context: context),
     ];
 
     return Future.wait(futures).ignore();
+  }
+
+  Future<void> _destroyContextIfExists({
+    required DDI ddiInstance,
+    required Object? context,
+  }) async {
+    if (context == null || !ddiInstance.contextExists(context)) {
+      return;
+    }
+
+    final destroyResult = ddiInstance.destroyContext(context);
+    if (destroyResult is Future) {
+      await destroyResult;
+    }
   }
 
   /// Allows to dynamically add a Decorators.

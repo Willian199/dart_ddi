@@ -66,6 +66,18 @@ abstract class DDI {
   @pragma('vm:prefer-inline')
   Object get currentContext;
 
+  /// Creates a named context that can later receive registrations by using
+  /// the `context:` parameter.
+  void createContext(Object context);
+
+  /// Destroys a named context.
+  ///
+  /// This removes all beans registered directly in that context.
+  FutureOr<void> destroyContext(Object context);
+
+  /// Returns `true` when a context key is known by this DDI instance.
+  bool contextExists(Object context);
+
   /// Registers a factory to create an instance of the class [BeanT].
   ///
   /// - `factory`: Factory to create the instance.

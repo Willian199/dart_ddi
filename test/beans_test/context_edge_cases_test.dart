@@ -13,6 +13,8 @@ void main() {
       'explicit context selector should resolve from its own context even when another context is active',
       () async {
         final ddi = DDI.newInstance();
+        ddi.createContext('ctx');
+        ddi.createContext('other');
 
         await ddi.application<_EdgeService>(
           () => const _EdgeService('ctx-a'),
@@ -46,6 +48,8 @@ void main() {
       'explicit async selector should resolve from its own context even when another context is active',
       () async {
         final ddi = DDI.newInstance();
+        ddi.createContext('ctx');
+        ddi.createContext('other');
 
         await ddi.application<_EdgeService>(
           () async => const _EdgeService('ctx-a'),

@@ -84,6 +84,10 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
   @override
   @pragma('vm:prefer-inline')
+  bool get canDestroy => _canDestroy;
+
+  @override
+  @pragma('vm:prefer-inline')
   Set<Object> get children => _children;
 
   /// Register the instance in [DDI].
@@ -184,6 +188,12 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
       if (dependentClazz is DDIModule) {
         dependentClazz.moduleQualifier = qualifier;
+
+        final Object? moduleContext = dependentClazz.contextQualifier;
+        if (moduleContext != null &&
+            !ddiInstance.contextExists(moduleContext)) {
+          ddiInstance.createContext(moduleContext);
+        }
       }
 
       if (dependentClazz is PostConstruct) {
@@ -303,6 +313,12 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       /// Refresh the qualifier for the Module
       if (dependentClazz is DDIModule) {
         dependentClazz.moduleQualifier = qualifier;
+
+        final Object? moduleContext = dependentClazz.contextQualifier;
+        if (moduleContext != null &&
+            !ddiInstance.contextExists(moduleContext)) {
+          ddiInstance.createContext(moduleContext);
+        }
       }
 
       if (dependentClazz is PostConstruct) {

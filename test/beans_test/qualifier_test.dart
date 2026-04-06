@@ -67,7 +67,7 @@ void main() {
       });
 
       test(
-          'remove should prune an empty named context so a new activation can bind a new parent',
+          'remove should keep the named context alive after removing its last factory',
           () {
         final qualifier = DartDDIDefaultQualifierImpl();
         final oldParentFactory = ApplicationFactory<TestService>(
@@ -91,7 +91,7 @@ void main() {
           return Object();
         });
 
-        qualifier.remove('child-service', context: 'shared-child');
+        qualifier.removeFactory('child-service', context: 'shared-child');
         qualifier.restoreContext(null);
 
         qualifier.runWithContext('new-parent', () {
@@ -102,13 +102,13 @@ void main() {
               qualifier
                   .getFactory<TestService>(qualifier: 'new-parent-service')
                   ?.factory,
-              same(newParentFactory),
+              isNull,
             );
             expect(
               qualifier
                   .getFactory<TestService>(qualifier: 'old-parent-service')
                   ?.factory,
-              isNull,
+              same(oldParentFactory),
             );
             return Object();
           });
@@ -118,7 +118,7 @@ void main() {
       });
 
       test(
-          'remove should restore the current context to the immediate parent when deepest context becomes empty',
+          'remove should not change current context when deepest context becomes empty',
           () {
         final qualifier = DartDDIDefaultQualifierImpl();
         final deepFactory = ApplicationFactory<TestService>(
@@ -131,13 +131,13 @@ void main() {
         qualifier.createContext('D');
 
         qualifier.setFactory('deep-service', deepFactory);
-        qualifier.remove('deep-service', context: 'D');
+        qualifier.removeFactory('deep-service', context: 'D');
 
-        expect(qualifier.currentContext, equals('C'));
+        expect(qualifier.currentContext, equals('D'));
       });
 
       test(
-          'remove should prune descendant contexts when an intermediate context becomes empty',
+          'remove should keep descendant contexts when an intermediate context becomes empty',
           () {
         final qualifier = DartDDIDefaultQualifierImpl();
         final parentFactory = ApplicationFactory<TestService>(
@@ -153,7 +153,7 @@ void main() {
         qualifier.createContext('C');
         qualifier.setFactory('service-c', childFactory);
 
-        qualifier.remove('service-b', context: 'B');
+        qualifier.removeFactory('service-b', context: 'B');
 
         expect(
           qualifier
@@ -163,18 +163,15 @@ void main() {
                 fallback: false,
               )
               ?.factory,
-          isNull,
+          same(childFactory),
         );
-
-        qualifier.restoreContext('A');
-        qualifier.createContext('C');
         expect(
           qualifier.getFactory<TestService>(qualifier: 'service-b')?.factory,
           isNull,
         );
       });
 
-      test('remove should cascade prune all descendants of the removed context',
+      test('remove should not cascade prune descendants of the removed context',
           () {
         final qualifier = DartDDIDefaultQualifierImpl();
         final factoryB = ApplicationFactory<TestService>(
@@ -195,7 +192,7 @@ void main() {
         qualifier.createContext('D');
         qualifier.setFactory('service-d', factoryD);
 
-        qualifier.remove('service-b', context: 'B');
+        qualifier.removeFactory('service-b', context: 'B');
 
         expect(
           qualifier
@@ -205,7 +202,7 @@ void main() {
                 fallback: false,
               )
               ?.factory,
-          isNull,
+          same(factoryC),
         );
         expect(
           qualifier
@@ -215,12 +212,11 @@ void main() {
                 fallback: false,
               )
               ?.factory,
-          isNull,
+          same(factoryD),
         );
       });
 
-      test(
-          'remove should restore current context to parent of removed node when current is an orphan descendant',
+      test('remove should keep current context when removing a parent factory',
           () {
         final qualifier = DartDDIDefaultQualifierImpl();
         final factoryB = ApplicationFactory<TestService>(
@@ -238,9 +234,9 @@ void main() {
 
         expect(qualifier.currentContext, equals('C'));
 
-        qualifier.remove('service-b', context: 'B');
+        qualifier.removeFactory('service-b', context: 'B');
 
-        expect(qualifier.currentContext, equals('A'));
+        expect(qualifier.currentContext, equals('C'));
       });
 
       test(
@@ -261,7 +257,7 @@ void main() {
         qualifier.createContext('X');
         qualifier.setFactory('service-x', siblingFactory);
 
-        qualifier.remove('service-b', context: 'B');
+        qualifier.removeFactory('service-b', context: 'B');
 
         expect(
           qualifier

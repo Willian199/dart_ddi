@@ -144,10 +144,58 @@ final class DartDDIZoneQualifierImpl implements DartDDIQualifier {
   @override
   void createContext(Object name) {}
 
+  @override
+  bool hasContextQualifier(Object name) {
+    if (name == _rootContext) {
+      return true;
+    }
+
+    return Zone.current[#zone_name] == name ||
+        ((Zone.current[_beansKey] as Map<Object, DDIBaseFactory<Object>>?)
+            ?.isNotEmpty ?? false);
+  }
+
+  @override
+  Iterable<Object> contextDestroyOrder(Object name) {
+    if (hasContextQualifier(name)) {
+      return [name];
+    }
+
+    return const Iterable.empty();
+  }
+
+  @override
+  bool contextHasDestroyBlockers(Object name) {
+    if (name == _rootContext) {
+      return _globalBeansMap.values.any((factory) => !factory.canDestroy);
+    }
+
+    if (name case final Map<Object, DDIBaseFactory<Object>> explicitMap) {
+      return explicitMap.values.any((factory) => !factory.canDestroy);
+    }
+
+    return false;
+  }
+
+  @override
+  void destroyContext(Object name) {
+    if (name == _rootContext) {
+      throw ArgumentError.value(
+          name, 'name', 'Root context cannot be destroyed.');
+    }
+
+    if (name case final Map<Object, DDIBaseFactory<Object>> explicitMap) {
+      explicitMap.clear();
+      return;
+    }
+
+    throw ContextNotFoundException(name.toString());
+  }
+
   /// Implementation of required MapBase methods
   @override
-  void setFactory(Object key, DDIBaseFactory<Object> value) {
-    _getBeansMap()[key] = value;
+  void setFactory(Object key, DDIBaseFactory<Object> value, {Object? context}) {
+    _getBeansMapForContext(context)[key] = value;
   }
 
   @override
@@ -166,7 +214,7 @@ final class DartDDIZoneQualifierImpl implements DartDDIQualifier {
   int get length => _getBeansMap().length;
 
   @override
-  DDIBaseFactory<Object>? remove(Object? key, {Object? context}) {
+  DDIBaseFactory<Object>? removeFactory(Object? key, {Object? context}) {
     if (context == _rootContext) {
       return _globalBeansMap.remove(key);
     }
