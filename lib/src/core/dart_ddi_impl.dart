@@ -20,7 +20,10 @@ class _DDIImpl implements DDI {
   @pragma('vm:prefer-inline')
   void createContext(Object context) {
     if (_contextsBeingDestroyed.contains(context)) {
-      throw StateError('Context "$context" is being destroyed.');
+      throw ContextBeingDestroyedException(
+        context: context,
+        operation: 'createContext',
+      );
     }
     _beans.createContext(context);
   }
@@ -42,9 +45,7 @@ class _DDIImpl implements DDI {
       // Preflight: validate the full tree before destroying anything,
       // avoiding partial destruction.
       if (_beans.contextHasDestroyBlockers(context)) {
-        throw StateError(
-          'Context "$context" contains non-destroyable factories.',
-        );
+        throw ContextDestroyBlockedException(context);
       }
 
       final List<Object> contextOrder =
@@ -62,7 +63,11 @@ class _DDIImpl implements DDI {
               _beans.entries(context: contextKey).map((e) => e.key).toList();
 
           for (final key in keys) {
-            final destroyResult = _destroy(key, contextKey);
+            final destroyResult = _destroy(
+              key,
+              contextKey,
+              ignoreFrozenContext: true,
+            );
             if (destroyResult is Future) {
               await destroyResult;
             }
@@ -75,9 +80,7 @@ class _DDIImpl implements DDI {
           }
 
           if (_beans.entries(context: contextKey).isNotEmpty) {
-            throw StateError(
-              'Context "$context" still contains factories after destroy operation.',
-            );
+            throw ContextDestroyIncompleteException(context);
           }
         }
 
@@ -97,6 +100,16 @@ class _DDIImpl implements DDI {
   bool contextExists(Object context) => _beans.hasContextQualifier(context);
 
   @override
+  void freezeContext(Object context) => _beans.freezeContext(context);
+
+  @override
+  void unfreezeContext(Object context) => _beans.unfreezeContext(context);
+
+  @override
+  bool isContextFrozen(Object context) => _beans.isContextFrozen(context);
+
+  @override
+  @Deprecated("Use createContext and destroyContext instead")
   BeanT runInContext<BeanT>(Object name, BeanT Function() body) {
     if (_enableZoneRegistry) {
       return _beans.runWithContext<BeanT>(name, () {
@@ -213,9 +226,14 @@ class _DDIImpl implements DDI {
       }
 
       final Object registrationContext = context ?? _beans.currentContext;
+      _validateContextState(
+        context: registrationContext,
+        operation: 'register',
+      );
       if (_contextsBeingDestroyed.contains(registrationContext)) {
-        throw StateError(
-          'Context "$registrationContext" is being destroyed.',
+        throw ContextBeingDestroyedException(
+          context: registrationContext,
+          operation: 'register',
         );
       }
 
@@ -275,6 +293,18 @@ class _DDIImpl implements DDI {
         completer.complete();
       }
     });
+  }
+
+  void _validateContextState({
+    required Object context,
+    required String operation,
+  }) {
+    if (_beans.isContextFrozen(context)) {
+      throw ContextFrozenException(
+        context: context,
+        operation: operation,
+      );
+    }
   }
 
   @override
@@ -436,15 +466,29 @@ class _DDIImpl implements DDI {
   FutureOr<void> destroy<BeanT extends Object>(
       {Object? qualifier, Object? context}) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
+    final Object effectiveContext = context ?? currentContext;
+    _validateContextState(
+      context: effectiveContext,
+      operation: 'destroy',
+    );
 
-    return _destroy<BeanT>(effectiveQualifierName, context);
+    return _destroy<BeanT>(
+      effectiveQualifierName,
+      context,
+      ignoreFrozenContext: true,
+    );
   }
 
   FutureOr<void> _destroy<BeanT extends Object>(
-    Object effectiveQualifierName,
-    Object? context,
-  ) async {
+      Object effectiveQualifierName, Object? context,
+      {bool ignoreFrozenContext = false}) async {
     final Object effectiveContext = context ?? currentContext;
+    if (!ignoreFrozenContext) {
+      _validateContextState(
+        context: effectiveContext,
+        operation: 'destroy',
+      );
+    }
     final bool fallbackToRoot = context == null && _beans.hasContext;
 
     final located = _beans.getFactory(
@@ -467,10 +511,20 @@ class _DDIImpl implements DDI {
 
   @override
   void destroyByType<BeanT extends Object>([Object? context]) {
+    final Object effectiveContext = context ?? currentContext;
+    _validateContextState(
+      context: effectiveContext,
+      operation: 'destroyByType',
+    );
+
     final keys = getByType<BeanT>();
 
     for (final key in keys) {
-      _destroy(key, context);
+      _destroy(
+        key,
+        context,
+        ignoreFrozenContext: true,
+      );
     }
   }
 
@@ -479,6 +533,10 @@ class _DDIImpl implements DDI {
       {Object? qualifier, Object? context}) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
     final Object effectiveContext = context ?? currentContext;
+    _validateContextState(
+      context: effectiveContext,
+      operation: 'dispose',
+    );
     final bool fallbackToRoot = context == null && _beans.hasContext;
 
     final located = _beans.getFactory<BeanT>(
@@ -496,6 +554,11 @@ class _DDIImpl implements DDI {
 
   @override
   void disposeByType<BeanT extends Object>() {
+    _validateContextState(
+      context: currentContext,
+      operation: 'disposeByType',
+    );
+
     for (final MapEntry(key: _, :value) in _beans.entries()) {
       value.dispose(ddiInstance: this);
     }
@@ -508,8 +571,15 @@ class _DDIImpl implements DDI {
   }) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    final factory =
-        _beans.getFactory<BeanT>(qualifier: effectiveQualifierName)?.factory;
+    final located = _beans.getFactory<BeanT>(qualifier: effectiveQualifierName);
+    if (located != null) {
+      _validateContextState(
+        context: located.context,
+        operation: 'addDecorator',
+      );
+    }
+
+    final factory = located?.factory;
 
     if (factory case final DDIScopeFactory<BeanT> f?) {
       return f.addDecorator(decorators);
@@ -529,8 +599,15 @@ class _DDIImpl implements DDI {
   }) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    final factory =
-        _beans.getFactory<BeanT>(qualifier: effectiveQualifierName)?.factory;
+    final located = _beans.getFactory<BeanT>(qualifier: effectiveQualifierName);
+    if (located != null) {
+      _validateContextState(
+        context: located.context,
+        operation: 'addInterceptor',
+      );
+    }
+
+    final factory = located?.factory;
 
     if (factory case final DDIScopeFactory<BeanT> f?) {
       f.addInterceptor(interceptors ?? {});
@@ -544,22 +621,20 @@ class _DDIImpl implements DDI {
   }
 
   @override
-  void addChildModules<BeanT extends Object>({
-    required Object child,
-    Object? qualifier,
-  }) {
-    addChildrenModules<BeanT>(child: {child}, qualifier: qualifier);
-  }
-
-  @override
   void addChildrenModules<BeanT extends Object>({
     required Set<Object> child,
     Object? qualifier,
   }) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    final factory =
-        _beans.getFactory<BeanT>(qualifier: effectiveQualifierName)?.factory;
+    final located = _beans.getFactory<BeanT>(qualifier: effectiveQualifierName);
+    if (located != null) {
+      _validateContextState(
+        context: located.context,
+        operation: 'addChildrenModules',
+      );
+    }
+    final factory = located?.factory;
 
     if (factory case final DDIScopeFactory<BeanT> f?) {
       f.addChildrenModules(child);

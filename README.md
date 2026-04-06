@@ -245,6 +245,45 @@ await ddi.destroyContext('feature');
 - While destruction is running, write operations targeting those contexts are blocked (for example, `register` and `createContext`).
 - Reentrant `destroyContext(...)` calls for a context already being destroyed are treated as no-op.
 
+### Context Freeze API
+
+You can lock a context to prevent mutating operations while keeping reads available:
+
+```dart
+ddi.createContext('checkout');
+
+await ddi.application<PaymentService>(
+  PaymentService.new,
+  context: 'checkout',
+);
+
+ddi.freezeContext('checkout');
+final frozen = ddi.isContextFrozen('checkout'); // true
+
+// Throws ContextFrozenException:
+await ddi.application<FraudService>(
+  FraudService.new,
+  context: 'checkout',
+);
+
+ddi.unfreezeContext('checkout');
+await ddi.application<FraudService>(
+  FraudService.new,
+  context: 'checkout',
+);
+```
+
+`freezeContext(...)` behavior:
+
+- Blocks context mutations such as `register`, `addDecorator`, `addInterceptor`, `addChildrenModules`, `destroy`, `dispose`, `destroyByType`, and `disposeByType`.
+- Does not block read APIs like `get`, `getAsync`, `isRegistered`, `isReady`, and `isFuture`.
+- Throws `ContextFrozenException` when a blocked operation is attempted.
+
+`unfreezeContext(...)` behavior:
+
+- Removes the lock for that specific context.
+- Other contexts keep their own frozen/unfrozen state.
+
 ### currentContext
 
 The `currentContext` property exposes a token for the currently active context:

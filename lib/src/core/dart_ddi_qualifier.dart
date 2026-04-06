@@ -46,6 +46,12 @@ abstract interface class DartDDIQualifier {
   @pragma('vm:prefer-inline')
   bool hasContextQualifier(Object name);
 
+  void freezeContext(Object name);
+
+  void unfreezeContext(Object name);
+
+  bool isContextFrozen(Object name);
+
   /// Returns the context and all linked descendants in destroy order.
   ///
   /// The first entries must be the deepest contexts.

@@ -18,6 +18,7 @@ final class DartDDIZoneQualifierImpl implements DartDDIQualifier {
 
   /// Global beans map used as fallback when no zone-specific registry exists.
   final Map<Object, DDIBaseFactory<Object>> _globalBeansMap = {};
+  final Set<Object> _frozenContexts = <Object>{};
 
   /// Gets the beans map for the current zone, falling back to global registry if needed.
   ///
@@ -157,6 +158,23 @@ final class DartDDIZoneQualifierImpl implements DartDDIQualifier {
   }
 
   @override
+  void freezeContext(Object name) {
+    if (!hasContextQualifier(name)) {
+      throw ContextNotFoundException(name.toString());
+    }
+
+    _frozenContexts.add(name);
+  }
+
+  @override
+  void unfreezeContext(Object name) {
+    _frozenContexts.remove(name);
+  }
+
+  @override
+  bool isContextFrozen(Object name) => _frozenContexts.contains(name);
+
+  @override
   Iterable<Object> contextDestroyOrder(Object name) {
     if (hasContextQualifier(name)) {
       return [name];
@@ -187,9 +205,11 @@ final class DartDDIZoneQualifierImpl implements DartDDIQualifier {
 
     if (name case final Map<Object, DDIBaseFactory<Object>> explicitMap) {
       explicitMap.clear();
+      _frozenContexts.remove(name);
       return;
     }
 
+    _frozenContexts.remove(name);
     throw ContextNotFoundException(name.toString());
   }
 

@@ -2,6 +2,8 @@
 
 * Added context support across default and zone-based registries.
 * Added explicit context lifecycle API: `createContext`, `destroyContext`, and `contextExists`.
+* Added context freeze controls: `freezeContext`, `unfreezeContext`, and `isContextFrozen`.
+* Added context lifecycle exceptions: `ContextFrozenException`, `ContextBeingDestroyedException`, `ContextDestroyBlockedException`, and `ContextDestroyIncompleteException`.
 * Explicit `context:` registration now requires an existing context and throws `ContextNotFoundException` when missing.
 * `currentContext` now always returns a valid context token, including the root context.
 * `Instance<BeanT>` now captures the active context when `getInstance()` is created, keeping later resolutions pinned to the same registry.
@@ -21,6 +23,10 @@
 
 * `runInZone(...)` has been renamed to `runInContext(...)`.
 * `DDIBaseFactory` now requires `canDestroy` getter.
+
+
+### Note
+* With the current implementation of context. I'm planning to remove Zone support
 
 ## 0.14.0
 

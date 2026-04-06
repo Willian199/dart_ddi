@@ -90,7 +90,7 @@ void main() {
 
       await expectLater(
         ddi.destroyContext('locked'),
-        throwsA(isA<StateError>()),
+        throwsA(isA<ContextDestroyBlockedException>()),
       );
 
       expect(ddi.contextExists('locked'), isTrue);
@@ -119,7 +119,7 @@ void main() {
 
       await expectLater(
         ddi.destroyContext('fast-lock'),
-        throwsA(isA<StateError>()),
+        throwsA(isA<ContextDestroyBlockedException>()),
       );
 
       expect(events, isEmpty);
@@ -159,7 +159,7 @@ void main() {
 
       await expectLater(
         ddi.destroyContext('parent-check'),
-        throwsA(isA<StateError>()),
+        throwsA(isA<ContextDestroyBlockedException>()),
       );
 
       // Parent instance must remain untouched because validation happens first.
@@ -286,7 +286,7 @@ void main() {
 
       await expectLater(
         ddi.destroyContext(context),
-        throwsA(isA<StateError>()),
+        throwsA(isA<ContextDestroyBlockedException>()),
       );
 
       expect(ddi.contextExists(context), isTrue);
@@ -466,11 +466,7 @@ void main() {
           context: 'busy-context',
         ),
         throwsA(
-          isA<StateError>().having(
-            (error) => error.message.toString(),
-            'message',
-            contains('being destroyed'),
-          ),
+          isA<ContextBeingDestroyedException>(),
         ),
       );
 
@@ -512,11 +508,7 @@ void main() {
           context: 'child-busy',
         ),
         throwsA(
-          isA<StateError>().having(
-            (error) => error.message.toString(),
-            'message',
-            contains('being destroyed'),
-          ),
+          isA<ContextBeingDestroyedException>(),
         ),
       );
 

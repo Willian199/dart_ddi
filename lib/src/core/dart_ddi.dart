@@ -58,6 +58,7 @@ abstract class DDI {
   /// });
   /// // Zone instances are automatically destroyed here
   /// ```
+  @Deprecated("Use createContext and destroyContext instead")
   BeanT runInContext<BeanT>(Object name, BeanT Function() body);
 
   /// Returns a token representing the current active context.
@@ -77,6 +78,15 @@ abstract class DDI {
 
   /// Returns `true` when a context key is known by this DDI instance.
   bool contextExists(Object context);
+
+  /// Freezes a context, blocking registration/override mutations in it.
+  void freezeContext(Object context);
+
+  /// Unfreezes a context, allowing mutations again.
+  void unfreezeContext(Object context);
+
+  /// Returns `true` when a context is currently frozen.
+  bool isContextFrozen(Object context);
 
   /// Registers a factory to create an instance of the class [BeanT].
   ///
@@ -222,37 +232,6 @@ abstract class DDI {
   /// ```
   void addInterceptor<BeanT extends Object>(
     Set<Object>? interceptors, {
-    Object? qualifier,
-  });
-
-  /// Adds a single child module to a parent module.
-  ///
-  /// This method allows you to establish a parent-child relationship between modules,
-  /// where the parent module can manage the lifecycle of its child modules.
-  /// When the parent module is disposed or destroyed, all its children are also disposed or destroyed.
-  ///
-  /// **Use cases:**
-  /// - Organizing related services into logical groups
-  /// - Managing lifecycle dependencies between modules
-  /// - Creating hierarchical dependency injection structures
-  /// - Ensuring proper cleanup of related services
-  ///
-  /// - `child`: The type or qualifier of the child module to add to the parent.
-  /// - `qualifier`: Optional qualifier for the parent module (defaults to the type).
-  ///
-  /// Example:
-  /// ```dart
-  /// // Add a child module to a parent
-  /// ddi.addChildModules<AppModule>(
-  ///   child: DatabaseModule,
-  ///   qualifier: 'mainApp',
-  /// );
-  ///
-  /// // When AppModule is disposed, DatabaseModule will also be disposed
-  /// await ddi.dispose<AppModule>(qualifier: 'mainApp');
-  /// ```
-  void addChildModules<BeanT extends Object>({
-    required Object child,
     Object? qualifier,
   });
 

@@ -181,6 +181,29 @@ final class DartDDIDefaultQualifierImpl implements DartDDIQualifier {
   bool hasContextQualifier(Object name) => _resolveContext(name) != null;
 
   @override
+  void freezeContext(Object name) {
+    final context = _resolveContext(name);
+    if (context == null) {
+      throw ContextNotFoundException(name.toString());
+    }
+
+    context.isFrozen = true;
+  }
+
+  @override
+  void unfreezeContext(Object name) {
+    final context = _resolveContext(name);
+    if (context == null) {
+      return;
+    }
+
+    context.isFrozen = false;
+  }
+
+  @override
+  bool isContextFrozen(Object name) => _resolveContext(name)?.isFrozen ?? false;
+
+  @override
   Iterable<Object> contextDestroyOrder(Object name) {
     final _QualifierContext? targetContext = _contexts[name];
     if (targetContext == null) {
@@ -330,6 +353,7 @@ final class _QualifierContext {
   final Object qualifier;
   final Map<Object, DDIBaseFactory<Object>> factories;
   bool _hasNonDestroyableFactories = false;
+  bool isFrozen = false;
 
   bool get hasNonDestroyableFactories => _hasNonDestroyableFactories;
 
