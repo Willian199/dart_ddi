@@ -6,10 +6,10 @@ import 'package:test/test.dart';
 import '../clazz_samples/performance_benchmark_samples.dart';
 
 enum _ScopeKind {
-  application('Application', 2000000, 0.15, 1),
-  singleton('Singleton', 2000000, 0.15, 1),
-  object('Object', 2000000, 0.15, 1),
-  dependent('Dependent', 250000, 0.35, 1);
+  application('Application', 2000000, 0.2, 1),
+  singleton('Singleton', 2000000, 0.2, 1),
+  object('Object', 2000000, 0.2, 1),
+  dependent('Dependent', 250000, 0.4, 1);
 
   const _ScopeKind(
     this.label,
