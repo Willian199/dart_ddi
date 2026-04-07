@@ -2,11 +2,13 @@ import 'package:dart_ddi/dart_ddi.dart';
 import 'package:test/test.dart';
 
 import '../clazz_samples/test_service.dart';
+import '../clazz_samples/weak_dispose_service.dart';
 
 void main() {
   group('Application Factory Edge Cases Tests', () {
     tearDown(() {
       ddi.destroyByType<TestService>();
+      WeakDisposeService.preDisposeCalled = false;
     });
 
     tearDownAll(() {
@@ -47,6 +49,24 @@ void main() {
 
         // The weak reference handling in _runPostConstruct is tested indirectly
         // through the normal flow
+      });
+
+      test('dispose should run PreDispose when useWeakReference is true',
+          () async {
+        final localDdi = DDI.newInstance();
+
+        await localDdi.application<WeakDisposeService>(
+          WeakDisposeService.new,
+          useWeakReference: true,
+        );
+
+        // Keep a strong reference alive so weak target is available during dispose
+        final instance = localDdi.get<WeakDisposeService>();
+        expect(instance, isA<WeakDisposeService>());
+
+        await localDdi.dispose<WeakDisposeService>();
+
+        expect(WeakDisposeService.preDisposeCalled, isTrue);
       });
     });
 

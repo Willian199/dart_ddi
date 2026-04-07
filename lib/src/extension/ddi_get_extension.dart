@@ -17,6 +17,7 @@ extension DDIGetExtension on DDI {
   /// This is a standard method to retrieve instances using type inference.
   /// If multiple instances of the same type exist, the qualifier can be used to
   /// retrieve the correct instance.
+  @pragma('vm:prefer-inline')
   BeanT get<BeanT extends Object>({
     Object? qualifier,
     Object? select,
@@ -31,6 +32,7 @@ extension DDIGetExtension on DDI {
   ///
   /// **Note:** If the instance is already created or the constructor does not match
   /// with the provided parameter type, the `parameter` will be ignored.
+  @pragma('vm:prefer-inline')
   BeanT call<BeanT extends Object, ParameterT extends Object>(
       {ParameterT? parameter}) {
     return getWith<BeanT, ParameterT>(parameter: parameter);
@@ -42,6 +44,7 @@ extension DDIGetExtension on DDI {
   /// - `select`: Optional value to pass to distinguish between different instances of the same type.
   ///
   /// This method is particularly useful when instance creation involves asynchronous operations.
+  @pragma('vm:prefer-inline')
   Future<BeanT> getAsync<BeanT extends Object>({
     Object? qualifier,
     Object? select,
@@ -73,6 +76,7 @@ extension DDIGetExtension on DDI {
   /// // With qualifier
   /// final service = ddi.getOptional<MyService>(qualifier: 'special');
   /// ```
+  @pragma('vm:prefer-inline')
   BeanT? getOptional<BeanT extends Object>({Object? qualifier}) {
     return isRegistered<BeanT>(qualifier: qualifier)
         ? get<BeanT>(qualifier: qualifier)
@@ -107,6 +111,7 @@ extension DDIGetExtension on DDI {
   ///   parameter: 'config',
   /// );
   /// ```
+  @pragma('vm:prefer-inline')
   BeanT? getOptionalWith<BeanT extends Object, ParameterT extends Object>({
     ParameterT? parameter,
     Object? qualifier,
@@ -184,23 +189,19 @@ extension DDIGetExtension on DDI {
   /// final instance = ddi.getInstance<MyService>(cache: true);
   /// final service = instance.get(); // Instance is cached (strong reference)
   /// ```
+  @pragma('vm:prefer-inline')
   Instance<BeanT> getInstance<BeanT extends Object>({
     Object? qualifier,
     bool useWeakReference = false,
     bool cache = false,
   }) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
+    final Object capturedContext = currentContext;
 
-    // Check if bean is registered
-    if (!isRegistered<BeanT>(qualifier: qualifier)) {
-      throw BeanNotFoundException(effectiveQualifierName.toString());
-    }
-
-    // Create a wrapper that uses getWith internally
-    // This avoids needing direct access to the private _beans field
     return InstanceWrapper<BeanT>(
       qualifier: effectiveQualifierName,
       ddi: this,
+      context: capturedContext,
       useWeakReference: useWeakReference,
       cache: cache,
     );

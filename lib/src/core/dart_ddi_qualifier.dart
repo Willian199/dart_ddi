@@ -6,16 +6,28 @@ import 'package:dart_ddi/dart_ddi.dart';
 /// Dart zones, allowing for isolated dependency injection contexts. It handles
 /// both zone-specific and global bean registrations with proper fallback mechanisms.
 abstract interface class DartDDIQualifier {
-  DDIBaseFactory<BeanT>? getFactory<BeanT extends Object>({
+  ({DDIBaseFactory<BeanT> factory, Object context})?
+      getFactory<BeanT extends Object>({
     required Object qualifier,
     bool fallback = true,
+    Object? contextQualifier,
   });
+
+  /// Restores a previously captured context.
+  void restoreContext(Object? context);
+
+  /// Returns a token representing the current active context.
+  ///
+  /// This always returns a valid context object, including the root context.
+  @pragma('vm:prefer-inline')
+  Object get currentContext;
 
   /// Checks if we are currently in a zone with a dedicated registry.
   ///
   /// Returns `true` if the current zone has its own bean registry,
   /// `false` if using the global registry.
-  bool hasZoneRegistry();
+  @pragma('vm:prefer-inline')
+  bool get hasContext;
 
   /// Executes code in a new zone with dedicated bean registries.
   ///
@@ -25,18 +37,45 @@ abstract interface class DartDDIQualifier {
   ///
   /// - `name`: Unique identifier for the zone (used for debugging).
   /// - `body`: Function to execute within the new zone context.
-  T runWithZoneRegistry<T>(String name, T Function() body);
+  BeanT runWithContext<BeanT>(Object name, BeanT Function() body);
+
+  /// Creates or activates a persistent context without executing a body.
+  @pragma('vm:prefer-inline')
+  void createContext(Object name);
+
+  @pragma('vm:prefer-inline')
+  bool hasContextQualifier(Object name);
+
+  void freezeContext(Object name);
+
+  void unfreezeContext(Object name);
+
+  bool isContextFrozen(Object name);
+
+  /// Returns the context and all linked descendants in destroy order.
+  ///
+  /// The first entries must be the deepest contexts.
+  Iterable<Object> contextDestroyOrder(Object name);
+
+  /// Returns `true` when context destroy is blocked by non-destroyable factories.
+  bool contextHasDestroyBlockers(Object name);
+
+  void destroyContext(Object name);
 
   /// Implementation of required MapBase methods
-  void setFactory(Object key, DDIBaseFactory<Object> value);
+  void setFactory(Object key, DDIBaseFactory<Object> value, {Object? context});
 
+  @pragma('vm:prefer-inline')
   Iterable<Object> get keys;
 
-  Iterable<MapEntry<Object, DDIBaseFactory<Object>>> get entries;
+  @pragma('vm:prefer-inline')
+  Iterable<MapEntry<Object, DDIBaseFactory<Object>>> entries({Object? context});
 
+  @pragma('vm:prefer-inline')
   bool get isEmpty;
 
+  @pragma('vm:prefer-inline')
   int get length;
 
-  DDIBaseFactory<Object>? remove(Object? key);
+  DDIBaseFactory<Object>? removeFactory(Object? key, {Object? context});
 }

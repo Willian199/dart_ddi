@@ -24,8 +24,11 @@ void main() {
     });
 
     test('Instance should not be resolvable when bean is not registered', () {
+      final instance = ddi.getInstance<TestService>();
+
+      expect(instance.isResolvable(), isFalse);
       expect(
-        () => ddi.getInstance<TestService>(),
+        () => instance.get(),
         throwsA(isA<BeanNotFoundException>()),
       );
     });

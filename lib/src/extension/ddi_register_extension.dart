@@ -26,6 +26,7 @@ extension DDIRegisterExtension on DDI {
   Future<void> singleton<BeanT extends Object>(
     BeanRegister<BeanT> clazzRegister, {
     Object? qualifier,
+    Object? context,
     FutureOrBoolCallback? canRegister,
     bool canDestroy = true,
     ListDecorator<BeanT> decorators = const [],
@@ -45,6 +46,7 @@ extension DDIRegisterExtension on DDI {
         requires: requires,
       ),
       qualifier: qualifier,
+      context: context,
       canRegister: canRegister,
     );
   }
@@ -72,6 +74,7 @@ extension DDIRegisterExtension on DDI {
   Future<void> application<BeanT extends Object>(
     BeanRegister<BeanT> clazzRegister, {
     Object? qualifier,
+    Object? context,
     FutureOrBoolCallback? canRegister,
     bool canDestroy = true,
     ListDecorator<BeanT> decorators = const [],
@@ -93,6 +96,7 @@ extension DDIRegisterExtension on DDI {
         requires: requires,
       ),
       qualifier: qualifier,
+      context: context,
       canRegister: canRegister,
     );
   }
@@ -119,6 +123,7 @@ extension DDIRegisterExtension on DDI {
   Future<void> dependent<BeanT extends Object>(
     BeanRegister<BeanT> clazzRegister, {
     Object? qualifier,
+    Object? context,
     FutureOrBoolCallback? canRegister,
     bool canDestroy = true,
     ListDecorator<BeanT> decorators = const [],
@@ -138,6 +143,7 @@ extension DDIRegisterExtension on DDI {
         requires: requires,
       ),
       qualifier: qualifier,
+      context: context,
       canRegister: canRegister,
     );
   }
@@ -164,6 +170,7 @@ extension DDIRegisterExtension on DDI {
   Future<void> object<BeanT extends Object>(
     BeanT instance, {
     Object? qualifier,
+    Object? context,
     FutureOrBoolCallback? canRegister,
     bool canDestroy = true,
     ListDecorator<BeanT> decorators = const [],
@@ -183,6 +190,7 @@ extension DDIRegisterExtension on DDI {
         requires: requires,
       ),
       qualifier: qualifier,
+      context: context,
       canRegister: canRegister,
     );
   }

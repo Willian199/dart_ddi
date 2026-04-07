@@ -1,3 +1,33 @@
+## 0.15.0
+
+* Added context support across default and zone-based registries.
+* Added explicit context lifecycle API: `createContext`, `destroyContext`, and `contextExists`.
+* Added context freeze controls: `freezeContext`, `unfreezeContext`, and `isContextFrozen`.
+* Added context lifecycle exceptions: `ContextFrozenException`, `ContextBeingDestroyedException`, `ContextDestroyBlockedException`, and `ContextDestroyIncompleteException`.
+* Explicit `context:` registration now requires an existing context and throws `ContextNotFoundException` when missing.
+* `currentContext` now always returns a valid context token, including the root context.
+* `Instance<BeanT>` now captures the active context when `getInstance()` is created, keeping later resolutions pinned to the same registry.
+* `getInstance()` now behaves as a lazy handle and no longer requires the bean to be registered at creation time.
+* Improved `Instance<BeanT>` cache and weak-reference performance for repeated `get()` calls.
+* Added contextual module support through `DDIModule.contextQualifier`.
+* `DDIModule` can now register module-local beans in their own context, allowing the same qualifier to coexist with root registrations.
+* `destroyContext(...)` now:
+  * validates the full context tree before destroy (avoids partial destruction),
+  * destroys deepest contexts first,
+  * applies normal scope destroy rules (`ddi.destroy` path),
+  * blocks destroy when any factory in the tree has `canDestroy: false`,
+  * blocks context writes (`register`/`createContext`) for contexts currently being destroyed,
+  * treats reentrant `destroyContext(...)` for an already destroying context as a no-op.
+
+### Breaking Changes
+
+* `runInZone(...)` has been renamed to `runInContext(...)`.
+* `DDIBaseFactory` now requires `canDestroy` getter.
+
+
+### Note
+* With the current implementation of context. I'm planning to remove Zone support
+
 ## 0.14.0
 
 * Added `requires` parameter to factory registration methods. Defining Beans that must be registered and loaded before instance creation.

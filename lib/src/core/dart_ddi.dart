@@ -4,6 +4,7 @@ import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/core/dart_ddi_default_qualifier_impl.dart';
 import 'package:dart_ddi/src/core/dart_ddi_qualifier.dart';
 import 'package:dart_ddi/src/core/dart_ddi_zone_qualifier_impl.dart';
+import 'package:dart_ddi/src/core/ddi_internal.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
 
 part 'dart_ddi_impl.dart';
@@ -19,9 +20,11 @@ abstract class DDI {
   static final DDI _instance = _DDIImpl(enableZoneRegistry: false);
 
   /// Gets the shared instance of the [DDI] class.
+  @pragma('vm:prefer-inline')
   static DDI get instance => _instance;
 
   /// Get a new instance of the [DDI] class.
+  @pragma('vm:prefer-inline')
   static DDI newInstance({bool enableZoneRegistry = false}) =>
       _DDIImpl(enableZoneRegistry: enableZoneRegistry);
 
@@ -56,7 +59,34 @@ abstract class DDI {
   /// });
   /// // Zone instances are automatically destroyed here
   /// ```
-  T runInZone<T>(String name, T Function() body);
+  BeanT runInContext<BeanT>(Object name, BeanT Function() body);
+
+  /// Returns a token representing the current active context.
+  ///
+  /// This always returns a valid context object, including the root context.
+  @pragma('vm:prefer-inline')
+  Object get currentContext;
+
+  /// Creates a named context that can later receive registrations by using
+  /// the `context:` parameter.
+  void createContext(Object context);
+
+  /// Destroys a named context.
+  ///
+  /// This removes all beans registered directly in that context.
+  FutureOr<void> destroyContext(Object context);
+
+  /// Returns `true` when a context key is known by this DDI instance.
+  bool contextExists(Object context);
+
+  /// Freezes a context, blocking registration/override mutations in it.
+  void freezeContext(Object context);
+
+  /// Unfreezes a context, allowing mutations again.
+  void unfreezeContext(Object context);
+
+  /// Returns `true` when a context is currently frozen.
+  bool isContextFrozen(Object context);
 
   /// Registers a factory to create an instance of the class [BeanT].
   ///
@@ -67,23 +97,27 @@ abstract class DDI {
   Future<void> register<BeanT extends Object>({
     required DDIBaseFactory<BeanT> factory,
     Object? qualifier,
+    Object? context,
     FutureOrBoolCallback? canRegister,
   });
 
   /// Verify if an instance is already registered in [DDI].
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
-  bool isRegistered<BeanT extends Object>({Object? qualifier});
+  @pragma('vm:prefer-inline')
+  bool isRegistered<BeanT extends Object>({Object? qualifier, Object? context});
 
   /// Verify if the factory is a Future in [DDI].
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
-  bool isFuture<BeanT extends Object>({Object? qualifier});
+  @pragma('vm:prefer-inline')
+  bool isFuture<BeanT extends Object>({Object? qualifier, Object? context});
 
   /// Verify if the factory is ready (Created) in [DDI].
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
-  bool isReady<BeanT extends Object>({Object? qualifier});
+  @pragma('vm:prefer-inline')
+  bool isReady<BeanT extends Object>({Object? qualifier, Object? context});
 
   /// Gets an instance of the registered class in [DDI].
   ///
@@ -96,6 +130,7 @@ abstract class DDI {
     ParameterT? parameter,
     Object? qualifier,
     Object? select,
+    Object? context,
   });
 
   /// Gets an instance of the registered class in [DDI].
@@ -109,6 +144,7 @@ abstract class DDI {
     ParameterT? parameter,
     Object? qualifier,
     Object? select,
+    Object? context,
   });
 
   /// Retrieves a list of keys associated with objects of a specific type `BeanT`.
@@ -134,23 +170,25 @@ abstract class DDI {
   ///   // Process instance...
   /// }
   /// ```
-  List<Object> getByType<BeanT extends Object>();
+  List<Object> getByType<BeanT extends Object>({Object? context});
 
   /// Removes the instance of the registered class in [DDI].
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
-  FutureOr<void> destroy<BeanT extends Object>({Object? qualifier});
+  FutureOr<void> destroy<BeanT extends Object>(
+      {Object? qualifier, Object? context});
 
   /// Removes all the instance registered as type `BeanT`.
-  void destroyByType<BeanT extends Object>();
+  void destroyByType<BeanT extends Object>({Object? context});
 
   /// Disposes of the instance of the registered class in [DDI].
   ///
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
-  Future<void> dispose<BeanT extends Object>({Object? qualifier});
+  Future<void> dispose<BeanT extends Object>(
+      {Object? qualifier, Object? context});
 
   /// Disposes all the instance registered as type `BeanT`.
-  void disposeByType<BeanT extends Object>();
+  void disposeByType<BeanT extends Object>({Object? context});
 
   /// Allows you to dynamically add decorators.
   ///
@@ -161,6 +199,7 @@ abstract class DDI {
   FutureOr<void> addDecorator<BeanT extends Object>(
     ListDecorator<BeanT> decorators, {
     Object? qualifier,
+    Object? context,
   });
 
   /// Allows you to dynamically add interceptors to existing instances.
@@ -195,37 +234,7 @@ abstract class DDI {
   void addInterceptor<BeanT extends Object>(
     Set<Object>? interceptors, {
     Object? qualifier,
-  });
-
-  /// Adds a single child module to a parent module.
-  ///
-  /// This method allows you to establish a parent-child relationship between modules,
-  /// where the parent module can manage the lifecycle of its child modules.
-  /// When the parent module is disposed or destroyed, all its children are also disposed or destroyed.
-  ///
-  /// **Use cases:**
-  /// - Organizing related services into logical groups
-  /// - Managing lifecycle dependencies between modules
-  /// - Creating hierarchical dependency injection structures
-  /// - Ensuring proper cleanup of related services
-  ///
-  /// - `child`: The type or qualifier of the child module to add to the parent.
-  /// - `qualifier`: Optional qualifier for the parent module (defaults to the type).
-  ///
-  /// Example:
-  /// ```dart
-  /// // Add a child module to a parent
-  /// ddi.addChildModules<AppModule>(
-  ///   child: DatabaseModule,
-  ///   qualifier: 'mainApp',
-  /// );
-  ///
-  /// // When AppModule is disposed, DatabaseModule will also be disposed
-  /// await ddi.dispose<AppModule>(qualifier: 'mainApp');
-  /// ```
-  void addChildModules<BeanT extends Object>({
-    required Object child,
-    Object? qualifier,
+    Object? context,
   });
 
   /// Adds multiple child modules to a parent module at once.
@@ -256,6 +265,7 @@ abstract class DDI {
   void addChildrenModules<BeanT extends Object>({
     required Set<Object> child,
     Object? qualifier,
+    Object? context,
   });
 
   /// Retrieves the set of child modules for a given parent module.
@@ -276,18 +286,23 @@ abstract class DDI {
   ///   // Process child module...
   /// }
   /// ```
-  Set<Object> getChildren<BeanT extends Object>({Object? qualifier});
+  Set<Object> getChildren<BeanT extends Object>({
+    Object? qualifier,
+    Object? context,
+  });
 
   /// Checks if the [DDI] instance has no registered beans.
   ///
   /// Returns `true` if no beans are currently registered in the DDI container,
   /// `false` otherwise.
   ///
+  @pragma('vm:prefer-inline')
   bool get isEmpty;
 
   /// Retrieves the number of registered beans in the [DDI] instance.
   ///
   /// Returns the total count of all registered beans across all types and qualifiers.
   ///
+  @pragma('vm:prefer-inline')
   int get length;
 }

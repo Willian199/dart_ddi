@@ -11,12 +11,14 @@ import 'package:dart_ddi/src/core/dart_ddi_qualifier.dart';
 final class DartDDIZoneQualifierImpl implements DartDDIQualifier {
   /// Key used to store bean registry data in Zone
   static const _beansKey = #ddi_beans_registry;
+  static const _rootContext = #ddi_zone_root_context;
 
   /// Gets the current zone name for debugging and identification purposes.
   String get zoneName => Zone.current[#zone_name] as String? ?? 'root';
 
   /// Global beans map used as fallback when no zone-specific registry exists.
   final Map<Object, DDIBaseFactory<Object>> _globalBeansMap = {};
+  final Set<Object> _frozenContexts = <Object>{};
 
   /// Gets the beans map for the current zone, falling back to global registry if needed.
   ///
@@ -29,16 +31,51 @@ final class DartDDIZoneQualifierImpl implements DartDDIQualifier {
     return zoneMap ?? _globalBeansMap;
   }
 
+  Map<Object, DDIBaseFactory<Object>> _getBeansMapForContext(Object? context) {
+    if (context == _rootContext) {
+      return _globalBeansMap;
+    }
+
+    if (context case final Map<Object, DDIBaseFactory<Object>> explicitMap) {
+      return explicitMap;
+    }
+
+    return switch (Zone.current[context ?? _beansKey]) {
+      final Map<Object, DDIBaseFactory<Object>> zoneMap => zoneMap,
+      _ => <Object, DDIBaseFactory<Object>>{},
+    };
+  }
+
   @override
-  DDIBaseFactory<BeanT>? getFactory<BeanT extends Object>({
+  ({DDIBaseFactory<BeanT> factory, Object context})?
+      getFactory<BeanT extends Object>({
     required Object qualifier,
     bool fallback = true,
+    Object? contextQualifier,
   }) {
+    if (contextQualifier == _rootContext) {
+      final rootFactory = _globalBeansMap[qualifier];
+      if (rootFactory == null) {
+        return null;
+      }
+      return (
+        factory: rootFactory as DDIBaseFactory<BeanT>,
+        context: _rootContext
+      );
+    }
+
     final Map<Object, DDIBaseFactory<Object>>? zoneMap =
-        Zone.current[_beansKey] as Map<Object, DDIBaseFactory<Object>>?;
+        switch (contextQualifier) {
+      final Map<Object, DDIBaseFactory<Object>> explicitMap => explicitMap,
+      _ => Zone.current[contextQualifier ?? _beansKey]
+          as Map<Object, DDIBaseFactory<Object>>?,
+    };
 
     if (zoneMap?.containsKey(qualifier) ?? false) {
-      return zoneMap?[qualifier] as DDIBaseFactory<BeanT>;
+      return (
+        factory: zoneMap![qualifier] as DDIBaseFactory<BeanT>,
+        context: zoneMap
+      );
     } else if (fallback && Zone.current.parent != null) {
       Zone zone = Zone.current.parent!;
 
@@ -47,28 +84,44 @@ final class DartDDIZoneQualifierImpl implements DartDDIQualifier {
             zone[_beansKey] as Map<Object, DDIBaseFactory<Object>>?;
 
         if (parentZoneMap?.containsKey(qualifier) ?? false) {
-          return parentZoneMap?[qualifier] as DDIBaseFactory<BeanT>;
+          return (
+            factory: parentZoneMap![qualifier] as DDIBaseFactory<BeanT>,
+            context: parentZoneMap
+          );
         }
 
         zone = zone.parent!;
       }
     }
 
-    if (fallback || zoneName == 'root') {
-      return _globalBeansMap[qualifier] as DDIBaseFactory<BeanT>?;
+    if (fallback || (contextQualifier == null && zoneName == 'root')) {
+      final rootFactory = _globalBeansMap[qualifier];
+      if (rootFactory == null) {
+        return null;
+      }
+      return (
+        factory: rootFactory as DDIBaseFactory<BeanT>,
+        context: _rootContext
+      );
     }
 
     return null;
   }
+
+  @override
+  void restoreContext(Object? context) {}
+
+  @override
+  Object get currentContext =>
+      Zone.current[_beansKey] as Map<Object, DDIBaseFactory<Object>>? ??
+      _rootContext;
 
   /// Checks if we are currently in a zone with a dedicated registry.
   ///
   /// Returns `true` if the current zone has its own bean registry,
   /// `false` if using the global registry.
   @override
-  bool hasZoneRegistry() {
-    return Zone.current[_beansKey] != null;
-  }
+  bool get hasContext => Zone.current[_beansKey] != null;
 
   /// Executes code in a new zone with dedicated bean registries.
   ///
@@ -79,7 +132,7 @@ final class DartDDIZoneQualifierImpl implements DartDDIQualifier {
   /// - `name`: Unique identifier for the zone (used for debugging).
   /// - `body`: Function to execute within the new zone context.
   @override
-  T runWithZoneRegistry<T>(String name, T Function() body) {
+  BeanT runWithContext<BeanT>(Object name, BeanT Function() body) {
     return runZoned(
       body,
       zoneValues: {
@@ -89,18 +142,97 @@ final class DartDDIZoneQualifierImpl implements DartDDIQualifier {
     );
   }
 
+  @override
+  void createContext(Object name) {}
+
+  @override
+  bool hasContextQualifier(Object name) {
+    if (name == _rootContext) {
+      return true;
+    }
+
+    if (name case final Map<Object, DDIBaseFactory<Object>> explicitMap) {
+      final currentZoneMap =
+          Zone.current[_beansKey] as Map<Object, DDIBaseFactory<Object>>?;
+
+      return identical(explicitMap, currentZoneMap) ||
+          identical(explicitMap, _globalBeansMap);
+    }
+
+    return Zone.current[#zone_name] == name &&
+        Zone.current[_beansKey] is Map<Object, DDIBaseFactory<Object>>;
+  }
+
+  @override
+  void freezeContext(Object name) {
+    if (!hasContextQualifier(name)) {
+      throw ContextNotFoundException(name.toString());
+    }
+
+    _frozenContexts.add(name);
+  }
+
+  @override
+  void unfreezeContext(Object name) {
+    _frozenContexts.remove(name);
+  }
+
+  @override
+  bool isContextFrozen(Object name) => _frozenContexts.contains(name);
+
+  @override
+  Iterable<Object> contextDestroyOrder(Object name) {
+    if (hasContextQualifier(name)) {
+      return [name];
+    }
+
+    return const Iterable.empty();
+  }
+
+  @override
+  bool contextHasDestroyBlockers(Object name) {
+    if (name == _rootContext) {
+      return _globalBeansMap.values.any((factory) => !factory.canDestroy);
+    }
+
+    if (name case final Map<Object, DDIBaseFactory<Object>> explicitMap) {
+      return explicitMap.values.any((factory) => !factory.canDestroy);
+    }
+
+    return false;
+  }
+
+  @override
+  void destroyContext(Object name) {
+    if (name == _rootContext) {
+      throw ArgumentError.value(
+          name, 'name', 'Root context cannot be destroyed.');
+    }
+
+    if (name case final Map<Object, DDIBaseFactory<Object>> explicitMap) {
+      explicitMap.clear();
+      _frozenContexts.remove(name);
+      return;
+    }
+
+    _frozenContexts.remove(name);
+    throw ContextNotFoundException(name.toString());
+  }
+
   /// Implementation of required MapBase methods
   @override
-  void setFactory(Object key, DDIBaseFactory<Object> value) {
-    _getBeansMap()[key] = value;
+  void setFactory(Object key, DDIBaseFactory<Object> value, {Object? context}) {
+    _getBeansMapForContext(context)[key] = value;
   }
 
   @override
   Iterable<Object> get keys => _getBeansMap().keys;
 
   @override
-  Iterable<MapEntry<Object, DDIBaseFactory<Object>>> get entries =>
-      _getBeansMap().entries;
+  Iterable<MapEntry<Object, DDIBaseFactory<Object>>> entries(
+      {Object? context}) {
+    return _getBeansMapForContext(context).entries;
+  }
 
   @override
   bool get isEmpty => _getBeansMap().isEmpty;
@@ -109,7 +241,15 @@ final class DartDDIZoneQualifierImpl implements DartDDIQualifier {
   int get length => _getBeansMap().length;
 
   @override
-  DDIBaseFactory<Object>? remove(Object? key) {
+  DDIBaseFactory<Object>? removeFactory(Object? key, {Object? context}) {
+    if (context == _rootContext) {
+      return _globalBeansMap.remove(key);
+    }
+
+    if (context case final Map<Object, DDIBaseFactory<Object>> explicitMap) {
+      return explicitMap.remove(key);
+    }
+
     return _getBeansMap().remove(key);
   }
 }

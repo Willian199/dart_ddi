@@ -10,6 +10,6 @@ class L with PostConstruct, PreDestroy {
 
   @override
   void onPreDestroy() {
-    print("No ideia how to test bro");
+    print("No idea how to test bro");
   }
 }

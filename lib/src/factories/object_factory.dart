@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
+import 'package:dart_ddi/src/utils/interceptor_resolver.dart';
 import 'package:dart_ddi/src/utils/instance_destroy_utils.dart';
 
 /// Creates a unique instance during registration and reuses it in all subsequent requests.
@@ -60,6 +61,7 @@ class ObjectFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   final Completer<void> _created = Completer<void>();
 
   @override
+  @pragma('vm:prefer-inline')
   BeanStateEnum get state => _state;
 
   /// Register the instance in [DDI].
@@ -99,21 +101,18 @@ class ObjectFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       _state = BeanStateEnum.beingCreated;
       if (_interceptors.isNotEmpty) {
         for (final interceptor in _interceptors) {
-          if (ddiInstance.isFuture(qualifier: interceptor)) {
-            final inter = await ddiInstance.getAsync(qualifier: interceptor)
-                as DDIInterceptor;
+          final resolved = InterceptorResolver.resolveAsync(
+            ddiInstance: ddiInstance,
+            qualifier: interceptor,
+          );
+          final DDIInterceptor inter =
+              resolved is Future ? await resolved : resolved;
 
-            _instance = (await inter.onCreate(_instance)) as BeanT;
+          final newInstance = inter.onCreate(_instance);
+          if (newInstance is Future) {
+            _instance = (await newInstance) as BeanT;
           } else {
-            final inter =
-                ddiInstance.get(qualifier: interceptor) as DDIInterceptor;
-
-            final newInstance = inter.onCreate(_instance);
-            if (newInstance is Future) {
-              _instance = (await newInstance) as BeanT;
-            } else {
-              _instance = newInstance as BeanT;
-            }
+            _instance = newInstance as BeanT;
           }
         }
       }
@@ -127,8 +126,14 @@ class ObjectFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
         _decorators.clear();
       }
 
-      if (_instance is DDIModule) {
-        (_instance as DDIModule).moduleQualifier = qualifier;
+      if (_instance case final DDIModule module) {
+        module.moduleQualifier = qualifier;
+
+        final Object? moduleContext = module.contextQualifier;
+        if (moduleContext != null &&
+            !ddiInstance.contextExists(moduleContext)) {
+          ddiInstance.createContext(moduleContext);
+        }
       }
 
       final FutureOr<void> result;
@@ -177,9 +182,16 @@ class ObjectFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
     if (_interceptors.isNotEmpty) {
       for (final interceptor in _interceptors) {
-        final ins = ddiInstance.get(qualifier: interceptor) as DDIInterceptor;
+        final ins = InterceptorResolver.resolveSync(
+          ddiInstance: ddiInstance,
+          qualifier: interceptor,
+        );
 
-        _instance = ins.onGet(_instance) as BeanT;
+        final current = _instance;
+        final next = ins.onGet(current) as BeanT;
+        if (!identical(current, next)) {
+          _instance = next;
+        }
       }
     }
     return _instance;
@@ -205,12 +217,17 @@ class ObjectFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
     if (_interceptors.isNotEmpty) {
       for (final interceptor in _interceptors) {
-        final ins = (await ddiInstance.getAsync(qualifier: interceptor))
-            as DDIInterceptor;
+        final ins = await InterceptorResolver.resolveAsync(
+          ddiInstance: ddiInstance,
+          qualifier: interceptor,
+        );
 
-        final exec = ins.onGet(_instance);
-
-        _instance = (exec is Future ? await exec : exec) as BeanT;
+        final current = _instance;
+        final exec = ins.onGet(current);
+        final next = (exec is Future ? await exec : exec) as BeanT;
+        if (!identical(current, next)) {
+          _instance = next;
+        }
       }
     }
 
@@ -219,18 +236,27 @@ class ObjectFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
   /// Verify if this factory is a Future.
   @override
+  @pragma('vm:prefer-inline')
   bool get isFuture => BeanT is Future;
 
   /// Verify if this factory is ready (Created).
   @override
+  @pragma('vm:prefer-inline')
   bool get isReady => _created.isCompleted && _state == BeanStateEnum.created;
 
+  static const _registeredState = {
+    BeanStateEnum.registered,
+    BeanStateEnum.created,
+    BeanStateEnum.beingCreated,
+  };
+
   @override
-  bool get isRegistered => [
-        BeanStateEnum.registered,
-        BeanStateEnum.created,
-        BeanStateEnum.beingCreated,
-      ].contains(_state);
+  @pragma('vm:prefer-inline')
+  bool get isRegistered => _registeredState.contains(_state);
+
+  @override
+  @pragma('vm:prefer-inline')
+  bool get canDestroy => _canDestroy;
 
   /// Removes this instance from [DDI].
   @override
@@ -264,16 +290,23 @@ class ObjectFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       return Future.value();
     }
 
+    final Object? context = _instance is DDIModule
+        ? (_instance as DDIModule).contextQualifier
+        : null;
+
     if (children.isNotEmpty) {
       final List<Future<void>> futures = [
         for (final Object child in children)
-          ddiInstance.dispose(qualifier: child)
+          ddiInstance.dispose(qualifier: child, context: context)
       ];
 
-      return Future.wait(futures);
+      return Future.wait(futures).then((_) => _destroyContextIfExists(
+            ddiInstance: ddiInstance,
+            context: context,
+          ));
     }
 
-    return Future.value();
+    return _destroyContextIfExists(ddiInstance: ddiInstance, context: context);
   }
 
   /// Allows to dynamically add a Decorators.
@@ -334,7 +367,22 @@ class ObjectFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   }
 
   @override
+  @pragma('vm:prefer-inline')
   Set<Object> get children => _children;
+
+  Future<void> _destroyContextIfExists({
+    required DDI ddiInstance,
+    required Object? context,
+  }) async {
+    if (context == null || !ddiInstance.contextExists(context)) {
+      return;
+    }
+
+    final destroyResult = ddiInstance.destroyContext(context);
+    if (destroyResult is Future) {
+      await destroyResult;
+    }
+  }
 
   void _checkState(Object qualifier) {
     if (_state == BeanStateEnum.beingDestroyed ||

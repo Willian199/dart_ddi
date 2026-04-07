@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
+import 'package:dart_ddi/src/utils/interceptor_resolver.dart';
 
 /// Utility class for destroying instances with proper cleanup and interceptor handling.
 ///
@@ -52,16 +53,16 @@ final class InstanceDestroyUtils {
     if (interceptors.isNotEmpty) {
       for (final interceptor in interceptors) {
         try {
-          if (ddiInstance.isFuture(qualifier: interceptor)) {
-            final inter = (await ddiInstance.getAsync(qualifier: interceptor))
-                as DDIInterceptor;
+          final resolved = InterceptorResolver.resolveAsync(
+            ddiInstance: ddiInstance,
+            qualifier: interceptor,
+          );
+          final DDIInterceptor inter =
+              resolved is Future ? await resolved : resolved;
 
-            await inter.onDestroy(instance);
-          } else {
-            final inter =
-                ddiInstance.get(qualifier: interceptor) as DDIInterceptor;
-
-            inter.onDestroy(instance);
+          final exec = inter.onDestroy(instance);
+          if (exec is Future) {
+            await exec;
           }
         } on BeanNotFoundException {
           // Ignore BeanNotFoundException interceptor error during destruction
@@ -77,21 +78,44 @@ final class InstanceDestroyUtils {
         ddiInstance: ddiInstance,
       );
     } else if (instance is DDIModule) {
+      final Object? moduleContext = instance.contextQualifier;
+
       if (children.isNotEmpty) {
-        final List<Future<void>> futures = [];
-        for (final Object child in children) {
-          futures.add(ddiInstance.destroy(qualifier: child) as Future<void>);
-        }
+        final List<Future<void>> futures = [
+          for (final Object child in children)
+            Future<void>.sync(() {
+              return ddiInstance.destroy(
+                qualifier: child,
+                context: moduleContext,
+              );
+            }),
+        ];
+
         return Future.wait(
           futures,
           eagerError: true,
         ).then(
-          (_) => apply(),
+          (_) async {
+            await _destroyModuleContext(
+              ddiInstance: ddiInstance,
+              context: moduleContext,
+            );
+            apply();
+          },
         );
       }
+
+      return _destroyModuleContext(
+        ddiInstance: ddiInstance,
+        context: moduleContext,
+      ).then((_) => apply());
     }
 
-    _destroyChildren<BeanT>(children: children, ddiInstance: ddiInstance);
+    _destroyChildren<BeanT>(
+      children: children,
+      ddiInstance: ddiInstance,
+      context: instance is DDIModule ? instance.contextQualifier : null,
+    );
     apply();
   }
 
@@ -109,9 +133,10 @@ final class InstanceDestroyUtils {
   static FutureOr<void> _destroyChildren<BeanT extends Object>({
     required Set<Object> children,
     required DDI ddiInstance,
+    Object? context,
   }) {
     for (final Object child in children) {
-      ddiInstance.destroy(qualifier: child);
+      ddiInstance.destroy(qualifier: child, context: context);
     }
   }
 
@@ -139,11 +164,32 @@ final class InstanceDestroyUtils {
     required void Function() apply,
     required DDI ddiInstance,
   }) async {
+    final Object? context =
+        clazz is DDIModule ? (clazz as DDIModule).contextQualifier : null;
+
     for (final Object child in children) {
-      await ddiInstance.destroy(qualifier: child);
+      await ddiInstance.destroy(
+        qualifier: child,
+        context: context,
+      );
     }
 
     await clazz.onPreDestroy();
+    await _destroyModuleContext(ddiInstance: ddiInstance, context: context);
     apply();
+  }
+
+  static Future<void> _destroyModuleContext({
+    required DDI ddiInstance,
+    required Object? context,
+  }) async {
+    if (context == null || !ddiInstance.contextExists(context)) {
+      return;
+    }
+
+    final destroyResult = ddiInstance.destroyContext(context);
+    if (destroyResult is Future) {
+      await destroyResult;
+    }
   }
 }

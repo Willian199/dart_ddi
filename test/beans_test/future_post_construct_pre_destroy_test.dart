@@ -4,6 +4,7 @@ import 'package:dart_ddi/dart_ddi.dart';
 import 'package:test/test.dart';
 
 import '../clazz_samples/l.dart';
+import '../clazz_samples/l_post_construct_only.dart';
 
 void main() {
   group('DDI Future PostConstruct and PreDestroy test', () {
@@ -26,7 +27,7 @@ void main() {
     );
 
     test(
-      'Register a Applcation bean with PostConstruct  and PreDestroy',
+      'Register an Application bean with PostConstruct and PreDestroy',
       () async {
         DDI.instance.application(
           () => Future.delayed(const Duration(milliseconds: 200), L.new),
@@ -41,17 +42,21 @@ void main() {
     );
 
     test(
-      'Register a Dependent bean with PostConstruct  and PreDestroy',
+      'Register a Dependent bean with PostConstruct',
       () async {
         DDI.instance.dependent(
-          () => Future.delayed(const Duration(milliseconds: 200), L.new),
+          () => Future.delayed(
+            const Duration(milliseconds: 200),
+            LPostConstructOnly.new,
+          ),
         );
 
-        final L instance = await DDI.instance.getAsync<L>();
+        final LPostConstructOnly instance =
+            await DDI.instance.getAsync<LPostConstructOnly>();
 
         expect(instance.value, 'abcd');
 
-        DDI.instance.destroy<L>();
+        DDI.instance.destroy<LPostConstructOnly>();
       },
     );
 

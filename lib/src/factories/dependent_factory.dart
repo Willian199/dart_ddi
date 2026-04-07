@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
 import 'package:dart_ddi/src/utils/dependency_validator.dart';
+import 'package:dart_ddi/src/utils/interceptor_resolver.dart';
 import 'package:dart_ddi/src/utils/instance_destroy_utils.dart';
 
 /// Create a new instance every time it is requested.
@@ -65,25 +66,35 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   }
 
   @override
+  @pragma('vm:prefer-inline')
   BeanStateEnum get state => _state;
 
   /// Verify if this factory is a Future.
   @override
+  @pragma('vm:prefer-inline')
   bool get isFuture => _builder.isFuture || BeanT is Future;
 
   /// Verify if this factory is ready (Created).
   @override
+  @pragma('vm:prefer-inline')
   bool get isReady => false;
 
   @override
+  @pragma('vm:prefer-inline')
   bool get isRegistered => BeanStateEnum.registered == _state;
 
   @override
+  @pragma('vm:prefer-inline')
+  bool get canDestroy => _canDestroy;
+
+  @override
+  @pragma('vm:prefer-inline')
   Set<Object> get children => _children;
 
   /// Register the instance in [DDI].
   /// When the instance is ready, must call apply function.
   @override
+  @pragma('vm:prefer-inline')
   Future<void> register({
     required Object qualifier,
     required DDI ddiInstance,
@@ -155,19 +166,21 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
       if (_interceptors.isNotEmpty) {
         for (final interceptor in _interceptors) {
-          dependentClazz = ddiInstance
-              .get<DDIInterceptor>(qualifier: interceptor)
-              .onCreate(dependentClazz) as BeanT;
+          final inter = InterceptorResolver.resolveSync(
+            ddiInstance: ddiInstance,
+            qualifier: interceptor,
+          );
+          dependentClazz = inter.onCreate(dependentClazz) as BeanT;
         }
       }
 
       assert(
-        dependentClazz is! PreDispose || dependentClazz is! Future<PreDispose>,
-        'Dependent instances dont support PreDispose. Use Interceptors instead.',
+        dependentClazz is! PreDispose && dependentClazz is! Future<PreDispose>,
+        'Dependent instances do not support PreDispose. Use Interceptors instead.',
       );
       assert(
-        dependentClazz is! PreDestroy || dependentClazz is! Future<PreDestroy>,
-        'Dependent instances dont support PreDestroy. Use Interceptors instead.',
+        dependentClazz is! PreDestroy && dependentClazz is! Future<PreDestroy>,
+        'Dependent instances do not support PreDestroy. Use Interceptors instead.',
       );
 
       if (_decorators.isNotEmpty) {
@@ -178,6 +191,12 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
       if (dependentClazz is DDIModule) {
         dependentClazz.moduleQualifier = qualifier;
+
+        final Object? moduleContext = dependentClazz.contextQualifier;
+        if (moduleContext != null &&
+            !ddiInstance.contextExists(moduleContext)) {
+          ddiInstance.createContext(moduleContext);
+        }
       }
 
       if (dependentClazz is PostConstruct) {
@@ -192,9 +211,11 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       /// Must run everytime
       if (_interceptors.isNotEmpty) {
         for (final interceptor in _interceptors) {
-          dependentClazz = ddiInstance
-              .get<DDIInterceptor>(qualifier: interceptor)
-              .onGet(dependentClazz) as BeanT;
+          final inter = InterceptorResolver.resolveSync(
+            ddiInstance: ddiInstance,
+            qualifier: interceptor,
+          );
+          dependentClazz = inter.onGet(dependentClazz) as BeanT;
         }
       }
       return dependentClazz;
@@ -249,9 +270,11 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     resolutionMap.add(qualifier);
 
     try {
-      if (!_dependenciesValidated && (_requires?.isEmpty ?? false)) {
+      if (!_dependenciesValidated &&
+          _requires != null &&
+          _requires.isNotEmpty) {
         final validation = DependencyValidator.validateDependenciesAsync(
-          requires: _requires!,
+          requires: _requires,
           ddiInstance: ddiInstance,
         );
 
@@ -269,8 +292,10 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
       /// Run the Interceptor for create process
       for (final interceptor in _interceptors) {
-        final inter = (await ddiInstance.getAsync(qualifier: interceptor))
-            as DDIInterceptor;
+        final inter = await InterceptorResolver.resolveAsync(
+          ddiInstance: ddiInstance,
+          qualifier: interceptor,
+        );
 
         final exec = inter.onCreate(dependentClazz);
 
@@ -278,12 +303,12 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       }
 
       assert(
-        dependentClazz is! PreDispose || dependentClazz is! Future<PreDispose>,
-        'Dependent instances dont support PreDispose. Use Interceptors instead.',
+        dependentClazz is! PreDispose && dependentClazz is! Future<PreDispose>,
+        'Dependent instances do not support PreDispose. Use Interceptors instead.',
       );
       assert(
-        dependentClazz is! PreDestroy || dependentClazz is! Future<PreDestroy>,
-        'Dependent instances dont support PreDestroy. Use Interceptors instead.',
+        dependentClazz is! PreDestroy && dependentClazz is! Future<PreDestroy>,
+        'Dependent instances do not support PreDestroy. Use Interceptors instead.',
       );
 
       if (_decorators.isNotEmpty) {
@@ -295,6 +320,12 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       /// Refresh the qualifier for the Module
       if (dependentClazz is DDIModule) {
         dependentClazz.moduleQualifier = qualifier;
+
+        final Object? moduleContext = dependentClazz.contextQualifier;
+        if (moduleContext != null &&
+            !ddiInstance.contextExists(moduleContext)) {
+          ddiInstance.createContext(moduleContext);
+        }
       }
 
       if (dependentClazz is PostConstruct) {
@@ -309,8 +340,10 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       /// Run the Interceptors for the GET process.
       /// Must run everytime
       for (final interceptor in _interceptors) {
-        final inter = (await ddiInstance.getAsync(qualifier: interceptor))
-            as DDIInterceptor;
+        final inter = await InterceptorResolver.resolveAsync(
+          ddiInstance: ddiInstance,
+          qualifier: interceptor,
+        );
 
         final exec = inter.onGet(dependentClazz);
 

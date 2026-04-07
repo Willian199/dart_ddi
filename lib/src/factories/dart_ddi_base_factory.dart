@@ -101,6 +101,9 @@ abstract class DDIBaseFactory<BeanT extends Object> with InstanceFactoryMixin {
   /// Returns `true` if the factory is registered, `false` otherwise.
   bool get isRegistered;
 
+  /// Indicates whether this factory supports destroy/removal from container.
+  bool get canDestroy;
+
   /// Destroys this factory instance and cleans up resources.
   ///
   /// The [apply] function is called after successful destruction to

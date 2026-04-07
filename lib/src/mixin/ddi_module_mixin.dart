@@ -28,6 +28,12 @@ mixin DDIModule implements PostConstruct {
     _internalQualifier = value;
   }
 
+  /// Optional context used to register and resolve the module children.
+  ///
+  /// Override this when the module should keep its beans in a dedicated
+  /// contextual registry instead of the global registry.
+  Object? get contextQualifier => null;
+
   /// Getter for the DDI instance to use.
   ///
   /// By default, returns [DDI.instance]. Classes using this mixin can override
@@ -80,6 +86,7 @@ mixin DDIModule implements PostConstruct {
     final bean = ddiContainer.singleton<BeanT>(
       clazzRegister,
       qualifier: qualifier,
+      context: contextQualifier,
       decorators: decorators,
       interceptors: interceptors,
       canDestroy: canDestroy,
@@ -95,7 +102,9 @@ mixin DDIModule implements PostConstruct {
     }
 
     ddiContainer.addChildModules(
-        child: qualifier ?? BeanT, qualifier: moduleQualifier);
+      child: qualifier ?? BeanT,
+      qualifier: moduleQualifier,
+    );
 
     return bean;
   }
@@ -124,6 +133,7 @@ mixin DDIModule implements PostConstruct {
     final bean = ddiContainer.application<BeanT>(
       clazzRegister,
       qualifier: qualifier,
+      context: contextQualifier,
       decorators: decorators,
       interceptors: interceptors,
       canDestroy: canDestroy,
@@ -139,7 +149,9 @@ mixin DDIModule implements PostConstruct {
     }
 
     ddiContainer.addChildModules(
-        child: qualifier ?? BeanT, qualifier: moduleQualifier);
+      child: qualifier ?? BeanT,
+      qualifier: moduleQualifier,
+    );
 
     return bean;
   }
@@ -168,6 +180,7 @@ mixin DDIModule implements PostConstruct {
     final bean = ddiContainer.dependent<BeanT>(
       clazzRegister,
       qualifier: qualifier,
+      context: contextQualifier,
       decorators: decorators,
       interceptors: interceptors,
       canDestroy: canDestroy,
@@ -183,7 +196,9 @@ mixin DDIModule implements PostConstruct {
     }
 
     ddiContainer.addChildModules(
-        child: qualifier ?? BeanT, qualifier: moduleQualifier);
+      child: qualifier ?? BeanT,
+      qualifier: moduleQualifier,
+    );
 
     return bean;
   }
@@ -213,6 +228,7 @@ mixin DDIModule implements PostConstruct {
     final bean = ddiContainer.object<BeanT>(
       instance,
       qualifier: qualifier,
+      context: contextQualifier,
       decorators: decorators,
       interceptors: interceptors,
       canDestroy: canDestroy,
@@ -228,7 +244,9 @@ mixin DDIModule implements PostConstruct {
     }
 
     ddiContainer.addChildModules(
-        child: qualifier ?? BeanT, qualifier: moduleQualifier);
+      child: qualifier ?? BeanT,
+      qualifier: moduleQualifier,
+    );
 
     return bean;
   }
@@ -248,6 +266,7 @@ mixin DDIModule implements PostConstruct {
     final bean = ddiContainer.register(
       factory: factory,
       qualifier: qualifier,
+      context: contextQualifier,
       canRegister: canRegister,
     );
 
@@ -258,7 +277,9 @@ mixin DDIModule implements PostConstruct {
     }
 
     ddiContainer.addChildModules(
-        child: qualifier ?? BeanT, qualifier: moduleQualifier);
+      child: qualifier ?? BeanT,
+      qualifier: moduleQualifier,
+    );
 
     return bean;
   }

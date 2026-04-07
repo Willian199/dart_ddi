@@ -4,6 +4,7 @@ import 'package:test/test.dart';
 import '../clazz_samples/a.dart';
 import '../clazz_samples/b.dart';
 import '../clazz_samples/c.dart';
+import '../clazz_samples/required_dependencies_probes.dart';
 
 void main() {
   group('DDI required Dependencies Tests', () {
@@ -402,6 +403,53 @@ void main() {
     });
 
     group('Required Dependencies with Async', () {
+      test(
+          'ApplicationFactory getAsyncWith should validate missing required dependency before creating the bean',
+          () async {
+        ddi.register<AsyncRequiresProbe>(
+          factory: ApplicationFactory(
+            builder: AsyncRequiresProbe.new.builder,
+            requires: {'missing-dependency'},
+          ),
+        );
+
+        await expectLater(
+          ddi.getAsync<AsyncRequiresProbe>(),
+          throwsA(isA<MissingDependenciesException>()),
+        );
+
+        ddi.destroy<AsyncRequiresProbe>();
+        expect(ddi.isRegistered<AsyncRequiresProbe>(), false);
+      });
+
+      test(
+          'DependentFactory getAsyncWith should await async required dependencies before creating the bean',
+          () async {
+        var dependencyReady = false;
+
+        ddi.application<AsyncDependencyProbe>(
+          () async {
+            await Future<void>.delayed(const Duration(milliseconds: 1));
+            dependencyReady = true;
+            return const AsyncDependencyProbe();
+          },
+          qualifier: 'async-dependency',
+        );
+
+        ddi.register<RequiresReadyStateProbe>(
+          factory: DependentFactory(
+            builder: (() => RequiresReadyStateProbe(dependencyReady)).builder,
+            requires: {'async-dependency'},
+          ),
+        );
+
+        final instance = await ddi.getAsync<RequiresReadyStateProbe>();
+        expect(instance.dependencyWasReadyWhenCreated, isTrue);
+
+        ddi.destroy<RequiresReadyStateProbe>();
+        ddi.destroy<AsyncDependencyProbe>(qualifier: 'async-dependency');
+      });
+
       test('Should wait for async dependencies in getAsyncWith', () async {
         ddi.singleton<C>(C.new);
         ddi.singleton<B>(() async => B(ddi()));

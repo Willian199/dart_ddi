@@ -1,30 +1,8 @@
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:test/test.dart';
 
+import '../clazz_samples/instance_interceptor_samples.dart';
 import '../clazz_samples/test_service.dart';
-
-/// Interceptor that tracks get calls
-class TrackingInterceptor extends DDIInterceptor<TestService> {
-  int getCallCount = 0;
-  int createCallCount = 0;
-
-  @override
-  TestService onCreate(TestService instance) {
-    createCallCount++;
-    return instance;
-  }
-
-  @override
-  TestService onGet(TestService instance) {
-    getCallCount++;
-    return instance;
-  }
-
-  @override
-  void onDestroy(TestService? instance) {
-    // Track destruction
-  }
-}
 
 /// Decorator that tracks calls
 int decoratorCallCount = 0;

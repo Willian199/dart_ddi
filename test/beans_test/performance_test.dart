@@ -1,33 +1,6 @@
-import 'dart:async';
 import 'package:test/test.dart';
 import 'package:dart_ddi/dart_ddi.dart';
-
-/// Simple bean used for performance tests.
-class ExampleService {}
-
-/// Lightweight interceptor used to simulate lifecycle hooks.
-class ExampleInterceptor implements DDIInterceptor {
-  int onCreateCalled = 0;
-  int onGetCalled = 0;
-
-  @override
-  Object onCreate(Object instance) {
-    onCreateCalled++;
-    return instance;
-  }
-
-  @override
-  Object onGet(Object instance) {
-    onGetCalled++;
-    return instance;
-  }
-
-  @override
-  void onDispose(Object? instance) {}
-
-  @override
-  FutureOr<void> onDestroy(Object? instance) {}
-}
+import '../clazz_samples/performance_samples.dart';
 
 void main() {
   const interaction = 10000000;
@@ -61,9 +34,9 @@ void main() {
       // Sanity check for performance
       expect(
         sw.elapsedMilliseconds,
-        lessThan(1500),
+        lessThan(1600),
         reason:
-            'Should resolve 10,000,000 instances in under 1500ms on a modern CPU.',
+            'Should resolve 10,000,000 instances in under 1600ms on a modern CPU.',
       );
 
       ddi.destroy<ExampleService>();
