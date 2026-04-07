@@ -133,5 +133,74 @@ void main() {
         );
       });
     });
+
+    group('Context Exceptions', () {
+      test('ContextNotFoundException should keep context and message', () {
+        const exception = ContextNotFoundException('ctx-missing');
+        expect(exception.context, equals('ctx-missing'));
+        expect(exception.toString(),
+            equals('Context "ctx-missing" was not found.'));
+      });
+
+      test('DuplicatedContextException should keep context and message', () {
+        const exception = DuplicatedContextException('ctx-dup');
+        expect(exception.context, equals('ctx-dup'));
+        expect(
+          exception.toString(),
+          equals('Context "ctx-dup" is already registered.'),
+        );
+      });
+
+      test('ContextFrozenException should keep data and message', () {
+        const exception = ContextFrozenException(
+          context: 'ctx-frozen',
+          operation: 'register',
+        );
+        expect(exception.context, equals('ctx-frozen'));
+        expect(exception.operation, equals('register'));
+        expect(
+          exception.toString(),
+          equals(
+            'Context "ctx-frozen" is frozen. Operation "register" is not allowed.',
+          ),
+        );
+      });
+
+      test('ContextBeingDestroyedException should keep data and message', () {
+        const exception = ContextBeingDestroyedException(
+          context: 'ctx-destroying',
+          operation: 'createContext',
+        );
+        expect(exception.context, equals('ctx-destroying'));
+        expect(exception.operation, equals('createContext'));
+        expect(
+          exception.toString(),
+          equals(
+            'Context "ctx-destroying" is being destroyed. Operation "createContext" is not allowed.',
+          ),
+        );
+      });
+
+      test('ContextDestroyBlockedException should keep data and message', () {
+        const exception = ContextDestroyBlockedException('ctx-locked');
+        expect(exception.context, equals('ctx-locked'));
+        expect(
+          exception.toString(),
+          equals('Context "ctx-locked" contains non-destroyable factories.'),
+        );
+      });
+
+      test('ContextDestroyIncompleteException should keep data and message',
+          () {
+        const exception = ContextDestroyIncompleteException('ctx-incomplete');
+        expect(exception.context, equals('ctx-incomplete'));
+        expect(
+          exception.toString(),
+          equals(
+            'Context "ctx-incomplete" still contains factories after destroy operation.',
+          ),
+        );
+      });
+    });
   });
 }

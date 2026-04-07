@@ -136,5 +136,54 @@ void main() {
         );
       },
     );
+
+    test('runInContext should restore root context after sync exception',
+        () async {
+      final newDdi = DDI.newInstance();
+
+      await newDdi.singleton<String>(() => 'root', qualifier: 'message');
+
+      expect(
+        () => newDdi.runInContext('sync-error-context', () {
+          newDdi.singleton<String>(() => 'context', qualifier: 'message');
+          throw StateError('sync-failure');
+        }),
+        throwsA(isA<StateError>()),
+      );
+
+      expect(newDdi.get<String>(qualifier: 'message'), equals('root'));
+      expect(
+        newDdi.isRegistered<String>(
+          qualifier: 'message',
+          context: 'sync-error-context',
+        ),
+        isFalse,
+      );
+    });
+
+    test('runInContext should restore root context after async exception',
+        () async {
+      final newDdi = DDI.newInstance();
+
+      await newDdi.singleton<String>(() => 'root', qualifier: 'message');
+
+      await expectLater(
+        newDdi.runInContext('async-error-context', () async {
+          await newDdi.singleton<String>(() => 'context', qualifier: 'message');
+          await Future<void>.delayed(const Duration(milliseconds: 1));
+          throw StateError('async-failure');
+        }),
+        throwsA(isA<StateError>()),
+      );
+
+      expect(newDdi.get<String>(qualifier: 'message'), equals('root'));
+      expect(
+        newDdi.isRegistered<String>(
+          qualifier: 'message',
+          context: 'async-error-context',
+        ),
+        isFalse,
+      );
+    });
   });
 }

@@ -188,3 +188,57 @@ class SlowDestroyFactory extends DDIBaseFactory<SlowDestroyBean> {
   @override
   Future<void> dispose({required DDI ddiInstance}) async {}
 }
+
+class IncompleteDestroyFactory extends DDIBaseFactory<ContextManagementBean> {
+  IncompleteDestroyFactory() : super(selector: null);
+
+  @override
+  BeanStateEnum get state => BeanStateEnum.created;
+
+  @override
+  bool get isFuture => false;
+
+  @override
+  bool get isReady => true;
+
+  @override
+  bool get isRegistered => true;
+
+  @override
+  bool get canDestroy => true;
+
+  @override
+  Future<void> register({
+    required Object qualifier,
+    required DDI ddiInstance,
+  }) async {}
+
+  @override
+  ContextManagementBean getWith<ParameterT extends Object>({
+    required Object qualifier,
+    required DDI ddiInstance,
+    ParameterT? parameter,
+  }) {
+    return const ContextManagementBean('incomplete');
+  }
+
+  @override
+  Future<ContextManagementBean> getAsyncWith<ParameterT extends Object>({
+    required Object qualifier,
+    required DDI ddiInstance,
+    ParameterT? parameter,
+  }) async {
+    return const ContextManagementBean('incomplete');
+  }
+
+  @override
+  FutureOr<void> destroy({
+    required void Function() apply,
+    required DDI ddiInstance,
+  }) {
+    // Intentionally does not call apply to keep registration alive.
+  }
+
+  @override
+  Future<void> dispose({required DDI ddiInstance}) async {}
+}

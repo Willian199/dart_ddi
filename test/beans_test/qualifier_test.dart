@@ -378,6 +378,99 @@ void main() {
           isNull,
         );
       });
+
+      test('restoreContext should fallback to root when context does not exist',
+          () {
+        final qualifier = DartDDIDefaultQualifierImpl();
+        final rootContext = qualifier.currentContext;
+
+        qualifier.createContext('temp');
+        expect(qualifier.currentContext, equals('temp'));
+
+        qualifier.restoreContext('unknown-context');
+        expect(qualifier.currentContext, equals(rootContext));
+      });
+
+      test('runWithContext should restore previous context on sync error', () {
+        final qualifier = DartDDIDefaultQualifierImpl();
+        final rootContext = qualifier.currentContext;
+
+        expect(
+          () => qualifier.runWithContext('ctx-sync', () {
+            throw StateError('sync-error');
+          }),
+          throwsA(isA<StateError>()),
+        );
+        expect(qualifier.currentContext, equals(rootContext));
+      });
+
+      test('runWithContext should restore previous context on async error',
+          () async {
+        final qualifier = DartDDIDefaultQualifierImpl();
+        final rootContext = qualifier.currentContext;
+
+        await expectLater(
+          qualifier.runWithContext<Future<void>>('ctx-async', () async {
+            throw StateError('async-error');
+          }),
+          throwsA(isA<StateError>()),
+        );
+        expect(qualifier.currentContext, equals(rootContext));
+      });
+
+      test('freezeContext should throw for unknown context', () {
+        final qualifier = DartDDIDefaultQualifierImpl();
+
+        expect(
+          () => qualifier.freezeContext('missing-context'),
+          throwsA(isA<ContextNotFoundException>()),
+        );
+      });
+
+      test('destroyContext should throw for root context', () {
+        final qualifier = DartDDIDefaultQualifierImpl();
+        final rootContext = qualifier.currentContext;
+
+        expect(
+          () => qualifier.destroyContext(rootContext),
+          throwsA(isA<ArgumentError>()),
+        );
+      });
+
+      test('destroyContext should throw for unknown context', () {
+        final qualifier = DartDDIDefaultQualifierImpl();
+
+        expect(
+          () => qualifier.destroyContext('missing-context'),
+          throwsA(isA<ContextNotFoundException>()),
+        );
+      });
+
+      test(
+          'contextHasDestroyBlockers should be recalculated when replacing non-destroyable factory',
+          () {
+        final qualifier = DartDDIDefaultQualifierImpl();
+        qualifier.createContext('ctx-blockers');
+
+        qualifier.setFactory(
+          'service',
+          ApplicationFactory<TestService>(
+            builder: TestService.new.builder,
+            canDestroy: false,
+          ),
+          context: 'ctx-blockers',
+        );
+        expect(qualifier.contextHasDestroyBlockers('ctx-blockers'), isTrue);
+
+        qualifier.setFactory(
+          'service',
+          ApplicationFactory<TestService>(
+            builder: TestService.new.builder,
+          ),
+          context: 'ctx-blockers',
+        );
+        expect(qualifier.contextHasDestroyBlockers('ctx-blockers'), isFalse);
+      });
     });
 
     group('DartDDIZoneQualifierImpl', () {
@@ -562,6 +655,106 @@ void main() {
           expect(qualifier.length, 1);
           qualifier.setFactory('qualifier1', factory);
           expect(qualifier.length, 2);
+        });
+      });
+
+      test('createContext and restoreContext should be no-op', () {
+        final qualifier = DartDDIZoneQualifierImpl();
+
+        expect(() => qualifier.createContext('ignored'), returnsNormally);
+        expect(() => qualifier.restoreContext('ignored'), returnsNormally);
+      });
+
+      test('hasContextQualifier should return false for unknown root name', () {
+        final qualifier = DartDDIZoneQualifierImpl();
+
+        expect(qualifier.hasContextQualifier('missing-zone'), isFalse);
+      });
+
+      test(
+          'hasContextQualifier should return true when zone map is non-empty even if name differs',
+          () {
+        final qualifier = DartDDIZoneQualifierImpl();
+        final factory = ApplicationFactory<TestService>(
+          builder: TestService.new.builder,
+        );
+
+        qualifier.runWithContext('zone-a', () {
+          qualifier.setFactory('service', factory);
+          expect(qualifier.hasContextQualifier('zone-b'), isTrue);
+          return Object();
+        });
+      });
+
+      test('contextDestroyOrder should be empty for missing context', () {
+        final qualifier = DartDDIZoneQualifierImpl();
+
+        expect(qualifier.contextDestroyOrder('missing').isEmpty, isTrue);
+      });
+
+      test('contextHasDestroyBlockers should inspect root and explicit maps',
+          () {
+        final qualifier = DartDDIZoneQualifierImpl();
+        final nonDestroyable = ApplicationFactory<TestService>(
+          builder: TestService.new.builder,
+          canDestroy: false,
+        );
+        final explicitMap = <Object, DDIBaseFactory<Object>>{
+          'service': nonDestroyable as DDIBaseFactory<Object>,
+        };
+        final rootContext = qualifier.currentContext;
+
+        qualifier.setFactory(
+          'service',
+          nonDestroyable,
+          context: rootContext,
+        );
+
+        expect(qualifier.contextHasDestroyBlockers(rootContext), isTrue);
+        expect(qualifier.contextHasDestroyBlockers(explicitMap), isTrue);
+        expect(qualifier.contextHasDestroyBlockers('missing'), isFalse);
+      });
+
+      test('destroyContext should clear explicit map context', () {
+        final qualifier = DartDDIZoneQualifierImpl();
+        final explicitMap = <Object, DDIBaseFactory<Object>>{
+          'service': ApplicationFactory<TestService>(
+            builder: TestService.new.builder,
+          ) as DDIBaseFactory<Object>,
+        };
+
+        qualifier.destroyContext(explicitMap);
+        expect(explicitMap, isEmpty);
+      });
+
+      test('destroyContext should throw for root and unknown context', () {
+        final qualifier = DartDDIZoneQualifierImpl();
+        final rootContext = qualifier.currentContext;
+
+        expect(
+          () => qualifier.destroyContext(rootContext),
+          throwsA(isA<ArgumentError>()),
+        );
+        expect(
+          () => qualifier.destroyContext('missing-zone'),
+          throwsA(isA<ContextNotFoundException>()),
+        );
+      });
+
+      test(
+          'removeFactory should fallback to current zone map for unknown context',
+          () {
+        final qualifier = DartDDIZoneQualifierImpl();
+        final factory = ApplicationFactory<TestService>(
+          builder: TestService.new.builder,
+        );
+
+        qualifier.runWithContext('zone-rm', () {
+          qualifier.setFactory('service', factory);
+          final removed =
+              qualifier.removeFactory('service', context: 'unknown-context');
+          expect(removed, same(factory));
+          return Object();
         });
       });
     });

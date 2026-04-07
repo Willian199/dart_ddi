@@ -50,6 +50,15 @@ void main() {
           ddi.isRegistered<ContextManagementBean>(context: 'feature'), isFalse);
     });
 
+    test('destroyContext should throw when context does not exist', () async {
+      final ddi = DDI.newInstance();
+
+      await expectLater(
+        Future<void>.sync(() => ddi.destroyContext('missing-context')),
+        throwsA(isA<ContextNotFoundException>()),
+      );
+    });
+
     test('destroyContext should destroy deepest child factories first',
         () async {
       final ddi = DDI.newInstance();
@@ -477,6 +486,41 @@ void main() {
     });
 
     test(
+        'destroyContext should block createContext for the same context while destroy is in progress',
+        () async {
+      final ddi = DDI.newInstance();
+      ddi.createContext('busy-create-context');
+
+      final destroyStarted = Completer<void>();
+      final releaseDestroy = Completer<void>();
+
+      await ddi.register<SlowDestroyBean>(
+        factory: SlowDestroyFactory(
+          destroyStarted: destroyStarted,
+          releaseDestroy: releaseDestroy,
+        ),
+        qualifier: 'slow',
+        context: 'busy-create-context',
+      );
+
+      final destroyFuture = Future<void>.sync(
+        () => ddi.destroyContext('busy-create-context'),
+      );
+
+      await destroyStarted.future;
+
+      expect(
+        () => ddi.createContext('busy-create-context'),
+        throwsA(isA<ContextBeingDestroyedException>()),
+      );
+
+      releaseDestroy.complete();
+      await destroyFuture;
+
+      expect(ddi.contextExists('busy-create-context'), isFalse);
+    });
+
+    test(
         'destroyContext should block register in child context while parent destroy is in progress',
         () async {
       final ddi = DDI.newInstance();
@@ -551,6 +595,33 @@ void main() {
       await firstDestroy;
 
       expect(ddi.contextExists('reentrant-context'), isFalse);
+    });
+
+    test(
+        'destroyContext should throw ContextDestroyIncompleteException when factories remain registered',
+        () async {
+      final ddi = DDI.newInstance();
+      ddi.createContext('incomplete-context');
+
+      await ddi.register<ContextManagementBean>(
+        factory: IncompleteDestroyFactory(),
+        qualifier: 'stuck',
+        context: 'incomplete-context',
+      );
+
+      await expectLater(
+        ddi.destroyContext('incomplete-context'),
+        throwsA(isA<ContextDestroyIncompleteException>()),
+      );
+
+      expect(ddi.contextExists('incomplete-context'), isTrue);
+      expect(
+        ddi.isRegistered<ContextManagementBean>(
+          qualifier: 'stuck',
+          context: 'incomplete-context',
+        ),
+        isTrue,
+      );
     });
   });
 }

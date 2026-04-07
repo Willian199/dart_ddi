@@ -205,5 +205,24 @@ void main() {
         );
       },
     );
+
+    test(
+      'runInContext should cleanup zone beans even when body throws synchronously',
+      () async {
+        final localDdi = DDI.newInstance(enableZoneRegistry: true);
+
+        await localDdi.singleton<String>(() => 'root', qualifier: 'message');
+
+        expect(
+          () => localDdi.runInContext('zone-error', () {
+            localDdi.singleton<String>(() => 'zone', qualifier: 'message');
+            throw StateError('zone-failure');
+          }),
+          throwsA(isA<StateError>()),
+        );
+
+        expect(localDdi.get<String>(qualifier: 'message'), equals('root'));
+      },
+    );
   });
 }
