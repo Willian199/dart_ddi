@@ -132,6 +132,18 @@ void main() {
           'Instance with Type TestService was garbage collected. It will be re-created automatically.',
         );
       });
+
+      test('should behave as Exception when thrown and caught', () {
+        try {
+          throw const WeakReferenceCollectedException('WeakBean');
+        } catch (error) {
+          expect(error, isA<WeakReferenceCollectedException>());
+          expect(
+            error.toString(),
+            'Instance with Type WeakBean was garbage collected. It will be re-created automatically.',
+          );
+        }
+      });
     });
 
     group('Context Exceptions', () {
