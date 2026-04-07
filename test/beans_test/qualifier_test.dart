@@ -672,7 +672,7 @@ void main() {
       });
 
       test(
-          'hasContextQualifier should return true when zone map is non-empty even if name differs',
+          'hasContextQualifier should return false when name differs even if zone map is non-empty',
           () {
         final qualifier = DartDDIZoneQualifierImpl();
         final factory = ApplicationFactory<TestService>(
@@ -681,7 +681,8 @@ void main() {
 
         qualifier.runWithContext('zone-a', () {
           qualifier.setFactory('service', factory);
-          expect(qualifier.hasContextQualifier('zone-b'), isTrue);
+          expect(qualifier.hasContextQualifier('zone-a'), isTrue);
+          expect(qualifier.hasContextQualifier('zone-b'), isFalse);
           return Object();
         });
       });

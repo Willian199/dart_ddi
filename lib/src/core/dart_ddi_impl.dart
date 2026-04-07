@@ -526,11 +526,11 @@ class _DDIImpl implements DDI, DDIInternal {
   }
 
   @override
-  List<Object> getByType<BeanT extends Object>() {
+  List<Object> getByType<BeanT extends Object>({Object? context}) {
     final Type type = BeanT;
 
     return _beans
-        .entries()
+        .entries(context: context)
         .where((element) => element.value.type == type)
         .map((e) => e.key)
         .toList();
@@ -584,14 +584,18 @@ class _DDIImpl implements DDI, DDIInternal {
   }
 
   @override
-  void destroyByType<BeanT extends Object>([Object? context]) {
+  void destroyByType<BeanT extends Object>({Object? context}) {
     final Object effectiveContext = context ?? _beans.currentContext;
     _validateContextState(
       context: effectiveContext,
       operation: 'destroyByType',
     );
 
-    final keys = getByType<BeanT>();
+    final keys = _beans
+        .entries(context: context)
+        .where((entry) => entry.value.type == BeanT)
+        .map((entry) => entry.key)
+        .toList();
 
     for (final key in keys) {
       _destroy(
@@ -627,13 +631,14 @@ class _DDIImpl implements DDI, DDIInternal {
   }
 
   @override
-  void disposeByType<BeanT extends Object>() {
+  void disposeByType<BeanT extends Object>({Object? context}) {
+    final Object effectiveContext = context ?? currentContext;
     _validateContextState(
-      context: currentContext,
+      context: effectiveContext,
       operation: 'disposeByType',
     );
 
-    for (final MapEntry(key: _, :value) in _beans.entries()) {
+    for (final MapEntry(key: _, :value) in _beans.entries(context: context)) {
       value.dispose(ddiInstance: this);
     }
   }
@@ -642,10 +647,17 @@ class _DDIImpl implements DDI, DDIInternal {
   FutureOr<void> addDecorator<BeanT extends Object>(
     List<BeanT Function(BeanT)> decorators, {
     Object? qualifier,
+    Object? context,
   }) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
+    final Object effectiveContext = context ?? currentContext;
+    final bool fallbackToRoot = context == null && _beans.hasContext;
 
-    final located = _beans.getFactory<BeanT>(qualifier: effectiveQualifierName);
+    final located = _beans.getFactory<BeanT>(
+      qualifier: effectiveQualifierName,
+      contextQualifier: effectiveContext,
+      fallback: fallbackToRoot,
+    );
     if (located != null) {
       _validateContextState(
         context: located.context,
@@ -670,10 +682,17 @@ class _DDIImpl implements DDI, DDIInternal {
   void addInterceptor<BeanT extends Object>(
     Set<Object>? interceptors, {
     Object? qualifier,
+    Object? context,
   }) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
+    final Object effectiveContext = context ?? currentContext;
+    final bool fallbackToRoot = context == null && _beans.hasContext;
 
-    final located = _beans.getFactory<BeanT>(qualifier: effectiveQualifierName);
+    final located = _beans.getFactory<BeanT>(
+      qualifier: effectiveQualifierName,
+      contextQualifier: effectiveContext,
+      fallback: fallbackToRoot,
+    );
     if (located != null) {
       _validateContextState(
         context: located.context,
@@ -698,10 +717,17 @@ class _DDIImpl implements DDI, DDIInternal {
   void addChildrenModules<BeanT extends Object>({
     required Set<Object> child,
     Object? qualifier,
+    Object? context,
   }) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
+    final Object effectiveContext = context ?? currentContext;
+    final bool fallbackToRoot = context == null && _beans.hasContext;
 
-    final located = _beans.getFactory<BeanT>(qualifier: effectiveQualifierName);
+    final located = _beans.getFactory<BeanT>(
+      qualifier: effectiveQualifierName,
+      contextQualifier: effectiveContext,
+      fallback: fallbackToRoot,
+    );
     if (located != null) {
       _validateContextState(
         context: located.context,
@@ -722,9 +748,19 @@ class _DDIImpl implements DDI, DDIInternal {
   }
 
   @override
-  Set<Object> getChildren<BeanT extends Object>({Object? qualifier}) {
-    final factory =
-        _beans.getFactory<BeanT>(qualifier: qualifier ?? BeanT)?.factory;
+  Set<Object> getChildren<BeanT extends Object>({
+    Object? qualifier,
+    Object? context,
+  }) {
+    final Object effectiveContext = context ?? currentContext;
+    final bool fallbackToRoot = context == null && _beans.hasContext;
+    final factory = _beans
+        .getFactory<BeanT>(
+          qualifier: qualifier ?? BeanT,
+          contextQualifier: effectiveContext,
+          fallback: fallbackToRoot,
+        )
+        ?.factory;
     if (factory case final DDIScopeFactory<BeanT> f?) {
       return f.children;
     }

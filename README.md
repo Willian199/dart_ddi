@@ -166,7 +166,7 @@ await ddi.register<MyService>(
     builder: MyService.new.builder,
     canDestroy: true,
     decorators: [(instance) => ModifiedService(instance)],
-    interceptors: {MyInterceptor()},
+    interceptors: {MyInterceptor},
   ),
 );
 
@@ -1151,3 +1151,30 @@ class MyController with DDIComponentInject<MyComponent, MyModule> {
   }
 }
 ```	
+
+## Context Behavior Matrix
+
+The table below summarizes how each relevant API behaves with context.
+
+| Method | Explicit `context:` supported? | Automatic fallback? | Behavior without explicit `context:` | Notes |
+| --- | --- | --- | --- | --- |
+| `runInContext(name, body)` | N/A | N/A | Runs in a new context and auto-cleans context beans when body completes | Default strategy restores previous context after completion/failure |
+| `createContext(context)` | N/A | N/A | Creates/activates a named context | For default strategy, context must not already exist |
+| `destroyContext(context)` | N/A | N/A | Destroys the context tree (deepest to parent) | Blocked when any factory in tree has `canDestroy: false` |
+| `freezeContext(context)` / `unfreezeContext(context)` / `isContextFrozen(context)` | N/A | N/A | Operates on the named context | Frozen context blocks mutating operations only |
+| `register(..., context: ...)` and scope helpers (`singleton`, `application`, `dependent`, `object`) | Yes | No | Registers in current context | With explicit `context:`, context must exist (`ContextNotFoundException` otherwise) |
+| `getWith(..., context: ...)` | Yes | Yes | Resolves from current context | Fallback uses parent/root chain depending strategy |
+| `getAsyncWith(..., context: ...)` | Yes | Yes | Resolves from current context | Fallback uses parent/root chain depending strategy |
+| `get(...)` / `getAsync(...)` | No | Yes (via current context resolution) | Resolves from current context | Use `getWith/getAsyncWith` for explicit context |
+| `isRegistered(..., context: ...)` | Yes | Only when `context` is omitted | Checks current context, then fallback when applicable | Explicit `context:` stays scoped to that context |
+| `isReady(..., context: ...)` / `isFuture(..., context: ...)` | Yes | Only when `context` is omitted | Checks current context, then fallback when applicable | Explicit `context:` stays scoped to that context |
+| `getByType<T>(context?)` | Yes | No | Returns qualifiers from current context entries when omitted | Never falls back; explicit `context` is strict |
+| `destroy(..., context: ...)` | Yes | Only when `context` is omitted | Destroys in current context, with fallback when applicable | Explicit `context:` does not fallback |
+| `destroyByType<T>(context?)` | Yes (positional) | No | Uses current context when omitted | With explicit context, affects only that context |
+| `dispose(..., context: ...)` | Yes | Only when `context` is omitted | Disposes in current context, with fallback when applicable | Explicit `context:` does not fallback |
+| `disposeByType<T>(context?)` | Yes | No | Disposes entries from current context only when omitted | Never falls back; explicit `context` is strict |
+| `addDecorator<T>(..., qualifier, context?)` | Yes | Explicit `context`: No. Omitted `context`: Yes | Resolves target bean from current context lookup | Use explicit `context` to target one registry only |
+| `addInterceptor<T>(..., qualifier, context?)` | Yes | Explicit `context`: No. Omitted `context`: Yes | Resolves target bean from current context lookup | Use explicit `context` to target one registry only |
+| `addChildrenModules<T>(..., qualifier, context?)` | Yes | Explicit `context`: No. Omitted `context`: Yes | Resolves target module from current context lookup | Use explicit `context` to target one registry only |
+| `getChildren<T>(qualifier, context?)` | Yes | Explicit `context`: No. Omitted `context`: Yes | Resolves from current context lookup | Use explicit `context` for strict contextual read |
+| `getInstance<T>(...)` | No explicit `context` parameter | N/A (captures context token) | Captures current context at wrapper creation time | Later `get()/getAsync()` in wrapper resolves against captured context |

@@ -1,16 +1,6 @@
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:test/test.dart';
-
-class _AsyncPreDestroyBean with PreDestroy {
-  _AsyncPreDestroyBean(this.origin);
-
-  final String origin;
-
-  @override
-  Future<void> onPreDestroy() async {
-    await Future<void>.delayed(const Duration(milliseconds: 1));
-  }
-}
+import '../clazz_samples/default_context_async_pre_destroy_bean.dart';
 
 void main() {
   group('DDI Default Context Tests', () {
@@ -116,14 +106,14 @@ void main() {
       () async {
         final newDdi = DDI.newInstance();
 
-        await newDdi.object<_AsyncPreDestroyBean>(
-          _AsyncPreDestroyBean('root'),
+        await newDdi.object<DefaultContextAsyncPreDestroyBean>(
+          DefaultContextAsyncPreDestroyBean('root'),
           qualifier: 'bean',
         );
 
         newDdi.runInContext('context-1', () {
-          newDdi.object<_AsyncPreDestroyBean>(
-            _AsyncPreDestroyBean('context'),
+          newDdi.object<DefaultContextAsyncPreDestroyBean>(
+            DefaultContextAsyncPreDestroyBean('context'),
             qualifier: 'bean',
           );
         });
@@ -131,7 +121,9 @@ void main() {
         await Future<void>.delayed(const Duration(milliseconds: 5));
 
         expect(
-          newDdi.get<_AsyncPreDestroyBean>(qualifier: 'bean').origin,
+          newDdi
+              .get<DefaultContextAsyncPreDestroyBean>(qualifier: 'bean')
+              .origin,
           equals('root'),
         );
       },

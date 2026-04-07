@@ -1,11 +1,6 @@
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:test/test.dart';
-
-class _EdgeService {
-  const _EdgeService(this.origin);
-
-  final String origin;
-}
+import '../clazz_samples/edge_service.dart';
 
 void main() {
   group('DDI Context Edge Cases Tests', () {
@@ -16,15 +11,15 @@ void main() {
         ddi.createContext('ctx');
         ddi.createContext('other');
 
-        await ddi.application<_EdgeService>(
-          () => const _EdgeService('ctx-a'),
+        await ddi.application<EdgeService>(
+          () => const EdgeService('ctx-a'),
           qualifier: 'ctx-a',
           context: 'ctx',
           selector: (value) => value == 'a',
         );
 
-        await ddi.application<_EdgeService>(
-          () => const _EdgeService('other-b'),
+        await ddi.application<EdgeService>(
+          () => const EdgeService('other-b'),
           qualifier: 'other-b',
           context: 'other',
           selector: (value) => value == 'b',
@@ -32,12 +27,12 @@ void main() {
 
         expect(ddi.currentContext, equals('other'));
         expect(
-          ddi.getWith<_EdgeService, Object>(select: 'a', context: 'ctx').origin,
+          ddi.getWith<EdgeService, Object>(select: 'a', context: 'ctx').origin,
           equals('ctx-a'),
         );
         expect(
           ddi
-              .getWith<_EdgeService, Object>(qualifier: 'ctx-a', context: 'ctx')
+              .getWith<EdgeService, Object>(qualifier: 'ctx-a', context: 'ctx')
               .origin,
           equals('ctx-a'),
         );
@@ -51,15 +46,15 @@ void main() {
         ddi.createContext('ctx');
         ddi.createContext('other');
 
-        await ddi.application<_EdgeService>(
-          () async => const _EdgeService('ctx-a'),
+        await ddi.application<EdgeService>(
+          () async => const EdgeService('ctx-a'),
           qualifier: 'ctx-a',
           context: 'ctx',
           selector: (value) async => value == 'a',
         );
 
-        await ddi.application<_EdgeService>(
-          () async => const _EdgeService('other-b'),
+        await ddi.application<EdgeService>(
+          () async => const EdgeService('other-b'),
           qualifier: 'other-b',
           context: 'other',
           selector: (value) async => value == 'b',
@@ -67,7 +62,7 @@ void main() {
 
         expect(ddi.currentContext, equals('other'));
         expect(
-          (await ddi.getAsyncWith<_EdgeService, Object>(
+          (await ddi.getAsyncWith<EdgeService, Object>(
             select: 'a',
             context: 'ctx',
           ))
@@ -82,14 +77,14 @@ void main() {
       () async {
         final ddi = DDI.newInstance();
 
-        await ddi.application<_EdgeService>(
-          () => const _EdgeService('root'),
+        await ddi.application<EdgeService>(
+          () => const EdgeService('root'),
           qualifier: 'root-service',
         );
 
         ddi.createContext('ctx');
-        await ddi.application<_EdgeService>(
-          () => const _EdgeService('ctx'),
+        await ddi.application<EdgeService>(
+          () => const EdgeService('ctx'),
           qualifier: 'ctx-service',
           context: 'ctx',
         );
@@ -97,18 +92,59 @@ void main() {
         expect(ddi.currentContext, equals('ctx'));
 
         expect(
-          ddi.getWith<_EdgeService, Object>(qualifier: 'root-service').origin,
+          ddi.getWith<EdgeService, Object>(qualifier: 'root-service').origin,
           equals('root'),
         );
 
         expect(
           ddi
-              .getWith<_EdgeService, Object>(
+              .getWith<EdgeService, Object>(
                 qualifier: 'root-service',
                 context: 'ctx',
               )
               .origin,
           equals('root'),
+        );
+      },
+    );
+
+    test(
+      'destroyByType should respect explicit context argument',
+      () async {
+        final ddi = DDI.newInstance();
+        ddi.createContext('c1');
+        ddi.createContext('c2');
+
+        await ddi.singleton<EdgeService>(
+          () => const EdgeService('c1'),
+          qualifier: 'c1-service',
+          context: 'c1',
+        );
+
+        await ddi.singleton<EdgeService>(
+          () => const EdgeService('c2'),
+          qualifier: 'c2-service',
+          context: 'c2',
+        );
+
+        expect(
+          ddi.isRegistered<EdgeService>(qualifier: 'c1-service', context: 'c1'),
+          isTrue,
+        );
+        expect(
+          ddi.isRegistered<EdgeService>(qualifier: 'c2-service', context: 'c2'),
+          isTrue,
+        );
+
+        ddi.destroyByType<EdgeService>(context: 'c1');
+
+        expect(
+          ddi.isRegistered<EdgeService>(qualifier: 'c1-service', context: 'c1'),
+          isFalse,
+        );
+        expect(
+          ddi.isRegistered<EdgeService>(qualifier: 'c2-service', context: 'c2'),
+          isTrue,
         );
       },
     );

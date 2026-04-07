@@ -1,54 +1,8 @@
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:test/test.dart';
 
+import '../clazz_samples/instance_interceptor_samples.dart';
 import '../clazz_samples/test_service.dart';
-
-/// Interceptor that modifies instance onGet
-class InstanceModifierInterceptor extends DDIInterceptor<TestService> {
-  InstanceModifierInterceptor(this.suffix);
-  final String suffix;
-
-  @override
-  TestService onGet(TestService instance) {
-    // Return a new instance with modified behavior
-    return ModifiedTestService(instance, suffix);
-  }
-}
-
-/// Modified service for testing interceptors
-class ModifiedTestService extends TestService {
-  ModifiedTestService(this._original, this._suffix) : super();
-  final TestService _original;
-  final String _suffix;
-
-  @override
-  String doSomething() {
-    return '${_original.doSomething()}$_suffix';
-  }
-}
-
-/// Interceptor that tracks get calls
-class TrackingInterceptor extends DDIInterceptor<TestService> {
-  int getCallCount = 0;
-  int createCallCount = 0;
-
-  @override
-  TestService onCreate(TestService instance) {
-    createCallCount++;
-    return instance;
-  }
-
-  @override
-  TestService onGet(TestService instance) {
-    getCallCount++;
-    return instance;
-  }
-
-  @override
-  void onDestroy(TestService? instance) {
-    // Track destruction
-  }
-}
 
 /// Decorator that wraps the instance
 TestService testDecorator(TestService instance) {

@@ -1,11 +1,6 @@
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:test/test.dart';
-
-class _FreezeService {
-  _FreezeService(this.value);
-
-  final String value;
-}
+import '../clazz_samples/freeze_service.dart';
 
 void main() {
   group('DDI Context Freeze Tests', () {
@@ -15,8 +10,8 @@ void main() {
       ddi.createContext('frozen');
       ddi.createContext('open');
 
-      await ddi.application<_FreezeService>(
-        () => _FreezeService('frozen'),
+      await ddi.application<FreezeService>(
+        () => FreezeService('frozen'),
         qualifier: 'service',
         context: 'frozen',
       );
@@ -24,23 +19,23 @@ void main() {
       ddi.freezeContext('frozen');
 
       await expectLater(
-        ddi.application<_FreezeService>(
-          () => _FreezeService('blocked'),
+        ddi.application<FreezeService>(
+          () => FreezeService('blocked'),
           qualifier: 'blocked',
           context: 'frozen',
         ),
         throwsA(isA<ContextFrozenException>()),
       );
 
-      await ddi.application<_FreezeService>(
-        () => _FreezeService('open'),
+      await ddi.application<FreezeService>(
+        () => FreezeService('open'),
         qualifier: 'service',
         context: 'open',
       );
 
       expect(
         ddi
-            .getWith<_FreezeService, Object>(
+            .getWith<FreezeService, Object>(
               qualifier: 'service',
               context: 'frozen',
             )
@@ -49,7 +44,7 @@ void main() {
       );
       expect(
         ddi
-            .getWith<_FreezeService, Object>(
+            .getWith<FreezeService, Object>(
               qualifier: 'service',
               context: 'open',
             )
@@ -64,8 +59,8 @@ void main() {
       ddi.freezeContext('maintenance');
 
       await expectLater(
-        ddi.application<_FreezeService>(
-          () => _FreezeService('blocked'),
+        ddi.application<FreezeService>(
+          () => FreezeService('blocked'),
           qualifier: 'service',
           context: 'maintenance',
         ),
@@ -73,15 +68,15 @@ void main() {
       );
 
       ddi.unfreezeContext('maintenance');
-      await ddi.application<_FreezeService>(
-        () => _FreezeService('allowed'),
+      await ddi.application<FreezeService>(
+        () => FreezeService('allowed'),
         qualifier: 'service',
         context: 'maintenance',
       );
 
       expect(
         ddi
-            .getWith<_FreezeService, Object>(
+            .getWith<FreezeService, Object>(
               qualifier: 'service',
               context: 'maintenance',
             )
@@ -95,8 +90,8 @@ void main() {
       final ddi = DDI.newInstance();
       ddi.createContext('ctx');
 
-      await ddi.singleton<_FreezeService>(
-        () => _FreezeService('base'),
+      await ddi.singleton<FreezeService>(
+        () => FreezeService('base'),
         qualifier: 'service',
         context: 'ctx',
       );
@@ -104,15 +99,15 @@ void main() {
       ddi.freezeContext('ctx');
 
       expect(
-        () => ddi.addDecorator<_FreezeService>(
-          [(service) => _FreezeService('${service.value}-decorated')],
+        () => ddi.addDecorator<FreezeService>(
+          [(service) => FreezeService('${service.value}-decorated')],
           qualifier: 'service',
         ),
         throwsA(isA<ContextFrozenException>()),
       );
 
       expect(
-        () => ddi.addInterceptor<_FreezeService>(
+        () => ddi.addInterceptor<FreezeService>(
           {'interceptor'},
           qualifier: 'service',
         ),
@@ -126,8 +121,8 @@ void main() {
         final ddi = DDI.newInstance();
         ddi.createContext('ctx');
 
-        await ddi.application<_FreezeService>(
-          () => _FreezeService('value'),
+        await ddi.application<FreezeService>(
+          () => FreezeService('value'),
           qualifier: 'service',
           context: 'ctx',
         );
@@ -135,7 +130,7 @@ void main() {
         ddi.freezeContext('ctx');
 
         expect(
-          () => ddi.destroy<_FreezeService>(
+          () => ddi.destroy<FreezeService>(
             qualifier: 'service',
             context: 'ctx',
           ),
@@ -143,7 +138,7 @@ void main() {
         );
 
         expect(
-          () => ddi.dispose<_FreezeService>(
+          () => ddi.dispose<FreezeService>(
             qualifier: 'service',
             context: 'ctx',
           ),
@@ -151,12 +146,12 @@ void main() {
         );
 
         expect(
-          () => ddi.destroyByType<_FreezeService>('ctx'),
+          () => ddi.destroyByType<FreezeService>(context: 'ctx'),
           throwsA(isA<ContextFrozenException>()),
         );
 
         expect(
-          () => ddi.addChildrenModules<_FreezeService>(
+          () => ddi.addChildrenModules<FreezeService>(
             qualifier: 'service',
             child: {'child-module'},
           ),

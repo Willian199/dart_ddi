@@ -175,12 +175,12 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       }
 
       assert(
-        dependentClazz is! PreDispose || dependentClazz is! Future<PreDispose>,
-        'Dependent instances dont support PreDispose. Use Interceptors instead.',
+        dependentClazz is! PreDispose && dependentClazz is! Future<PreDispose>,
+        'Dependent instances do not support PreDispose. Use Interceptors instead.',
       );
       assert(
-        dependentClazz is! PreDestroy || dependentClazz is! Future<PreDestroy>,
-        'Dependent instances dont support PreDestroy. Use Interceptors instead.',
+        dependentClazz is! PreDestroy && dependentClazz is! Future<PreDestroy>,
+        'Dependent instances do not support PreDestroy. Use Interceptors instead.',
       );
 
       if (_decorators.isNotEmpty) {
@@ -303,12 +303,12 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       }
 
       assert(
-        dependentClazz is! PreDispose || dependentClazz is! Future<PreDispose>,
-        'Dependent instances dont support PreDispose. Use Interceptors instead.',
+        dependentClazz is! PreDispose && dependentClazz is! Future<PreDispose>,
+        'Dependent instances do not support PreDispose. Use Interceptors instead.',
       );
       assert(
-        dependentClazz is! PreDestroy || dependentClazz is! Future<PreDestroy>,
-        'Dependent instances dont support PreDestroy. Use Interceptors instead.',
+        dependentClazz is! PreDestroy && dependentClazz is! Future<PreDestroy>,
+        'Dependent instances do not support PreDestroy. Use Interceptors instead.',
       );
 
       if (_decorators.isNotEmpty) {

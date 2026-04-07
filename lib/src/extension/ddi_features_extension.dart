@@ -30,7 +30,12 @@ extension DDIFeaturesExtension on DDI {
   void addChildModules<BeanT extends Object>({
     required Object child,
     Object? qualifier,
+    Object? context,
   }) {
-    addChildrenModules<BeanT>(child: {child}, qualifier: qualifier);
+    addChildrenModules<BeanT>(
+      child: {child},
+      qualifier: qualifier,
+      context: context,
+    );
   }
 }

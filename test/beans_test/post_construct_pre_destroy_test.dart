@@ -2,6 +2,7 @@ import 'package:dart_ddi/dart_ddi.dart';
 import 'package:test/test.dart';
 
 import '../clazz_samples/l.dart';
+import '../clazz_samples/l_post_construct_only.dart';
 
 void main() {
   group('DDI PostConstruct and PreDestroy test', () {
@@ -28,14 +29,14 @@ void main() {
       DDI.instance.destroy<L>();
     });
 
-    test('Register a Dependent bean with PostConstruct  and PreDestroy', () {
-      DDI.instance.dependent(() => L());
+    test('Register a Dependent bean with PostConstruct', () {
+      DDI.instance.dependent(() => LPostConstructOnly());
 
-      final L instance = DDI.instance.get();
+      final LPostConstructOnly instance = DDI.instance.get();
 
       expect('abcd', instance.value);
 
-      DDI.instance.destroy<L>();
+      DDI.instance.destroy<LPostConstructOnly>();
     });
 
     test('Register a Object bean with PostConstruct  and PreDestroy', () {

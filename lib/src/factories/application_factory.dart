@@ -695,6 +695,9 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       _created.complete();
     }
 
+    final BeanT? instanceForDispose =
+        _instance ?? (_useWeakReference ? _weakInstance?.target : null);
+
     // Run interceptors for dispose
     for (final interceptor in _interceptors) {
       final resolved = InterceptorResolver.resolveAsync(
@@ -704,25 +707,26 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       final DDIInterceptor instance =
           resolved is Future ? await resolved : resolved;
 
-      final exec = instance.onDispose(_instance);
+      final exec = instance.onDispose(instanceForDispose);
       if (exec is Future) {
         await exec;
       }
     }
 
     // Handle PreDispose lifecycle
-    if (_instance case final clazz? when clazz is PreDispose) {
+    if (instanceForDispose case final clazz? when clazz is PreDispose) {
       return _runFutureOrPreDispose(clazz: clazz, ddiInstance: ddiInstance);
     }
 
-    final Object? moduleContext = _instance is DDIModule
-        ? (_instance as DDIModule).contextQualifier
+    final Object? moduleContext = instanceForDispose is DDIModule
+        ? (instanceForDispose as DDIModule).contextQualifier
         : null;
-    final bool isModuleInstance = _instance is DDIModule;
+    final bool isModuleInstance = instanceForDispose is DDIModule;
 
     // Preserve behavior for callers that do not await dispose():
     // clear local state before awaiting async cleanup.
     _instance = null;
+    _weakInstance = null;
     _state = BeanStateEnum.disposed;
     _created = Completer();
     _runningCreateProcess = false;
@@ -763,6 +767,7 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     await _destroyContextIfExists(ddiInstance: ddiInstance, context: context);
 
     _instance = null;
+    _weakInstance = null;
     _state = BeanStateEnum.disposed;
     _created = Completer();
     _runningCreateProcess = false;

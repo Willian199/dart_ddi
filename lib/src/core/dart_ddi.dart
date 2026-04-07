@@ -170,7 +170,7 @@ abstract class DDI {
   ///   // Process instance...
   /// }
   /// ```
-  List<Object> getByType<BeanT extends Object>();
+  List<Object> getByType<BeanT extends Object>({Object? context});
 
   /// Removes the instance of the registered class in [DDI].
   ///
@@ -179,7 +179,7 @@ abstract class DDI {
       {Object? qualifier, Object? context});
 
   /// Removes all the instance registered as type `BeanT`.
-  void destroyByType<BeanT extends Object>([Object? context]);
+  void destroyByType<BeanT extends Object>({Object? context});
 
   /// Disposes of the instance of the registered class in [DDI].
   ///
@@ -188,7 +188,7 @@ abstract class DDI {
       {Object? qualifier, Object? context});
 
   /// Disposes all the instance registered as type `BeanT`.
-  void disposeByType<BeanT extends Object>();
+  void disposeByType<BeanT extends Object>({Object? context});
 
   /// Allows you to dynamically add decorators.
   ///
@@ -199,6 +199,7 @@ abstract class DDI {
   FutureOr<void> addDecorator<BeanT extends Object>(
     ListDecorator<BeanT> decorators, {
     Object? qualifier,
+    Object? context,
   });
 
   /// Allows you to dynamically add interceptors to existing instances.
@@ -233,6 +234,7 @@ abstract class DDI {
   void addInterceptor<BeanT extends Object>(
     Set<Object>? interceptors, {
     Object? qualifier,
+    Object? context,
   });
 
   /// Adds multiple child modules to a parent module at once.
@@ -263,6 +265,7 @@ abstract class DDI {
   void addChildrenModules<BeanT extends Object>({
     required Set<Object> child,
     Object? qualifier,
+    Object? context,
   });
 
   /// Retrieves the set of child modules for a given parent module.
@@ -283,7 +286,10 @@ abstract class DDI {
   ///   // Process child module...
   /// }
   /// ```
-  Set<Object> getChildren<BeanT extends Object>({Object? qualifier});
+  Set<Object> getChildren<BeanT extends Object>({
+    Object? qualifier,
+    Object? context,
+  });
 
   /// Checks if the [DDI] instance has no registered beans.
   ///

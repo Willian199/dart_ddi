@@ -2,20 +2,10 @@ import 'package:dart_ddi/dart_ddi.dart';
 import 'package:test/test.dart';
 
 import '../clazz_samples/c.dart';
+import '../clazz_samples/async_zone_pre_destroy_bean.dart';
 import '../clazz_samples/g.dart';
 import '../clazz_samples/h.dart';
 import '../clazz_samples/i.dart';
-
-class _AsyncZonePreDestroyBean with PreDestroy {
-  _AsyncZonePreDestroyBean(this.origin);
-
-  final String origin;
-
-  @override
-  Future<void> onPreDestroy() async {
-    await Future<void>.delayed(const Duration(milliseconds: 1));
-  }
-}
 
 void main() {
   group('DDI Zone Context Basic Tests', () {
@@ -185,14 +175,14 @@ void main() {
       () async {
         final localDdi = DDI.newInstance(enableZoneRegistry: true);
 
-        await localDdi.object<_AsyncZonePreDestroyBean>(
-          _AsyncZonePreDestroyBean('root'),
+        await localDdi.object<AsyncZonePreDestroyBean>(
+          AsyncZonePreDestroyBean('root'),
           qualifier: 'bean',
         );
 
         localDdi.runInContext('zone-1', () {
-          localDdi.object<_AsyncZonePreDestroyBean>(
-            _AsyncZonePreDestroyBean('context'),
+          localDdi.object<AsyncZonePreDestroyBean>(
+            AsyncZonePreDestroyBean('context'),
             qualifier: 'bean',
           );
         });
@@ -200,7 +190,7 @@ void main() {
         await Future<void>.delayed(const Duration(milliseconds: 5));
 
         expect(
-          localDdi.get<_AsyncZonePreDestroyBean>(qualifier: 'bean').origin,
+          localDdi.get<AsyncZonePreDestroyBean>(qualifier: 'bean').origin,
           equals('root'),
         );
       },
@@ -224,5 +214,18 @@ void main() {
         expect(localDdi.get<String>(qualifier: 'message'), equals('root'));
       },
     );
+
+    test('freezeContext should throw for unknown zone context name', () async {
+      final localDdi = DDI.newInstance(enableZoneRegistry: true);
+
+      await localDdi.runInContext('known-zone', () async {
+        await localDdi.singleton<String>(() => 'inside', qualifier: 'value');
+
+        expect(
+          () => localDdi.freezeContext('missing-zone'),
+          throwsA(isA<ContextNotFoundException>()),
+        );
+      });
+    });
   });
 }

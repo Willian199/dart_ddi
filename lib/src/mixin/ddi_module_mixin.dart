@@ -102,7 +102,9 @@ mixin DDIModule implements PostConstruct {
     }
 
     ddiContainer.addChildModules(
-        child: qualifier ?? BeanT, qualifier: moduleQualifier);
+      child: qualifier ?? BeanT,
+      qualifier: moduleQualifier,
+    );
 
     return bean;
   }
@@ -147,7 +149,9 @@ mixin DDIModule implements PostConstruct {
     }
 
     ddiContainer.addChildModules(
-        child: qualifier ?? BeanT, qualifier: moduleQualifier);
+      child: qualifier ?? BeanT,
+      qualifier: moduleQualifier,
+    );
 
     return bean;
   }
@@ -192,7 +196,9 @@ mixin DDIModule implements PostConstruct {
     }
 
     ddiContainer.addChildModules(
-        child: qualifier ?? BeanT, qualifier: moduleQualifier);
+      child: qualifier ?? BeanT,
+      qualifier: moduleQualifier,
+    );
 
     return bean;
   }
@@ -238,7 +244,9 @@ mixin DDIModule implements PostConstruct {
     }
 
     ddiContainer.addChildModules(
-        child: qualifier ?? BeanT, qualifier: moduleQualifier);
+      child: qualifier ?? BeanT,
+      qualifier: moduleQualifier,
+    );
 
     return bean;
   }
@@ -269,7 +277,9 @@ mixin DDIModule implements PostConstruct {
     }
 
     ddiContainer.addChildModules(
-        child: qualifier ?? BeanT, qualifier: moduleQualifier);
+      child: qualifier ?? BeanT,
+      qualifier: moduleQualifier,
+    );
 
     return bean;
   }
