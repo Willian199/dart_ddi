@@ -101,18 +101,12 @@ class ObjectFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       _state = BeanStateEnum.beingCreated;
       if (_interceptors.isNotEmpty) {
         for (final interceptor in _interceptors) {
-          final DDIInterceptor inter;
-          if (ddiInstance.isFuture(qualifier: interceptor)) {
-            inter = await InterceptorResolver.resolveAsync(
-              ddiInstance: ddiInstance,
-              qualifier: interceptor,
-            );
-          } else {
-            inter = InterceptorResolver.resolveSync(
-              ddiInstance: ddiInstance,
-              qualifier: interceptor,
-            );
-          }
+          final resolved = InterceptorResolver.resolveAsync(
+            ddiInstance: ddiInstance,
+            qualifier: interceptor,
+          );
+          final DDIInterceptor inter =
+              resolved is Future ? await resolved : resolved;
 
           final newInstance = inter.onCreate(_instance);
           if (newInstance is Future) {
@@ -193,7 +187,11 @@ class ObjectFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
           qualifier: interceptor,
         );
 
-        _instance = ins.onGet(_instance) as BeanT;
+        final current = _instance;
+        final next = ins.onGet(current) as BeanT;
+        if (!identical(current, next)) {
+          _instance = next;
+        }
       }
     }
     return _instance;
@@ -224,9 +222,12 @@ class ObjectFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
           qualifier: interceptor,
         );
 
-        final exec = ins.onGet(_instance);
-
-        _instance = (exec is Future ? await exec : exec) as BeanT;
+        final current = _instance;
+        final exec = ins.onGet(current);
+        final next = (exec is Future ? await exec : exec) as BeanT;
+        if (!identical(current, next)) {
+          _instance = next;
+        }
       }
     }
 

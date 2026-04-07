@@ -1,3 +1,5 @@
+// deprecated_member_use_from_same_package
+
 import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';

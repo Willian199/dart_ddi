@@ -409,7 +409,7 @@ class _DDIImpl implements DDI, DDIInternal {
 
   @override
   DDIInterceptor getInterceptor(Object qualifier) {
-    final Object effectiveContext = currentContext;
+    final Object effectiveContext = _beans.currentContext;
     final located = _beans.getFactory<DDIInterceptor>(
       qualifier: qualifier,
       contextQualifier: effectiveContext,
@@ -426,8 +426,8 @@ class _DDIImpl implements DDI, DDIInternal {
   }
 
   @override
-  Future<DDIInterceptor> getInterceptorAsync(Object qualifier) async {
-    final Object effectiveContext = currentContext;
+  FutureOr<DDIInterceptor> getInterceptorAsync(Object qualifier) {
+    final Object effectiveContext = _beans.currentContext;
     final bool fallbackToRoot = _beans.hasContext;
     final located = _beans.getFactory<DDIInterceptor>(
       qualifier: qualifier,
@@ -439,12 +439,22 @@ class _DDIImpl implements DDI, DDIInternal {
       throw BeanNotFoundException(qualifier.toString());
     }
 
-    final clazz = located.factory.getAsyncWith<Object>(
+    final factory = located.factory;
+    if (factory.isFuture) {
+      final clazz = factory.getAsyncWith<Object>(
+        qualifier: qualifier,
+        ddiInstance: this,
+      );
+      if (clazz is Future<Future<DDIInterceptor>>) {
+        return clazz.then((value) => value);
+      }
+      return clazz;
+    }
+
+    return factory.getWith<Object>(
       qualifier: qualifier,
       ddiInstance: this,
     );
-
-    return clazz is Future<Future> ? await clazz : clazz;
   }
 
   @override
@@ -455,7 +465,8 @@ class _DDIImpl implements DDI, DDIInternal {
     Object? context,
   }) async {
     final Object effectiveQualifierName = qualifier ?? BeanT;
-    final Object effectiveContext = context ?? currentContext;
+
+    final Object effectiveContext = context ?? _beans.currentContext;
 
     final reg = _beans
         .getFactory(
@@ -464,46 +475,52 @@ class _DDIImpl implements DDI, DDIInternal {
         )
         ?.factory;
 
-    if (reg case final DDIBaseFactory<BeanT> factory?) {
-      final clazz = factory.getAsyncWith<ParameterT>(
+    if (reg is DDIBaseFactory<BeanT>) {
+      final clazz = reg.getAsyncWith<ParameterT>(
         parameter: parameter,
         qualifier: effectiveQualifierName,
         ddiInstance: this,
       );
 
       return clazz is Future<Future> ? await clazz : clazz;
-    } else if (reg case final DDIBaseFactory<Future<BeanT>> factory?) {
+    }
+
+    if (reg is DDIBaseFactory<Future<BeanT>>) {
       // This prevents to return a Future<Future<BeanT>>
       // This was find with the Object Scope
-      return await factory.getAsyncWith<ParameterT>(
+      return await reg.getAsyncWith<ParameterT>(
         parameter: parameter,
         qualifier: effectiveQualifierName,
         ddiInstance: this,
       );
-    } else if (select != null && BeanT != Object) {
-      // Try to find a bean with the selector
-      for (final MapEntry(:key, :value) in _beans.entries(context: context)) {
-        if (value.type != BeanT) {
-          continue;
-        }
+    }
 
-        final selector = value.selector;
-        if (selector == null) {
-          continue;
-        }
+    if (select == null || BeanT == Object) {
+      throw BeanNotFoundException(effectiveQualifierName.toString());
+    }
 
-        final selected = selector.call(select);
-        final bool matches = selected is Future ? await selected : selected;
-        if (!matches) {
-          continue;
-        }
-
-        return (value as DDIBaseFactory<BeanT>).getAsyncWith<ParameterT>(
-          parameter: parameter,
-          qualifier: key,
-          ddiInstance: this,
-        );
+    // Try to find a bean with the selector
+    for (final MapEntry(:key, :value) in _beans.entries(context: context)) {
+      if (value.type != BeanT) {
+        continue;
       }
+
+      final selector = value.selector;
+      if (selector == null) {
+        continue;
+      }
+
+      final selected = selector.call(select);
+      final bool matches = selected is Future ? await selected : selected;
+      if (!matches) {
+        continue;
+      }
+
+      return (value as DDIBaseFactory<BeanT>).getAsyncWith<ParameterT>(
+        parameter: parameter,
+        qualifier: key,
+        ddiInstance: this,
+      );
     }
 
     throw BeanNotFoundException(effectiveQualifierName.toString());
@@ -524,7 +541,7 @@ class _DDIImpl implements DDI, DDIInternal {
   FutureOr<void> destroy<BeanT extends Object>(
       {Object? qualifier, Object? context}) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
-    final Object effectiveContext = context ?? currentContext;
+    final Object effectiveContext = context ?? _beans.currentContext;
     _validateContextState(
       context: effectiveContext,
       operation: 'destroy',
@@ -540,7 +557,7 @@ class _DDIImpl implements DDI, DDIInternal {
   FutureOr<void> _destroy<BeanT extends Object>(
       Object effectiveQualifierName, Object? context,
       {bool ignoreFrozenContext = false}) async {
-    final Object effectiveContext = context ?? currentContext;
+    final Object effectiveContext = context ?? _beans.currentContext;
     if (!ignoreFrozenContext) {
       _validateContextState(
         context: effectiveContext,
@@ -569,7 +586,7 @@ class _DDIImpl implements DDI, DDIInternal {
 
   @override
   void destroyByType<BeanT extends Object>([Object? context]) {
-    final Object effectiveContext = context ?? currentContext;
+    final Object effectiveContext = context ?? _beans.currentContext;
     _validateContextState(
       context: effectiveContext,
       operation: 'destroyByType',
@@ -590,7 +607,7 @@ class _DDIImpl implements DDI, DDIInternal {
   Future<void> dispose<BeanT extends Object>(
       {Object? qualifier, Object? context}) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
-    final Object effectiveContext = context ?? currentContext;
+    final Object effectiveContext = context ?? _beans.currentContext;
     _validateContextState(
       context: effectiveContext,
       operation: 'dispose',

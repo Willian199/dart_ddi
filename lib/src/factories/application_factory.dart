@@ -130,7 +130,9 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
         current = inter.onGet(current) as BeanT;
       }
 
-      _instance = current;
+      if (!identical(_instance, current)) {
+        _instance = current;
+      }
       return current;
     }
 
@@ -225,7 +227,9 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       _weakInstance = WeakReference(instanceToReturn);
       _instance = null; // Ensure _instance is null when using weak reference
     } else if (!_useWeakReference && instanceToReturn != null) {
-      _instance = instanceToReturn;
+      if (!identical(_instance, instanceToReturn)) {
+        _instance = instanceToReturn;
+      }
       // Ensure _weakInstance is null when not using weak reference
       _weakInstance = null;
     }
@@ -587,7 +591,9 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       _weakInstance = WeakReference(instanceToProcess);
       _instance = null; // Ensure _instance is null when using weak reference
     } else if (!_useWeakReference && instanceToProcess != null) {
-      _instance = instanceToProcess;
+      if (!identical(_instance, instanceToProcess)) {
+        _instance = instanceToProcess;
+      }
       // Ensure _weakInstance is null when not using weak reference
       _weakInstance = null;
     }
@@ -691,18 +697,12 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
     // Run interceptors for dispose
     for (final interceptor in _interceptors) {
-      final DDIInterceptor instance;
-      if (ddiInstance.isFuture(qualifier: interceptor)) {
-        instance = await InterceptorResolver.resolveAsync(
-          ddiInstance: ddiInstance,
-          qualifier: interceptor,
-        );
-      } else {
-        instance = InterceptorResolver.resolveSync(
-          ddiInstance: ddiInstance,
-          qualifier: interceptor,
-        );
-      }
+      final resolved = InterceptorResolver.resolveAsync(
+        ddiInstance: ddiInstance,
+        qualifier: interceptor,
+      );
+      final DDIInterceptor instance =
+          resolved is Future ? await resolved : resolved;
 
       final exec = instance.onDispose(_instance);
       if (exec is Future) {

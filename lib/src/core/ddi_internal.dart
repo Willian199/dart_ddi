@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dart_ddi/src/features/ddi_interceptor.dart';
 import 'package:meta/meta.dart';
 
@@ -7,5 +9,5 @@ abstract interface class DDIInternal {
   DDIInterceptor getInterceptor(Object qualifier);
 
   @internal
-  Future<DDIInterceptor> getInterceptorAsync(Object qualifier);
+  FutureOr<DDIInterceptor> getInterceptorAsync(Object qualifier);
 }

@@ -53,18 +53,12 @@ final class InstanceDestroyUtils {
     if (interceptors.isNotEmpty) {
       for (final interceptor in interceptors) {
         try {
-          final DDIInterceptor inter;
-          if (ddiInstance.isFuture(qualifier: interceptor)) {
-            inter = await InterceptorResolver.resolveAsync(
-              ddiInstance: ddiInstance,
-              qualifier: interceptor,
-            );
-          } else {
-            inter = InterceptorResolver.resolveSync(
-              ddiInstance: ddiInstance,
-              qualifier: interceptor,
-            );
-          }
+          final resolved = InterceptorResolver.resolveAsync(
+            ddiInstance: ddiInstance,
+            qualifier: interceptor,
+          );
+          final DDIInterceptor inter =
+              resolved is Future ? await resolved : resolved;
 
           final exec = inter.onDestroy(instance);
           if (exec is Future) {
