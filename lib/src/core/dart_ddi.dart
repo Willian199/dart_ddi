@@ -1,12 +1,10 @@
-// deprecated_member_use_from_same_package
-
 import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
-import 'package:dart_ddi/src/core/ddi_internal.dart';
 import 'package:dart_ddi/src/core/dart_ddi_default_qualifier_impl.dart';
 import 'package:dart_ddi/src/core/dart_ddi_qualifier.dart';
 import 'package:dart_ddi/src/core/dart_ddi_zone_qualifier_impl.dart';
+import 'package:dart_ddi/src/core/ddi_internal.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
 
 part 'dart_ddi_impl.dart';
@@ -61,7 +59,6 @@ abstract class DDI {
   /// });
   /// // Zone instances are automatically destroyed here
   /// ```
-  @Deprecated("Use createContext and destroyContext instead")
   BeanT runInContext<BeanT>(Object name, BeanT Function() body);
 
   /// Returns a token representing the current active context.

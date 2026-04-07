@@ -109,7 +109,6 @@ class _DDIImpl implements DDI, DDIInternal {
   bool isContextFrozen(Object context) => _beans.isContextFrozen(context);
 
   @override
-  @Deprecated("Use createContext and destroyContext instead")
   BeanT runInContext<BeanT>(Object name, BeanT Function() body) {
     if (_enableZoneRegistry) {
       return _beans.runWithContext<BeanT>(name, () {
