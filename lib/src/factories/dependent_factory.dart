@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
 import 'package:dart_ddi/src/utils/dependency_validator.dart';
+import 'package:dart_ddi/src/utils/interceptor_resolver.dart';
 import 'package:dart_ddi/src/utils/instance_destroy_utils.dart';
 
 /// Create a new instance every time it is requested.
@@ -165,9 +166,11 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
       if (_interceptors.isNotEmpty) {
         for (final interceptor in _interceptors) {
-          dependentClazz = (ddiInstance.getWith<DDIInterceptor, Object>(
+          final inter = InterceptorResolver.resolveSync(
+            ddiInstance: ddiInstance,
             qualifier: interceptor,
-          )).onCreate(dependentClazz) as BeanT;
+          );
+          dependentClazz = inter.onCreate(dependentClazz) as BeanT;
         }
       }
 
@@ -208,9 +211,11 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       /// Must run everytime
       if (_interceptors.isNotEmpty) {
         for (final interceptor in _interceptors) {
-          dependentClazz = (ddiInstance.getWith<DDIInterceptor, Object>(
+          final inter = InterceptorResolver.resolveSync(
+            ddiInstance: ddiInstance,
             qualifier: interceptor,
-          )).onGet(dependentClazz) as BeanT;
+          );
+          dependentClazz = inter.onGet(dependentClazz) as BeanT;
         }
       }
       return dependentClazz;
@@ -287,8 +292,10 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
       /// Run the Interceptor for create process
       for (final interceptor in _interceptors) {
-        final inter = (await ddiInstance.getAsync(qualifier: interceptor))
-            as DDIInterceptor;
+        final inter = await InterceptorResolver.resolveAsync(
+          ddiInstance: ddiInstance,
+          qualifier: interceptor,
+        );
 
         final exec = inter.onCreate(dependentClazz);
 
@@ -333,8 +340,10 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       /// Run the Interceptors for the GET process.
       /// Must run everytime
       for (final interceptor in _interceptors) {
-        final inter = (await ddiInstance.getAsync(qualifier: interceptor))
-            as DDIInterceptor;
+        final inter = await InterceptorResolver.resolveAsync(
+          ddiInstance: ddiInstance,
+          qualifier: interceptor,
+        );
 
         final exec = inter.onGet(dependentClazz);
 

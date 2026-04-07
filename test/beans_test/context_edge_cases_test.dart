@@ -76,5 +76,41 @@ void main() {
         );
       },
     );
+
+    test(
+      'implicit and explicit context get should fallback to root',
+      () async {
+        final ddi = DDI.newInstance();
+
+        await ddi.application<_EdgeService>(
+          () => const _EdgeService('root'),
+          qualifier: 'root-service',
+        );
+
+        ddi.createContext('ctx');
+        await ddi.application<_EdgeService>(
+          () => const _EdgeService('ctx'),
+          qualifier: 'ctx-service',
+          context: 'ctx',
+        );
+
+        expect(ddi.currentContext, equals('ctx'));
+
+        expect(
+          ddi.getWith<_EdgeService, Object>(qualifier: 'root-service').origin,
+          equals('root'),
+        );
+
+        expect(
+          ddi
+              .getWith<_EdgeService, Object>(
+                qualifier: 'root-service',
+                context: 'ctx',
+              )
+              .origin,
+          equals('root'),
+        );
+      },
+    );
   });
 }

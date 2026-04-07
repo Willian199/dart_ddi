@@ -1,6 +1,6 @@
 part of 'dart_ddi.dart';
 
-class _DDIImpl implements DDI {
+class _DDIImpl implements DDI, DDIInternal {
   _DDIImpl({required bool enableZoneRegistry})
       : _enableZoneRegistry = enableZoneRegistry;
 
@@ -367,35 +367,84 @@ class _DDIImpl implements DDI {
     Object? context,
   }) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
-    final Object effectiveContext = context ?? currentContext;
-    final bool fallbackToRoot = context == null && _beans.hasContext;
 
-    final located = _beans.getFactory<BeanT>(
+    final ({DDIBaseFactory<BeanT> factory, Object context})? located =
+        _beans.getFactory<BeanT>(
       qualifier: effectiveQualifierName,
-      contextQualifier: effectiveContext,
-      fallback: fallbackToRoot,
+      contextQualifier: context ?? _beans.currentContext,
     );
+
     if (located != null) {
       return located.factory.getWith<ParameterT>(
         parameter: parameter,
         qualifier: effectiveQualifierName,
         ddiInstance: this,
       );
-    } else if (select != null && BeanT != Object) {
-      // Try to find a bean with the selector
-      for (final MapEntry(key: _, :value) in _beans.entries(context: context)) {
-        if (value.type == BeanT &&
-            (value.selector?.call(select) ?? false) as bool) {
-          return (value as DDIBaseFactory<BeanT>).getWith<ParameterT>(
-            parameter: parameter,
-            qualifier: effectiveQualifierName,
-            ddiInstance: this,
-          );
-        }
+    }
+
+    if (select == null || BeanT == Object) {
+      throw BeanNotFoundException(effectiveQualifierName.toString());
+    }
+
+    // Try to find a bean with the selector
+    for (final MapEntry(:key, :value) in _beans.entries(context: context)) {
+      if (value.type != BeanT) {
+        continue;
       }
+
+      final selector = value.selector;
+      if (selector == null || selector.call(select) != true) {
+        continue;
+      }
+
+      return (value as DDIBaseFactory<BeanT>).getWith<ParameterT>(
+        parameter: parameter,
+        qualifier: key,
+        ddiInstance: this,
+      );
     }
 
     throw BeanNotFoundException(effectiveQualifierName.toString());
+  }
+
+  @override
+  DDIInterceptor getInterceptor(Object qualifier) {
+    final Object effectiveContext = currentContext;
+    final located = _beans.getFactory<DDIInterceptor>(
+      qualifier: qualifier,
+      contextQualifier: effectiveContext,
+    );
+
+    if (located == null) {
+      throw BeanNotFoundException(qualifier.toString());
+    }
+
+    return located.factory.getWith<Object>(
+      qualifier: qualifier,
+      ddiInstance: this,
+    );
+  }
+
+  @override
+  Future<DDIInterceptor> getInterceptorAsync(Object qualifier) async {
+    final Object effectiveContext = currentContext;
+    final bool fallbackToRoot = _beans.hasContext;
+    final located = _beans.getFactory<DDIInterceptor>(
+      qualifier: qualifier,
+      contextQualifier: effectiveContext,
+      fallback: fallbackToRoot,
+    );
+
+    if (located == null) {
+      throw BeanNotFoundException(qualifier.toString());
+    }
+
+    final clazz = located.factory.getAsyncWith<Object>(
+      qualifier: qualifier,
+      ddiInstance: this,
+    );
+
+    return clazz is Future<Future> ? await clazz : clazz;
   }
 
   @override
@@ -407,13 +456,11 @@ class _DDIImpl implements DDI {
   }) async {
     final Object effectiveQualifierName = qualifier ?? BeanT;
     final Object effectiveContext = context ?? currentContext;
-    final bool fallbackToRoot = context == null && _beans.hasContext;
 
     final reg = _beans
         .getFactory(
           qualifier: effectiveQualifierName,
           contextQualifier: effectiveContext,
-          fallback: fallbackToRoot,
         )
         ?.factory;
 
@@ -435,16 +482,27 @@ class _DDIImpl implements DDI {
       );
     } else if (select != null && BeanT != Object) {
       // Try to find a bean with the selector
-      for (final MapEntry(key: _, :value) in _beans.entries(context: context)) {
-        if (value.type == BeanT &&
-            value.selector != null &&
-            await (value.selector?.call(select) ?? false)) {
-          return (value as DDIBaseFactory<BeanT>).getAsyncWith<ParameterT>(
-            parameter: parameter,
-            qualifier: effectiveQualifierName,
-            ddiInstance: this,
-          );
+      for (final MapEntry(:key, :value) in _beans.entries(context: context)) {
+        if (value.type != BeanT) {
+          continue;
         }
+
+        final selector = value.selector;
+        if (selector == null) {
+          continue;
+        }
+
+        final selected = selector.call(select);
+        final bool matches = selected is Future ? await selected : selected;
+        if (!matches) {
+          continue;
+        }
+
+        return (value as DDIBaseFactory<BeanT>).getAsyncWith<ParameterT>(
+          parameter: parameter,
+          qualifier: key,
+          ddiInstance: this,
+        );
       }
     }
 

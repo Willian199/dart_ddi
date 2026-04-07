@@ -101,7 +101,7 @@ class _MixedContextModule with DDIModule {
 void main() {
   group('DDI Context Feature Integration Tests', () {
     test(
-      'captured Instance from a cleaned zone should not fallback to the root bean',
+      'captured Instance from a cleaned zone should fallback to the root bean',
       () async {
         final ddi = DDI.newInstance(enableZoneRegistry: true);
 
@@ -127,14 +127,8 @@ void main() {
 
         expect(ddi.get<_ZoneScopedValue>(qualifier: 'shared').origin, 'root');
         expect(capturedInstance.isResolvable(), isFalse);
-        expect(
-          () => capturedInstance.get(),
-          throwsA(isA<BeanNotFoundException>()),
-        );
-        await expectLater(
-          capturedInstance.getAsync(),
-          throwsA(isA<BeanNotFoundException>()),
-        );
+        expect(capturedInstance.get().origin, equals('root'));
+        expect((await capturedInstance.getAsync()).origin, equals('root'));
       },
     );
 

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
+import 'package:dart_ddi/src/utils/interceptor_resolver.dart';
 import 'package:dart_ddi/src/utils/instance_destroy_utils.dart';
 
 /// Creates a unique instance during registration and reuses it in all subsequent requests.
@@ -100,21 +101,24 @@ class ObjectFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       _state = BeanStateEnum.beingCreated;
       if (_interceptors.isNotEmpty) {
         for (final interceptor in _interceptors) {
+          final DDIInterceptor inter;
           if (ddiInstance.isFuture(qualifier: interceptor)) {
-            final inter = await ddiInstance.getAsync(qualifier: interceptor)
-                as DDIInterceptor;
-
-            _instance = (await inter.onCreate(_instance)) as BeanT;
+            inter = await InterceptorResolver.resolveAsync(
+              ddiInstance: ddiInstance,
+              qualifier: interceptor,
+            );
           } else {
-            final inter =
-                ddiInstance.get(qualifier: interceptor) as DDIInterceptor;
+            inter = InterceptorResolver.resolveSync(
+              ddiInstance: ddiInstance,
+              qualifier: interceptor,
+            );
+          }
 
-            final newInstance = inter.onCreate(_instance);
-            if (newInstance is Future) {
-              _instance = (await newInstance) as BeanT;
-            } else {
-              _instance = newInstance as BeanT;
-            }
+          final newInstance = inter.onCreate(_instance);
+          if (newInstance is Future) {
+            _instance = (await newInstance) as BeanT;
+          } else {
+            _instance = newInstance as BeanT;
           }
         }
       }
@@ -184,7 +188,8 @@ class ObjectFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
     if (_interceptors.isNotEmpty) {
       for (final interceptor in _interceptors) {
-        final ins = ddiInstance.getWith<DDIInterceptor, Object>(
+        final ins = InterceptorResolver.resolveSync(
+          ddiInstance: ddiInstance,
           qualifier: interceptor,
         );
 
@@ -214,8 +219,10 @@ class ObjectFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
     if (_interceptors.isNotEmpty) {
       for (final interceptor in _interceptors) {
-        final ins = (await ddiInstance.getAsync(qualifier: interceptor))
-            as DDIInterceptor;
+        final ins = await InterceptorResolver.resolveAsync(
+          ddiInstance: ddiInstance,
+          qualifier: interceptor,
+        );
 
         final exec = ins.onGet(_instance);
 

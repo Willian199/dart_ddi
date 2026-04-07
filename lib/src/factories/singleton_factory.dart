@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
+import 'package:dart_ddi/src/utils/interceptor_resolver.dart';
 import 'package:dart_ddi/src/utils/instance_destroy_utils.dart';
 
 /// Creates a unique instance during registration and reuses it in all subsequent requests.
@@ -113,21 +114,24 @@ class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
       if (_interceptors.isNotEmpty) {
         for (final interceptor in _interceptors) {
+          final DDIInterceptor inter;
           if (ddiInstance.isFuture(qualifier: interceptor)) {
-            final inter = await ddiInstance.getAsync(qualifier: interceptor)
-                as DDIInterceptor;
-
-            clazz = (await inter.onCreate(clazz)) as BeanT;
+            inter = await InterceptorResolver.resolveAsync(
+              ddiInstance: ddiInstance,
+              qualifier: interceptor,
+            );
           } else {
-            final inter =
-                ddiInstance.get(qualifier: interceptor) as DDIInterceptor;
+            inter = InterceptorResolver.resolveSync(
+              ddiInstance: ddiInstance,
+              qualifier: interceptor,
+            );
+          }
 
-            final newInstance = inter.onCreate(clazz);
-            if (newInstance is Future) {
-              clazz = (await newInstance) as BeanT;
-            } else {
-              clazz = newInstance as BeanT;
-            }
+          final newInstance = inter.onCreate(clazz);
+          if (newInstance is Future) {
+            clazz = (await newInstance) as BeanT;
+          } else {
+            clazz = newInstance as BeanT;
           }
         }
       }
@@ -199,9 +203,11 @@ class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
     if (_interceptors.isNotEmpty) {
       for (final interceptor in _interceptors) {
-        _instance = (ddiInstance.getWith<DDIInterceptor, Object>(
+        final inter = InterceptorResolver.resolveSync(
+          ddiInstance: ddiInstance,
           qualifier: interceptor,
-        )).onGet(_instance!) as BeanT;
+        );
+        _instance = inter.onGet(_instance!) as BeanT;
       }
     }
     return _instance!;
@@ -231,8 +237,10 @@ class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
     if (_interceptors.isNotEmpty) {
       for (final interceptor in _interceptors) {
-        final ins = (await ddiInstance.getAsync(qualifier: interceptor))
-            as DDIInterceptor;
+        final ins = await InterceptorResolver.resolveAsync(
+          ddiInstance: ddiInstance,
+          qualifier: interceptor,
+        );
 
         final exec = ins.onGet(_instance!);
 

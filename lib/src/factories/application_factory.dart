@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
 import 'package:dart_ddi/src/utils/dependency_validator.dart';
+import 'package:dart_ddi/src/utils/interceptor_resolver.dart';
 import 'package:dart_ddi/src/utils/instance_destroy_utils.dart';
 
 /// Create an instance when first used and reuses it for all subsequent requests during the application's execution.
@@ -109,6 +110,30 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   }) {
     _checkState(type);
 
+    // Hot path for ApplicationScope in steady state:
+    // strong reference enabled, already created, and no creation flow needed.
+    if (!_useWeakReference &&
+        _instance != null &&
+        _created.isCompleted &&
+        _state == BeanStateEnum.created) {
+      if (_interceptors.isEmpty) {
+        return _instance!;
+      }
+
+      BeanT current = _instance!;
+
+      for (final interceptor in _interceptors) {
+        final inter = InterceptorResolver.resolveSync(
+          ddiInstance: ddiInstance,
+          qualifier: interceptor,
+        );
+        current = inter.onGet(current) as BeanT;
+      }
+
+      _instance = current;
+      return current;
+    }
+
     if (!_dependenciesValidated && _requires != null && _requires.isNotEmpty) {
       DependencyValidator.validateDependencies(
         requires: _requires,
@@ -187,9 +212,11 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
     if (_interceptors.isNotEmpty) {
       for (final interceptor in _interceptors) {
-        instanceToReturn = (ddiInstance.getWith<DDIInterceptor, Object>(
+        final inter = InterceptorResolver.resolveSync(
+          ddiInstance: ddiInstance,
           qualifier: interceptor,
-        )).onGet(instanceToReturn!) as BeanT;
+        );
+        instanceToReturn = inter.onGet(instanceToReturn!) as BeanT;
       }
     }
 
@@ -228,9 +255,11 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
       if (_interceptors.isNotEmpty) {
         for (final interceptor in _interceptors) {
-          ins = (ddiInstance.getWith<DDIInterceptor, Object>(
+          final inter = InterceptorResolver.resolveSync(
+            ddiInstance: ddiInstance,
             qualifier: interceptor,
-          )).onCreate(ins) as BeanT;
+          );
+          ins = inter.onCreate(ins) as BeanT;
         }
       }
 
@@ -439,8 +468,10 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
       /// Run the Interceptor for create process
       for (final interceptor in _interceptors) {
-        final ins = (await ddiInstance.getAsync(qualifier: interceptor))
-            as DDIInterceptor;
+        final ins = await InterceptorResolver.resolveAsync(
+          ddiInstance: ddiInstance,
+          qualifier: interceptor,
+        );
 
         final exec = ins.onCreate(instance);
 
@@ -542,9 +573,11 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     /// Run the Interceptors for the GET process.
     /// Must run everytime
     for (final interceptor in _interceptors) {
-      final exec =
-          (await ddiInstance.getAsync<DDIInterceptor>(qualifier: interceptor))
-              .onGet(instanceToProcess!);
+      final inter = await InterceptorResolver.resolveAsync(
+        ddiInstance: ddiInstance,
+        qualifier: interceptor,
+      );
+      final exec = inter.onGet(instanceToProcess!);
 
       instanceToProcess = (exec is Future ? await exec : exec) as BeanT;
     }
@@ -658,19 +691,22 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
     // Run interceptors for dispose
     for (final interceptor in _interceptors) {
+      final DDIInterceptor instance;
       if (ddiInstance.isFuture(qualifier: interceptor)) {
-        final instance = (await ddiInstance.getAsync(qualifier: interceptor))
-            as DDIInterceptor;
-
-        final exec = instance.onDispose(_instance);
-        if (exec is Future) {
-          await exec;
-        }
+        instance = await InterceptorResolver.resolveAsync(
+          ddiInstance: ddiInstance,
+          qualifier: interceptor,
+        );
       } else {
-        final instance =
-            ddiInstance.get(qualifier: interceptor) as DDIInterceptor;
+        instance = InterceptorResolver.resolveSync(
+          ddiInstance: ddiInstance,
+          qualifier: interceptor,
+        );
+      }
 
-        instance.onDispose(_instance);
+      final exec = instance.onDispose(_instance);
+      if (exec is Future) {
+        await exec;
       }
     }
 

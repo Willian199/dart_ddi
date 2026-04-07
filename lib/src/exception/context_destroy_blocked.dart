@@ -4,6 +4,5 @@ final class ContextDestroyBlockedException implements Exception {
   final Object context;
 
   @override
-  String toString() =>
-      'Context "$context" contains non-destroyable factories.';
+  String toString() => 'Context "$context" contains non-destroyable factories.';
 }

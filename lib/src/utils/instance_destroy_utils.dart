@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
+import 'package:dart_ddi/src/utils/interceptor_resolver.dart';
 
 /// Utility class for destroying instances with proper cleanup and interceptor handling.
 ///
@@ -52,16 +53,22 @@ final class InstanceDestroyUtils {
     if (interceptors.isNotEmpty) {
       for (final interceptor in interceptors) {
         try {
+          final DDIInterceptor inter;
           if (ddiInstance.isFuture(qualifier: interceptor)) {
-            final inter = (await ddiInstance.getAsync(qualifier: interceptor))
-                as DDIInterceptor;
-
-            await inter.onDestroy(instance);
+            inter = await InterceptorResolver.resolveAsync(
+              ddiInstance: ddiInstance,
+              qualifier: interceptor,
+            );
           } else {
-            final inter =
-                ddiInstance.get(qualifier: interceptor) as DDIInterceptor;
+            inter = InterceptorResolver.resolveSync(
+              ddiInstance: ddiInstance,
+              qualifier: interceptor,
+            );
+          }
 
-            inter.onDestroy(instance);
+          final exec = inter.onDestroy(instance);
+          if (exec is Future) {
+            await exec;
           }
         } on BeanNotFoundException {
           // Ignore BeanNotFoundException interceptor error during destruction

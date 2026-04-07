@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
+import 'package:dart_ddi/src/core/ddi_internal.dart';
 import 'package:dart_ddi/src/core/dart_ddi_default_qualifier_impl.dart';
 import 'package:dart_ddi/src/core/dart_ddi_qualifier.dart';
 import 'package:dart_ddi/src/core/dart_ddi_zone_qualifier_impl.dart';

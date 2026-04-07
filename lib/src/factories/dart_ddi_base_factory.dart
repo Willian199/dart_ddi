@@ -123,5 +123,4 @@ abstract class DDIBaseFactory<BeanT extends Object> with InstanceFactoryMixin {
   ///
   /// - `ddiInstance`: The DDI instance to use for operations.
   Future<void> dispose({required DDI ddiInstance});
-
 }
