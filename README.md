@@ -1142,8 +1142,9 @@ The table below summarizes how each relevant API behaves with context.
 
 | Method | Explicit `context:` supported? | Automatic fallback? | Behavior without explicit `context:` | Notes |
 | --- | --- | --- | --- | --- |
-| `createContext(context)` | N/A | N/A | Creates/activates a named context | For default strategy, context must not already exist |
-| `destroyContext(context)` | N/A | N/A | Destroys the context tree (deepest to parent) | Blocked when any factory in tree has `canDestroy: false` |
+| `currentContext` | N/A | N/A | Returns the active context token | Active context is persistent until another context is activated or destroyed |
+| `createContext(context)` | N/A | N/A | Creates/activates a named context | For default strategy, context must not already exist; also sets it as active |
+| `destroyContext(context)` | N/A | N/A | Destroys the context tree (deepest to parent) | Blocked when any factory in tree has `canDestroy: false`; if active context is destroyed, it falls back to parent/root |
 | `freezeContext(context)` / `unfreezeContext(context)` / `isContextFrozen(context)` | N/A | N/A | Operates on the named context | Frozen context blocks mutating operations only |
 | `register(..., context: ...)` and scope helpers (`singleton`, `application`, `dependent`, `object`) | Yes | No | Registers in current context | With explicit `context:`, context must exist (`ContextNotFoundException` otherwise) |
 | `getWith(..., context: ...)` | Yes | Yes | Resolves from current context | Fallback uses parent/root chain depending strategy |
