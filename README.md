@@ -178,21 +178,15 @@ final service = ddi.get<MyService>();
 
 Contexts let you isolate registrations without creating a separate DDI container for every scenario.
 
-**Important:** Both `DDI.instance` and `DDI.newInstance()` support contexts. Enabling `enableZoneRegistry: true` changes the internal isolation strategy, but the public API remains `runInContext(...)`.
+**Important:** Both `DDI.instance` and `DDI.newInstance()` support contexts through a strategy-based context engine.
 
-```dart
-final ddi = DDI.newInstance();
+Use `createContext(...)` and `destroyContext(...)` for explicit context lifecycle.
 
-T runInContext<T>(Object name, T Function() body);
-```
+### Context Strategy
 
-`runInContext(...)` accepts both synchronous and asynchronous bodies. When the body completes, all beans registered in that context are automatically destroyed.
-
-### Context Strategies
-
-- `DDI.newInstance()` uses a named-context strategy.
-- `DDI.newInstance(enableZoneRegistry: true)` uses Dart Zones for context isolation.
-- In both cases, the public API is `runInContext(...)`.
+- `DDI.newInstance()` uses the default named-context strategy.
+- You can pass a custom strategy with `DDI.newInstance(contextStrategy: myStrategy)`.
+- Context lifecycle is managed explicitly.
 
 ### Explicit Context Operations
 
@@ -302,13 +296,17 @@ It can be reused in explicit `context:` operations when needed.
 `getInstance<T>()` itself does not force resolution. It creates a handle that can be checked later with `isResolvable()` and resolved later with `get()` or `getAsync()`.
 
 ```dart
-await ddi.runInContext('feature-context', () async {
-  await ddi.application<MyService>(MyService.new);
+ddi.createContext('feature-context');
+await ddi.application<MyService>(
+  MyService.new,
+  context: 'feature-context',
+);
 
-  final instance = ddi.getInstance<MyService>();
-  final service = instance.get();
-  service.doSomething();
-});
+final instance = ddi.getInstance<MyService>();
+final service = instance.get();
+service.doSomething();
+
+await ddi.destroyContext('feature-context');
 ```
 
 This behavior is particularly useful for contextual modules and delayed resolution flows.
@@ -361,20 +359,6 @@ final paymentService = ddi.getWith<PaymentService, Object>(
 ```
 
 When `context:` is provided, selector lookup is performed against that specific context.
-
-### Breaking Change
-
-If you were previously using `runInZone(...)`, it has been renamed to `runInContext(...)`.
-
-Example:
-```dart
-final ddi = DDI.newInstance(enableZoneRegistry: true);
-
-final result = await ddi.runInContext('test-context', () async {
-  await ddi.singleton<TestService>(TestService.new);
-  return ddi.get<TestService>();
-});
-```
 
 ## Common Considerations:
 **Unique Registration**: Ensure that the instance to be registered is unique for a specific type or use qualifiers to enable the registration of multiple instances of the same type.
@@ -1158,7 +1142,6 @@ The table below summarizes how each relevant API behaves with context.
 
 | Method | Explicit `context:` supported? | Automatic fallback? | Behavior without explicit `context:` | Notes |
 | --- | --- | --- | --- | --- |
-| `runInContext(name, body)` | N/A | N/A | Runs in a new context and auto-cleans context beans when body completes | Default strategy restores previous context after completion/failure |
 | `createContext(context)` | N/A | N/A | Creates/activates a named context | For default strategy, context must not already exist |
 | `destroyContext(context)` | N/A | N/A | Destroys the context tree (deepest to parent) | Blocked when any factory in tree has `canDestroy: false` |
 | `freezeContext(context)` / `unfreezeContext(context)` / `isContextFrozen(context)` | N/A | N/A | Operates on the named context | Frozen context blocks mutating operations only |
@@ -1178,3 +1161,4 @@ The table below summarizes how each relevant API behaves with context.
 | `addChildrenModules<T>(..., qualifier, context?)` | Yes | Explicit `context`: No. Omitted `context`: Yes | Resolves target module from current context lookup | Use explicit `context` to target one registry only |
 | `getChildren<T>(qualifier, context?)` | Yes | Explicit `context`: No. Omitted `context`: Yes | Resolves from current context lookup | Use explicit `context` for strict contextual read |
 | `getInstance<T>(...)` | No explicit `context` parameter | N/A (captures context token) | Captures current context at wrapper creation time | Later `get()/getAsync()` in wrapper resolves against captured context |
+

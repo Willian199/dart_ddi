@@ -1,6 +1,7 @@
 library;
 
 export 'src/core/dart_ddi.dart' show DDI, ddi;
+export 'src/core/ddi_strategy.dart' show DDIStrategy;
 export 'src/data/custom_builder.dart';
 export 'src/enum/bean_state_enum.dart';
 export 'src/exception/bean_destroyed.dart';

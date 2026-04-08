@@ -418,30 +418,32 @@ void main() {
       );
     });
 
-    test('destroyContext should support concurrent independent contexts',
+    test('destroyContext should support concurrent independent containers',
         () async {
-      final ddi = DDI.newInstance();
-      ddi.runInContext('parallel-a', () {});
-      ddi.runInContext('parallel-b', () {});
+      final ddiA = DDI.newInstance();
+      final ddiB = DDI.newInstance();
 
-      await ddi.object<ContextManagementBean>(
+      ddiA.createContext('parallel-a');
+      ddiB.createContext('parallel-b');
+
+      await ddiA.object<ContextManagementBean>(
         const ContextManagementBean('A'),
         qualifier: 'a',
         context: 'parallel-a',
       );
-      await ddi.object<ContextManagementBean>(
+      await ddiB.object<ContextManagementBean>(
         const ContextManagementBean('B'),
         qualifier: 'b',
         context: 'parallel-b',
       );
 
       await Future.wait([
-        Future<void>.sync(() => ddi.destroyContext('parallel-a')),
-        Future<void>.sync(() => ddi.destroyContext('parallel-b')),
+        Future<void>.sync(() => ddiA.destroyContext('parallel-a')),
+        Future<void>.sync(() => ddiB.destroyContext('parallel-b')),
       ]);
 
-      expect(ddi.contextExists('parallel-a'), isFalse);
-      expect(ddi.contextExists('parallel-b'), isFalse);
+      expect(ddiA.contextExists('parallel-a'), isFalse);
+      expect(ddiB.contextExists('parallel-b'), isFalse);
     });
 
     test(

@@ -1,9 +1,7 @@
 import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
-import 'package:dart_ddi/src/core/dart_ddi_default_qualifier_impl.dart';
-import 'package:dart_ddi/src/core/dart_ddi_qualifier.dart';
-import 'package:dart_ddi/src/core/dart_ddi_zone_qualifier_impl.dart';
+import 'package:dart_ddi/src/core/ddi_default_strategy.dart';
 import 'package:dart_ddi/src/core/ddi_internal.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
 
@@ -17,7 +15,7 @@ final DDI ddi = DDI.instance;
 /// It provides methods for managing beans.
 abstract class DDI {
   /// Creates the shared instance of the [DDI] class.
-  static final DDI _instance = _DDIImpl(enableZoneRegistry: false);
+  static final DDI _instance = _DDIImpl();
 
   /// Gets the shared instance of the [DDI] class.
   @pragma('vm:prefer-inline')
@@ -25,41 +23,8 @@ abstract class DDI {
 
   /// Get a new instance of the [DDI] class.
   @pragma('vm:prefer-inline')
-  static DDI newInstance({bool enableZoneRegistry = false}) =>
-      _DDIImpl(enableZoneRegistry: enableZoneRegistry);
-
-  /// This method creates a new Dart Zone with its own isolated registry of beans. This allows you to
-  /// register and manage instances in a separate context without affecting the global DDI container.
-  /// When the zone completes, all registered instances in that zone are automatically destroyed.
-  ///
-  /// **Use cases:**
-  /// - Testing scenarios where you need isolated instances
-  /// - Temporary registrations that shouldn't persist
-  /// - Scoped dependency injection for specific operations
-  /// - Avoiding conflicts between different parts of the application
-  ///
-  /// - `name`: A unique identifier for the zone (used for debugging and identification).
-  /// - `body`: The function to execute within the new zone context.
-  ///
-  /// **Important notes:**
-  /// - Instances registered in the zone are only available within that zone
-  /// - When the zone completes, all instances are automatically destroyed
-  /// - The global DDI container is not affected by zone operations
-  /// - Zones can be nested, with child zones having access to parent zone instances
-  ///
-  /// Example:
-  /// ```dart
-  /// final result = ddi.runInZone('test-zone', () {
-  ///   // Register instances specific to this zone
-  ///   ddi.registerSingleton<TestService>(TestService.new);
-  ///
-  ///   // Use the zone-specific instance
-  ///   final service = ddi.get<TestService>();
-  ///   return service.process();
-  /// });
-  /// // Zone instances are automatically destroyed here
-  /// ```
-  BeanT runInContext<BeanT>(Object name, BeanT Function() body);
+  static DDI newInstance({DDIStrategy? contextStrategy}) =>
+      _DDIImpl(contextStrategy: contextStrategy);
 
   /// Returns a token representing the current active context.
   ///

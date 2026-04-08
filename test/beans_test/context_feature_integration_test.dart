@@ -5,34 +5,42 @@ import '../clazz_samples/context_feature_integration_samples.dart';
 void main() {
   group('DDI Context Feature Integration Tests', () {
     test(
-      'captured Instance from a cleaned zone should fallback to the root bean',
+      'captured Instance from a destroyed context should fallback to the root bean',
       () async {
-        final ddi = DDI.newInstance(enableZoneRegistry: true);
+        final ddi = DDI.newInstance();
 
-        await ddi.application<ZoneScopedValue>(
-          () => const ZoneScopedValue('root'),
+        await ddi.application<ContextScopedValue>(
+          () => const ContextScopedValue('root'),
           qualifier: 'shared',
         );
 
-        late Instance<ZoneScopedValue> capturedInstance;
+        ddi.createContext('context-a');
 
-        await ddi.runInContext('zone-a', () async {
-          await ddi.application<ZoneScopedValue>(
-            () => const ZoneScopedValue('zone'),
-            qualifier: 'shared',
-          );
+        late Instance<ContextScopedValue> capturedInstance;
 
-          capturedInstance = ddi.getInstance<ZoneScopedValue>(
-            qualifier: 'shared',
-          );
+        await ddi.application<ContextScopedValue>(
+          () => const ContextScopedValue('context'),
+          qualifier: 'shared',
+        );
 
-          expect(capturedInstance.get().origin, equals('zone'));
-        });
+        capturedInstance = ddi.getInstance<ContextScopedValue>(
+          qualifier: 'shared',
+        );
 
-        expect(ddi.get<ZoneScopedValue>(qualifier: 'shared').origin, 'root');
+        expect(capturedInstance.get().origin, equals('context'));
+
+        await ddi.destroyContext('context-a');
+
+        expect(ddi.get<ContextScopedValue>(qualifier: 'shared').origin, 'root');
         expect(capturedInstance.isResolvable(), isFalse);
-        expect(capturedInstance.get().origin, equals('root'));
-        expect((await capturedInstance.getAsync()).origin, equals('root'));
+        expect(
+          () => capturedInstance.get(),
+          throwsA(isA<BeanNotFoundException>()),
+        );
+        await expectLater(
+          capturedInstance.getAsync(),
+          throwsA(isA<BeanNotFoundException>()),
+        );
       },
     );
 
