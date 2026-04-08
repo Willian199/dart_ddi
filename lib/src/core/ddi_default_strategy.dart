@@ -1,31 +1,26 @@
 import 'package:dart_ddi/dart_ddi.dart';
-import 'package:dart_ddi/src/core/dart_ddi_qualifier.dart';
 
-/// Implementation of [DartDDIQualifier] without using Zones.
-///
-/// Instead of Zone-based isolation, this version uses named contexts arranged
-/// as a tree.
+/// Default implementation of [DDIStrategy] using named contexts arranged as a tree.
 ///
 /// The active context is always the last context activated successfully.
 /// Local operations remain O(1), while fallback lookups only walk through the
 /// ancestor chain of the active context.
 ///
-/// Important: because this implementation does not use `Zone`, async flows only
-/// stay isolated when used linearly (for example, with `await`). Concurrent
-/// async execution sharing the same qualifier instance can still interleave the
-/// active context.
-final class DartDDIDefaultQualifierImpl implements DartDDIQualifier {
-  DartDDIDefaultQualifierImpl._({
+/// Important: async flows only stay isolated when used linearly (for example,
+/// with `await`). Concurrent async execution sharing the same strategy instance
+/// can still interleave the active context.
+final class DDIDefaultStrategy implements DDIStrategy {
+  DDIDefaultStrategy._({
     required _QualifierContext rootContext,
     required Map<Object, _QualifierContext> contexts,
   })  : _rootContext = rootContext,
         _contexts = contexts,
         _currentContext = rootContext;
 
-  factory DartDDIDefaultQualifierImpl() {
+  factory DDIDefaultStrategy() {
     final rootContext = _QualifierContext.root();
 
-    return DartDDIDefaultQualifierImpl._(
+    return DDIDefaultStrategy._(
       rootContext: rootContext,
       contexts: <Object, _QualifierContext>{_rootQualifier: rootContext},
     );
@@ -93,54 +88,12 @@ final class DartDDIDefaultQualifierImpl implements DartDDIQualifier {
   }
 
   @override
-  void restoreContext(Object? context) {
-    if (context == null) {
-      _currentContext = _rootContext;
-      return;
-    }
-
-    final _QualifierContext? qualifierContext = _contexts[context];
-
-    if (qualifierContext != null) {
-      _currentContext = qualifierContext;
-      return;
-    }
-
-    _currentContext = _rootContext;
-  }
-
-  @override
   @pragma('vm:prefer-inline')
   Object get currentContext => _currentContext.qualifier;
 
   @override
   @pragma('vm:prefer-inline')
   bool get hasContext => !identical(_currentContext, _rootContext);
-
-  @override
-  BeanT runWithContext<BeanT>(Object name, BeanT Function() body) {
-    final _QualifierContext previousContext = _currentContext;
-    final _QualifierContext context = _activateContext(name);
-    _currentContext = context;
-
-    final BeanT result;
-
-    try {
-      result = body();
-    } catch (_) {
-      _currentContext = previousContext;
-      rethrow;
-    }
-
-    if (result is Future<Object?>) {
-      return result.catchError((Object error, StackTrace stackTrace) {
-        _currentContext = previousContext;
-        Error.throwWithStackTrace(error, stackTrace);
-      }) as BeanT;
-    }
-
-    return result;
-  }
 
   _QualifierContext? _resolveContext(Object? contextQualifier) {
     if (contextQualifier == _rootQualifier) {
@@ -346,7 +299,7 @@ final class _QualifierContext {
 
   _QualifierContext.root()
       : parent = null,
-        qualifier = DartDDIDefaultQualifierImpl._rootQualifier,
+        qualifier = DDIDefaultStrategy._rootQualifier,
         factories = <Object, DDIBaseFactory<Object>>{};
 
   final _QualifierContext? parent;

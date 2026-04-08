@@ -1,16 +1,25 @@
 ## 0.15.0
 
-* Added context support across default and zone-based registries.
-* Added explicit context lifecycle API: `createContext`, `destroyContext`, and `contextExists`.
-* Added context freeze controls: `freezeContext`, `unfreezeContext`, and `isContextFrozen`.
-* Added context lifecycle exceptions: `ContextFrozenException`, `ContextBeingDestroyedException`, `ContextDestroyBlockedException`, and `ContextDestroyIncompleteException`.
-* Explicit `context:` registration now requires an existing context and throws `ContextNotFoundException` when missing.
-* `currentContext` now always returns a valid context token, including the root context.
-* `Instance<BeanT>` now captures the active context when `getInstance()` is created, keeping later resolutions pinned to the same registry.
-* `getInstance()` now behaves as a lazy handle and no longer requires the bean to be registered at creation time.
-* Improved `Instance<BeanT>` cache and weak-reference performance for repeated `get()` calls.
+### Added
+
+* Added context support with explicit lifecycle APIs:
+  * `createContext`, `destroyContext`, `contextExists`
+  * `freezeContext`, `unfreezeContext`, `isContextFrozen`
+  * `currentContext` now always returns a valid token (including root)
+* Added context lifecycle exceptions:
+  * `ContextFrozenException`
+  * `ContextBeingDestroyedException`
+  * `ContextDestroyBlockedException`
+  * `ContextDestroyIncompleteException`
 * Added contextual module support through `DDIModule.contextQualifier`.
-* `DDIModule` can now register module-local beans in their own context, allowing the same qualifier to coexist with root registrations.
+* Added strategy customization API through `DDIStrategy` and `DDI.newInstance(contextStrategy: ...)`.
+
+### Changed
+
+* Explicit `context:` registration now requires an existing context and throws `ContextNotFoundException` when missing.
+* `Instance<BeanT>` captures the active context when `getInstance()` is created.
+* `getInstance()` behaves as a lazy handle and no longer requires pre-registration.
+* Improved `Instance<BeanT>` cache and weak-reference performance for repeated `get()` calls.
 * `destroyContext(...)` now:
   * validates the full context tree before destroy (avoids partial destruction),
   * destroys deepest contexts first,
@@ -21,12 +30,15 @@
 
 ### Breaking Changes
 
-* `runInZone(...)` has been renamed to `runInContext(...)`.
+* Removed Zone-based context API and implementation:
+  * removed `enableZoneRegistry`
+  * removed Zone strategy implementation
+  * removed `DDI.runInZone(...)`
+* Strategy naming changes:
+  * `DartDDIQualifier` -> `DDIStrategy`
+  * `DartDDIDefaultQualifierImpl` -> `DDIDefaultStrategy`
+  * `DDI.newInstance(qualifier: ...)` -> `DDI.newInstance(contextStrategy: ...)`
 * `DDIBaseFactory` now requires `canDestroy` getter.
-
-
-### Note
-* With the current implementation of context. I'm planning to remove Zone support
 
 ## 0.14.0
 

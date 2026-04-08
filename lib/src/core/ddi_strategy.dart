@@ -1,11 +1,7 @@
 import 'package:dart_ddi/dart_ddi.dart';
 
-/// Manages qualifier mapping for Zones
-///
-/// This class provides functionality to manage bean registrations across different
-/// Dart zones, allowing for isolated dependency injection contexts. It handles
-/// both zone-specific and global bean registrations with proper fallback mechanisms.
-abstract interface class DartDDIQualifier {
+/// Manages qualifier mapping across contextual registries.
+abstract interface class DDIStrategy {
   ({DDIBaseFactory<BeanT> factory, Object context})?
       getFactory<BeanT extends Object>({
     required Object qualifier,
@@ -13,31 +9,15 @@ abstract interface class DartDDIQualifier {
     Object? contextQualifier,
   });
 
-  /// Restores a previously captured context.
-  void restoreContext(Object? context);
-
   /// Returns a token representing the current active context.
   ///
   /// This always returns a valid context object, including the root context.
   @pragma('vm:prefer-inline')
   Object get currentContext;
 
-  /// Checks if we are currently in a zone with a dedicated registry.
-  ///
-  /// Returns `true` if the current zone has its own bean registry,
-  /// `false` if using the global registry.
+  /// Checks if we are currently in a dedicated non-root context.
   @pragma('vm:prefer-inline')
   bool get hasContext;
-
-  /// Executes code in a new zone with dedicated bean registries.
-  ///
-  /// This method creates a new zone with its own isolated bean registry,
-  /// allowing for isolated dependency injection contexts. When the zone completes,
-  /// all registered beans in that zone are automatically cleaned up.
-  ///
-  /// - `name`: Unique identifier for the zone (used for debugging).
-  /// - `body`: Function to execute within the new zone context.
-  BeanT runWithContext<BeanT>(Object name, BeanT Function() body);
 
   /// Creates or activates a persistent context without executing a body.
   @pragma('vm:prefer-inline')

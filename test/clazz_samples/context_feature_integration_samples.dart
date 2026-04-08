@@ -1,7 +1,7 @@
 import 'package:dart_ddi/dart_ddi.dart';
 
-class ZoneScopedValue {
-  const ZoneScopedValue(this.origin);
+class ContextScopedValue {
+  const ContextScopedValue(this.origin);
 
   final String origin;
 }

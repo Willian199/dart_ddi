@@ -1,16 +1,13 @@
 part of 'dart_ddi.dart';
 
 class _DDIImpl implements DDI, DDIInternal {
-  _DDIImpl({required bool enableZoneRegistry})
-      : _enableZoneRegistry = enableZoneRegistry;
+  _DDIImpl({DDIStrategy? contextStrategy})
+      : _beans = contextStrategy ?? DDIDefaultStrategy();
 
-  final bool _enableZoneRegistry;
   Future<void> _contextWriteQueue = Future<void>.value();
   final Set<Object> _contextsBeingDestroyed = <Object>{};
 
-  late final DartDDIQualifier _beans = _enableZoneRegistry
-      ? DartDDIZoneQualifierImpl()
-      : DartDDIDefaultQualifierImpl();
+  final DDIStrategy _beans;
 
   @override
   @pragma('vm:prefer-inline')
@@ -107,94 +104,6 @@ class _DDIImpl implements DDI, DDIInternal {
 
   @override
   bool isContextFrozen(Object context) => _beans.isContextFrozen(context);
-
-  @override
-  BeanT runInContext<BeanT>(Object name, BeanT Function() body) {
-    if (_enableZoneRegistry) {
-      return _beans.runWithContext<BeanT>(name, () {
-        final BeanT result;
-
-        try {
-          result = body();
-        } catch (_) {
-          _destroyCurrentContextSync();
-          rethrow;
-        }
-
-        if (result is Future) {
-          return (result as Future).whenComplete(() async {
-            await _destroyCurrentContextAsync();
-          }) as BeanT;
-        }
-
-        try {
-          return result;
-        } finally {
-          _destroyCurrentContextSync();
-        }
-      });
-    }
-
-    final Object previousContext = _beans.currentContext;
-    return _beans.runWithContext<BeanT>(name, () {
-      final BeanT result;
-
-      try {
-        result = body();
-      } catch (_) {
-        try {
-          _destroyCurrentContextSync();
-        } finally {
-          _beans.restoreContext(previousContext);
-        }
-        rethrow;
-      }
-
-      if (result is Future) {
-        return (result as Future).whenComplete(() async {
-          try {
-            await _destroyCurrentContextAsync();
-          } finally {
-            _beans.restoreContext(previousContext);
-          }
-        }) as BeanT;
-      }
-
-      try {
-        return result;
-      } finally {
-        try {
-          _destroyCurrentContextSync();
-        } finally {
-          _beans.restoreContext(previousContext);
-        }
-      }
-    });
-  }
-
-  void _destroyCurrentContextSync() {
-    if (!_beans.hasContext) {
-      return;
-    }
-
-    for (final key in _beans.keys.toList()) {
-      _destroy(key, null);
-    }
-  }
-
-  Future<void> _destroyCurrentContextAsync() async {
-    if (!_beans.hasContext) {
-      return;
-    }
-
-    for (final key in _beans.keys.toList()) {
-      final destroyResult = _destroy(key, null);
-
-      if (destroyResult is Future) {
-        await destroyResult;
-      }
-    }
-  }
 
   @override
   Future<void> register<BeanT extends Object>({
