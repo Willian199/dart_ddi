@@ -40,7 +40,9 @@ void main() {
       test('should create builder with correct parameters and return type', () {
         TestService func(String name, int value) {
           return TestService();
-        }        expect(func.builder.parametersType, [String, int]);
+        }
+
+        expect(func.builder.parametersType, [String, int]);
         expect(func.builder.returnType, TestService);
         expect(func.builder.isFuture, false);
       });
@@ -63,7 +65,9 @@ void main() {
       test('should create builder with correct parameters and return type', () {
         Future<TestService> func(String name, int value) async {
           return TestService();
-        }        expect(func.builder.parametersType, [String, int]);
+        }
+
+        expect(func.builder.parametersType, [String, int]);
         expect(func.builder.returnType, TestService);
         expect(func.builder.isFuture, true);
       });
@@ -85,7 +89,9 @@ void main() {
       test('should create builder with correct parameters and return type', () {
         TestService func(String name, int value, bool flag) {
           return TestService();
-        }        expect(func.builder.parametersType, [String, int, bool]);
+        }
+
+        expect(func.builder.parametersType, [String, int, bool]);
         expect(func.builder.returnType, TestService);
         expect(func.builder.isFuture, false);
       });
@@ -106,7 +112,9 @@ void main() {
       test('should create builder with correct parameters and return type', () {
         Future<TestService> func(String name, int value, bool flag) async {
           return TestService();
-        }        expect(func.builder.parametersType, [String, int, bool]);
+        }
+
+        expect(func.builder.parametersType, [String, int, bool]);
         expect(func.builder.returnType, TestService);
         expect(func.builder.isFuture, true);
       });
@@ -127,7 +135,9 @@ void main() {
       test('should create builder with correct parameters and return type', () {
         TestService func(String name, int value, bool flag, double rate) {
           return TestService();
-        }        expect(func.builder.parametersType, [String, int, bool, double]);
+        }
+
+        expect(func.builder.parametersType, [String, int, bool, double]);
         expect(func.builder.returnType, TestService);
         expect(func.builder.isFuture, false);
       });
@@ -149,7 +159,9 @@ void main() {
         Future<TestService> func(
             String name, int value, bool flag, double rate) async {
           return TestService();
-        }        expect(func.builder.parametersType, [String, int, bool, double]);
+        }
+
+        expect(func.builder.parametersType, [String, int, bool, double]);
         expect(func.builder.returnType, TestService);
         expect(func.builder.isFuture, true);
       });
@@ -171,7 +183,9 @@ void main() {
       test('should create builder with correct parameters and return type', () {
         TestService func(String a, int b, bool c, double d, String e) {
           return TestService();
-        }        expect(
+        }
+
+        expect(
             func.builder.parametersType, [String, int, bool, double, String]);
         expect(func.builder.returnType, TestService);
         expect(func.builder.isFuture, false);
@@ -194,7 +208,9 @@ void main() {
         Future<TestService> func(
             String a, int b, bool c, double d, String e) async {
           return TestService();
-        }        expect(
+        }
+
+        expect(
             func.builder.parametersType, [String, int, bool, double, String]);
         expect(func.builder.returnType, TestService);
         expect(func.builder.isFuture, true);
@@ -217,7 +233,9 @@ void main() {
       test('should create builder with correct parameters and return type', () {
         TestService func(String a, int b, bool c, double d, String e, int f) {
           return TestService();
-        }        expect(
+        }
+
+        expect(
           P6(func).builder.parametersType,
           [String, int, bool, double, String, int],
         );
@@ -266,7 +284,9 @@ void main() {
         TestService func(
             String a, int b, bool c, double d, String e, int f, bool g) {
           return TestService();
-        }        expect(
+        }
+
+        expect(
           func.builder.parametersType,
           [String, int, bool, double, String, int, bool],
         );
@@ -292,7 +312,9 @@ void main() {
         Future<TestService> func(
             String a, int b, bool c, double d, String e, int f, bool g) async {
           return TestService();
-        }        expect(
+        }
+
+        expect(
           func.builder.parametersType,
           [String, int, bool, double, String, int, bool],
         );
@@ -318,7 +340,9 @@ void main() {
         TestService func(String a, int b, bool c, double d, String e, int f,
             bool g, double h) {
           return TestService();
-        }        expect(func.builder.parametersType.length, 8);
+        }
+
+        expect(func.builder.parametersType.length, 8);
         expect(
           func.builder.parametersType,
           [String, int, bool, double, String, int, bool, double],
@@ -345,7 +369,9 @@ void main() {
         Future<TestService> func(String a, int b, bool c, double d, String e,
             int f, bool g, double h) async {
           return TestService();
-        }        expect(
+        }
+
+        expect(
           func.builder.parametersType,
           [String, int, bool, double, String, int, bool, double],
         );
@@ -371,7 +397,9 @@ void main() {
         TestService func(String a, int b, bool c, double d, String e, int f,
             bool g, double h, String i) {
           return TestService();
-        }        expect(
+        }
+
+        expect(
           func.builder.parametersType,
           [String, int, bool, double, String, int, bool, double, String],
         );
@@ -397,7 +425,9 @@ void main() {
         Future<TestService> func(String a, int b, bool c, double d, String e,
             int f, bool g, double h, String i) async {
           return TestService();
-        }        expect(
+        }
+
+        expect(
           func.builder.parametersType,
           [String, int, bool, double, String, int, bool, double, String],
         );
@@ -423,7 +453,9 @@ void main() {
         TestService func(String a, int b, bool c, double d, String e, int f,
             bool g, double h, String i, int j) {
           return TestService();
-        }        expect(
+        }
+
+        expect(
           func.builder.parametersType,
           [String, int, bool, double, String, int, bool, double, String, int],
         );
@@ -449,7 +481,9 @@ void main() {
         Future<TestService> func(String a, int b, bool c, double d, String e,
             int f, bool g, double h, String i, int j) async {
           return TestService();
-        }        expect(
+        }
+
+        expect(
           func.builder.parametersType,
           [String, int, bool, double, String, int, bool, double, String, int],
         );
@@ -526,8 +560,7 @@ void main() {
         expect(instance.c, isA<C>());
       });
 
-      test('should allow ApplicationFactory(builder: B.new.inject)',
-          () async {
+      test('should allow ApplicationFactory(builder: B.new.inject)', () async {
         await DDI.instance.register(
           factory: ApplicationFactory(
             builder: C.new.builder,
@@ -544,7 +577,8 @@ void main() {
         expect(instance.c, isA<C>());
       });
 
-      test('should resolve class constructor chain with singleton and dependent',
+      test(
+          'should resolve class constructor chain with singleton and dependent',
           () async {
         await ddi.object<AutoInjectClassLeaf>(const AutoInjectClassLeaf(11));
         await ddi.object<AutoInjectClassConfig>(
@@ -588,8 +622,7 @@ void main() {
         expect(instance.flag.enabled, isTrue);
       });
 
-      test('should allow async inject in ApplicationFactory builder',
-          () async {
+      test('should allow async inject in ApplicationFactory builder', () async {
         await DDI.instance.register(
           factory: ApplicationFactory(
             builder: (() async {
@@ -609,7 +642,8 @@ void main() {
 
         await DDI.instance.register(
           factory: ApplicationFactory(
-            builder: ((AutoInjectFutureLeaf leaf, AutoInjectFutureFlag flag) async {
+            builder:
+                ((AutoInjectFutureLeaf leaf, AutoInjectFutureFlag flag) async {
               await Future<void>.delayed(const Duration(milliseconds: 5));
               return AutoInjectFutureRoot(leaf, flag);
             }).inject,
@@ -675,4 +709,3 @@ Future<void> _destroyIfRegistered<T extends Object>() async {
     await result;
   }
 }
-

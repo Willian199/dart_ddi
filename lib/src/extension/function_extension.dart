@@ -74,8 +74,8 @@ extension P1<BeanT extends Object, A extends Object> on BeanT Function(A) {
 }
 
 /// Extension for functions with 1 parameter (async)
-extension PF1<BeanT extends Object, A extends Object>
-    on Future<BeanT> Function(A) {
+extension PF1<BeanT extends Object, A extends Object> on Future<BeanT> Function(
+    A) {
   /// Converts this async function into a [CustomBuilder].
   CustomBuilder<BeanT> get builder => CustomBuilder<BeanT>(
         producer: this,
@@ -93,8 +93,8 @@ extension PF1<BeanT extends Object, A extends Object>
 }
 
 /// Extension for functions with 2 parameters (sync)
-extension P2<BeanT extends Object, A extends Object, B extends Object>
-    on BeanT Function(A, B) {
+extension P2<BeanT extends Object, A extends Object, B extends Object> on BeanT
+    Function(A, B) {
   /// Converts this function into a [CustomBuilder].
   CustomBuilder<BeanT> get builder => CustomBuilder<BeanT>(
         producer: this,
@@ -231,9 +231,13 @@ extension PF4<BeanT extends Object, A extends Object, B extends Object,
 }
 
 /// Extension for functions with 5 parameters (sync)
-extension P5<BeanT extends Object, A extends Object, B extends Object,
-    C extends Object, D extends Object, E extends Object>
-    on BeanT Function(A, B, C, D, E) {
+extension P5<
+    BeanT extends Object,
+    A extends Object,
+    B extends Object,
+    C extends Object,
+    D extends Object,
+    E extends Object> on BeanT Function(A, B, C, D, E) {
   /// Converts this function into a [CustomBuilder].
   CustomBuilder<BeanT> get builder => CustomBuilder<BeanT>(
         producer: this,
@@ -257,9 +261,13 @@ extension P5<BeanT extends Object, A extends Object, B extends Object,
 }
 
 /// Extension for functions with 5 parameters (async)
-extension PF5<BeanT extends Object, A extends Object, B extends Object,
-    C extends Object, D extends Object, E extends Object>
-    on Future<BeanT> Function(A, B, C, D, E) {
+extension PF5<
+    BeanT extends Object,
+    A extends Object,
+    B extends Object,
+    C extends Object,
+    D extends Object,
+    E extends Object> on Future<BeanT> Function(A, B, C, D, E) {
   /// Converts this async function into a [CustomBuilder].
   CustomBuilder<BeanT> get builder => CustomBuilder<BeanT>(
         producer: this,
@@ -283,9 +291,14 @@ extension PF5<BeanT extends Object, A extends Object, B extends Object,
 }
 
 /// Extension for functions with 6 parameters (sync)
-extension P6<BeanT extends Object, A extends Object, B extends Object,
-    C extends Object, D extends Object, E extends Object, F extends Object>
-    on BeanT Function(A, B, C, D, E, F) {
+extension P6<
+    BeanT extends Object,
+    A extends Object,
+    B extends Object,
+    C extends Object,
+    D extends Object,
+    E extends Object,
+    F extends Object> on BeanT Function(A, B, C, D, E, F) {
   /// Converts this function into a [CustomBuilder].
   CustomBuilder<BeanT> get builder => CustomBuilder<BeanT>(
         producer: this,
@@ -310,9 +323,14 @@ extension P6<BeanT extends Object, A extends Object, B extends Object,
 }
 
 /// Extension for functions with 6 parameters (async)
-extension PF6<BeanT extends Object, A extends Object, B extends Object,
-    C extends Object, D extends Object, E extends Object, F extends Object>
-    on BeanT Function(A, B, C, D, E, F) {
+extension PF6<
+    BeanT extends Object,
+    A extends Object,
+    B extends Object,
+    C extends Object,
+    D extends Object,
+    E extends Object,
+    F extends Object> on BeanT Function(A, B, C, D, E, F) {
   /// Converts this async function into a [CustomBuilder].
   CustomBuilder<BeanT> get builder => CustomBuilder<BeanT>(
         producer: this,
@@ -337,8 +355,14 @@ extension PF6<BeanT extends Object, A extends Object, B extends Object,
 }
 
 /// Extension for functions with 7 parameters (sync)
-extension P7<BeanT extends Object, A extends Object, B extends Object,
-    C extends Object, D extends Object, E extends Object, F extends Object,
+extension P7<
+    BeanT extends Object,
+    A extends Object,
+    B extends Object,
+    C extends Object,
+    D extends Object,
+    E extends Object,
+    F extends Object,
     G extends Object> on BeanT Function(A, B, C, D, E, F, G) {
   /// Converts this function into a [CustomBuilder].
   CustomBuilder<BeanT> get builder => CustomBuilder<BeanT>(
@@ -364,9 +388,16 @@ extension P7<BeanT extends Object, A extends Object, B extends Object,
       );
 }
 
-extension PF7<BeanT extends Object, A extends Object, B extends Object,
-    C extends Object, D extends Object, E extends Object, F extends Object,
-    G extends Object> on Future<BeanT> Function(A, B, C, D, E, F, G) {  CustomBuilder<BeanT> get builder => CustomBuilder<BeanT>(
+extension PF7<
+    BeanT extends Object,
+    A extends Object,
+    B extends Object,
+    C extends Object,
+    D extends Object,
+    E extends Object,
+    F extends Object,
+    G extends Object> on Future<BeanT> Function(A, B, C, D, E, F, G) {
+  CustomBuilder<BeanT> get builder => CustomBuilder<BeanT>(
         producer: this,
         parametersType: [A, B, C, D, E, F, G],
         returnType: BeanT,
@@ -389,9 +420,17 @@ extension PF7<BeanT extends Object, A extends Object, B extends Object,
       );
 }
 
-extension P8<BeanT extends Object, A extends Object, B extends Object,
-    C extends Object, D extends Object, E extends Object, F extends Object,
-    G extends Object, H extends Object> on BeanT Function(A, B, C, D, E, F, G, H) {  CustomBuilder<BeanT> get builder => CustomBuilder<BeanT>(
+extension P8<
+    BeanT extends Object,
+    A extends Object,
+    B extends Object,
+    C extends Object,
+    D extends Object,
+    E extends Object,
+    F extends Object,
+    G extends Object,
+    H extends Object> on BeanT Function(A, B, C, D, E, F, G, H) {
+  CustomBuilder<BeanT> get builder => CustomBuilder<BeanT>(
         producer: this,
         parametersType: [A, B, C, D, E, F, G, H],
         returnType: BeanT,
@@ -415,10 +454,17 @@ extension P8<BeanT extends Object, A extends Object, B extends Object,
       );
 }
 
-extension PF8<BeanT extends Object, A extends Object, B extends Object,
-    C extends Object, D extends Object, E extends Object, F extends Object,
-    G extends Object, H extends Object>
-    on Future<BeanT> Function(A, B, C, D, E, F, G, H) {  CustomBuilder<BeanT> get builder => CustomBuilder<BeanT>(
+extension PF8<
+    BeanT extends Object,
+    A extends Object,
+    B extends Object,
+    C extends Object,
+    D extends Object,
+    E extends Object,
+    F extends Object,
+    G extends Object,
+    H extends Object> on Future<BeanT> Function(A, B, C, D, E, F, G, H) {
+  CustomBuilder<BeanT> get builder => CustomBuilder<BeanT>(
         producer: this,
         parametersType: [A, B, C, D, E, F, G, H],
         returnType: BeanT,
@@ -442,10 +488,18 @@ extension PF8<BeanT extends Object, A extends Object, B extends Object,
       );
 }
 
-extension P9<BeanT extends Object, A extends Object, B extends Object,
-    C extends Object, D extends Object, E extends Object, F extends Object,
-    G extends Object, H extends Object, I extends Object>
-    on BeanT Function(A, B, C, D, E, F, G, H, I) {  CustomBuilder<BeanT> get builder => CustomBuilder<BeanT>(
+extension P9<
+    BeanT extends Object,
+    A extends Object,
+    B extends Object,
+    C extends Object,
+    D extends Object,
+    E extends Object,
+    F extends Object,
+    G extends Object,
+    H extends Object,
+    I extends Object> on BeanT Function(A, B, C, D, E, F, G, H, I) {
+  CustomBuilder<BeanT> get builder => CustomBuilder<BeanT>(
         producer: this,
         parametersType: [A, B, C, D, E, F, G, H, I],
         returnType: BeanT,
@@ -470,10 +524,18 @@ extension P9<BeanT extends Object, A extends Object, B extends Object,
       );
 }
 
-extension PF9<BeanT extends Object, A extends Object, B extends Object,
-    C extends Object, D extends Object, E extends Object, F extends Object,
-    G extends Object, H extends Object, I extends Object>
-    on Future<BeanT> Function(A, B, C, D, E, F, G, H, I) {  CustomBuilder<BeanT> get builder => CustomBuilder<BeanT>(
+extension PF9<
+    BeanT extends Object,
+    A extends Object,
+    B extends Object,
+    C extends Object,
+    D extends Object,
+    E extends Object,
+    F extends Object,
+    G extends Object,
+    H extends Object,
+    I extends Object> on Future<BeanT> Function(A, B, C, D, E, F, G, H, I) {
+  CustomBuilder<BeanT> get builder => CustomBuilder<BeanT>(
         producer: this,
         parametersType: [A, B, C, D, E, F, G, H, I],
         returnType: BeanT,
@@ -498,10 +560,19 @@ extension PF9<BeanT extends Object, A extends Object, B extends Object,
       );
 }
 
-extension P10<BeanT extends Object, A extends Object, B extends Object,
-    C extends Object, D extends Object, E extends Object, F extends Object,
-    G extends Object, H extends Object, I extends Object, J extends Object>
-    on BeanT Function(A, B, C, D, E, F, G, H, I, J) {  CustomBuilder<BeanT> get builder => CustomBuilder<BeanT>(
+extension P10<
+    BeanT extends Object,
+    A extends Object,
+    B extends Object,
+    C extends Object,
+    D extends Object,
+    E extends Object,
+    F extends Object,
+    G extends Object,
+    H extends Object,
+    I extends Object,
+    J extends Object> on BeanT Function(A, B, C, D, E, F, G, H, I, J) {
+  CustomBuilder<BeanT> get builder => CustomBuilder<BeanT>(
         producer: this,
         parametersType: [A, B, C, D, E, F, G, H, I, J],
         returnType: BeanT,
@@ -527,10 +598,19 @@ extension P10<BeanT extends Object, A extends Object, B extends Object,
       );
 }
 
-extension PF10<BeanT extends Object, A extends Object, B extends Object,
-    C extends Object, D extends Object, E extends Object, F extends Object,
-    G extends Object, H extends Object, I extends Object, J extends Object>
-    on Future<BeanT> Function(A, B, C, D, E, F, G, H, I, J) {  CustomBuilder<BeanT> get builder => CustomBuilder<BeanT>(
+extension PF10<
+    BeanT extends Object,
+    A extends Object,
+    B extends Object,
+    C extends Object,
+    D extends Object,
+    E extends Object,
+    F extends Object,
+    G extends Object,
+    H extends Object,
+    I extends Object,
+    J extends Object> on Future<BeanT> Function(A, B, C, D, E, F, G, H, I, J) {
+  CustomBuilder<BeanT> get builder => CustomBuilder<BeanT>(
         producer: this,
         parametersType: [A, B, C, D, E, F, G, H, I, J],
         returnType: BeanT,
@@ -555,4 +635,3 @@ extension PF10<BeanT extends Object, A extends Object, B extends Object,
         isFuture: true,
       );
 }
-
