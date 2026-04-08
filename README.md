@@ -58,7 +58,8 @@ See this [example](https://github.com/Willian199/dart_ddi/blob/master/example/ma
 3. [Factories](#factories)
    1. [How Factories Work](#how-factories-work)
    2. [Use Cases for Factories](#use-cases-for-factories)
-   3. [Considerations](#considerations)
+   3. [Auto Inject](#auto-inject)
+   4. [Considerations](#considerations)
 4. [Qualifiers](#qualifiers)
    1. [How Qualifiers Work](#how-qualifiers-work)
    2. [Use Cases for Qualifiers](#use-cases-for-qualifiers)
@@ -680,6 +681,28 @@ DDI.instance.register(
 ddi.getWith<ServiceWithParameter, RecordParameter>(parameter: parameter);
 ddi.get<ServiceAutoInject>();
 ```
+
+## Auto Inject
+
+DDI supports `inject` as a shortcut to auto-resolve constructor/function parameters by type.
+
+This dependencies are resolved automatically from the container instead of being manually passed on registration.
+
+```dart
+// Register using scope shortcuts
+ddi.singleton(MyService.new.inject);
+MyService.new.inject.asApplication();
+
+// Register using explicit factory
+await ddi.register(
+  factory: ApplicationFactory(
+    builder: MyService.new.inject,
+  ),
+);
+```
+
+`inject` creates a zero-argument producer internally and resolves each parameter from DDI before instance creation.
+
 ## Considerations
 
 **Singleton Scope**: The Singleton Scope can only be created with auto-inject. If you attempt to create a singleton with custom objects, a `BeanNotFoundException` will be thrown.
@@ -688,7 +711,7 @@ ddi.get<ServiceAutoInject>();
 
 **Decorators and Interceptors**: It is highly recommended to register the factory using `factory: CustomFactory(...)`. This approach handles type inference more effectively.
 
-**Lazy vs. Eager Injection**: Eager Injection occurs when you inject beans using auto-inject functionality or manually via constructors. For lazy injection, you can use the `DDIInject` mixin or define the variable as `late` (e.g., `late final ServiceAutoInject serviceAutoInject = ddi.get()`).
+**Lazy vs. Eager Injection**: Eager Injection occurs when dependencies are resolved during instance creation, such as with `MyService.new.inject`, builders/constructors with typed parameters (for example `(A a, B b, C c) => MyService(a, b, c)`), or manual constructor wiring like `() => MyService(ddi.get(), ddi.get())`. Lazy Injection defers resolution until needed, using `DDIInject` / `DDIInjectAsync`, `late` + `ddi.get()`, or `Instance<T>` (`ddi.getInstance<T>()`) for programmatic lazy access.
 
 # Qualifiers
 

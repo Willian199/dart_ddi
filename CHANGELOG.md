@@ -13,6 +13,10 @@
   * `ContextDestroyIncompleteException`
 * Added contextual module support through `DDIModule.contextQualifier`.
 * Added strategy customization API through `DDIStrategy` and `DDI.newInstance(contextStrategy: ...)`.
+* Added `inject` shortcut for factory auto-injection flows, enabling:
+  * `ddi.singleton(MyService.new.inject)`
+  * `MyService.new.inject.asApplication()`
+  * `ApplicationFactory(builder: MyService.new.inject)`
 
 ### Changed
 

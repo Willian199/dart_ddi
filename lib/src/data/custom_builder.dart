@@ -46,6 +46,29 @@ final class CustomBuilder<BeanT extends Object> {
   /// Indicates if the Bean creation is asynchronous, meaning it returns a Future.
   final bool isFuture;
 
+  /// Allows this builder to be used directly as a zero-argument producer.
+  ///
+  /// Example:
+  /// `ddi.singleton(MyService.new.autoInject);`
+  FutureOr<BeanT> call() => isFuture ? _callAsync() : _callSync();
+
+  BeanT _callSync() {
+    final instances = [
+      for (final inject in parametersType) DDI.instance.get(qualifier: inject),
+    ];
+    return Function.apply(producer, instances) as BeanT;
+  }
+
+  Future<BeanT> _callAsync() async {
+    final instances = <Object>[];
+    for (final inject in parametersType) {
+      instances.add(await DDI.instance.getAsync(qualifier: inject));
+    }
+
+    final created = Function.apply(producer, instances);
+    return created is Future ? await created as BeanT : created as BeanT;
+  }
+
   /// Creates a Bean with an Application scope.
   ///
   /// - `decorators`: A list of decorators to modify the Bean before it is returned.
