@@ -17,6 +17,17 @@
   * `ddi.singleton(MyService.new.inject)`
   * `MyService.new.inject.asApplication()`
   * `ApplicationFactory(builder: MyService.new.inject)`
+* Added alias support for bean qualifiers.
+  * One instance can have multiple aliases.
+  * One alias can point to multiple instances.
+* Added `AmbiguousAliasException` for qualifier alias collisions during resolution.
+* Added priority-aware alias resolution:
+  * when one alias points to multiple qualifiers, the smallest non-null `priority` wins;
+  * `null` priority is sorted to the end;
+  * tie on best priority keeps throwing `AmbiguousAliasException`.
+* Added auto alias registration on `register<T>(..., qualifier: ...)`:
+  * adds `T` as alias when `qualifier != T`;
+  * skips auto-alias for `Object`, `Future`, `FutureOr`, `Stream`, `List`, `Set`, `Map`, `Iterable`, and `dynamic`.
 
 ### Changed
 
@@ -31,6 +42,10 @@
   * blocks destroy when any factory in the tree has `canDestroy: false`,
   * blocks context writes (`register`/`createContext`) for contexts currently being destroyed,
   * treats reentrant `destroyContext(...)` for an already destroying context as a no-op.
+* `get`/`getAsync` now throw `AmbiguousAliasException` when an alias resolves to more than one qualifier in the same context.
+* `getByType<T>()` and `destroyByType<T>()` now consider aliases during match, while keeping operations anchored to primary qualifiers.
+* Optimized alias lookup hot path in `DDIDefaultStrategy` to avoid extra allocations when resolving primary qualifiers directly.
+
 
 ### Breaking Changes
 

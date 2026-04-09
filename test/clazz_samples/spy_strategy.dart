@@ -53,9 +53,21 @@ final class SpyStrategy implements DDIStrategy {
   void destroyContext(Object name) => _delegate.destroyContext(name);
 
   @override
-  void setFactory(Object key, DDIBaseFactory<Object> value, {Object? context}) {
+  void setFactory(
+    Object key,
+    DDIBaseFactory<Object> value, {
+    Object? context,
+    Set<Object>? aliases,
+    int? priority,
+  }) {
     setFactoryCallCount++;
-    _delegate.setFactory(key, value, context: context);
+    _delegate.setFactory(
+      key,
+      value,
+      context: context,
+      aliases: aliases,
+      priority: priority,
+    );
   }
 
   @override
@@ -65,6 +77,11 @@ final class SpyStrategy implements DDIStrategy {
   Iterable<MapEntry<Object, DDIBaseFactory<Object>>> entries(
       {Object? context}) {
     return _delegate.entries(context: context);
+  }
+
+  @override
+  Set<Object> qualifiersOf(Object key, {Object? context}) {
+    return _delegate.qualifiersOf(key, context: context);
   }
 
   @override

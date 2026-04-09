@@ -7,23 +7,23 @@ import '../clazz_samples/nested_contextual_modules.dart';
 void main() {
   group('DDI Module Context Instance Tests', () {
     tearDown(() async {
-      if (ddi.isRegistered<InstanceContext>()) {
-        await ddi.destroy<InstanceContext>();
-      }
-      if (ddi.isRegistered<GlobalModuleA>()) {
-        await ddi.destroy<GlobalModuleA>();
+      if (ddi.isRegistered<AsyncContextModuleC>()) {
+        await ddi.destroy<AsyncContextModuleC>();
       }
       if (ddi.isRegistered<ContextModuleC>()) {
         await ddi.destroy<ContextModuleC>();
-      }
-      if (ddi.isRegistered<AsyncContextModuleC>()) {
-        await ddi.destroy<AsyncContextModuleC>();
       }
       if (ddi.isRegistered<NestedParentModule>()) {
         await ddi.destroy<NestedParentModule>();
       }
       if (ddi.isRegistered<NestedContextValue>()) {
         await ddi.destroy<NestedContextValue>();
+      }
+      if (ddi.isRegistered<InstanceContext>()) {
+        await ddi.destroy<InstanceContext>();
+      }
+      if (ddi.isRegistered<GlobalModuleA>()) {
+        await ddi.destroy<GlobalModuleA>();
       }
     });
 

@@ -76,6 +76,7 @@ mixin DDIModule implements PostConstruct {
   Future<void> singleton<BeanT extends Object>(
     BeanRegister<BeanT> clazzRegister, {
     Object? qualifier,
+    int? priority,
     ListDecorator<BeanT> decorators = const [],
     Set<Object> interceptors = const {},
     Set<Object> children = const {},
@@ -87,6 +88,7 @@ mixin DDIModule implements PostConstruct {
       clazzRegister,
       qualifier: qualifier,
       context: contextQualifier,
+      priority: priority,
       decorators: decorators,
       interceptors: interceptors,
       canDestroy: canDestroy,
@@ -123,6 +125,7 @@ mixin DDIModule implements PostConstruct {
   Future<void> application<BeanT extends Object>(
     BeanRegister<BeanT> clazzRegister, {
     Object? qualifier,
+    int? priority,
     ListDecorator<BeanT> decorators = const [],
     Set<Object> interceptors = const {},
     Set<Object> children = const {},
@@ -134,6 +137,7 @@ mixin DDIModule implements PostConstruct {
       clazzRegister,
       qualifier: qualifier,
       context: contextQualifier,
+      priority: priority,
       decorators: decorators,
       interceptors: interceptors,
       canDestroy: canDestroy,
@@ -170,6 +174,7 @@ mixin DDIModule implements PostConstruct {
   Future<void> dependent<BeanT extends Object>(
     BeanRegister<BeanT> clazzRegister, {
     Object? qualifier,
+    int? priority,
     FutureOrBoolCallback? canRegister,
     bool canDestroy = true,
     ListDecorator<BeanT> decorators = const [],
@@ -181,6 +186,7 @@ mixin DDIModule implements PostConstruct {
       clazzRegister,
       qualifier: qualifier,
       context: contextQualifier,
+      priority: priority,
       decorators: decorators,
       interceptors: interceptors,
       canDestroy: canDestroy,
@@ -218,6 +224,7 @@ mixin DDIModule implements PostConstruct {
   Future<void> object<BeanT extends Object>(
     BeanT instance, {
     Object? qualifier,
+    int? priority,
     ListDecorator<BeanT> decorators = const [],
     Set<Object> interceptors = const {},
     Set<Object> children = const {},
@@ -229,6 +236,7 @@ mixin DDIModule implements PostConstruct {
       instance,
       qualifier: qualifier,
       context: contextQualifier,
+      priority: priority,
       decorators: decorators,
       interceptors: interceptors,
       canDestroy: canDestroy,
@@ -262,12 +270,14 @@ mixin DDIModule implements PostConstruct {
     required DDIBaseFactory<BeanT> factory,
     Object? qualifier,
     FutureOrBoolCallback? canRegister,
+    int? priority,
   }) async {
     final bean = ddiContainer.register(
       factory: factory,
       qualifier: qualifier,
       context: contextQualifier,
       canRegister: canRegister,
+      priority: priority,
     );
 
     // Ensure the module is registered before adding children
