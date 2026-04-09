@@ -544,8 +544,8 @@ void main() {
 
       test('should allow ddi.singleton(A.new.inject)', () async {
         await ddi.singleton(C.new);
-        await ddi.singleton(B.new.inject);
-        await ddi.singleton(A.new.inject);
+        await ddi.singleton(B.new.inject.call);
+        await ddi.singleton(A.new.inject.call);
 
         final instance = ddi.get<A>();
         expect(instance.b, isA<B>());
