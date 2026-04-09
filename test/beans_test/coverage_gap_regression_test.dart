@@ -4,6 +4,8 @@ import 'package:dart_ddi/src/data/ddi_context_models.dart';
 import 'package:dart_ddi/src/utils/interceptor_resolver.dart';
 import 'package:test/test.dart';
 
+import '../clazz_samples/payment_service.dart';
+
 class _ProbeInterceptor extends DDIInterceptor<Object> {}
 
 DDIBaseFactory<Object> _factory({bool canDestroy = true}) {
@@ -36,8 +38,7 @@ void main() {
         );
       });
 
-      test('getEntry and removeEntry should return null for ambiguous alias',
-          () {
+      test('removeEntry should be a no-op for ambiguous alias owners', () {
         final context = QualifierContext.root(rootQualifier: 'root');
 
         context.setEntry(
@@ -57,8 +58,14 @@ void main() {
           ),
         );
 
+        final removed = context.removeEntry('shared');
+
         expect(context.getEntry('shared'), isNull);
-        expect(context.removeEntry('shared'), isNull);
+        expect(removed, isNull);
+        expect(context.getPrimaryEntry('a'), isNotNull);
+        expect(context.getPrimaryEntry('b'), isNotNull);
+        expect(
+            context.aliasOwnersFor('shared'), containsAll(<Object>{'a', 'b'}));
       });
 
       test('removeEntry should return null for null key', () {
@@ -145,6 +152,33 @@ void main() {
         final strategy = DDIDefaultStrategy();
         expect(strategy.entries(context: 'missing'), isEmpty);
         expect(strategy.qualifiersOf('bean', context: 'missing'), isEmpty);
+      });
+
+      test('public DDI get should throw AmbiguousAliasException on alias tie',
+          () async {
+        final ddi = DDI.newInstance();
+
+        await ddi.application<PaymentService>(
+          () => CreditCardPaymentService(),
+          qualifier: 'payment-credit',
+          priority: 1,
+        );
+        await ddi.application<PaymentService>(
+          () => PayPalPaymentService(),
+          qualifier: 'payment-paypal',
+          priority: 1,
+        );
+
+        expect(
+          () => ddi.get<PaymentService>(),
+          throwsA(
+            isA<AmbiguousAliasException>().having(
+              (e) => e.qualifiers,
+              'qualifiers',
+              containsAll(<Object>{'payment-credit', 'payment-paypal'}),
+            ),
+          ),
+        );
       });
     });
 
