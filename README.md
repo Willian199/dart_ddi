@@ -734,6 +734,52 @@ During retrieval, if multiple instances of the same type exist, you can use the 
 ```dart
 MyService specialInstance = ddi.get<MyService>(qualifier: "specialInstance");
 ```
+
+## Alias Behavior
+
+Aliases allow a single bean registration to be resolved through multiple identifiers, while still preserving a single primary qualifier for lifecycle operations (`destroy`, `dispose`, and context cleanup). This is useful when the same instance must be reachable by interface type, legacy qualifier names, or feature-specific keys without duplicating registrations.
+
+Current behavior:
+
+- One instance can have multiple aliases.
+- One alias can point to multiple instances.
+- When `register<T>(..., qualifier: someQualifier)` is used and `someQualifier != T`, DDI automatically adds `T` as an alias for that registration.
+- Auto-alias is ignored for `Object`, `Future`, `FutureOr`, `Stream`, `List`, `Set`, `Map`, `Iterable`, and `dynamic`.
+
+Ambiguous alias resolution:
+
+- If `get<T>()` or `getAsync<T>()` resolves through an alias that matches more than one qualifier in the same context, DDI throws `AmbiguousAliasException`.
+- The exception includes the alias and all matched qualifiers.
+
+Alias resolution with `priority`:
+
+- When an alias matches multiple registrations in the same context, DDI now uses `priority` to pick a winner.
+- Lower value means higher priority (`priority: 1` wins over `priority: 10`).
+- `null` priority is always sorted to the end.
+- If the best priority ties (or all priorities are `null` and ambiguous), DDI throws `AmbiguousAliasException`.
+
+```dart
+await ddi.application<PaymentService>(
+  CreditCardPaymentService.new,
+  qualifier: 'creditCard',
+  priority: 10,
+);
+await ddi.application<PaymentService>(
+  PayPalPaymentService.new,
+  qualifier: 'paypal',
+  priority: 1,
+);
+
+// Resolves PayPalPaymentService (priority 1 wins)
+ddi.get<PaymentService>();
+```
+
+`getByType` and `destroyByType` with aliases:
+
+- `getByType<T>()` considers both factory type and alias membership while searching.
+- It keeps returning primary qualifiers for compatibility.
+- `destroyByType<T>()` also considers aliases and removes all matching registrations by their primary qualifiers.
+
 ## Use Cases for Qualifiers
 
 #### Configuration Variations

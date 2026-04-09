@@ -43,13 +43,21 @@ abstract interface class DDIStrategy {
   void destroyContext(Object name);
 
   /// Implementation of required MapBase methods
-  void setFactory(Object key, DDIBaseFactory<Object> value, {Object? context});
+  void setFactory(
+    Object key,
+    DDIBaseFactory<Object> value, {
+    Object? context,
+    Set<Object>? aliases,
+    int? priority,
+  });
 
   @pragma('vm:prefer-inline')
   Iterable<Object> get keys;
 
   @pragma('vm:prefer-inline')
   Iterable<MapEntry<Object, DDIBaseFactory<Object>>> entries({Object? context});
+
+  Set<Object> qualifiersOf(Object key, {Object? context});
 
   @pragma('vm:prefer-inline')
   bool get isEmpty;

@@ -111,6 +111,7 @@ class _DDIImpl implements DDI, DDIInternal {
     Object? qualifier,
     Object? context,
     FutureOrBoolCallback? canRegister,
+    int? priority,
   }) async {
     if (BeanT == Object) {
       throw FactoryNotAllowedException(BeanT.toString());
@@ -171,6 +172,10 @@ class _DDIImpl implements DDI, DDIInternal {
         effectiveQualifierName,
         factory,
         context: registrationContext,
+        aliases: _shouldAutoRegisterBeanTypeAlias<BeanT>(qualifier)
+            ? <Object>{BeanT}
+            : null,
+        priority: priority,
       );
 
       final f = factory.register(
@@ -187,6 +192,27 @@ class _DDIImpl implements DDI, DDIInternal {
 
       return f;
     }
+  }
+
+  bool _shouldAutoRegisterBeanTypeAlias<BeanT extends Object>(
+      Object? qualifier) {
+    if (qualifier == null) {
+      return false;
+    }
+
+    if (BeanT == Object ||
+        BeanT == Future ||
+        BeanT == FutureOr ||
+        BeanT == Stream ||
+        BeanT == List ||
+        BeanT == Set ||
+        BeanT == Map ||
+        BeanT == Iterable ||
+        BeanT == dynamic) {
+      return false;
+    }
+
+    return qualifier != BeanT;
   }
 
   Future<T> _runContextWriteLocked<T>(FutureOr<T> Function() action) {
@@ -276,11 +302,18 @@ class _DDIImpl implements DDI, DDIInternal {
   }) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
 
-    final ({DDIBaseFactory<BeanT> factory, Object context})? located =
-        _beans.getFactory<BeanT>(
-      qualifier: effectiveQualifierName,
-      contextQualifier: context ?? _beans.currentContext,
-    );
+    ({DDIBaseFactory<BeanT> factory, Object context})? located;
+    try {
+      located = _beans.getFactory<BeanT>(
+        qualifier: effectiveQualifierName,
+        contextQualifier: context ?? _beans.currentContext,
+      );
+    } on AmbiguousAliasException {
+      if (select == null) {
+        rethrow;
+      }
+      located = null;
+    }
 
     if (located != null) {
       return located.factory.getWith<ParameterT>(
@@ -376,12 +409,20 @@ class _DDIImpl implements DDI, DDIInternal {
 
     final Object effectiveContext = context ?? _beans.currentContext;
 
-    final reg = _beans
-        .getFactory(
-          qualifier: effectiveQualifierName,
-          contextQualifier: effectiveContext,
-        )
-        ?.factory;
+    DDIBaseFactory<Object>? reg;
+    try {
+      reg = _beans
+          .getFactory(
+            qualifier: effectiveQualifierName,
+            contextQualifier: effectiveContext,
+          )
+          ?.factory;
+    } on AmbiguousAliasException {
+      if (select == null) {
+        rethrow;
+      }
+      reg = null;
+    }
 
     if (reg is DDIBaseFactory<BeanT>) {
       final clazz = reg.getAsyncWith<ParameterT>(
@@ -437,12 +478,20 @@ class _DDIImpl implements DDI, DDIInternal {
   @override
   List<Object> getByType<BeanT extends Object>({Object? context}) {
     final Type type = BeanT;
+    final keys = <Object>[];
 
-    return _beans
-        .entries(context: context)
-        .where((element) => element.value.type == type)
-        .map((e) => e.key)
-        .toList();
+    for (final entry in _beans.entries(context: context)) {
+      final qualifiers = _beans.qualifiersOf(entry.key, context: context);
+      final bool matchesByType = entry.value.type == type;
+      final bool matchesByAlias = qualifiers.contains(type);
+      if (!matchesByType && !matchesByAlias) {
+        continue;
+      }
+
+      keys.add(entry.key);
+    }
+
+    return keys;
   }
 
   @override
@@ -472,12 +521,16 @@ class _DDIImpl implements DDI, DDIInternal {
         operation: 'destroy',
       );
     }
-    final bool fallbackToRoot = context == null && _beans.hasContext;
 
+    // Special case for contextual modules:
+    // when destroy is called inside the module's own context without explicit
+    // `context:`, the module bean itself is usually registered in an ancestor
+    // context (where it was declared), while the active context token matches
+    // the module qualifier.
     final located = _beans.getFactory(
       qualifier: effectiveQualifierName,
       contextQualifier: effectiveContext,
-      fallback: fallbackToRoot,
+      fallback: effectiveQualifierName == effectiveContext,
     );
 
     if (located != null) {
@@ -493,25 +546,42 @@ class _DDIImpl implements DDI, DDIInternal {
   }
 
   @override
-  void destroyByType<BeanT extends Object>({Object? context}) {
+  FutureOr<void> destroyByType<BeanT extends Object>({Object? context}) {
+    if (context != null && !_beans.hasContextQualifier(context)) {
+      throw ContextNotFoundException(context.toString());
+    }
+
     final Object effectiveContext = context ?? _beans.currentContext;
     _validateContextState(
       context: effectiveContext,
       operation: 'destroyByType',
     );
 
-    final keys = _beans
-        .entries(context: context)
-        .where((entry) => entry.value.type == BeanT)
-        .map((entry) => entry.key)
-        .toList();
+    final keys = <Object>{};
+    for (final entry in _beans.entries(context: context)) {
+      final qualifiers = _beans.qualifiersOf(entry.key, context: context);
+      final bool matchesByType = entry.value.type == BeanT;
+      final bool matchesByAlias = qualifiers.contains(BeanT);
+      if (matchesByType || matchesByAlias) {
+        keys.add(entry.key);
+      }
+    }
+
+    final futures = <Future<void>>[];
 
     for (final key in keys) {
-      _destroy(
+      final destroyResult = _destroy(
         key,
         context,
         ignoreFrozenContext: true,
       );
+      if (destroyResult is Future) {
+        futures.add(destroyResult);
+      }
+    }
+
+    if (futures.isNotEmpty) {
+      return Future.wait(futures).then((_) {});
     }
   }
 
@@ -540,15 +610,31 @@ class _DDIImpl implements DDI, DDIInternal {
   }
 
   @override
-  void disposeByType<BeanT extends Object>({Object? context}) {
+  FutureOr<void> disposeByType<BeanT extends Object>({Object? context}) {
+    if (context != null && !_beans.hasContextQualifier(context)) {
+      throw ContextNotFoundException(context.toString());
+    }
+
     final Object effectiveContext = context ?? currentContext;
     _validateContextState(
       context: effectiveContext,
       operation: 'disposeByType',
     );
 
-    for (final MapEntry(key: _, :value) in _beans.entries(context: context)) {
-      value.dispose(ddiInstance: this);
+    final futures = <Future<void>>[];
+
+    for (final entry in _beans.entries(context: context)) {
+      final qualifiers = _beans.qualifiersOf(entry.key, context: context);
+      final bool matchesByType = entry.value.type == BeanT;
+      final bool matchesByAlias = qualifiers.contains(BeanT);
+      if (matchesByType || matchesByAlias) {
+        final disposeResult = entry.value.dispose(ddiInstance: this);
+        futures.add(disposeResult);
+      }
+    }
+
+    if (futures.isNotEmpty) {
+      return Future.wait(futures).then((_) {});
     }
   }
 

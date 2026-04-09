@@ -7,6 +7,7 @@ export 'src/enum/bean_state_enum.dart';
 export 'src/exception/bean_destroyed.dart';
 export 'src/exception/bean_not_found.dart';
 export 'src/exception/bean_not_ready.dart';
+export 'src/exception/ambiguous_alias.dart';
 export 'src/exception/concurrent_creation.dart';
 export 'src/exception/context_not_found.dart';
 export 'src/exception/context_frozen.dart';

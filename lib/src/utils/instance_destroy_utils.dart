@@ -111,12 +111,17 @@ final class InstanceDestroyUtils {
       ).then((_) => apply());
     }
 
-    _destroyChildren<BeanT>(
+    final destroyChildrenResult = _destroyChildren<BeanT>(
       children: children,
       ddiInstance: ddiInstance,
       context: instance is DDIModule ? instance.contextQualifier : null,
     );
+
     apply();
+
+    if (destroyChildrenResult is Future) {
+      return destroyChildrenResult;
+    }
   }
 
   /// Destroys all child instances for a given set of child qualifiers.
@@ -135,8 +140,16 @@ final class InstanceDestroyUtils {
     required DDI ddiInstance,
     Object? context,
   }) {
+    final futures = <Future<void>>[];
     for (final Object child in children) {
-      ddiInstance.destroy(qualifier: child, context: context);
+      final result = ddiInstance.destroy(qualifier: child, context: context);
+      if (result is Future) {
+        futures.add(result);
+      }
+    }
+
+    if (futures.isNotEmpty) {
+      return Future.wait(futures).then((_) {});
     }
   }
 

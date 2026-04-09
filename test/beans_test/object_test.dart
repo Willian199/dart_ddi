@@ -94,7 +94,10 @@ void main() {
 
     test('Try to refresh an Object not registered', () {
       expect(
-        () => DDI.instance.addDecorator([(_) => "new value"]),
+        () => DDI.instance.addDecorator(
+          [(_) => "new value"],
+          qualifier: 'not-registered',
+        ),
         throwsA(isA<BeanNotFoundException>()),
       );
     });

@@ -223,5 +223,28 @@ void main() {
         isNot(contains('ctx-child')),
       );
     });
+
+    test('destroy without explicit context should not fallback to parent',
+        () async {
+      final ddi = DDI.newInstance();
+      final rootContext = ddi.currentContext;
+
+      await ddi.application<ContextApiService>(
+        () => ContextApiService('root'),
+        qualifier: 'shared',
+      );
+
+      ddi.createContext('ctx');
+
+      await ddi.destroy<ContextApiService>(qualifier: 'shared');
+
+      expect(
+        ddi.isRegistered<ContextApiService>(
+          qualifier: 'shared',
+          context: rootContext,
+        ),
+        isTrue,
+      );
+    });
   });
 }

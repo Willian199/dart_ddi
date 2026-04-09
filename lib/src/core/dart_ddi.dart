@@ -64,6 +64,7 @@ abstract class DDI {
     Object? qualifier,
     Object? context,
     FutureOrBoolCallback? canRegister,
+    int? priority,
   });
 
   /// Verify if an instance is already registered in [DDI].
@@ -144,7 +145,7 @@ abstract class DDI {
       {Object? qualifier, Object? context});
 
   /// Removes all the instance registered as type `BeanT`.
-  void destroyByType<BeanT extends Object>({Object? context});
+  FutureOr<void> destroyByType<BeanT extends Object>({Object? context});
 
   /// Disposes of the instance of the registered class in [DDI].
   ///
@@ -153,7 +154,7 @@ abstract class DDI {
       {Object? qualifier, Object? context});
 
   /// Disposes all the instance registered as type `BeanT`.
-  void disposeByType<BeanT extends Object>({Object? context});
+  FutureOr<void> disposeByType<BeanT extends Object>({Object? context});
 
   /// Allows you to dynamically add decorators.
   ///
