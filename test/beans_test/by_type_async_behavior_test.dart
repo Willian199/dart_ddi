@@ -140,8 +140,8 @@ void main() {
       final ddi = DDI.newInstance();
 
       expect(
-        () =>
-            ddi.disposeByType<AsyncDisposableTarget>(context: 'missing-context'),
+        () => ddi.disposeByType<AsyncDisposableTarget>(
+            context: 'missing-context'),
         throwsA(isA<ContextNotFoundException>()),
       );
     });
