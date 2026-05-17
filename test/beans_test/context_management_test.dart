@@ -59,6 +59,27 @@ void main() {
       );
     });
 
+    test('destroyContext should reject root before destroying root beans',
+        () async {
+      final ddi = DDI.newInstance();
+      final rootContext = ddi.currentContext;
+
+      await ddi.object<ContextManagementBean>(
+        const ContextManagementBean('root'),
+      );
+
+      await expectLater(
+        Future<void>.sync(() => ddi.destroyContext(rootContext)),
+        throwsA(isA<ArgumentError>()),
+      );
+
+      expect(ddi.isRegistered<ContextManagementBean>(), isTrue);
+      expect(
+        ddi.get<ContextManagementBean>().origin,
+        equals('root'),
+      );
+    });
+
     test('destroyContext should destroy deepest child factories first',
         () async {
       final ddi = DDI.newInstance();

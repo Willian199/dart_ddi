@@ -75,8 +75,8 @@ final class SpyStrategy implements DDIStrategy {
 
   @override
   Iterable<MapEntry<Object, DDIBaseFactory<Object>>> entries(
-      {Object? context}) {
-    return _delegate.entries(context: context);
+      {Object? context, bool fallback = false}) {
+    return _delegate.entries(context: context, fallback: fallback);
   }
 
   @override

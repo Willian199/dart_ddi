@@ -52,7 +52,7 @@ void main() {
     });
 
     test(
-        'register and dispose should create and destroy module context for object factory',
+        'register and dispose should preserve module context for object factory',
         () async {
       final ddi = DDI.newInstance();
 
@@ -65,7 +65,26 @@ void main() {
 
       await ddi.dispose<CoverageObjectModule>(qualifier: 'obj-module');
 
-      expect(ddi.contextExists(CoverageObjectModule.moduleContext), isFalse);
+      expect(ddi.contextExists(CoverageObjectModule.moduleContext), isTrue);
+    });
+
+    test('dispose should be idempotent for contextual object modules',
+        () async {
+      final ddi = DDI.newInstance();
+
+      await ddi.object<CoverageObjectModule>(
+        CoverageObjectModule(ddi),
+        qualifier: 'obj-module',
+      );
+
+      await ddi.dispose<CoverageObjectModule>(qualifier: 'obj-module');
+      expect(ddi.contextExists(CoverageObjectModule.moduleContext), isTrue);
+
+      await expectLater(
+        ddi.dispose<CoverageObjectModule>(qualifier: 'obj-module'),
+        completes,
+      );
+      expect(ddi.contextExists(CoverageObjectModule.moduleContext), isTrue);
     });
 
     test('factory methods should throw not-ready and destroyed state errors',

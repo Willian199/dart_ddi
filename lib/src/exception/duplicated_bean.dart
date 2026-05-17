@@ -1,9 +1,9 @@
 /// Exception thrown when trying to register a bean that already exists in the DDI container.
 ///
 /// This exception is thrown in the following scenarios:
-/// - When calling `ddi.registerSingleton<Type>()` for a type that's already registered
-/// - When calling `ddi.registerApplication<Type>()` for a type that's already registered
-/// - When calling `ddi.registerDependent<Type>()` for a type that's already registered
+/// - When calling `ddi.singleton<Type>()` for a type that's already registered
+/// - When calling `ddi.application<Type>()` for a type that's already registered
+/// - When calling `ddi.dependent<Type>()` for a type that's already registered
 /// - When registering with the same qualifier that's already in use
 /// - When trying to register a factory for a type that already has a factory
 ///
@@ -22,17 +22,17 @@
 /// Example:
 /// ```dart
 /// // This will throw DuplicatedBeanException
-/// ddi.registerSingleton<MyService>(MyService.new);
-/// ddi.registerSingleton<MyService>(MyService.new); // Duplicate!
+/// ddi.singleton<MyService>(MyService.new);
+/// ddi.singleton<MyService>(MyService.new); // Duplicate!
 ///
 /// // Use conditional registration to avoid duplicates
 /// if (!ddi.isRegistered<MyService>()) {
-///   ddi.registerSingleton<MyService>(MyService.new);
+///   ddi.singleton<MyService>(MyService.new);
 /// }
 ///
 /// // Or use different qualifiers
-/// ddi.registerSingleton<MyService>(MyService.new, qualifier: 'service1');
-/// ddi.registerSingleton<MyService>(MyService.new, qualifier: 'service2');
+/// ddi.singleton<MyService>(MyService.new, qualifier: 'service1');
+/// ddi.singleton<MyService>(MyService.new, qualifier: 'service2');
 /// ```
 class DuplicatedBeanException implements Exception {
   const DuplicatedBeanException(this.type);

@@ -95,6 +95,14 @@ final class DDIDefaultStrategy implements DDIStrategy {
 
   @override
   Iterable<Object> contextDestroyOrder(Object name) {
+    if (name == _rootQualifier) {
+      throw ArgumentError.value(
+        name,
+        'name',
+        'Root context cannot be destroyed.',
+      );
+    }
+
     final target = _contexts[name];
     if (target == null) {
       return const Iterable.empty();
@@ -409,8 +417,28 @@ final class DDIDefaultStrategy implements DDIStrategy {
 
   @override
   Iterable<MapEntry<Object, DDIBaseFactory<Object>>> entries(
-      {Object? context}) {
-    return _resolveContext(context)?.factoryEntries ?? const Iterable.empty();
+      {Object? context, bool fallback = false}) sync* {
+    final selectedContext = _resolveContext(context);
+    if (selectedContext == null) {
+      return;
+    }
+
+    if (!fallback) {
+      yield* selectedContext.factoryEntries;
+      return;
+    }
+
+    QualifierContext? cursor = selectedContext;
+    final seenPrimaryQualifiers = <Object>{};
+
+    while (cursor != null) {
+      for (final entry in cursor.factoryEntries) {
+        if (seenPrimaryQualifiers.add(entry.key)) {
+          yield entry;
+        }
+      }
+      cursor = cursor.parent;
+    }
   }
 
   @override

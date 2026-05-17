@@ -320,10 +320,10 @@ class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
   /// Disposes of the instance of the registered class in [DDI].
   @override
-  Future<void> dispose({required DDI ddiInstance}) {
+  Future<void> dispose({required DDI ddiInstance}) async {
     if (_state == BeanStateEnum.beingDestroyed ||
         _state == BeanStateEnum.destroyed) {
-      return Future.value();
+      return;
     }
 
     final Object? context = _instance is DDIModule
@@ -337,13 +337,8 @@ class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
           ddiInstance.dispose(qualifier: child, context: context)
       ];
 
-      return Future.wait(futures).then((_) => _destroyContextIfExists(
-            ddiInstance: ddiInstance,
-            context: context,
-          ));
+      await Future.wait(futures);
     }
-
-    return _destroyContextIfExists(ddiInstance: ddiInstance, context: context);
   }
 
   /// Allows to dynamically add a Decorators.
@@ -406,20 +401,6 @@ class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   @override
   @pragma('vm:prefer-inline')
   Set<Object> get children => _children;
-
-  Future<void> _destroyContextIfExists({
-    required DDI ddiInstance,
-    required Object? context,
-  }) async {
-    if (context == null || !ddiInstance.contextExists(context)) {
-      return;
-    }
-
-    final destroyResult = ddiInstance.destroyContext(context);
-    if (destroyResult is Future) {
-      await destroyResult;
-    }
-  }
 
   void _checkState(Object qualifier) {
     if (_state == BeanStateEnum.beingDestroyed ||

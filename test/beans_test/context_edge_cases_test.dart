@@ -73,6 +73,56 @@ void main() {
     );
 
     test(
+      'implicit selector should fallback to parent contexts when the active context has no match',
+      () async {
+        final ddi = DDI.newInstance();
+
+        await ddi.application<EdgeService>(
+          () => const EdgeService('root-a'),
+          qualifier: 'root-a',
+          selector: (value) => value == 'a',
+        );
+        await ddi.application<EdgeService>(
+          () => const EdgeService('root-b'),
+          qualifier: 'root-b',
+          selector: (value) => value == 'b',
+        );
+
+        ddi.createContext('child');
+
+        expect(
+          ddi.getWith<EdgeService, Object>(select: 'b').origin,
+          equals('root-b'),
+        );
+      },
+    );
+
+    test(
+      'implicit async selector should fallback to parent contexts when the active context has no match',
+      () async {
+        final ddi = DDI.newInstance();
+
+        await ddi.application<EdgeService>(
+          () async => const EdgeService('root-a'),
+          qualifier: 'root-a',
+          selector: (value) async => value == 'a',
+        );
+        await ddi.application<EdgeService>(
+          () async => const EdgeService('root-b'),
+          qualifier: 'root-b',
+          selector: (value) async => value == 'b',
+        );
+
+        ddi.createContext('child');
+
+        expect(
+          (await ddi.getAsyncWith<EdgeService, Object>(select: 'b')).origin,
+          equals('root-b'),
+        );
+      },
+    );
+
+    test(
       'implicit and explicit context get should fallback to root',
       () async {
         final ddi = DDI.newInstance();

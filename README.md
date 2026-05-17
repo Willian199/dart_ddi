@@ -80,7 +80,7 @@ See this [example](https://github.com/Willian199/dart_ddi/blob/master/example/ma
    2. [Pre Destroy](#pre-destroy-mixin)
    3. [Pre Dispose](#pre-dispose-mixin)
    4. [DDIModule Mixin](#ddimodule-mixin)
-   5. [DDIInject, DDIInjectAsync and DDIComponentInject Mixins](#ddiinject-ddiinjectasync-and-ddicomponentinject-mixins)
+   5. [DDIInject and DDIInjectAsync Mixins](#ddiinject-and-ddiinjectasync-mixins)
 
 # Core Concepts
 ## Scopes
@@ -292,7 +292,7 @@ It can be reused in explicit `context:` operations when needed.
 
 ### Contextual Instance Wrapper
 
-`getInstance<T>()` captures the current context at the time the wrapper is created. This means the `Instance<T>` keeps resolving against the same contextual registry instead of following whatever context becomes active later.
+`getInstance<T>()` captures the current context at the time the wrapper is created, or an explicit `context:` when one is provided. This means the `Instance<T>` keeps resolving against the same contextual registry instead of following whatever context becomes active later.
 
 `getInstance<T>()` itself does not force resolution. It creates a handle that can be checked later with `isResolvable()` and resolved later with `get()` or `getAsync()`.
 
@@ -316,7 +316,7 @@ This behavior is particularly useful for contextual modules and delayed resoluti
 
 `DDIModule` also supports contextual registrations through `contextQualifier`.
 
-By default, module children are registered in the same registry used by the container. If you override `contextQualifier`, every `singleton`, `application`, `dependent`, `object`, and `register` call made through the module is forwarded with that explicit context.
+By default, module children are registered through `DDI.instance`. If a module should use an isolated container, override `ddiContainer` explicitly. If you override `contextQualifier`, every `singleton`, `application`, `dependent`, `object`, and `register` call made through the module is forwarded with that explicit context.
 
 For the default registry strategy, this also creates and keeps the module context alive while the module exists. This allows the module to register the same qualifier as the root registry without collisions.
 
@@ -386,7 +386,7 @@ The `Instance` wrapper is obtained using the `getInstance` method and provides t
 
 Important characteristics:
 
-- `getInstance<T>()` captures the current context when the wrapper is created.
+- `getInstance<T>()` captures the current context when the wrapper is created, unless an explicit `context:` is provided.
 - `getInstance<T>()` does not throw just because the bean is not registered yet.
 - `get()` and `getAsync()` use the same resolution strategy as `ddi.get()` and `ddi.getAsync()`.
 
@@ -738,7 +738,7 @@ When registering an instance, you can provide a qualifier as part of the registr
 #### Example Registration with Qualifier
 
 ```dart
-ddi.registerSingleton<MyService>(MyService.new, qualifier: "specialInstance");
+ddi.singleton<MyService>(MyService.new, qualifier: "specialInstance");
 ```
 
 ## Retrieval with Qualifiers
@@ -801,16 +801,16 @@ ddi.get<PaymentService>();
 
 When there are multiple configurations for a service, such as different API endpoints or connection settings.
 ```dart
-ddi.registerSingleton<ApiService>(() => ApiService("endpointA"), qualifier: "endpointA");
-ddi.registerSingleton<ApiService>(() => ApiService("endpointB"), qualifier: "endpointB");
+ddi.singleton<ApiService>(() => ApiService("endpointA"), qualifier: "endpointA");
+ddi.singleton<ApiService>(() => ApiService("endpointB"), qualifier: "endpointB");
 ```
 
 #### Feature Flags
 
 When different instances are required based on feature flags or runtime conditions.
 ```dart
-ddi.registerSingleton<FeatureService>(() => FeatureService(enabled: true), qualifier: "enabled");
-ddi.registerSingleton<FeatureService>(() => FeatureService(enabled: false), qualifier: "disabled");
+ddi.singleton<FeatureService>(() => FeatureService(enabled: true), qualifier: "enabled");
+ddi.singleton<FeatureService>(() => FeatureService(enabled: false), qualifier: "disabled");
 ```
 
 #### Platform-Specific Implementations
@@ -818,8 +818,8 @@ ddi.registerSingleton<FeatureService>(() => FeatureService(enabled: false), qual
 In scenarios where platform-specific implementations are required, such as different services for Android and iOS, qualifiers can be employed to distinguish between the platform-specific instances.
 
 ```dart
-ddi.registerSingleton<PlatformService>(AndroidService.new, qualifier: "android");
-ddi.registerSingleton<PlatformService>(iOSService.new, qualifier: "ios");
+ddi.singleton<PlatformService>(AndroidService.new, qualifier: "android");
+ddi.singleton<PlatformService>(iOSService.new, qualifier: "ios");
 ```
 
 ## Considerations
@@ -846,7 +846,7 @@ class ModifiedMyService extends MyService {
   }
 }
 
-ddi.registerSingleton<MyService>(
+ddi.singleton<MyService>(
   MyService.new,
   decorators: [
     (existingInstance) => ModifiedMyService(existingInstance),
@@ -912,19 +912,19 @@ The canRegister parameter is a boolean function that determines whether an insta
 
 #### Example Usage:
 ```dart
-ddi.registerSingleton<MyService>(
+ddi.singleton<MyService>(
   MyServiceAndroid.new,
   canRegister: () {
     return Platform.isAndroid && MyUserService.isAdmin();
   },
 );
-ddi.registerSingleton<MyService>(
+ddi.singleton<MyService>(
   MyServiceIos.new,
   canRegister: () {
     return Platform.isIOS && MyUserService.isAdmin();
   },
 );
-ddi.registerSingleton<MyService>(
+ddi.singleton<MyService>(
   MyServiceDefault.new,
   canRegister: () {
     return !MyUserService.isAdmin();
@@ -940,7 +940,7 @@ In contextual mode, a non-destroyable instance also blocks `destroyContext(...)`
 #### Example Usage:
 ```dart
 // Register an Application instance that is indestructible
-ddi.registerApplication<MyService>(
+ddi.application<MyService>(
   MyService.new,
   canDestroy: false,
 );
@@ -954,14 +954,14 @@ The `selector` parameter allows for conditional selection when retrieving an ins
 void main() {
 
    // Registering CreditCardPaymentService with a selector condition
-  ddi.registerApplication<PaymentService>(
+  ddi.application<PaymentService>(
     CreditCardPaymentService.new,
     qualifier: 'creditCard',
     selector: (paymentMethod) => paymentMethod == 'creditCard',
   );
 
   // Registering PayPalPaymentService with a selector condition
-  ddi.registerApplication<PaymentService>(
+  ddi.application<PaymentService>(
     PayPalPaymentService.new,
     qualifier: 'paypal',
     selector: (paymentMethod) => paymentMethod == 'paypal',
@@ -1046,7 +1046,7 @@ The `children` parameter is designed to receive types or qualifiers. This parame
 
 ```dart
 // Adding multiple modules at once.
-ddi.registerApplication<ParentModule>(
+ddi.application<ParentModule>(
   () => ParentModule(),
   children: [
     ChildModule,
@@ -1102,7 +1102,7 @@ class MyClassName with PreDestroy {
 
 void main() {
   // Registering an instance of MyClassName
-  ddi.registerSingleton<MyClassName>(
+  ddi.singleton<MyClassName>(
      () => MyClassName('DDI Example'),
   );
   
@@ -1190,13 +1190,26 @@ With this setup:
 - `destroy()` and `dispose()` keep using the module context for its children.
 - Module helper methods mirror the scope shortcuts: all support `requires`, and `application()` also supports `useWeakReference`.
 
-### `DDIInject`, `DDIInjectAsync` and `DDIComponentInject` Mixins
+If the module itself belongs to an isolated DDI container, override `ddiContainer`
+as well:
 
-The `DDIInject`, `DDIInjectAsync` and `DDIComponentInject` mixins are designed to facilitate dependency injection of an instance into your classes. They provide a convenient method to obtain an instance of a specific type from the dependency injection container.
+```dart
+class IsolatedAppModule with DDIModule {
+  IsolatedAppModule(this._ddi);
+
+  final DDI _ddi;
+
+  @override
+  DDI get ddiContainer => _ddi;
+}
+```
+
+### `DDIInject` and `DDIInjectAsync` Mixins
+
+The `DDIInject` and `DDIInjectAsync` mixins are designed to facilitate dependency injection of an instance into your classes. They provide a convenient method to obtain an instance of a specific type from the dependency injection container.
 
 The `DDIInject` mixin allows for synchronous injection of an instance and `DDIInjectAsync` mixin allows for asynchronous injection. Both define an `instance` property that will be initialized with the `InjectType` instance obtained.
 
-The `DDIComponentInject` allows injecting a specific instance using a module as a selector.
 
 #### Example Usage:
 ```dart
@@ -1213,12 +1226,6 @@ class MyAsyncController with DDIInjectAsync<MyService> {
   }
 }
 
-class MyController with DDIComponentInject<MyComponent, MyModule> {
-
-  void businessLogic() {
-    instance.runSomething();
-  }
-}
 ```	
 
 ## Context Behavior Matrix
@@ -1234,7 +1241,7 @@ The table below summarizes how each relevant API behaves with context.
 | `register(..., context: ...)` and scope helpers (`singleton`, `application`, `dependent`, `object`) | Yes | No | Registers in current context | With explicit `context:`, context must exist (`ContextNotFoundException` otherwise) |
 | `getWith(..., context: ...)` | Yes | Yes | Resolves from current context | Fallback uses parent/root chain depending strategy |
 | `getAsyncWith(..., context: ...)` | Yes | Yes | Resolves from current context | Fallback uses parent/root chain depending strategy |
-| `get(...)` / `getAsync(...)` | No | Yes (via current context resolution) | Resolves from current context | Use `getWith/getAsyncWith` for explicit context |
+| `get(...)` / `getAsync(...)` | Yes | Yes | Resolves from current context | Explicit `context:` resolves from that context and its fallback chain |
 | `isRegistered(..., context: ...)` | Yes | Only when `context` is omitted | Checks current context, then fallback when applicable | Explicit `context:` stays scoped to that context |
 | `isReady(..., context: ...)` / `isFuture(..., context: ...)` | Yes | Only when `context` is omitted | Checks current context, then fallback when applicable | Explicit `context:` stays scoped to that context |
 | `getByType<T>(context?)` | Yes | No | Returns qualifiers from current context entries when omitted | Never falls back; explicit `context` is strict |
@@ -1246,5 +1253,5 @@ The table below summarizes how each relevant API behaves with context.
 | `addInterceptor<T>(..., qualifier, context?)` | Yes | Explicit `context`: No. Omitted `context`: Yes | Resolves target bean from current context lookup | Use explicit `context` to target one registry only |
 | `addChildrenModules<T>(..., qualifier, context?)` | Yes | Explicit `context`: No. Omitted `context`: Yes | Resolves target module from current context lookup | Use explicit `context` to target one registry only |
 | `getChildren<T>(qualifier, context?)` | Yes | Explicit `context`: No. Omitted `context`: Yes | Resolves from current context lookup | Use explicit `context` for strict contextual read |
-| `getInstance<T>(...)` | No explicit `context` parameter | N/A (captures context token) | Captures current context at wrapper creation time | Later `get()/getAsync()` in wrapper resolves against captured context |
+| `getInstance<T>(...)` | Yes | N/A (captures context token) | Captures current context at wrapper creation time | With `context:`, captures that context explicitly; later wrapper calls resolve against the captured context |
 

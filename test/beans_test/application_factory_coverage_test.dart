@@ -51,6 +51,32 @@ void main() {
       expect(ddi.contextExists(context), isFalse);
     });
 
+    test('singleton contextual module dispose should preserve its context',
+        () async {
+      final ddi = DDI.newInstance();
+      const context = #coverage_singleton_dispose_context;
+
+      await ddi.singleton<CoverageApplicationModule>(
+        () => CoverageApplicationModule(ddi, context),
+        qualifier: 'singleton-module-for-dispose',
+      );
+
+      expect(ddi.contextExists(context), isTrue);
+
+      await ddi.dispose<CoverageApplicationModule>(
+        qualifier: 'singleton-module-for-dispose',
+      );
+      expect(ddi.contextExists(context), isTrue);
+
+      await expectLater(
+        ddi.dispose<CoverageApplicationModule>(
+          qualifier: 'singleton-module-for-dispose',
+        ),
+        completes,
+      );
+      expect(ddi.contextExists(context), isTrue);
+    });
+
     test(
         'getAsync with weak reference and interceptors should keep working across calls',
         () async {

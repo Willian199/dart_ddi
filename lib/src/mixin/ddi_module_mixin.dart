@@ -36,11 +36,9 @@ mixin DDIModule implements PostConstruct {
 
   /// Getter for the DDI instance to use.
   ///
-  /// By default, returns [DDI.instance]. Classes using this mixin can override
-  /// this getter to use a different DDI container (e.g., [DDI.newInstance()]).
-  ///
-  /// Alternatively, the DDI instance can be set via the [ddiInstance] setter
-  /// when the module is created by a factory.
+  /// By default, returns [DDI.instance]. Classes using this mixin must override
+  /// this getter when they should register children in another DDI container
+  /// (for example, an isolated [DDI.newInstance()]).
   ///
   /// Example:
   /// ```dart

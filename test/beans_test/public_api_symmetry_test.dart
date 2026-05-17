@@ -447,5 +447,51 @@ void main() {
         },
       );
     });
+
+    group('contextual direct getters', () {
+      test('get getAsync and getInstance should accept explicit context',
+          () async {
+        final ddi = DDI.newInstance();
+        final rootContext = ddi.currentContext;
+
+        await ddi.application<PublicApiOptionalSurfaceValue>(
+          () => const PublicApiOptionalSurfaceValue('root'),
+          context: rootContext,
+        );
+        ddi.createContext('direct-getters');
+        await ddi.application<PublicApiOptionalSurfaceValue>(
+          () => const PublicApiOptionalSurfaceValue('context'),
+          context: 'direct-getters',
+        );
+
+        expect(
+          ddi.get<PublicApiOptionalSurfaceValue>(context: rootContext).value,
+          'root',
+        );
+        expect(
+          (await ddi.getAsync<PublicApiOptionalSurfaceValue>(
+            context: rootContext,
+          ))
+              .value,
+          'root',
+        );
+        expect(
+          ddi
+              .getInstance<PublicApiOptionalSurfaceValue>(
+                context: rootContext,
+              )
+              .get()
+              .value,
+          'root',
+        );
+
+        await ddi.destroy<PublicApiOptionalSurfaceValue>(
+          context: 'direct-getters',
+        );
+        await ddi.destroy<PublicApiOptionalSurfaceValue>(
+          context: rootContext,
+        );
+      });
+    });
   });
 }

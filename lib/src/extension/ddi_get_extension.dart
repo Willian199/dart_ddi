@@ -13,6 +13,7 @@ extension DDIGetExtension on DDI {
   /// - `qualifier`: (Optional) Qualifier to distinguish between different instances
   ///    of the same type.
   /// - `select`: Optional value to pass to distinguish between different instances of the same type.
+  /// - `context`: Optional context where the bean should be resolved.
   ///
   /// This is a standard method to retrieve instances using type inference.
   /// If multiple instances of the same type exist, the qualifier can be used to
@@ -21,8 +22,13 @@ extension DDIGetExtension on DDI {
   BeanT get<BeanT extends Object>({
     Object? qualifier,
     Object? select,
+    Object? context,
   }) {
-    return getWith<BeanT, Object>(qualifier: qualifier, select: select);
+    return getWith<BeanT, Object>(
+      qualifier: qualifier,
+      select: select,
+      context: context,
+    );
   }
 
   /// Retrieves an instance of the registered class in [DDI], supporting parameters.
@@ -42,14 +48,20 @@ extension DDIGetExtension on DDI {
   ///
   /// - `qualifier`: (Optional) Qualifier to distinguish between different instances.
   /// - `select`: Optional value to pass to distinguish between different instances of the same type.
+  /// - `context`: Optional context where the bean should be resolved.
   ///
   /// This method is particularly useful when instance creation involves asynchronous operations.
   @pragma('vm:prefer-inline')
   Future<BeanT> getAsync<BeanT extends Object>({
     Object? qualifier,
     Object? select,
+    Object? context,
   }) {
-    return getAsyncWith<BeanT, Object>(qualifier: qualifier, select: select);
+    return getAsyncWith<BeanT, Object>(
+      qualifier: qualifier,
+      select: select,
+      context: context,
+    );
   }
 
   /// Optionally retrieves an instance of the registered class.
@@ -196,6 +208,7 @@ extension DDIGetExtension on DDI {
   /// allowing you to check if a bean is resolvable, get instances, and destroy them.
   ///
   /// - `qualifier`: Optional qualifier to identify a specific bean instance.
+  /// - `context`: Optional context to capture explicitly instead of the current one.
   /// - `useWeakReference`: If `true`, maintains a weak reference to the instance.
   ///   This allows the instance to be garbage collected if no other strong references exist.
   ///   Note: If `cache` is `true`, this parameter is ignored (cache takes precedence).
@@ -226,11 +239,12 @@ extension DDIGetExtension on DDI {
   @pragma('vm:prefer-inline')
   Instance<BeanT> getInstance<BeanT extends Object>({
     Object? qualifier,
+    Object? context,
     bool useWeakReference = false,
     bool cache = false,
   }) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
-    final Object capturedContext = currentContext;
+    final Object capturedContext = context ?? currentContext;
 
     return InstanceWrapper<BeanT>(
       qualifier: effectiveQualifierName,

@@ -114,5 +114,97 @@ void main() {
         );
       },
     );
+
+    test(
+      'disposing contextual module children should keep the module context alive',
+      () async {
+        final ddi = DDI.newInstance();
+
+        await ddi.singleton(() => MixedContextModule(ddi));
+        final module = ddi.get<MixedContextModule>();
+        final Object context = module.contextQualifier!;
+
+        ddi.getWith<MixedService, Object>(
+          qualifier: 'shared-service',
+          context: context,
+        );
+
+        expect(ddi.contextExists(context), isTrue);
+        expect(
+          ddi.isReady<MixedService>(
+            qualifier: 'shared-service',
+            context: context,
+          ),
+          isTrue,
+        );
+
+        await ddi.dispose<MixedContextModule>();
+
+        expect(ddi.contextExists(context), isTrue);
+        expect(
+          ddi.isRegistered<MixedService>(
+            qualifier: 'shared-service',
+            context: context,
+          ),
+          isTrue,
+        );
+        expect(
+          ddi.isReady<MixedService>(
+            qualifier: 'shared-service',
+            context: context,
+          ),
+          isFalse,
+        );
+      },
+    );
+
+    test(
+      'singleton contextual module dispose should allow child applications to be recreated and disposed again',
+      () async {
+        final ddi = DDI.newInstance();
+
+        await ddi.singleton(() => MixedContextModule(ddi));
+        final module = ddi.get<MixedContextModule>();
+        final Object context = module.contextQualifier!;
+
+        final first = ddi.getWith<MixedService, Object>(
+          qualifier: 'shared-service',
+          context: context,
+        );
+
+        await ddi.dispose<MixedContextModule>();
+
+        expect(ddi.contextExists(context), isTrue);
+        expect(
+          ddi.isRegistered<MixedService>(
+            qualifier: 'shared-service',
+            context: context,
+          ),
+          isTrue,
+        );
+        expect(
+          ddi.isReady<MixedService>(
+            qualifier: 'shared-service',
+            context: context,
+          ),
+          isFalse,
+        );
+
+        final second = ddi.getWith<MixedService, Object>(
+          qualifier: 'shared-service',
+          context: context,
+        );
+        expect(identical(first, second), isFalse);
+
+        await ddi.dispose<MixedContextModule>();
+        expect(
+          ddi.isReady<MixedService>(
+            qualifier: 'shared-service',
+            context: context,
+          ),
+          isFalse,
+        );
+      },
+    );
   });
 }
