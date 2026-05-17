@@ -48,3 +48,26 @@ class CoverageApplicationModule with DDIModule {
   @override
   void onPostConstruct() {}
 }
+
+class CoverageDependentModule with DDIModule {
+  CoverageDependentModule(this._ddi);
+
+  final DDI _ddi;
+
+  static const Object moduleContext = #coverage_dependent_module_context;
+  static const Object childQualifier = #coverage_dependent_child;
+
+  @override
+  DDI get ddiContainer => _ddi;
+
+  @override
+  Object? get contextQualifier => moduleContext;
+
+  @override
+  Future<void> onPostConstruct() async {
+    await application<CoverageValue>(
+      () => const CoverageValue(1),
+      qualifier: childQualifier,
+    );
+  }
+}

@@ -257,24 +257,16 @@ void main() {
     });
 
     group('PF6 - Function with 6 parameters (async)', () {
-      // Note: PF6 has a bug in the original code - it's defined on BeanT Function
-      // instead of Future<BeanT> Function, causing extension conflicts.
-      // We'll test it by directly accessing the builder property which should work
-      test('should register and retrieve using builder', () async {
+      test('should register and retrieve using builder', () {
         Future<TestService> func(
             String a, int b, bool c, double d, String e, int f) async {
           return TestService();
         }
 
-        // Use the builder directly - this will test the extension
-        final builder = CustomBuilder<TestService>(
-          producer: func,
-          parametersType: [String, int, bool, double, String, int],
-          returnType: TestService,
-          isFuture: true,
-        );
-        // Just verify the builder was created correctly
-        expect(builder.parametersType.length, 6);
+        final builder = func.builder;
+        expect(
+            builder.parametersType, [String, int, bool, double, String, int]);
+        expect(builder.returnType, TestService);
         expect(builder.isFuture, true);
       });
     });
@@ -505,7 +497,7 @@ void main() {
       });
     });
 
-    group('AutoInject getter', () {
+    group('inject method', () {
       test('should auto inject sync function dependencies', () async {
         await ddi.object<String>('auto');
         await ddi.object<int>(42);
@@ -518,7 +510,7 @@ void main() {
           return TestService();
         }
 
-        final producer = func.inject;
+        final producer = func.inject();
         final instance = producer();
 
         expect(instance, isA<TestService>());
@@ -536,31 +528,32 @@ void main() {
           return TestService();
         }
 
-        final producer = func.inject;
+        final producer = func.inject();
         final instance = await producer();
 
         expect(instance, isA<TestService>());
       });
 
-      test('should allow ddi.singleton(A.new.inject)', () async {
+      test('should allow ddi.singleton(A.new.inject())', () async {
         await ddi.singleton(C.new);
-        await ddi.singleton(B.new.inject.call);
-        await ddi.singleton(A.new.inject.call);
+        await ddi.singleton(B.new.inject().call);
+        await ddi.singleton(A.new.inject().call);
 
         final instance = ddi.get<A>();
         expect(instance.b, isA<B>());
         expect(instance.b.c, isA<C>());
       });
 
-      test('should allow A.new.inject.asApplication()', () async {
+      test('should allow A.new.inject().asApplication()', () async {
         await C.new.builder.asApplication();
-        await B.new.inject.asApplication();
+        await B.new.inject().asApplication();
 
         final instance = ddi.get<B>();
         expect(instance.c, isA<C>());
       });
 
-      test('should allow ApplicationFactory(builder: B.new.inject)', () async {
+      test('should allow ApplicationFactory(builder: B.new.inject())',
+          () async {
         await DDI.instance.register(
           factory: ApplicationFactory(
             builder: C.new.builder,
@@ -569,7 +562,7 @@ void main() {
 
         await DDI.instance.register(
           factory: ApplicationFactory(
-            builder: B.new.inject,
+            builder: B.new.inject(),
           ),
         );
 
@@ -584,8 +577,8 @@ void main() {
         await ddi.object<AutoInjectClassConfig>(
           const AutoInjectClassConfig('prod'),
         );
-        await AutoInjectClassMiddle.new.inject.asSingleton();
-        await AutoInjectClassRoot.new.inject.asDependent();
+        await AutoInjectClassMiddle.new.inject().asSingleton();
+        await AutoInjectClassRoot.new.inject().asDependent();
 
         final root1 = ddi.get<AutoInjectClassRoot>();
         final root2 = ddi.get<AutoInjectClassRoot>();
@@ -601,11 +594,11 @@ void main() {
         await (() async {
           await Future<void>.delayed(const Duration(milliseconds: 5));
           return const AutoInjectFutureLeaf(21);
-        }).inject.asApplication();
+        }).inject().asApplication();
         await (() async {
           await Future<void>.delayed(const Duration(milliseconds: 5));
           return const AutoInjectFutureFlag(true);
-        }).inject.asApplication();
+        }).inject().asApplication();
 
         Future<AutoInjectFutureRoot> producer(
           AutoInjectFutureLeaf leaf,
@@ -615,7 +608,7 @@ void main() {
           return AutoInjectFutureRoot(leaf, flag);
         }
 
-        await producer.inject.asApplication();
+        await producer.inject().asApplication();
 
         final instance = await ddi.getAsync<AutoInjectFutureRoot>();
         expect(instance.leaf.id, 21);
@@ -628,7 +621,7 @@ void main() {
             builder: (() async {
               await Future<void>.delayed(const Duration(milliseconds: 5));
               return const AutoInjectFutureLeaf(34);
-            }).inject,
+            }).inject(),
           ),
         );
         await DDI.instance.register(
@@ -636,7 +629,7 @@ void main() {
             builder: (() async {
               await Future<void>.delayed(const Duration(milliseconds: 5));
               return const AutoInjectFutureFlag(false);
-            }).inject,
+            }).inject(),
           ),
         );
 
@@ -646,7 +639,7 @@ void main() {
                 ((AutoInjectFutureLeaf leaf, AutoInjectFutureFlag flag) async {
               await Future<void>.delayed(const Duration(milliseconds: 5));
               return AutoInjectFutureRoot(leaf, flag);
-            }).inject,
+            }).inject(),
           ),
         );
 
@@ -662,7 +655,7 @@ void main() {
         await ddi.object<AutoInjectManyC>(const AutoInjectManyC(true));
         await ddi.object<AutoInjectManyD>(const AutoInjectManyD(3.14));
 
-        await AutoInjectManyRoot.new.inject.asDependent();
+        await AutoInjectManyRoot.new.inject().asDependent();
 
         final instance = ddi.get<AutoInjectManyRoot>();
         expect(instance.a.value, 'many');
@@ -687,13 +680,216 @@ void main() {
           return AutoInjectManyFutureRoot(a, b, c, d);
         }
 
-        await producer.inject.asApplication();
+        await producer.inject().asApplication();
 
         final instance = await ddi.getAsync<AutoInjectManyFutureRoot>();
         expect(instance.a.value, 'future-many');
         expect(instance.b.value, 99);
         expect(instance.c.value, isFalse);
         expect(instance.d.value, closeTo(2.5, 0.0001));
+      });
+
+      test('should support zero-parameter inject producers', () async {
+        TestService syncProducer() => TestService();
+        Future<TestService> asyncProducer() async => TestService();
+
+        expect(syncProducer.inject()(), isA<TestService>());
+        expect(await asyncProducer.inject()(), isA<TestService>());
+      });
+
+      test('should auto inject one async dependency', () async {
+        final localDdi = DDI.newInstance();
+        await localDdi.object<AutoInjectHighA>(const AutoInjectHighA(1));
+
+        Future<int> producer(AutoInjectHighA a) async => a.value;
+
+        expect(await producer.inject(localDdi)(), 1);
+      });
+
+      test('should auto inject sync producers with 5 through 10 parameters',
+          () async {
+        final localDdi = await _highArityDdi();
+
+        int five(
+          AutoInjectHighA a,
+          AutoInjectHighB b,
+          AutoInjectHighC c,
+          AutoInjectHighD d,
+          AutoInjectHighE e,
+        ) =>
+            a.value + b.value + c.value + d.value + e.value;
+
+        int six(
+          AutoInjectHighA a,
+          AutoInjectHighB b,
+          AutoInjectHighC c,
+          AutoInjectHighD d,
+          AutoInjectHighE e,
+          AutoInjectHighF f,
+        ) =>
+            five(a, b, c, d, e) + f.value;
+
+        int seven(
+          AutoInjectHighA a,
+          AutoInjectHighB b,
+          AutoInjectHighC c,
+          AutoInjectHighD d,
+          AutoInjectHighE e,
+          AutoInjectHighF f,
+          AutoInjectHighG g,
+        ) =>
+            six(a, b, c, d, e, f) + g.value;
+
+        int eight(
+          AutoInjectHighA a,
+          AutoInjectHighB b,
+          AutoInjectHighC c,
+          AutoInjectHighD d,
+          AutoInjectHighE e,
+          AutoInjectHighF f,
+          AutoInjectHighG g,
+          AutoInjectHighH h,
+        ) =>
+            seven(a, b, c, d, e, f, g) + h.value;
+
+        int nine(
+          AutoInjectHighA a,
+          AutoInjectHighB b,
+          AutoInjectHighC c,
+          AutoInjectHighD d,
+          AutoInjectHighE e,
+          AutoInjectHighF f,
+          AutoInjectHighG g,
+          AutoInjectHighH h,
+          AutoInjectHighI i,
+        ) =>
+            eight(a, b, c, d, e, f, g, h) + i.value;
+
+        int ten(
+          AutoInjectHighA a,
+          AutoInjectHighB b,
+          AutoInjectHighC c,
+          AutoInjectHighD d,
+          AutoInjectHighE e,
+          AutoInjectHighF f,
+          AutoInjectHighG g,
+          AutoInjectHighH h,
+          AutoInjectHighI i,
+          AutoInjectHighJ j,
+        ) =>
+            nine(a, b, c, d, e, f, g, h, i) + j.value;
+
+        expect(five.inject(localDdi)(), 15);
+        expect(six.inject(localDdi)(), 21);
+        expect(seven.inject(localDdi)(), 28);
+        expect(eight.inject(localDdi)(), 36);
+        expect(nine.inject(localDdi)(), 45);
+        expect(ten.inject(localDdi)(), 55);
+      });
+
+      test('should auto inject async producers with 5 through 10 parameters',
+          () async {
+        final localDdi = await _highArityDdi();
+
+        Future<int> five(
+          AutoInjectHighA a,
+          AutoInjectHighB b,
+          AutoInjectHighC c,
+          AutoInjectHighD d,
+          AutoInjectHighE e,
+        ) async =>
+            a.value + b.value + c.value + d.value + e.value;
+
+        Future<int> six(
+          AutoInjectHighA a,
+          AutoInjectHighB b,
+          AutoInjectHighC c,
+          AutoInjectHighD d,
+          AutoInjectHighE e,
+          AutoInjectHighF f,
+        ) async =>
+            a.value + b.value + c.value + d.value + e.value + f.value;
+
+        Future<int> seven(
+          AutoInjectHighA a,
+          AutoInjectHighB b,
+          AutoInjectHighC c,
+          AutoInjectHighD d,
+          AutoInjectHighE e,
+          AutoInjectHighF f,
+          AutoInjectHighG g,
+        ) async =>
+            a.value + b.value + c.value + d.value + e.value + f.value + g.value;
+
+        Future<int> eight(
+          AutoInjectHighA a,
+          AutoInjectHighB b,
+          AutoInjectHighC c,
+          AutoInjectHighD d,
+          AutoInjectHighE e,
+          AutoInjectHighF f,
+          AutoInjectHighG g,
+          AutoInjectHighH h,
+        ) async =>
+            a.value +
+            b.value +
+            c.value +
+            d.value +
+            e.value +
+            f.value +
+            g.value +
+            h.value;
+
+        Future<int> nine(
+          AutoInjectHighA a,
+          AutoInjectHighB b,
+          AutoInjectHighC c,
+          AutoInjectHighD d,
+          AutoInjectHighE e,
+          AutoInjectHighF f,
+          AutoInjectHighG g,
+          AutoInjectHighH h,
+          AutoInjectHighI i,
+        ) async =>
+            a.value +
+            b.value +
+            c.value +
+            d.value +
+            e.value +
+            f.value +
+            g.value +
+            h.value +
+            i.value;
+
+        Future<int> ten(
+          AutoInjectHighA a,
+          AutoInjectHighB b,
+          AutoInjectHighC c,
+          AutoInjectHighD d,
+          AutoInjectHighE e,
+          AutoInjectHighF f,
+          AutoInjectHighG g,
+          AutoInjectHighH h,
+          AutoInjectHighI i,
+          AutoInjectHighJ j,
+        ) async =>
+            a.value +
+            b.value +
+            c.value +
+            d.value +
+            e.value +
+            f.value +
+            g.value +
+            h.value +
+            i.value +
+            j.value;
+
+        expect(await five.inject(localDdi)(), 15);
+        expect(await six.inject(localDdi)(), 21);
+        expect(await seven.inject(localDdi)(), 28);
+        expect(await eight.inject(localDdi)(), 36);
+        expect(await nine.inject(localDdi)(), 45);
+        expect(await ten.inject(localDdi)(), 55);
       });
     });
   });
@@ -708,4 +904,19 @@ Future<void> _destroyIfRegistered<T extends Object>() async {
   if (result is Future<void>) {
     await result;
   }
+}
+
+Future<DDI> _highArityDdi() async {
+  final localDdi = DDI.newInstance();
+  await localDdi.object<AutoInjectHighA>(const AutoInjectHighA(1));
+  await localDdi.object<AutoInjectHighB>(const AutoInjectHighB(2));
+  await localDdi.object<AutoInjectHighC>(const AutoInjectHighC(3));
+  await localDdi.object<AutoInjectHighD>(const AutoInjectHighD(4));
+  await localDdi.object<AutoInjectHighE>(const AutoInjectHighE(5));
+  await localDdi.object<AutoInjectHighF>(const AutoInjectHighF(6));
+  await localDdi.object<AutoInjectHighG>(const AutoInjectHighG(7));
+  await localDdi.object<AutoInjectHighH>(const AutoInjectHighH(8));
+  await localDdi.object<AutoInjectHighI>(const AutoInjectHighI(9));
+  await localDdi.object<AutoInjectHighJ>(const AutoInjectHighJ(10));
+  return localDdi;
 }

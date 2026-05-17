@@ -301,12 +301,13 @@ class _DDIImpl implements DDI, DDIInternal {
     Object? context,
   }) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
+    final Object effectiveContext = context ?? _beans.currentContext;
 
     ({DDIBaseFactory<BeanT> factory, Object context})? located;
     try {
       located = _beans.getFactory<BeanT>(
         qualifier: effectiveQualifierName,
-        contextQualifier: context ?? _beans.currentContext,
+        contextQualifier: effectiveContext,
       );
     } on AmbiguousAliasException {
       if (select == null) {
@@ -328,7 +329,8 @@ class _DDIImpl implements DDI, DDIInternal {
     }
 
     // Try to find a bean with the selector
-    for (final MapEntry(:key, :value) in _beans.entries(context: context)) {
+    for (final MapEntry(:key, :value)
+        in _beans.entries(context: effectiveContext, fallback: true)) {
       if (value.type != BeanT) {
         continue;
       }
@@ -449,7 +451,8 @@ class _DDIImpl implements DDI, DDIInternal {
     }
 
     // Try to find a bean with the selector
-    for (final MapEntry(:key, :value) in _beans.entries(context: context)) {
+    for (final MapEntry(:key, :value)
+        in _beans.entries(context: effectiveContext, fallback: true)) {
       if (value.type != BeanT) {
         continue;
       }

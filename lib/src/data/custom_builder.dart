@@ -5,6 +5,10 @@ import 'package:dart_ddi/src/typedef/typedef.dart';
 
 /// [CustomBuilder] is a class that represents how a Bean should be created.
 /// It is used to create a Bean after the registration in the [DDI] system.
+///
+/// The `as*` shortcuts intentionally do not expose interceptors because they
+/// register using this builder's concrete [BeanT]. Use an
+/// explicitly typed factory registration instead.
 final class CustomBuilder<BeanT extends Object> {
   /// Constructor that initializes the [CustomBuilder] with the given parameters.
   ///
@@ -76,28 +80,41 @@ final class CustomBuilder<BeanT extends Object> {
   /// - `children`: A set of child objects associated with the Bean.
   /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
+  /// - `context`: Optional context where the bean should be registered.
+  /// - `priority`: Optional priority used when multiple beans share the same type alias.
   /// - `canRegister`: Optional function to conditionally register the instance.
+  /// - `useWeakReference`: Whether to store the application instance through a weak reference.
   /// - `requires`: Optional set of qualifiers or types that must be registered before creating an instance.
+  /// - `ddiInstance`: Optional DDI container where the factory should be registered. Defaults to [DDI.instance].
   Future<void> asApplication({
     ListDecorator<BeanT> decorators = const [],
     bool canDestroy = true,
     Set<Object> children = const {},
     FutureOr<bool> Function(Object)? selector,
     Object? qualifier,
+    Object? context,
+    int? priority,
     FutureOr<bool> Function()? canRegister,
+    bool useWeakReference = false,
     Set<Object>? requires,
+    DDI? ddiInstance,
   }) {
-    return DDI.instance.register<BeanT>(
+    final targetDdi = ddiInstance ?? DDI.instance;
+
+    return targetDdi.register<BeanT>(
       factory: ApplicationFactory<BeanT>(
         builder: this,
         decorators: decorators,
         canDestroy: canDestroy,
         children: children,
         selector: selector,
+        useWeakReference: useWeakReference,
         requires: requires,
       ),
       qualifier: qualifier,
+      context: context,
       canRegister: canRegister,
+      priority: priority,
     );
   }
 
@@ -108,18 +125,26 @@ final class CustomBuilder<BeanT extends Object> {
   /// - `children`: A set of child objects associated with the Bean.
   /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
+  /// - `context`: Optional context where the bean should be registered.
+  /// - `priority`: Optional priority used when multiple beans share the same type alias.
   /// - `canRegister`: Optional function to conditionally register the instance.
   /// - `requires`: Optional set of qualifiers or types that must be registered before creating an instance.
+  /// - `ddiInstance`: Optional DDI container where the factory should be registered. Defaults to [DDI.instance].
   Future<void> asDependent({
     ListDecorator<BeanT> decorators = const [],
     bool canDestroy = true,
     Set<Object> children = const {},
     FutureOr<bool> Function(Object)? selector,
     Object? qualifier,
+    Object? context,
+    int? priority,
     FutureOr<bool> Function()? canRegister,
     Set<Object>? requires,
+    DDI? ddiInstance,
   }) {
-    return DDI.instance.register<BeanT>(
+    final targetDdi = ddiInstance ?? DDI.instance;
+
+    return targetDdi.register<BeanT>(
       factory: DependentFactory<BeanT>(
         builder: this,
         decorators: decorators,
@@ -129,7 +154,9 @@ final class CustomBuilder<BeanT extends Object> {
         requires: requires,
       ),
       qualifier: qualifier,
+      context: context,
       canRegister: canRegister,
+      priority: priority,
     );
   }
 
@@ -140,18 +167,26 @@ final class CustomBuilder<BeanT extends Object> {
   /// - `children`: A set of child objects associated with the Bean.
   /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
   /// - `qualifier`: Optional qualifier name to distinguish between different instances of the same type.
+  /// - `context`: Optional context where the bean should be registered.
+  /// - `priority`: Optional priority used when multiple beans share the same type alias.
   /// - `canRegister`: Optional function to conditionally register the instance.
   /// - `requires`: Optional set of qualifiers or types that must be registered before creating an instance.
+  /// - `ddiInstance`: Optional DDI container where the factory should be registered. Defaults to [DDI.instance].
   Future<void> asSingleton({
     ListDecorator<BeanT> decorators = const [],
     bool canDestroy = true,
     Set<Object> children = const {},
     FutureOr<bool> Function(Object)? selector,
     Object? qualifier,
+    Object? context,
+    int? priority,
     FutureOr<bool> Function()? canRegister,
     Set<Object>? requires,
+    DDI? ddiInstance,
   }) {
-    return DDI.instance.register<BeanT>(
+    final targetDdi = ddiInstance ?? DDI.instance;
+
+    return targetDdi.register<BeanT>(
       factory: SingletonFactory<BeanT>(
         builder: this,
         decorators: decorators,
@@ -161,7 +196,9 @@ final class CustomBuilder<BeanT extends Object> {
         requires: requires,
       ),
       qualifier: qualifier,
+      context: context,
       canRegister: canRegister,
+      priority: priority,
     );
   }
 }

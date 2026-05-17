@@ -54,8 +54,14 @@ abstract interface class DDIStrategy {
   @pragma('vm:prefer-inline')
   Iterable<Object> get keys;
 
-  @pragma('vm:prefer-inline')
-  Iterable<MapEntry<Object, DDIBaseFactory<Object>>> entries({Object? context});
+  /// Returns entries from the selected context.
+  ///
+  /// When [fallback] is enabled, entries from nearer contexts must be yielded
+  /// before ancestor entries.
+  Iterable<MapEntry<Object, DDIBaseFactory<Object>>> entries({
+    Object? context,
+    bool fallback = false,
+  });
 
   Set<Object> qualifiersOf(Object key, {Object? context});
 

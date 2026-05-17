@@ -25,6 +25,8 @@ final class InstanceDestroyUtils {
   /// - `instance`: The instance to be destroyed (can be null).
   /// - `children`: Set of child qualifiers that should be destroyed.
   /// - `interceptors`: Set of interceptor qualifiers to call during destruction.
+  /// - `moduleContext`: Optional remembered module context, used when the
+  ///   instance has already been reset by `dispose()`.
   ///
   /// The destruction process follows this order:
   /// 1. Call interceptors' `onDestroy` method (even if instance is null)
@@ -48,7 +50,11 @@ final class InstanceDestroyUtils {
     required Set<Object> children,
     required Set<Object> interceptors,
     required DDI ddiInstance,
+    Object? moduleContext,
   }) async {
+    final Object? effectiveModuleContext =
+        instance is DDIModule ? instance.contextQualifier : moduleContext;
+
     // Should call interceptors even if the instance is null
     if (interceptors.isNotEmpty) {
       for (final interceptor in interceptors) {
@@ -77,16 +83,14 @@ final class InstanceDestroyUtils {
         apply: apply,
         ddiInstance: ddiInstance,
       );
-    } else if (instance is DDIModule) {
-      final Object? moduleContext = instance.contextQualifier;
-
+    } else if (effectiveModuleContext != null) {
       if (children.isNotEmpty) {
         final List<Future<void>> futures = [
           for (final Object child in children)
             Future<void>.sync(() {
               return ddiInstance.destroy(
                 qualifier: child,
-                context: moduleContext,
+                context: effectiveModuleContext,
               );
             }),
         ];
@@ -98,7 +102,7 @@ final class InstanceDestroyUtils {
           (_) async {
             await _destroyModuleContext(
               ddiInstance: ddiInstance,
-              context: moduleContext,
+              context: effectiveModuleContext,
             );
             apply();
           },
@@ -107,14 +111,14 @@ final class InstanceDestroyUtils {
 
       return _destroyModuleContext(
         ddiInstance: ddiInstance,
-        context: moduleContext,
+        context: effectiveModuleContext,
       ).then((_) => apply());
     }
 
     final destroyChildrenResult = _destroyChildren<BeanT>(
       children: children,
       ddiInstance: ddiInstance,
-      context: instance is DDIModule ? instance.contextQualifier : null,
+      context: effectiveModuleContext,
     );
 
     apply();

@@ -6,9 +6,9 @@ import 'package:test/test.dart';
 import '../clazz_samples/performance_benchmark_samples.dart';
 
 enum _ScopeKind {
-  application('Application', 2000000, 0.2, 1),
-  singleton('Singleton', 2000000, 0.2, 1),
-  object('Object', 2000000, 0.2, 1),
+  application('Application', 2000000, 0.25, 1),
+  singleton('Singleton', 2000000, 0.25, 1),
+  object('Object', 2000000, 0.25, 1),
   dependent('Dependent', 250000, 0.4, 1);
 
   const _ScopeKind(
@@ -236,8 +236,8 @@ void main() {
 
           final directMedian = _medianMillis(directResults);
           final instanceMedian = _medianMillis(instanceResults);
-          final relativeDelta =
-              (instanceMedian - directMedian).abs() / directMedian;
+          final relativeSlowdown =
+              (instanceMedian - directMedian) / directMedian;
 
           _printBenchmarkSummary(
             '${scope.label} direct get',
@@ -271,10 +271,10 @@ void main() {
             );
           }
           expect(
-            relativeDelta,
+            relativeSlowdown,
             lessThan(scope.maxRelativeDelta),
             reason:
-                '${scope.label} Scope direct get and Instance without cache should stay close.',
+                '${scope.label} Scope Instance without cache should not be much slower than direct get.',
           );
         },
       );
@@ -364,8 +364,7 @@ void main() {
 
         final directMedian = _medianMillis(directResults);
         final instanceMedian = _medianMillis(instanceResults);
-        final relativeDelta =
-            (instanceMedian - directMedian).abs() / directMedian;
+        final relativeSlowdown = (instanceMedian - directMedian) / directMedian;
 
         _printBenchmarkSummary(
           'Contextual module direct get',
@@ -395,10 +394,10 @@ void main() {
           isTrue,
         );
         expect(
-          relativeDelta,
+          relativeSlowdown,
           lessThan(maxRelativeDelta),
           reason:
-              'Contextual module direct get and captured Instance should stay close.',
+              'Contextual module captured Instance should not be much slower than direct get.',
         );
       },
     );

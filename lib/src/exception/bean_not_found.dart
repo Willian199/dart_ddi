@@ -24,7 +24,7 @@
 /// final service = ddi.get<MyService>();
 ///
 /// // First register the service
-/// ddi.registerSingleton<MyService>(MyService.new);
+/// ddi.singleton<MyService>(MyService.new);
 /// final service = ddi.get<MyService>(); // Now it works
 /// ```
 class BeanNotFoundException implements Exception {
