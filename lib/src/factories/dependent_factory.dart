@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
 import 'package:dart_ddi/src/utils/dependency_validator.dart';
+import 'package:dart_ddi/src/utils/interceptor_result_validator.dart';
 import 'package:dart_ddi/src/utils/interceptor_resolver.dart';
 import 'package:dart_ddi/src/utils/instance_destroy_utils.dart';
 
@@ -51,9 +52,6 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
   /// Required qualifiers or types that must be registered before creating an instance.
   final Set<Object>? _requires;
-
-  /// Flag to track if dependencies have been validated.
-  bool _dependenciesValidated = false;
 
   /// The current _state of this factory in its lifecycle.
   BeanStateEnum _state = BeanStateEnum.none;
@@ -148,14 +146,11 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     resolutionMap.add(qualifier);
 
     try {
-      if (!_dependenciesValidated &&
-          _requires != null &&
-          _requires.isNotEmpty) {
+      if (_requires != null && _requires.isNotEmpty) {
         DependencyValidator.validateDependencies(
           requires: _requires,
           ddiInstance: ddiInstance,
         );
-        _dependenciesValidated = true;
       }
 
       BeanT dependentClazz = createInstance<BeanT, ParameterT>(
@@ -170,18 +165,15 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
             ddiInstance: ddiInstance,
             qualifier: interceptor,
           );
-          dependentClazz = inter.onCreate(dependentClazz) as BeanT;
+          dependentClazz = InterceptorResultValidator.ensureCompatible<BeanT>(
+            value: inter.onCreate(dependentClazz),
+            interceptor: interceptor,
+            lifecycle: 'onCreate',
+          );
         }
       }
 
-      assert(
-        dependentClazz is! PreDispose && dependentClazz is! Future<PreDispose>,
-        'Dependent instances do not support PreDispose. Use Interceptors instead.',
-      );
-      assert(
-        dependentClazz is! PreDestroy && dependentClazz is! Future<PreDestroy>,
-        'Dependent instances do not support PreDestroy. Use Interceptors instead.',
-      );
+      _validateUnsupportedLifecycle(dependentClazz);
 
       if (_decorators.isNotEmpty) {
         for (final decorator in _decorators) {
@@ -215,7 +207,11 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
             ddiInstance: ddiInstance,
             qualifier: interceptor,
           );
-          dependentClazz = inter.onGet(dependentClazz) as BeanT;
+          dependentClazz = InterceptorResultValidator.ensureCompatible<BeanT>(
+            value: inter.onGet(dependentClazz),
+            interceptor: interceptor,
+            lifecycle: 'onGet',
+          );
         }
       }
       return dependentClazz;
@@ -270,9 +266,7 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     resolutionMap.add(qualifier);
 
     try {
-      if (!_dependenciesValidated &&
-          _requires != null &&
-          _requires.isNotEmpty) {
+      if (_requires != null && _requires.isNotEmpty) {
         final validation = DependencyValidator.validateDependenciesAsync(
           requires: _requires,
           ddiInstance: ddiInstance,
@@ -281,7 +275,6 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
         if (validation is Future) {
           await validation;
         }
-        _dependenciesValidated = true;
       }
 
       BeanT dependentClazz = await createInstanceAsync<BeanT, ParameterT>(
@@ -298,18 +291,15 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
         );
 
         final exec = inter.onCreate(dependentClazz);
-
-        dependentClazz = (exec is Future ? await exec : exec) as BeanT;
+        final result = exec is Future ? await exec : exec;
+        dependentClazz = InterceptorResultValidator.ensureCompatible<BeanT>(
+          value: result,
+          interceptor: interceptor,
+          lifecycle: 'onCreate',
+        );
       }
 
-      assert(
-        dependentClazz is! PreDispose && dependentClazz is! Future<PreDispose>,
-        'Dependent instances do not support PreDispose. Use Interceptors instead.',
-      );
-      assert(
-        dependentClazz is! PreDestroy && dependentClazz is! Future<PreDestroy>,
-        'Dependent instances do not support PreDestroy. Use Interceptors instead.',
-      );
+      _validateUnsupportedLifecycle(dependentClazz);
 
       if (_decorators.isNotEmpty) {
         for (final decorator in _decorators) {
@@ -346,8 +336,12 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
         );
 
         final exec = inter.onGet(dependentClazz);
-
-        dependentClazz = (exec is Future ? await exec : exec) as BeanT;
+        final result = exec is Future ? await exec : exec;
+        dependentClazz = InterceptorResultValidator.ensureCompatible<BeanT>(
+          value: result,
+          interceptor: interceptor,
+          lifecycle: 'onGet',
+        );
       }
 
       return dependentClazz;
@@ -455,6 +449,22 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     }
 
     _children.addAll(child);
+  }
+
+  void _validateUnsupportedLifecycle(Object instance) {
+    if (instance is PreDispose || instance is Future<PreDispose>) {
+      throw const UnsupportedLifecycleException(
+        scope: 'Dependent',
+        lifecycle: 'PreDispose',
+      );
+    }
+
+    if (instance is PreDestroy || instance is Future<PreDestroy>) {
+      throw const UnsupportedLifecycleException(
+        scope: 'Dependent',
+        lifecycle: 'PreDestroy',
+      );
+    }
   }
 
   void _checkState(Object qualifier) {

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
+import 'package:dart_ddi/src/utils/interceptor_result_validator.dart';
 import 'package:dart_ddi/src/utils/interceptor_resolver.dart';
 import 'package:dart_ddi/src/utils/instance_destroy_utils.dart';
 
@@ -122,11 +123,13 @@ class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
               resolved is Future ? await resolved : resolved;
 
           final newInstance = inter.onCreate(clazz);
-          if (newInstance is Future) {
-            clazz = (await newInstance) as BeanT;
-          } else {
-            clazz = newInstance as BeanT;
-          }
+          final result =
+              newInstance is Future ? await newInstance : newInstance;
+          clazz = InterceptorResultValidator.ensureCompatible<BeanT>(
+            value: result,
+            interceptor: interceptor,
+            lifecycle: 'onCreate',
+          );
         }
       }
 
@@ -202,7 +205,11 @@ class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
           qualifier: interceptor,
         );
         final current = _instance!;
-        final next = inter.onGet(current) as BeanT;
+        final next = InterceptorResultValidator.ensureCompatible<BeanT>(
+          value: inter.onGet(current),
+          interceptor: interceptor,
+          lifecycle: 'onGet',
+        );
         if (!identical(current, next)) {
           _instance = next;
         }
@@ -242,7 +249,12 @@ class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
         final current = _instance!;
         final exec = ins.onGet(current);
-        final next = (exec is Future ? await exec : exec) as BeanT;
+        final result = exec is Future ? await exec : exec;
+        final next = InterceptorResultValidator.ensureCompatible<BeanT>(
+          value: result,
+          interceptor: interceptor,
+          lifecycle: 'onGet',
+        );
         if (!identical(current, next)) {
           _instance = next;
         }

@@ -428,8 +428,11 @@ final class DDIDefaultStrategy implements DDIStrategy {
   }
 
   @override
-  bool get isEmpty => _currentContext.isEmpty;
+  bool get isEmpty => _contexts.values.every((context) => context.isEmpty);
 
   @override
-  int get length => _currentContext.length;
+  int get length => _contexts.values.fold(
+        0,
+        (total, context) => total + context.length,
+      );
 }

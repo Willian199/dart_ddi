@@ -9,6 +9,7 @@ import '../clazz_samples/h.dart';
 import '../clazz_samples/i.dart';
 import '../clazz_samples/j.dart';
 import '../clazz_samples/k.dart';
+import '../clazz_samples/type_changing_interceptor_samples.dart';
 
 void main() {
   group('DDI Factory Interceptor Tests', () {
@@ -50,6 +51,111 @@ void main() {
 
       expect(() => ddi.get<G>(), throwsA(isA<BeanNotFoundException>()));
     });
+
+    test(
+      'type-changing interceptor should work with explicit supertype registration',
+      () async {
+        final isolatedDdi = DDI.newInstance();
+
+        await isolatedDdi.application<J<G>>(J<G>.new);
+        await isolatedDdi.register<G>(
+          factory: ApplicationFactory<G>(
+            builder: H.new.builder,
+            interceptors: {J<G>},
+          ),
+        );
+
+        final G instance = isolatedDdi.get<G>();
+
+        expect(instance, isA<I>());
+        expect(instance.area(), 20);
+
+        await isolatedDdi.destroy<G>();
+        await isolatedDdi.destroy<J<G>>();
+      },
+    );
+
+    test(
+      'type-changing interceptor reports an incompatible result when the factory is locked to the concrete subtype',
+      () async {
+        final isolatedDdi = DDI.newInstance();
+
+        await isolatedDdi.application<J<G>>(J<G>.new);
+        await isolatedDdi.register<H>(
+          factory: ApplicationFactory<H>(
+            builder: H.new.builder,
+            interceptors: {J<G>},
+          ),
+        );
+
+        expect(
+          () => isolatedDdi.get<H>(),
+          throwsA(
+            isA<IncompatibleInterceptorResultException>()
+                .having(
+                  (error) => error.expectedType,
+                  'expectedType',
+                  H,
+                )
+                .having(
+                  (error) => error.actualType,
+                  'actualType',
+                  'I',
+                )
+                .having(
+                  (error) => error.lifecycle,
+                  'lifecycle',
+                  'onCreate',
+                ),
+          ),
+        );
+
+        await isolatedDdi.destroy<H>();
+        await isolatedDdi.destroy<J<G>>();
+      },
+    );
+
+    test(
+      'type-changing onGet interceptor reports an incompatible result for a concrete subtype factory',
+      () async {
+        final isolatedDdi = DDI.newInstance();
+
+        await isolatedDdi.application<ReplaceWithIOnGetInterceptor>(
+          ReplaceWithIOnGetInterceptor.new,
+        );
+        await isolatedDdi.register<H>(
+          factory: ApplicationFactory<H>(
+            builder: H.new.builder,
+            interceptors: {ReplaceWithIOnGetInterceptor},
+          ),
+        );
+
+        expect(
+          () => isolatedDdi.get<H>(),
+          throwsA(
+            isA<IncompatibleInterceptorResultException>()
+                .having(
+                  (error) => error.expectedType,
+                  'expectedType',
+                  H,
+                )
+                .having(
+                  (error) => error.actualType,
+                  'actualType',
+                  'I',
+                )
+                .having(
+                  (error) => error.lifecycle,
+                  'lifecycle',
+                  'onGet',
+                ),
+          ),
+        );
+
+        await isolatedDdi.destroy<H>();
+        await isolatedDdi.destroy<ReplaceWithIOnGetInterceptor>();
+      },
+    );
 
     test('ADD Interceptor to a Factory Application bean with qualifier', () {
       ddi.register<J>(factory: ApplicationFactory(builder: J<G>.new.builder));

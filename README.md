@@ -632,6 +632,9 @@ When you register a factory, you provide a builder function that defines how the
 
 ```dart
 MyService.new.builder.asApplication();
+
+final isolatedDdi = DDI.newInstance();
+MyService.new.builder.asApplication(ddiInstance: isolatedDdi);
 ```
 
 In this example:
@@ -639,6 +642,8 @@ In this example:
 * `MyService.new.` is the default constructor of the class (e.g., `() => MyService()`). 
 * `.builder` defines the parameters for the instance of `MyService`.
 * `.asApplication()` defines the scope of the factory to create a new instance of `MyService` and register the factory in the `dart_ddi` system.
+* `ddiInstance:` optionally routes helper registration to a non-global `DDI` container.
+* Builder helpers expose the registration controls that are safe with their concrete inferred type, including `context`, `priority`, `requires`, and `useWeakReference` for application scope.
 
 ## Use Cases for Factories
 
@@ -690,18 +695,28 @@ This dependencies are resolved automatically from the container instead of being
 
 ```dart
 // Register using scope shortcuts
-ddi.singleton(MyService.new.inject);
-MyService.new.inject.asApplication();
+ddi.singleton(MyService.new.inject());
+MyService.new.inject().asApplication();
 
 // Register using explicit factory
 await ddi.register(
   factory: ApplicationFactory(
-    builder: MyService.new.inject,
+    builder: MyService.new.inject(),
   ),
+);
+
+// Resolve from a non-global DDI instance
+final isolatedDdi = DDI.newInstance();
+await isolatedDdi.singleton(
+  MyService.new.inject(isolatedDdi).call,
+);
+
+await MyService.new.inject(isolatedDdi).asApplication(
+  ddiInstance: isolatedDdi,
 );
 ```
 
-`inject` creates a zero-argument producer internally and resolves each parameter from DDI before instance creation.
+`inject()` creates a zero-argument producer internally and resolves each parameter from the global DDI instance before creation. Pass a `DDI` instance to `inject(ddiInstance)` when the producer must resolve dependencies from another container.
 
 ## Considerations
 
@@ -709,9 +724,9 @@ await ddi.register(
 
 **Super-types or Interfaces**: You cannot use the shortcut builder (`MyService.new.builder.asApplication()`) with super-types or interfaces. This limitation exists because the builder function only recognizes the implementation class, not the super-type or interface.
 
-**Decorators and Interceptors**: It is highly recommended to register the factory using `factory: CustomFactory(...)`. This approach handles type inference more effectively.
+**Decorators and Interceptors**: Decorators are safe on the builder shortcuts, but interceptors are intentionally not exposed there. The shortcut locks the bean type to the concrete builder return type; if an interceptor for a super-type replaces `H` with another valid `G` implementation such as `I`, a concrete `H` registration would fail with `IncompatibleInterceptorResultException`. Use an explicitly typed registration instead, for example `ddi.register<G>(factory: ApplicationFactory<G>(builder: H.new.builder, interceptors: {MyInterceptor}))`.
 
-**Lazy vs. Eager Injection**: Eager Injection occurs when dependencies are resolved during instance creation, such as with `MyService.new.inject`, builders/constructors with typed parameters (for example `(A a, B b, C c) => MyService(a, b, c)`), or manual constructor wiring like `() => MyService(ddi.get(), ddi.get())`. Lazy Injection defers resolution until needed, using `DDIInject` / `DDIInjectAsync`, `late` + `ddi.get()`, or `Instance<T>` (`ddi.getInstance<T>()`) for programmatic lazy access.
+**Lazy vs. Eager Injection**: Eager Injection occurs when dependencies are resolved during instance creation, such as with `MyService.new.inject()`, builders/constructors with typed parameters (for example `(A a, B b, C c) => MyService(a, b, c)`), or manual constructor wiring like `() => MyService(ddi.get(), ddi.get())`. Lazy Injection defers resolution until needed, using `DDIInject` / `DDIInjectAsync`, `late` + `ddi.get()`, or `Instance<T>` (`ddi.getInstance<T>()`) for programmatic lazy access.
 
 # Qualifiers
 
@@ -1173,6 +1188,7 @@ With this setup:
 - Module children are registered in the module context instead of the root registry.
 - The same bean type or qualifier can exist both globally and inside the module without collisions.
 - `destroy()` and `dispose()` keep using the module context for its children.
+- Module helper methods mirror the scope shortcuts: all support `requires`, and `application()` also supports `useWeakReference`.
 
 ### `DDIInject`, `DDIInjectAsync` and `DDIComponentInject` Mixins
 

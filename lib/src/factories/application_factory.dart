@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dart_ddi/dart_ddi.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
 import 'package:dart_ddi/src/utils/dependency_validator.dart';
+import 'package:dart_ddi/src/utils/interceptor_result_validator.dart';
 import 'package:dart_ddi/src/utils/interceptor_resolver.dart';
 import 'package:dart_ddi/src/utils/instance_destroy_utils.dart';
 
@@ -65,9 +66,6 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   /// Required qualifiers or types that must be registered before creating an instance.
   final Set<Object>? _requires;
 
-  /// Flag to track if dependencies have been validated.
-  bool _dependenciesValidated = false;
-
   /// The current _state of this factory in its lifecycle.
   BeanStateEnum _state = BeanStateEnum.none;
 
@@ -127,21 +125,17 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
           ddiInstance: ddiInstance,
           qualifier: interceptor,
         );
-        current = inter.onGet(current) as BeanT;
+        current = InterceptorResultValidator.ensureCompatible<BeanT>(
+          value: inter.onGet(current),
+          interceptor: interceptor,
+          lifecycle: 'onGet',
+        );
       }
 
       if (!identical(_instance, current)) {
         _instance = current;
       }
       return current;
-    }
-
-    if (!_dependenciesValidated && _requires != null && _requires.isNotEmpty) {
-      DependencyValidator.validateDependencies(
-        requires: _requires,
-        ddiInstance: ddiInstance,
-      );
-      _dependenciesValidated = true;
     }
 
     // Check if instance was garbage collected (weak reference)
@@ -159,6 +153,13 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     }
 
     if (!isReady) {
+      if (_requires != null && _requires.isNotEmpty) {
+        DependencyValidator.validateDependencies(
+          requires: _requires,
+          ddiInstance: ddiInstance,
+        );
+      }
+
       if (isFuture) {
         throw const FutureNotAcceptException();
       }
@@ -218,7 +219,11 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
           ddiInstance: ddiInstance,
           qualifier: interceptor,
         );
-        instanceToReturn = inter.onGet(instanceToReturn!) as BeanT;
+        instanceToReturn = InterceptorResultValidator.ensureCompatible<BeanT>(
+          value: inter.onGet(instanceToReturn!),
+          interceptor: interceptor,
+          lifecycle: 'onGet',
+        );
       }
     }
 
@@ -263,7 +268,11 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
             ddiInstance: ddiInstance,
             qualifier: interceptor,
           );
-          ins = inter.onCreate(ins) as BeanT;
+          ins = InterceptorResultValidator.ensureCompatible<BeanT>(
+            value: inter.onCreate(ins),
+            interceptor: interceptor,
+            lifecycle: 'onCreate',
+          );
         }
       }
 
@@ -340,18 +349,6 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   }) async {
     _checkState(type);
 
-    if (!_dependenciesValidated && _requires != null && _requires.isNotEmpty) {
-      final validation = DependencyValidator.validateDependenciesAsync(
-        requires: _requires,
-        ddiInstance: ddiInstance,
-      );
-
-      if (validation is Future) {
-        await validation;
-      }
-      _dependenciesValidated = true;
-    }
-
     // Check if instance was garbage collected (weak reference)
     if (_useWeakReference && isReady) {
       final weakInst = _weakInstance?.target;
@@ -406,6 +403,17 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
           _runningCreateProcess = false;
           // Continue with normal creation flow below
         }
+      }
+    }
+
+    if (_requires != null && _requires.isNotEmpty) {
+      final validation = DependencyValidator.validateDependenciesAsync(
+        requires: _requires,
+        ddiInstance: ddiInstance,
+      );
+
+      if (validation is Future) {
+        await validation;
       }
     }
 
@@ -478,8 +486,12 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
         );
 
         final exec = ins.onCreate(instance);
-
-        instance = (exec is Future ? await exec : exec) as BeanT;
+        final result = exec is Future ? await exec : exec;
+        instance = InterceptorResultValidator.ensureCompatible<BeanT>(
+          value: result,
+          interceptor: interceptor,
+          lifecycle: 'onCreate',
+        );
       }
 
       /// Apply all Decorators to the instance
@@ -582,8 +594,12 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
         qualifier: interceptor,
       );
       final exec = inter.onGet(instanceToProcess!);
-
-      instanceToProcess = (exec is Future ? await exec : exec) as BeanT;
+      final result = exec is Future ? await exec : exec;
+      instanceToProcess = InterceptorResultValidator.ensureCompatible<BeanT>(
+        value: result,
+        interceptor: interceptor,
+        lifecycle: 'onGet',
+      );
     }
 
     // Update storage based on weak reference setting
@@ -659,9 +675,12 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
     _state = BeanStateEnum.beingDestroyed;
 
+    final BeanT? instanceForDestroy =
+        _instance ?? (_useWeakReference ? _weakInstance?.target : null);
+
     return InstanceDestroyUtils.destroyInstance<BeanT>(
       apply: apply,
-      instance: _instance,
+      instance: instanceForDestroy,
       interceptors: _interceptors,
       children: _children,
       ddiInstance: ddiInstance,
@@ -819,10 +838,26 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     _checkState(type);
 
     if (isReady) {
-      if (newDecorators.isNotEmpty) {
+      BeanT? decoratedInstance =
+          _instance ?? (_useWeakReference ? _weakInstance?.target : null);
+
+      if (decoratedInstance != null) {
         for (final decorator in newDecorators) {
-          _instance = decorator(_instance!);
+          decoratedInstance = decorator(decoratedInstance!);
         }
+
+        if (_useWeakReference) {
+          _weakInstance = WeakReference(decoratedInstance!);
+          _instance = null;
+        } else {
+          _instance = decoratedInstance;
+        }
+      } else if (_useWeakReference) {
+        _weakInstance = null;
+        _instance = null;
+        _state = BeanStateEnum.registered;
+        _created = Completer();
+        _runningCreateProcess = false;
       }
     }
 

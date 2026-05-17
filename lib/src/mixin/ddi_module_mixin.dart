@@ -71,6 +71,7 @@ mixin DDIModule implements PostConstruct {
   /// - `canDestroy`: Optional parameter to make the instance indestructible.
   /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to link multiple classes under a single parent module.
   /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
+  /// - `requires`: Optional set of qualifiers or types that must be registered before creating an instance.
   ///
   /// Obs: If you want to capture the error during the registration, you must await for it.
   Future<void> singleton<BeanT extends Object>(
@@ -83,6 +84,7 @@ mixin DDIModule implements PostConstruct {
     FutureOrBoolCallback? canRegister,
     bool canDestroy = true,
     FutureOr<bool> Function(Object)? selector,
+    Set<Object>? requires,
   }) async {
     final bean = ddiContainer.singleton<BeanT>(
       clazzRegister,
@@ -95,6 +97,7 @@ mixin DDIModule implements PostConstruct {
       canRegister: canRegister,
       children: children,
       selector: selector,
+      requires: requires,
     );
 
     // Ensure the module is registered before adding children
@@ -121,6 +124,8 @@ mixin DDIModule implements PostConstruct {
   /// - `canDestroy`: Optional parameter to make the instance indestructible.
   /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to link multiple classes under a single parent module.
   /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
+  /// - `useWeakReference`: Whether to store the application instance through a weak reference.
+  /// - `requires`: Optional set of qualifiers or types that must be registered before creating an instance.
   ///
   Future<void> application<BeanT extends Object>(
     BeanRegister<BeanT> clazzRegister, {
@@ -132,6 +137,8 @@ mixin DDIModule implements PostConstruct {
     FutureOrBoolCallback? canRegister,
     bool canDestroy = true,
     FutureOr<bool> Function(Object)? selector,
+    bool useWeakReference = false,
+    Set<Object>? requires,
   }) async {
     final bean = ddiContainer.application<BeanT>(
       clazzRegister,
@@ -144,6 +151,8 @@ mixin DDIModule implements PostConstruct {
       canRegister: canRegister,
       children: children,
       selector: selector,
+      useWeakReference: useWeakReference,
+      requires: requires,
     );
 
     // Ensure the module is registered before adding children
@@ -170,6 +179,7 @@ mixin DDIModule implements PostConstruct {
   /// - `canDestroy`: Optional parameter to make the instance indestructible.
   /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to link multiple classes under a single parent module.
   /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
+  /// - `requires`: Optional set of qualifiers or types that must be registered before creating an instance.
   ///
   Future<void> dependent<BeanT extends Object>(
     BeanRegister<BeanT> clazzRegister, {
@@ -181,6 +191,7 @@ mixin DDIModule implements PostConstruct {
     Set<Object> interceptors = const {},
     Set<Object> children = const {},
     FutureOr<bool> Function(Object)? selector,
+    Set<Object>? requires,
   }) async {
     final bean = ddiContainer.dependent<BeanT>(
       clazzRegister,
@@ -193,6 +204,7 @@ mixin DDIModule implements PostConstruct {
       canRegister: canRegister,
       children: children,
       selector: selector,
+      requires: requires,
     );
 
     // Ensure the module is registered before adding children
@@ -219,6 +231,7 @@ mixin DDIModule implements PostConstruct {
   /// - `canDestroy`: Optional parameter to make the instance indestructible.
   /// - `children`: Optional parameter, designed to receive types or qualifiers. This parameter allows you to link multiple classes under a single parent module.
   /// - `selector`: Optional function that allows conditional selection of instances based on specific criteria. Useful for dynamically choosing an instance at runtime based on application context.
+  /// - `requires`: Optional set of qualifiers or types that must be registered before creating an instance.
   ///
   /// Obs: If you want to capture the error during the registration, you must await for it.
   Future<void> object<BeanT extends Object>(
@@ -231,6 +244,7 @@ mixin DDIModule implements PostConstruct {
     FutureOrBoolCallback? canRegister,
     bool canDestroy = true,
     FutureOr<bool> Function(Object)? selector,
+    Set<Object>? requires,
   }) async {
     final bean = ddiContainer.object<BeanT>(
       instance,
@@ -243,6 +257,7 @@ mixin DDIModule implements PostConstruct {
       canRegister: canRegister,
       children: children,
       selector: selector,
+      requires: requires,
     );
 
     // Ensure the module is registered before adding children

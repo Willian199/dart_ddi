@@ -59,6 +59,8 @@ extension DDIGetExtension on DDI {
   /// This is useful for optional dependencies or when you want to handle missing registrations gracefully.
   ///
   /// - `qualifier`: (Optional) Qualifier to distinguish between different instances.
+  /// - `select`: Optional value used to choose among selector-enabled beans.
+  /// - `context`: Optional context where the bean should be resolved.
   ///
   /// **Use cases:**
   /// - Optional dependencies that may or may not be registered
@@ -77,10 +79,20 @@ extension DDIGetExtension on DDI {
   /// final service = ddi.getOptional<MyService>(qualifier: 'special');
   /// ```
   @pragma('vm:prefer-inline')
-  BeanT? getOptional<BeanT extends Object>({Object? qualifier}) {
-    return isRegistered<BeanT>(qualifier: qualifier)
-        ? get<BeanT>(qualifier: qualifier)
-        : null;
+  BeanT? getOptional<BeanT extends Object>({
+    Object? qualifier,
+    Object? select,
+    Object? context,
+  }) {
+    try {
+      return getWith<BeanT, Object>(
+        qualifier: qualifier,
+        select: select,
+        context: context,
+      );
+    } on BeanNotFoundException {
+      return null;
+    }
   }
 
   /// Optionally retrieves an instance with a parameter of the registered class.
@@ -91,6 +103,8 @@ extension DDIGetExtension on DDI {
   ///
   /// - `qualifier`: (Optional) Qualifier to distinguish between different instances.
   /// - `parameter`: (Optional) Parameter to pass during instance creation.
+  /// - `select`: Optional value used to choose among selector-enabled beans.
+  /// - `context`: Optional context where the bean should be resolved.
   ///
   /// **Use cases:**
   /// - Optional dependencies with parameters
@@ -115,45 +129,65 @@ extension DDIGetExtension on DDI {
   BeanT? getOptionalWith<BeanT extends Object, ParameterT extends Object>({
     ParameterT? parameter,
     Object? qualifier,
+    Object? select,
+    Object? context,
   }) {
-    return isRegistered<BeanT>(qualifier: qualifier)
-        ? getWith<BeanT, ParameterT>(qualifier: qualifier, parameter: parameter)
-        : null;
+    try {
+      return getWith<BeanT, ParameterT>(
+        qualifier: qualifier,
+        parameter: parameter,
+        select: select,
+        context: context,
+      );
+    } on BeanNotFoundException {
+      return null;
+    }
   }
 
   /// Asynchronously retrieves an optional instance of the registered class.
   ///
   /// - `qualifier`: (Optional) Qualifier to distinguish between different instances.
+  /// - `select`: Optional value used to choose among selector-enabled beans.
+  /// - `context`: Optional context where the bean should be resolved.
   ///
   /// This method performs an asynchronous retrieval if the instance is registered.
-  Future<BeanT?> getOptionalAsync<BeanT extends Object>(
-      {Object? qualifier}) async {
-    if (isRegistered<BeanT>(qualifier: qualifier)) {
-      return getAsync<BeanT>(qualifier: qualifier);
-    }
-
-    return null;
+  Future<BeanT?> getOptionalAsync<BeanT extends Object>({
+    Object? qualifier,
+    Object? select,
+    Object? context,
+  }) {
+    return getAsyncWith<BeanT, Object>(
+      qualifier: qualifier,
+      select: select,
+      context: context,
+    ).then<BeanT?>((bean) => bean).onError<BeanNotFoundException>(
+          (_, __) => null,
+        );
   }
 
   /// Asynchronously retrieves an optional instance with a parameter.
   ///
   /// - `qualifier`: (Optional) Qualifier to distinguish between different instances.
   /// - `parameter`: (Optional) Parameter to pass during instance creation.
+  /// - `select`: Optional value used to choose among selector-enabled beans.
+  /// - `context`: Optional context where the bean should be resolved.
   ///
   /// This method supports asynchronous retrieval with a parameter.
   Future<BeanT?>
       getOptionalAsyncWith<BeanT extends Object, ParameterT extends Object>({
     ParameterT? parameter,
     Object? qualifier,
-  }) async {
-    if (isRegistered<BeanT>(qualifier: qualifier)) {
-      return getAsyncWith<BeanT, ParameterT>(
-        qualifier: qualifier,
-        parameter: parameter,
-      );
-    }
-
-    return null;
+    Object? select,
+    Object? context,
+  }) {
+    return getAsyncWith<BeanT, ParameterT>(
+      qualifier: qualifier,
+      parameter: parameter,
+      select: select,
+      context: context,
+    ).then<BeanT?>((bean) => bean).onError<BeanNotFoundException>(
+          (_, __) => null,
+        );
   }
 
   /// Gets an [Instance] wrapper for programmatic bean access, similar to CDI's Instance\<BeanT>.
