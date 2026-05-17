@@ -71,3 +71,53 @@ final class AutoInjectManyFutureRoot {
   final AutoInjectManyC c;
   final AutoInjectManyD d;
 }
+
+final class AutoInjectHighA {
+  const AutoInjectHighA(this.value);
+  final int value;
+}
+
+final class AutoInjectHighB {
+  const AutoInjectHighB(this.value);
+  final int value;
+}
+
+final class AutoInjectHighC {
+  const AutoInjectHighC(this.value);
+  final int value;
+}
+
+final class AutoInjectHighD {
+  const AutoInjectHighD(this.value);
+  final int value;
+}
+
+final class AutoInjectHighE {
+  const AutoInjectHighE(this.value);
+  final int value;
+}
+
+final class AutoInjectHighF {
+  const AutoInjectHighF(this.value);
+  final int value;
+}
+
+final class AutoInjectHighG {
+  const AutoInjectHighG(this.value);
+  final int value;
+}
+
+final class AutoInjectHighH {
+  const AutoInjectHighH(this.value);
+  final int value;
+}
+
+final class AutoInjectHighI {
+  const AutoInjectHighI(this.value);
+  final int value;
+}
+
+final class AutoInjectHighJ {
+  const AutoInjectHighJ(this.value);
+  final int value;
+}

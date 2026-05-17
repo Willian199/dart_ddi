@@ -29,6 +29,22 @@ void main() {
         expect(entry.allQualifiers, {'primary', 'alias-a'});
       });
 
+      test('BeanEntry should derive alias variants without mutating original',
+          () {
+        final entry = BeanEntry(
+          factory: _factory(),
+          primaryQualifier: 'primary',
+          aliases: {'alias-a'},
+        );
+
+        final added = entry.withAliases({'alias-b'});
+        final removed = added.withoutAliases({'alias-a'});
+
+        expect(entry.aliases, {'alias-a'});
+        expect(added.aliases, {'alias-a', 'alias-b'});
+        expect(removed.aliases, {'alias-b'});
+      });
+
       test('addAliases should throw when primary qualifier is missing', () {
         final context = QualifierContext.root(rootQualifier: 'root');
 
@@ -36,6 +52,32 @@ void main() {
           () => context.addAliases('missing', {'alias'}),
           throwsA(isA<ArgumentError>()),
         );
+      });
+
+      test('QualifierContext should expose direct and alias lookups', () {
+        final context = QualifierContext.root(rootQualifier: 'root');
+        final factory = _factory();
+
+        context.setEntry(
+          'primary',
+          BeanEntry(
+            factory: factory,
+            primaryQualifier: 'primary',
+          ),
+        );
+        context.addAliases('primary', {'alias'});
+
+        expect(context.length, 1);
+        expect(context.primaryKeys, contains('primary'));
+        expect(context.entriesValues.single.primaryQualifier, 'primary');
+        final factoryEntry = context.factoryEntries.single;
+        expect(factoryEntry.key, 'primary');
+        expect(factoryEntry.value, same(factory));
+        expect(context.primaryQualifiersFor('primary'), {'primary'});
+        expect(context.primaryQualifiersFor('alias'), {'primary'});
+        expect(context.primaryQualifiersFor('missing'), isEmpty);
+        expect(context.getEntry('primary'), isNotNull);
+        expect(context.getEntry('alias'), isNotNull);
       });
 
       test('removeEntry should be a no-op for ambiguous alias owners', () {
@@ -200,6 +242,25 @@ void main() {
           () {
         const exception = WeakReferenceCollectedException('MyType');
         expect(exception.toString(), contains('MyType'));
+      });
+
+      test('lifecycle exceptions should expose readable messages', () {
+        const incompatible = IncompatibleInterceptorResultException(
+          interceptor: 'bad-interceptor',
+          lifecycle: 'onGet',
+          expectedType: String,
+          actualType: 'int',
+        );
+        const unsupported = UnsupportedLifecycleException(
+          scope: 'Dependent',
+          lifecycle: 'PreDispose',
+        );
+
+        expect(incompatible.toString(), contains('bad-interceptor'));
+        expect(incompatible.toString(), contains('onGet'));
+        expect(incompatible.toString(), contains('int'));
+        expect(unsupported.toString(), contains('Dependent'));
+        expect(unsupported.toString(), contains('PreDispose'));
       });
 
       test('InterceptorResolver should resolve sync and async interceptors',

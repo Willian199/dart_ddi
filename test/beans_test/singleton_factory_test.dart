@@ -97,6 +97,35 @@ void main() {
       expect(() => ddi.get<C>(), throwsA(isA<BeanNotFoundException>()));
     });
 
+    test('dispose should preserve singleton and only dispose its children',
+        () async {
+      final localDdi = DDI.newInstance();
+
+      await localDdi.application<C>(C.new, qualifier: 'child');
+      await localDdi.singleton<String>(
+        () => 'parent',
+        qualifier: 'parent',
+        children: {'child'},
+      );
+
+      final childBeforeDispose = localDdi.get<C>(qualifier: 'child');
+      final parentBeforeDispose = localDdi.get<String>(qualifier: 'parent');
+
+      await localDdi.dispose<String>(qualifier: 'parent');
+
+      expect(localDdi.isReady<String>(qualifier: 'parent'), isTrue);
+      expect(
+        localDdi.get<String>(qualifier: 'parent'),
+        same(parentBeforeDispose),
+      );
+      expect(localDdi.isReady<C>(qualifier: 'child'), isFalse);
+
+      final childAfterDispose = localDdi.get<C>(qualifier: 'child');
+      expect(identical(childBeforeDispose, childAfterDispose), isFalse);
+
+      await localDdi.destroy<String>(qualifier: 'parent');
+    });
+
     test('Create, get and remove a Factory qualifier bean', () {
       C.new.builder.asSingleton(qualifier: 'typeC');
 

@@ -55,6 +55,7 @@ void main() {
         'register and dispose should preserve module context for object factory',
         () async {
       final ddi = DDI.newInstance();
+      final Object rootContext = ddi.currentContext;
 
       await ddi.object<CoverageObjectModule>(
         CoverageObjectModule(ddi),
@@ -66,6 +67,13 @@ void main() {
       await ddi.dispose<CoverageObjectModule>(qualifier: 'obj-module');
 
       expect(ddi.contextExists(CoverageObjectModule.moduleContext), isTrue);
+
+      await ddi.destroy<CoverageObjectModule>(
+        qualifier: 'obj-module',
+        context: rootContext,
+      );
+
+      expect(ddi.contextExists(CoverageObjectModule.moduleContext), isFalse);
     });
 
     test('dispose should be idempotent for contextual object modules',
@@ -85,6 +93,36 @@ void main() {
         completes,
       );
       expect(ddi.contextExists(CoverageObjectModule.moduleContext), isTrue);
+    });
+
+    test('dispose should preserve object and only dispose its children',
+        () async {
+      final ddi = DDI.newInstance();
+      var childId = 0;
+
+      await ddi.application<CoverageValue>(
+        () => CoverageValue(childId++),
+        qualifier: 'child',
+      );
+      await ddi.object<String>(
+        'parent',
+        qualifier: 'parent',
+        children: {'child'},
+      );
+
+      final childBeforeDispose = ddi.get<CoverageValue>(qualifier: 'child');
+      final parentBeforeDispose = ddi.get<String>(qualifier: 'parent');
+
+      await ddi.dispose<String>(qualifier: 'parent');
+
+      expect(ddi.isReady<String>(qualifier: 'parent'), isTrue);
+      expect(ddi.get<String>(qualifier: 'parent'), same(parentBeforeDispose));
+      expect(ddi.isReady<CoverageValue>(qualifier: 'child'), isFalse);
+
+      final childAfterDispose = ddi.get<CoverageValue>(qualifier: 'child');
+      expect(identical(childBeforeDispose, childAfterDispose), isFalse);
+
+      await ddi.destroy<String>(qualifier: 'parent');
     });
 
     test('factory methods should throw not-ready and destroyed state errors',

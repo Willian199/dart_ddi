@@ -5,6 +5,7 @@ import '../clazz_samples/a.dart';
 import '../clazz_samples/b.dart';
 import '../clazz_samples/c.dart';
 import '../clazz_samples/factory_parameter.dart';
+import '../clazz_samples/factory_coverage_samples.dart';
 import '../clazz_samples/multi_inject.dart';
 import '../clazz_samples/undestroyable/dependent_factory_destroy_get.dart';
 import '../clazz_samples/undestroyable/dependent_factory_destroy_register.dart';
@@ -88,6 +89,99 @@ void main() {
       expect(false, identical(instance1, instance2));
 
       DDI.instance.destroy<C>();
+    });
+
+    test('dispose should only dispose dependent factory children', () async {
+      final localDdi = DDI.newInstance();
+
+      await localDdi.application<C>(C.new, qualifier: 'child');
+      await localDdi.dependent<String>(
+        () => 'parent',
+        qualifier: 'parent',
+        children: {'child'},
+      );
+
+      final childBeforeDispose = localDdi.get<C>(qualifier: 'child');
+
+      await localDdi.dispose<String>(qualifier: 'parent');
+
+      expect(localDdi.isReady<C>(qualifier: 'child'), isFalse);
+
+      final childAfterDispose = localDdi.get<C>(qualifier: 'child');
+      expect(identical(childBeforeDispose, childAfterDispose), isFalse);
+
+      await localDdi.destroy<String>(qualifier: 'parent');
+    });
+
+    test(
+        'destroy should cleanup contextual module created by dependent factory',
+        () async {
+      final localDdi = DDI.newInstance();
+      final Object rootContext = localDdi.currentContext;
+
+      await localDdi.dependent<CoverageDependentModule>(
+        () => CoverageDependentModule(localDdi),
+        qualifier: 'dependent-module',
+      );
+
+      localDdi.get<CoverageDependentModule>(qualifier: 'dependent-module');
+
+      expect(
+        localDdi.contextExists(CoverageDependentModule.moduleContext),
+        isTrue,
+      );
+      expect(
+        localDdi.isRegistered<CoverageValue>(
+          qualifier: CoverageDependentModule.childQualifier,
+          context: CoverageDependentModule.moduleContext,
+        ),
+        isTrue,
+      );
+      localDdi.getWith<CoverageValue, Object>(
+        qualifier: CoverageDependentModule.childQualifier,
+        context: CoverageDependentModule.moduleContext,
+      );
+      expect(
+        localDdi.isReady<CoverageValue>(
+          qualifier: CoverageDependentModule.childQualifier,
+          context: CoverageDependentModule.moduleContext,
+        ),
+        isTrue,
+      );
+
+      await localDdi.dispose<CoverageDependentModule>(
+        qualifier: 'dependent-module',
+        context: rootContext,
+      );
+
+      expect(
+        localDdi.contextExists(CoverageDependentModule.moduleContext),
+        isTrue,
+      );
+      expect(
+        localDdi.isRegistered<CoverageValue>(
+          qualifier: CoverageDependentModule.childQualifier,
+          context: CoverageDependentModule.moduleContext,
+        ),
+        isTrue,
+      );
+      expect(
+        localDdi.isReady<CoverageValue>(
+          qualifier: CoverageDependentModule.childQualifier,
+          context: CoverageDependentModule.moduleContext,
+        ),
+        isFalse,
+      );
+
+      await localDdi.destroy<CoverageDependentModule>(
+        qualifier: 'dependent-module',
+        context: rootContext,
+      );
+
+      expect(
+        localDdi.contextExists(CoverageDependentModule.moduleContext),
+        isFalse,
+      );
     });
 
     test('Try to retrieve Dependent bean after removed', () {

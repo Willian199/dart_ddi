@@ -274,6 +274,21 @@ void main() {
         );
       });
 
+      test('sync optionals should return null when no bean matches', () {
+        final ddi = DDI.newInstance();
+
+        expect(
+          ddi.getOptional<PublicApiOptionalSurfaceValue>(),
+          isNull,
+        );
+        expect(
+          ddi.getOptionalWith<PublicApiOptionalParameterizedValue, String>(
+            parameter: 'missing',
+          ),
+          isNull,
+        );
+      });
+
       test('async optionals should accept context and selector', () async {
         final ddi = DDI.newInstance();
         ddi.createContext('optional-async');

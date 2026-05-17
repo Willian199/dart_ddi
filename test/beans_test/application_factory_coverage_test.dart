@@ -32,10 +32,12 @@ void main() {
       expect(ddi.contextExists(context), isTrue);
     });
 
-    test('dispose should cleanup module context created by application factory',
+    test(
+        'dispose should preserve module context until application factory is destroyed',
         () async {
       final ddi = DDI.newInstance();
       const context = #coverage_application_dispose_context;
+      final Object rootContext = ddi.currentContext;
 
       await ddi.application<CoverageApplicationModule>(
         () => CoverageApplicationModule(ddi, context),
@@ -48,13 +50,113 @@ void main() {
       await ddi.dispose<CoverageApplicationModule>(
           qualifier: 'module-for-dispose');
 
+      expect(ddi.contextExists(context), isTrue);
+
+      await ddi.destroy<CoverageApplicationModule>(
+        qualifier: 'module-for-dispose',
+        context: rootContext,
+      );
+
       expect(ddi.contextExists(context), isFalse);
+    });
+
+    test(
+        'recreation should reject a different module context before creating it',
+        () async {
+      final ddi = DDI.newInstance();
+      final Object rootContext = ddi.currentContext;
+      final contexts = <Object>[];
+
+      await ddi.application<CoverageApplicationModule>(
+        () {
+          final context = Object();
+          contexts.add(context);
+          return CoverageApplicationModule(ddi, context);
+        },
+        qualifier: 'changing-module',
+      );
+
+      ddi.get<CoverageApplicationModule>(
+        qualifier: 'changing-module',
+        context: rootContext,
+      );
+      final firstContext = contexts.single;
+
+      await ddi.dispose<CoverageApplicationModule>(
+        qualifier: 'changing-module',
+        context: rootContext,
+      );
+
+      expect(
+        () => ddi.get<CoverageApplicationModule>(
+          qualifier: 'changing-module',
+          context: rootContext,
+        ),
+        throwsA(isA<ModuleContextChangedException>()),
+      );
+
+      expect(contexts, hasLength(2));
+      expect(ddi.contextExists(firstContext), isTrue);
+      expect(ddi.contextExists(contexts.last), isFalse);
+
+      await ddi.destroy<CoverageApplicationModule>(
+        qualifier: 'changing-module',
+        context: rootContext,
+      );
+      expect(ddi.contextExists(firstContext), isFalse);
+    });
+
+    test(
+        'async recreation should reject a different module context before creating it',
+        () async {
+      final ddi = DDI.newInstance();
+      final Object rootContext = ddi.currentContext;
+      final contexts = <Object>[];
+
+      await ddi.application<CoverageApplicationModule>(
+        () async {
+          final context = Object();
+          contexts.add(context);
+          return CoverageApplicationModule(ddi, context);
+        },
+        qualifier: 'async-changing-module',
+      );
+
+      await ddi.getAsync<CoverageApplicationModule>(
+        qualifier: 'async-changing-module',
+        context: rootContext,
+      );
+      final firstContext = contexts.single;
+
+      await ddi.dispose<CoverageApplicationModule>(
+        qualifier: 'async-changing-module',
+        context: rootContext,
+      );
+
+      await expectLater(
+        ddi.getAsync<CoverageApplicationModule>(
+          qualifier: 'async-changing-module',
+          context: rootContext,
+        ),
+        throwsA(isA<ModuleContextChangedException>()),
+      );
+
+      expect(contexts, hasLength(2));
+      expect(ddi.contextExists(firstContext), isTrue);
+      expect(ddi.contextExists(contexts.last), isFalse);
+
+      await ddi.destroy<CoverageApplicationModule>(
+        qualifier: 'async-changing-module',
+        context: rootContext,
+      );
+      expect(ddi.contextExists(firstContext), isFalse);
     });
 
     test('singleton contextual module dispose should preserve its context',
         () async {
       final ddi = DDI.newInstance();
       const context = #coverage_singleton_dispose_context;
+      final Object rootContext = ddi.currentContext;
 
       await ddi.singleton<CoverageApplicationModule>(
         () => CoverageApplicationModule(ddi, context),
@@ -75,6 +177,12 @@ void main() {
         completes,
       );
       expect(ddi.contextExists(context), isTrue);
+
+      await ddi.destroy<CoverageApplicationModule>(
+        qualifier: 'singleton-module-for-dispose',
+        context: rootContext,
+      );
+      expect(ddi.contextExists(context), isFalse);
     });
 
     test(

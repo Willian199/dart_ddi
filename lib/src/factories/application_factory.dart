@@ -48,6 +48,13 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   /// Weak reference to the instance (used when _useWeakReference is true).
   WeakReference<BeanT>? _weakInstance;
 
+  /// Last context created for a module instance.
+  ///
+  /// `dispose()` clears the instance so it can be recreated later, but a later
+  /// `destroy()` still needs this context to remove contextual children and the
+  /// context registry itself.
+  Object? _moduleContext;
+
   /// The factory builder responsible for creating the Bean.
   final CustomBuilder<FutureOr<BeanT>> _builder;
 
@@ -296,10 +303,13 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
         (ins as DDIModule).moduleQualifier = qualifier;
 
         final Object? moduleContext = ins.contextQualifier;
+        _captureModuleContext(moduleContext);
         if (moduleContext != null &&
             !ddiInstance.contextExists(moduleContext)) {
           ddiInstance.createContext(moduleContext);
         }
+      } else {
+        _captureModuleContext(null);
       }
 
       if (ins is PostConstruct) {
@@ -516,10 +526,13 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
         (instance as DDIModule).moduleQualifier = qualifier;
 
         final Object? moduleContext = instance.contextQualifier;
+        _captureModuleContext(moduleContext);
         if (moduleContext != null &&
             !ddiInstance.contextExists(moduleContext)) {
           ddiInstance.createContext(moduleContext);
         }
+      } else {
+        _captureModuleContext(null);
       }
 
       _state = BeanStateEnum.created;
@@ -684,6 +697,7 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       interceptors: _interceptors,
       children: _children,
       ddiInstance: ddiInstance,
+      moduleContext: _moduleContext,
     );
   }
 
@@ -739,9 +753,7 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
     final Object? moduleContext = instanceForDispose is DDIModule
         ? (instanceForDispose as DDIModule).contextQualifier
-        : null;
-    final bool isModuleInstance = instanceForDispose is DDIModule;
-
+        : _moduleContext;
     // Preserve behavior for callers that do not await dispose():
     // clear local state before awaiting async cleanup.
     _instance = null;
@@ -750,28 +762,10 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     _created = Completer();
     _runningCreateProcess = false;
 
-    // Handle DDIModule cleanup
-    if (isModuleInstance && _children.isNotEmpty) {
-      await _disposeChildrenAsync(
-        ddiInstance: ddiInstance,
-        context: moduleContext,
-      );
-      await _destroyContextIfExists(
-        ddiInstance: ddiInstance,
-        context: moduleContext,
-      );
-    } else {
-      final disposed = _disposeChildrenAsync(
-        ddiInstance: ddiInstance,
-        context: moduleContext,
-      );
-      await _destroyContextIfExists(
-        ddiInstance: ddiInstance,
-        context: moduleContext,
-      );
-
-      return disposed;
-    }
+    await _disposeChildrenAsync(
+      ddiInstance: ddiInstance,
+      context: moduleContext,
+    );
   }
 
   Future<void> _runFutureOrPreDispose({
@@ -783,7 +777,6 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     final Object? context =
         clazz is DDIModule ? (clazz as DDIModule).contextQualifier : null;
     await _disposeChildrenAsync(ddiInstance: ddiInstance, context: context);
-    await _destroyContextIfExists(ddiInstance: ddiInstance, context: context);
 
     _instance = null;
     _weakInstance = null;
@@ -809,18 +802,16 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     return Future.wait(futures).ignore();
   }
 
-  Future<void> _destroyContextIfExists({
-    required DDI ddiInstance,
-    required Object? context,
-  }) async {
-    if (context == null || !ddiInstance.contextExists(context)) {
-      return;
+  void _captureModuleContext(Object? nextContext) {
+    final previousContext = _moduleContext;
+    if (previousContext != null && previousContext != nextContext) {
+      throw ModuleContextChangedException(
+        previousContext: previousContext,
+        nextContext: nextContext,
+      );
     }
 
-    final destroyResult = ddiInstance.destroyContext(context);
-    if (destroyResult is Future) {
-      await destroyResult;
-    }
+    _moduleContext = nextContext;
   }
 
   /// Allows to dynamically add a Decorators.

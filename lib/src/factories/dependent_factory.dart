@@ -50,6 +50,13 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
   /// The child objects associated with the Bean, acting as a module.
   Set<Object> _children;
 
+  /// Last context created for a dependent module instance.
+  ///
+  /// Dependent scope intentionally does not retain created instances, but
+  /// `destroy()` still needs the module context to remove contextual children
+  /// and the context registry itself.
+  Object? _moduleContext;
+
   /// Required qualifiers or types that must be registered before creating an instance.
   final Set<Object>? _requires;
 
@@ -185,10 +192,13 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
         dependentClazz.moduleQualifier = qualifier;
 
         final Object? moduleContext = dependentClazz.contextQualifier;
+        _moduleContext = moduleContext;
         if (moduleContext != null &&
             !ddiInstance.contextExists(moduleContext)) {
           ddiInstance.createContext(moduleContext);
         }
+      } else {
+        _moduleContext = null;
       }
 
       if (dependentClazz is PostConstruct) {
@@ -312,10 +322,13 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
         dependentClazz.moduleQualifier = qualifier;
 
         final Object? moduleContext = dependentClazz.contextQualifier;
+        _moduleContext = moduleContext;
         if (moduleContext != null &&
             !ddiInstance.contextExists(moduleContext)) {
           ddiInstance.createContext(moduleContext);
         }
+      } else {
+        _moduleContext = null;
       }
 
       if (dependentClazz is PostConstruct) {
@@ -374,10 +387,12 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       interceptors: _interceptors,
       children: _children,
       ddiInstance: ddiInstance,
+      moduleContext: _moduleContext,
     );
   }
 
-  /// Disposes of the instance of the registered class in [DDI].
+  /// Disposes only child instances; dependent scope does not retain instances of
+  /// its own to dispose.
   @override
   Future<void> dispose({required DDI ddiInstance}) {
     if (_state == BeanStateEnum.beingDestroyed ||
@@ -388,7 +403,12 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     if (children.isNotEmpty) {
       final List<Future<void>> futures = [];
       for (final Object child in children) {
-        futures.add(ddiInstance.dispose(qualifier: child));
+        futures.add(
+          ddiInstance.dispose(
+            qualifier: child,
+            context: _moduleContext,
+          ),
+        );
       }
 
       return Future.wait(futures);
