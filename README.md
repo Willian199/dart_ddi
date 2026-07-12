@@ -185,7 +185,7 @@ Use `createContext(...)` and `destroyContext(...)` for explicit context lifecycl
 
 ### Context Strategy
 
-- `DDI.newInstance()` uses the default named-context strategy.
+- `DDI.newInstance()` uses the exported `DDIDefaultStrategy` named-context strategy.
 - You can pass a custom strategy with `DDI.newInstance(contextStrategy: myStrategy)`.
 - Context lifecycle is managed explicitly.
 
@@ -695,7 +695,7 @@ This dependencies are resolved automatically from the container instead of being
 
 ```dart
 // Register using scope shortcuts
-ddi.singleton(MyService.new.inject());
+await ddi.singleton(MyService.new.inject().call);
 MyService.new.inject().asApplication();
 
 // Register using explicit factory
@@ -716,7 +716,7 @@ await MyService.new.inject(isolatedDdi).asApplication(
 );
 ```
 
-`inject()` creates a zero-argument producer internally and resolves each parameter from the global DDI instance before creation. Pass a `DDI` instance to `inject(ddiInstance)` when the producer must resolve dependencies from another container.
+`inject()` creates a zero-argument producer internally. It resolves each parameter from the global DDI instance by default; pass a `DDI` instance to `inject(ddiInstance)` when the producer must resolve dependencies from another container.
 
 ## Considerations
 
@@ -1034,7 +1034,7 @@ To add multiple classes to a module at once, you can utilize the `addChildrenMod
 ```dart
 // Adding multiple modules at once.
 ddi.addChildrenModules<MyModule>(
-  child: [MySubmoduleType1, MySubmoduleType2], 
+  child: {MySubmoduleType1, MySubmoduleType2},
   qualifier: 'MyModule',
 );
 ```
@@ -1048,12 +1048,12 @@ The `children` parameter is designed to receive types or qualifiers. This parame
 // Adding multiple modules at once.
 ddi.application<ParentModule>(
   () => ParentModule(),
-  children: [
+  children: {
     ChildModule,
     OtherModule,
     'ChildModuleQualifier',
     'OtherModuleQualifier'
-  ],
+  },
 );
 ```
 
@@ -1107,7 +1107,7 @@ void main() {
   );
   
   // Destroying the instance (removing it from the container).
-  ddi.remove<MyClassName>();
+  await ddi.destroy<MyClassName>();
   
   // Output:
   // Instance of MyClassName is about to be destroyed.
@@ -1154,7 +1154,7 @@ class AppModule with DDIModule {
     
     // Register a service with required dependencies
     application(
-      () => ApiService(ddi.get(qualifier: 'apiUrl')),
+      () => ApiService(ddiContainer.get(qualifier: 'apiUrl')),
       qualifier: 'apiService',
       requires: {'mainDatabase', 'appLogger'},
     );

@@ -370,9 +370,11 @@ class _DDIImpl implements DDI, DDIInternal {
   @override
   DDIInterceptor getInterceptor(Object qualifier) {
     final Object effectiveContext = _beans.currentContext;
+    final bool fallbackToRoot = _beans.hasContext;
     final located = _beans.getFactory<DDIInterceptor>(
       qualifier: qualifier,
       contextQualifier: effectiveContext,
+      fallback: fallbackToRoot,
     );
 
     if (located == null) {
