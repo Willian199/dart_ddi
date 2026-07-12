@@ -106,7 +106,7 @@ void main() {
         count += val.value;
       }
 
-      expectLater(count, 10);
+      expect(count, 10);
 
       DDI.instance.destroy<C>();
 
@@ -128,7 +128,7 @@ void main() {
         count += val.value;
       }
 
-      expectLater(count, 10);
+      expect(count, 10);
 
       DDI.instance.destroy<C>();
 
@@ -150,7 +150,7 @@ void main() {
         count += val.value;
       }
 
-      expectLater(count, 10);
+      expect(count, 10);
 
       DDI.instance.destroy<C>();
 
@@ -172,7 +172,7 @@ void main() {
         count += val.value;
       }
 
-      expectLater(count, 10);
+      expect(count, 10);
 
       DDI.instance.destroy<C>();
 

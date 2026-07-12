@@ -31,7 +31,7 @@ void main() {
       expect(ddi.get<String>(qualifier: 'object-with-requires'), equals('ok'));
     });
 
-    test('register should apply decorators and clear original decorator list',
+    test('register should apply decorators without mutating caller list',
         () async {
       final ddi = DDI.newInstance();
       final decorators = <String Function(String)>[
@@ -48,7 +48,7 @@ void main() {
 
       expect(ddi.get<String>(qualifier: 'decorated-object'),
           equals('base-decorated'));
-      expect(decorators, isEmpty);
+      expect(decorators, hasLength(1));
     });
 
     test(

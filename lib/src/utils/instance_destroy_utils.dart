@@ -44,38 +44,83 @@ final class InstanceDestroyUtils {
   ///   interceptors: {'interceptor1'},
   /// );
   /// ```
-  static FutureOr<void> destroyInstance<BeanT extends Object>({
+  static Future<void>? destroyInstance<BeanT extends Object>({
     required void Function() apply,
     required BeanT? instance,
     required Set<Object> children,
     required Set<Object> interceptors,
     required DDI ddiInstance,
     Object? moduleContext,
-  }) async {
+  }) {
     final Object? effectiveModuleContext =
         instance is DDIModule ? instance.contextQualifier : moduleContext;
 
     // Should call interceptors even if the instance is null
     if (interceptors.isNotEmpty) {
-      for (final interceptor in interceptors) {
-        try {
-          final resolved = InterceptorResolver.resolveAsync(
-            ddiInstance: ddiInstance,
-            qualifier: interceptor,
-          );
-          final DDIInterceptor inter =
-              resolved is Future ? await resolved : resolved;
+      return _destroyWithInterceptors<BeanT>(
+        apply: apply,
+        instance: instance,
+        children: children,
+        interceptors: interceptors,
+        ddiInstance: ddiInstance,
+        effectiveModuleContext: effectiveModuleContext,
+      );
+    }
 
-          final exec = inter.onDestroy(instance);
-          if (exec is Future) {
-            await exec;
-          }
-        } on BeanNotFoundException {
-          // Ignore BeanNotFoundException interceptor error during destruction
+    return _destroyAfterInterceptors<BeanT>(
+      apply: apply,
+      instance: instance,
+      children: children,
+      ddiInstance: ddiInstance,
+      effectiveModuleContext: effectiveModuleContext,
+    );
+  }
+
+  static Future<void> _destroyWithInterceptors<BeanT extends Object>({
+    required void Function() apply,
+    required BeanT? instance,
+    required Set<Object> children,
+    required Set<Object> interceptors,
+    required DDI ddiInstance,
+    required Object? effectiveModuleContext,
+  }) async {
+    for (final interceptor in interceptors) {
+      try {
+        final resolved = InterceptorResolver.resolveAsync(
+          ddiInstance: ddiInstance,
+          qualifier: interceptor,
+        );
+        final DDIInterceptor inter =
+            resolved is Future ? await resolved : resolved;
+
+        final exec = inter.onDestroy(instance);
+        if (exec is Future) {
+          await exec;
         }
+      } on BeanNotFoundException {
+        // Ignore BeanNotFoundException interceptor error during destruction
       }
     }
 
+    final result = _destroyAfterInterceptors<BeanT>(
+      apply: apply,
+      instance: instance,
+      children: children,
+      ddiInstance: ddiInstance,
+      effectiveModuleContext: effectiveModuleContext,
+    );
+    if (result != null) {
+      await result;
+    }
+  }
+
+  static Future<void>? _destroyAfterInterceptors<BeanT extends Object>({
+    required void Function() apply,
+    required BeanT? instance,
+    required Set<Object> children,
+    required DDI ddiInstance,
+    required Object? effectiveModuleContext,
+  }) {
     if (instance case final clazz? when clazz is PreDestroy) {
       return _runFutureOrPreDestroy<BeanT>(
         clazz: clazz,
@@ -121,11 +166,12 @@ final class InstanceDestroyUtils {
       context: effectiveModuleContext,
     );
 
-    apply();
-
     if (destroyChildrenResult is Future) {
-      return destroyChildrenResult;
+      return destroyChildrenResult.then((_) => apply());
     }
+
+    apply();
+    return null;
   }
 
   /// Destroys all child instances for a given set of child qualifiers.

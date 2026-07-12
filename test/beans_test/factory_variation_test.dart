@@ -196,7 +196,7 @@ void main() {
         () => ddi.getWith<MultiInject, Map<dynamic, dynamic>>(
           parameter: {A: ddi.get<A>(), B: ddi.get<B>(), C: ddi.get<C>()},
         ),
-        throwsA(isA<AssertionError>()),
+        throwsA(isA<ArgumentError>()),
       );
 
       removeBeans();

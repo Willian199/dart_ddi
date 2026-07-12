@@ -87,7 +87,11 @@ final class DDIDefaultStrategy implements DDIStrategy {
 
   @override
   void unfreezeContext(Object name) {
-    _resolveContext(name)?.isFrozen = false;
+    final context = _resolveContext(name);
+    if (context == null) {
+      throw ContextNotFoundException(name.toString());
+    }
+    context.isFrozen = false;
   }
 
   @override

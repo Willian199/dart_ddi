@@ -33,11 +33,11 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     Set<Object>? requires,
   })  : _builder = builder,
         _canDestroy = canDestroy,
-        _decorators = decorators,
-        _interceptors = interceptors,
-        _children = children,
+        _decorators = List.of(decorators),
+        _interceptors = Set.of(interceptors),
+        _children = Set.of(children),
         _useWeakReference = useWeakReference,
-        _requires = requires;
+        _requires = requires == null ? null : Set.of(requires);
 
   /// The instance of the Bean created by the factory.
   BeanT? _instance;
@@ -78,6 +78,8 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
 
   bool _runningCreateProcess = false;
   Completer<void> _created = Completer();
+  Future<BeanT>? _activeAsyncCreation;
+  Completer<void>? _disposeCompleter;
 
   // Prevents Circular Dependency Injection during Instance Creation
   static const _resolutionKey = #_resolutionKey;
@@ -358,6 +360,10 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     ParameterT? parameter,
   }) async {
     _checkState(type);
+    final initialDispose = _disposeCompleter?.future;
+    if (initialDispose != null) {
+      await _waitForDispose(initialDispose);
+    }
 
     // Check if instance was garbage collected (weak reference)
     if (_useWeakReference && isReady) {
@@ -396,10 +402,19 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
         throw ConcurrentCreationException(qualifier.toString());
       }
 
-      // Wait for any ongoing creation process to complete
-      await _created.future;
-      // After waiting, check if instance is ready
-      if (isReady) {
+      // Wait for the entire creation lifecycle, including PostConstruct.
+      final activeCreation = _activeAsyncCreation;
+      BeanT? completedCreation;
+      if (activeCreation != null) {
+        completedCreation = await activeCreation;
+      } else {
+        await _created.future;
+      }
+
+      final disposeAfterCreation = _disposeCompleter?.future;
+      if (disposeAfterCreation != null) {
+        await _waitForDispose(disposeAfterCreation);
+      } else if (isReady) {
         // Instance was created by another process, proceed to interceptor phase
         try {
           final instance = await _runGetInterceptors(ddiInstance: ddiInstance);
@@ -413,6 +428,11 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
           _runningCreateProcess = false;
           // Continue with normal creation flow below
         }
+      } else if (completedCreation != null) {
+        // A concurrent caller may destroy the factory immediately after its
+        // own resolution completes. Existing waiters still receive the
+        // instance produced by that shared creation.
+        return completedCreation;
       }
     }
 
@@ -427,9 +447,15 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       }
     }
 
+    final disposeBeforeCreation = _disposeCompleter?.future;
+    if (disposeBeforeCreation != null) {
+      await _waitForDispose(disposeBeforeCreation);
+    }
+
     // If resolutionMap doesn't exist in the current zone, create a new zone with a new map
+    final Future<BeanT> creation;
     if (Zone.current[_resolutionKey] == null) {
-      return runZoned(
+      creation = runZoned(
         () => _runnerAsync<ParameterT>(
           qualifier: qualifier,
           parameter: parameter,
@@ -437,13 +463,39 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
         ),
         zoneValues: {_resolutionKey: <Object>{}},
       );
+    } else {
+      creation = _runnerAsync<ParameterT>(
+        qualifier: qualifier,
+        parameter: parameter,
+        ddiInstance: ddiInstance,
+      );
     }
 
-    return _runnerAsync<ParameterT>(
-      qualifier: qualifier,
-      parameter: parameter,
-      ddiInstance: ddiInstance,
+    return _trackAsyncCreation(creation);
+  }
+
+  Future<void> _waitForDispose(Future<void> pendingDispose) async {
+    try {
+      await pendingDispose;
+    } catch (_) {
+      // Disposal errors are delivered to the dispose caller. Resolution only
+      // needs to wait until the lifecycle operation reaches a terminal state.
+    }
+  }
+
+  Future<BeanT> _trackAsyncCreation(Future<BeanT> creation) {
+    _activeAsyncCreation = creation;
+    creation.then<void>(
+      (_) => _clearTrackedCreation(creation),
+      onError: (Object _, StackTrace __) => _clearTrackedCreation(creation),
     );
+    return creation;
+  }
+
+  void _clearTrackedCreation(Future<BeanT> creation) {
+    if (identical(_activeAsyncCreation, creation)) {
+      _activeAsyncCreation = null;
+    }
   }
 
   Future<BeanT> _runnerAsync<ParameterT extends Object>({
@@ -682,6 +734,8 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       return null;
     }
 
+    final previousState = _state;
+
     if (_canDestroy && _runningCreateProcess && !_created.isCompleted) {
       _created.complete();
     }
@@ -691,7 +745,7 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     final BeanT? instanceForDestroy =
         _instance ?? (_useWeakReference ? _weakInstance?.target : null);
 
-    return InstanceDestroyUtils.destroyInstance<BeanT>(
+    final result = InstanceDestroyUtils.destroyInstance<BeanT>(
       apply: apply,
       instance: instanceForDestroy,
       interceptors: _interceptors,
@@ -699,73 +753,124 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       ddiInstance: ddiInstance,
       moduleContext: _moduleContext,
     );
+
+    if (result == null) {
+      return null;
+    }
+
+    return result.onError((Object error, StackTrace stackTrace) {
+      _state = previousState;
+      Error.throwWithStackTrace(error, stackTrace);
+    });
   }
 
   /// Disposes of the instance of the registered class in [DDI].
   @override
-  Future<void> dispose({required DDI ddiInstance}) async {
+  Future<void> dispose({required DDI ddiInstance}) {
     if (_state == BeanStateEnum.beingDestroyed ||
-        _state == BeanStateEnum.destroyed ||
-        _state == BeanStateEnum.beingDisposed ||
-        _state == BeanStateEnum.disposed) {
-      return;
+        _state == BeanStateEnum.destroyed) {
+      return Future.value();
     }
+
+    final pendingDispose = _disposeCompleter;
+    if (pendingDispose != null) {
+      return pendingDispose.future;
+    }
+
+    final completer = Completer<void>();
+    _disposeCompleter = completer;
+
+    _runDispose(ddiInstance: ddiInstance).then<void>(
+      (_) {
+        if (identical(_disposeCompleter, completer)) {
+          _disposeCompleter = null;
+        }
+        completer.complete();
+      },
+      onError: (Object error, StackTrace stackTrace) {
+        if (identical(_disposeCompleter, completer)) {
+          _disposeCompleter = null;
+        }
+        completer.completeError(error, stackTrace);
+      },
+    );
+
+    return completer.future;
+  }
+
+  Future<void> _runDispose({required DDI ddiInstance}) async {
+    final activeCreation = _activeAsyncCreation;
+    if (activeCreation != null) {
+      try {
+        await activeCreation;
+      } catch (_) {
+        // A failed creation restores the factory to registered state. Dispose
+        // can then complete normally without an instance.
+      }
+    } else if (_runningCreateProcess) {
+      try {
+        await _created.future;
+      } catch (_) {
+        // Keep the same recovery behavior for non-tracked creation flows.
+      }
+    }
+
+    final previousState = _state;
+    final previousInstance = _instance;
+    final previousWeakInstance = _weakInstance;
+    final previousCreated = _created;
+    final previousRunningCreateProcess = _runningCreateProcess;
 
     _state = BeanStateEnum.beingDisposed;
 
-    // Wait for any ongoing creation process to complete
-    if (_runningCreateProcess) {
-      try {
-        await _created.future;
-      } catch (e) {
-        // Ignore errors from creation process during dispose
-        // The creation process might have failed, which is fine during dispose
+    try {
+      final BeanT? instanceForDispose =
+          _instance ?? (_useWeakReference ? _weakInstance?.target : null);
+
+      // Run interceptors for dispose
+      for (final interceptor in _interceptors) {
+        final resolved = InterceptorResolver.resolveAsync(
+          ddiInstance: ddiInstance,
+          qualifier: interceptor,
+        );
+        final DDIInterceptor instance =
+            resolved is Future ? await resolved : resolved;
+
+        final exec = instance.onDispose(instanceForDispose);
+        if (exec is Future) {
+          await exec;
+        }
       }
-    }
 
-    // Ensure completer is properly handled
-    if (!_created.isCompleted) {
-      _created.complete();
-    }
+      // Handle PreDispose lifecycle
+      if (instanceForDispose case final clazz? when clazz is PreDispose) {
+        await _runFutureOrPreDispose(clazz: clazz, ddiInstance: ddiInstance);
+        return;
+      }
 
-    final BeanT? instanceForDispose =
-        _instance ?? (_useWeakReference ? _weakInstance?.target : null);
+      final Object? moduleContext = instanceForDispose is DDIModule
+          ? (instanceForDispose as DDIModule).contextQualifier
+          : _moduleContext;
+      // Preserve behavior for callers that do not await dispose():
+      // clear local state before awaiting async cleanup.
+      _instance = null;
+      _weakInstance = null;
+      _state = BeanStateEnum.disposed;
+      _created = Completer();
+      _runningCreateProcess = false;
 
-    // Run interceptors for dispose
-    for (final interceptor in _interceptors) {
-      final resolved = InterceptorResolver.resolveAsync(
+      await _disposeChildrenAsync(
         ddiInstance: ddiInstance,
-        qualifier: interceptor,
+        context: moduleContext,
       );
-      final DDIInterceptor instance =
-          resolved is Future ? await resolved : resolved;
-
-      final exec = instance.onDispose(instanceForDispose);
-      if (exec is Future) {
-        await exec;
-      }
+    } catch (error, stackTrace) {
+      _state = previousState;
+      _instance = previousInstance;
+      _weakInstance = previousWeakInstance;
+      _created = previousCreated;
+      _runningCreateProcess = previousRunningCreateProcess;
+      Error.throwWithStackTrace(error, stackTrace);
     }
-
-    // Handle PreDispose lifecycle
-    if (instanceForDispose case final clazz? when clazz is PreDispose) {
-      return _runFutureOrPreDispose(clazz: clazz, ddiInstance: ddiInstance);
-    }
-
-    final Object? moduleContext = instanceForDispose is DDIModule
-        ? (instanceForDispose as DDIModule).contextQualifier
-        : _moduleContext;
-    // Preserve behavior for callers that do not await dispose():
-    // clear local state before awaiting async cleanup.
-    _instance = null;
-    _weakInstance = null;
-    _state = BeanStateEnum.disposed;
-    _created = Completer();
-    _runningCreateProcess = false;
-
-    await _disposeChildrenAsync(
-      ddiInstance: ddiInstance,
-      context: moduleContext,
-    );
   }
 
   Future<void> _runFutureOrPreDispose({
@@ -853,7 +958,7 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     }
 
     if (_decorators.isEmpty) {
-      _decorators = newDecorators;
+      _decorators = List.of(newDecorators);
       return;
     }
 
@@ -869,7 +974,7 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     _checkState(type);
 
     if (_interceptors.isEmpty) {
-      _interceptors = newInterceptors;
+      _interceptors = Set.of(newInterceptors);
       return;
     }
 
@@ -885,7 +990,7 @@ class ApplicationFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     _checkState(type);
 
     if (_children.isEmpty) {
-      _children = child;
+      _children = Set.of(child);
       return;
     }
 

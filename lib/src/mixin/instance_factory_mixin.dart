@@ -50,19 +50,19 @@ mixin InstanceFactoryMixin {
   }
 
   /// Converts a [Map] to [Map<Symbol, dynamic>] for named parameter injection.
-  /// Throws an assertion error if the map is not of the correct type.
+  /// Throws an [ArgumentError] if the map is not of the correct type.
   // ignore: strict_raw_type
   Map<Symbol, dynamic> _getMap<BeanT extends Object>(Map map) {
-    assert(map is Map<Symbol, dynamic>, '''
-When creating the instance with a Map type, it must be Map<Symbol, dynamic>
-Ex:
-<Symbol, dynamic>{
-  #first: ddi.get(qualifier: 'first'),
-  #second: SecondValue(),
-}
-''');
+    if (map is! Map<Symbol, dynamic>) {
+      throw ArgumentError.value(
+        map,
+        'parameter',
+        'When creating an instance with a Map parameter, '
+            'it must be a Map<Symbol, dynamic>.',
+      );
+    }
 
-    return map as Map<Symbol, dynamic>;
+    return map;
   }
 
   /// Automatically injects dependencies for the parameters required by the [builder].
