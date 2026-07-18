@@ -1,5 +1,4 @@
 import 'package:dart_ddi/dart_ddi.dart';
-import 'package:dart_ddi/src/core/ddi_default_strategy.dart';
 import 'package:dart_ddi/src/data/ddi_context_models.dart';
 import 'package:dart_ddi/src/utils/interceptor_resolver.dart';
 import 'package:test/test.dart';

@@ -1,5 +1,4 @@
 import 'package:dart_ddi/dart_ddi.dart';
-import 'package:dart_ddi/src/core/ddi_default_strategy.dart';
 import 'package:test/test.dart';
 
 import '../clazz_samples/spy_strategy.dart';

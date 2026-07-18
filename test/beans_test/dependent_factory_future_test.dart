@@ -170,7 +170,7 @@ void main() {
 
       DDI.instance.destroy<FactoryParameter>();
 
-      expectLater(
+      await expectLater(
         () => DDI.instance.getAsync<FactoryParameter>(),
         throwsA(isA<BeanNotFoundException>()),
       );

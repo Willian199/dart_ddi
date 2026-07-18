@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:dart_ddi/dart_ddi.dart';
-import 'package:dart_ddi/src/core/ddi_default_strategy.dart';
 import 'package:dart_ddi/src/core/ddi_internal.dart';
 import 'package:dart_ddi/src/typedef/typedef.dart';
 

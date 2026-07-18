@@ -46,7 +46,7 @@ mixin DDIModule implements PostConstruct {
   ///   final DDI _customDdi = DDI.newInstance();
   ///
   ///   @override
-  ///   DDI get ddi => _customDdi;
+  ///   DDI get ddiContainer => _customDdi;
   ///
   ///   @override
   ///   void onPostConstruct() {

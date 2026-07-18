@@ -30,10 +30,10 @@ class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     Set<Object>? requires,
   })  : _builder = builder,
         _canDestroy = canDestroy,
-        _decorators = decorators,
-        _interceptors = interceptors,
-        _children = children,
-        _requires = requires;
+        _decorators = List.of(decorators),
+        _interceptors = Set.of(interceptors),
+        _children = Set.of(children),
+        _requires = requires == null ? null : Set.of(requires);
 
   /// The instance of the Bean created by the factory.
   BeanT? _instance;
@@ -307,15 +307,25 @@ class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       return null;
     }
 
+    final previousState = _state;
     _state = BeanStateEnum.beingDestroyed;
 
-    return InstanceDestroyUtils.destroyInstance<BeanT>(
+    final result = InstanceDestroyUtils.destroyInstance<BeanT>(
       apply: apply,
       instance: _instance,
       interceptors: _interceptors,
       children: _children,
       ddiInstance: ddiInstance,
     );
+
+    if (result == null) {
+      return null;
+    }
+
+    return result.onError((Object error, StackTrace stackTrace) {
+      _state = previousState;
+      Error.throwWithStackTrace(error, stackTrace);
+    });
   }
 
   /// Disposes of the instance of the registered class in [DDI].
@@ -375,7 +385,7 @@ class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     _checkState(type);
 
     if (_interceptors.isEmpty) {
-      _interceptors = newInterceptors;
+      _interceptors = Set.of(newInterceptors);
       return;
     }
 
@@ -391,7 +401,7 @@ class SingletonFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     _checkState(type);
 
     if (_children.isEmpty) {
-      _children = child;
+      _children = Set.of(child);
       return;
     }
 

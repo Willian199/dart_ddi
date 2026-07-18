@@ -117,6 +117,8 @@ class _DDIImpl implements DDI, DDIInternal {
       throw FactoryNotAllowedException(BeanT.toString());
     }
 
+    final Object registrationContext = context ?? _beans.currentContext;
+
     bool shouldRegister = true;
 
     if (canRegister != null) {
@@ -134,7 +136,6 @@ class _DDIImpl implements DDI, DDIInternal {
         throw ContextNotFoundException(context.toString());
       }
 
-      final Object registrationContext = context ?? _beans.currentContext;
       _validateContextState(
         context: registrationContext,
         operation: 'register',
@@ -146,7 +147,7 @@ class _DDIImpl implements DDI, DDIInternal {
         );
       }
 
-      final fac = _beans.getFactory<BeanT>(
+      final fac = _beans.getFactory(
         qualifier: effectiveQualifierName,
         fallback: false,
         contextQualifier: registrationContext,
@@ -248,15 +249,19 @@ class _DDIImpl implements DDI, DDIInternal {
     final Object effectiveContext = context ?? currentContext;
     final bool fallbackToRoot = context == null && _beans.hasContext;
 
-    return _beans
-            .getFactory(
-              qualifier: effectiveQualifierName,
-              contextQualifier: effectiveContext,
-              fallback: fallbackToRoot,
-            )
-            ?.factory
-            .isRegistered ??
-        false;
+    try {
+      return _beans
+              .getFactory<BeanT>(
+                qualifier: effectiveQualifierName,
+                contextQualifier: effectiveContext,
+                fallback: fallbackToRoot,
+              )
+              ?.factory
+              .isRegistered ??
+          false;
+    } on TypeError {
+      return false;
+    }
   }
 
   @override
@@ -264,13 +269,18 @@ class _DDIImpl implements DDI, DDIInternal {
     final Object effectiveQualifierName = qualifier ?? BeanT;
     final Object effectiveContext = context ?? currentContext;
     final bool fallbackToRoot = context == null && _beans.hasContext;
-    final located = _beans.getFactory<BeanT>(
-      qualifier: effectiveQualifierName,
-      contextQualifier: effectiveContext,
-      fallback: fallbackToRoot,
-    );
-    if (located != null) {
-      return located.factory.isFuture;
+    try {
+      final ({DDIBaseFactory<BeanT> factory, Object context})? located =
+          _beans.getFactory<BeanT>(
+        qualifier: effectiveQualifierName,
+        contextQualifier: effectiveContext,
+        fallback: fallbackToRoot,
+      );
+      if (located != null) {
+        return located.factory.isFuture;
+      }
+    } on TypeError {
+      throw BeanNotFoundException(effectiveQualifierName.toString());
     }
 
     throw BeanNotFoundException(effectiveQualifierName.toString());
@@ -281,13 +291,18 @@ class _DDIImpl implements DDI, DDIInternal {
     final Object effectiveQualifierName = qualifier ?? BeanT;
     final Object effectiveContext = context ?? currentContext;
     final bool fallbackToRoot = context == null && _beans.hasContext;
-    final located = _beans.getFactory<BeanT>(
-      qualifier: effectiveQualifierName,
-      contextQualifier: effectiveContext,
-      fallback: fallbackToRoot,
-    );
-    if (located != null) {
-      return located.factory.isReady;
+    try {
+      final ({DDIBaseFactory<BeanT> factory, Object context})? located =
+          _beans.getFactory<BeanT>(
+        qualifier: effectiveQualifierName,
+        contextQualifier: effectiveContext,
+        fallback: fallbackToRoot,
+      );
+      if (located != null) {
+        return located.factory.isReady;
+      }
+    } on TypeError {
+      throw BeanNotFoundException(effectiveQualifierName.toString());
     }
 
     throw BeanNotFoundException(effectiveQualifierName.toString());
@@ -313,6 +328,8 @@ class _DDIImpl implements DDI, DDIInternal {
       if (select == null) {
         rethrow;
       }
+      located = null;
+    } on TypeError {
       located = null;
     }
 
@@ -353,9 +370,11 @@ class _DDIImpl implements DDI, DDIInternal {
   @override
   DDIInterceptor getInterceptor(Object qualifier) {
     final Object effectiveContext = _beans.currentContext;
+    final bool fallbackToRoot = _beans.hasContext;
     final located = _beans.getFactory<DDIInterceptor>(
       qualifier: qualifier,
       contextQualifier: effectiveContext,
+      fallback: fallbackToRoot,
     );
 
     if (located == null) {
@@ -501,6 +520,10 @@ class _DDIImpl implements DDI, DDIInternal {
   FutureOr<void> destroy<BeanT extends Object>(
       {Object? qualifier, Object? context}) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
+    if (context != null && !_beans.hasContextQualifier(context)) {
+      throw ContextNotFoundException(context.toString());
+    }
+
     final Object effectiveContext = context ?? _beans.currentContext;
     _validateContextState(
       context: effectiveContext,
@@ -516,7 +539,7 @@ class _DDIImpl implements DDI, DDIInternal {
 
   FutureOr<void> _destroy<BeanT extends Object>(
       Object effectiveQualifierName, Object? context,
-      {bool ignoreFrozenContext = false}) async {
+      {bool ignoreFrozenContext = false}) {
     final Object effectiveContext = context ?? _beans.currentContext;
     if (!ignoreFrozenContext) {
       _validateContextState(
@@ -530,17 +553,22 @@ class _DDIImpl implements DDI, DDIInternal {
     // `context:`, the module bean itself is usually registered in an ancestor
     // context (where it was declared), while the active context token matches
     // the module qualifier.
-    final located = _beans.getFactory(
-      qualifier: effectiveQualifierName,
-      contextQualifier: effectiveContext,
-      fallback: effectiveQualifierName == effectiveContext,
-    );
+    ({DDIBaseFactory<BeanT> factory, Object context})? located;
+    try {
+      located = _beans.getFactory<BeanT>(
+        qualifier: effectiveQualifierName,
+        contextQualifier: effectiveContext,
+        fallback: effectiveQualifierName == effectiveContext,
+      );
+    } on TypeError {
+      located = null;
+    }
 
     if (located != null) {
       return located.factory.destroy(
         apply: () => _beans.removeFactory(
           effectiveQualifierName,
-          context: located.context,
+          context: located!.context,
         ),
         ddiInstance: this,
       );
@@ -592,6 +620,10 @@ class _DDIImpl implements DDI, DDIInternal {
   Future<void> dispose<BeanT extends Object>(
       {Object? qualifier, Object? context}) {
     final Object effectiveQualifierName = qualifier ?? BeanT;
+    if (context != null && !_beans.hasContextQualifier(context)) {
+      throw ContextNotFoundException(context.toString());
+    }
+
     final Object effectiveContext = context ?? _beans.currentContext;
     _validateContextState(
       context: effectiveContext,
@@ -599,11 +631,16 @@ class _DDIImpl implements DDI, DDIInternal {
     );
     final bool fallbackToRoot = context == null && _beans.hasContext;
 
-    final located = _beans.getFactory<BeanT>(
-      qualifier: effectiveQualifierName,
-      contextQualifier: effectiveContext,
-      fallback: fallbackToRoot,
-    );
+    ({DDIBaseFactory<BeanT> factory, Object context})? located;
+    try {
+      located = _beans.getFactory<BeanT>(
+        qualifier: effectiveQualifierName,
+        contextQualifier: effectiveContext,
+        fallback: fallbackToRoot,
+      );
+    } on TypeError {
+      located = null;
+    }
 
     if (located != null) {
       return located.factory.dispose(ddiInstance: this);
@@ -651,27 +688,32 @@ class _DDIImpl implements DDI, DDIInternal {
     final Object effectiveContext = context ?? currentContext;
     final bool fallbackToRoot = context == null && _beans.hasContext;
 
-    final located = _beans.getFactory<BeanT>(
-      qualifier: effectiveQualifierName,
-      contextQualifier: effectiveContext,
-      fallback: fallbackToRoot,
-    );
+    ({DDIBaseFactory<BeanT> factory, Object context})? located;
+    try {
+      located = _beans.getFactory<BeanT>(
+        qualifier: effectiveQualifierName,
+        contextQualifier: effectiveContext,
+        fallback: fallbackToRoot,
+      );
+    } on TypeError {
+      located = null;
+    }
     if (located != null) {
       _validateContextState(
         context: located.context,
         operation: 'addDecorator',
       );
-    }
 
-    final factory = located?.factory;
+      final factory = located.factory;
 
-    if (factory case final DDIScopeFactory<BeanT> f?) {
-      return f.addDecorator(decorators);
+      if (factory case final DDIScopeFactory<BeanT> f) {
+        return f.addDecorator(decorators);
+      }
+      assert(
+        false,
+        'The instance is registered but the Scope doesn\'t support decorators.',
+      );
     }
-    assert(
-      factory == null,
-      'The instance is registered but the Scope doesn\'t support decorators.',
-    );
 
     throw BeanNotFoundException(effectiveQualifierName.toString());
   }

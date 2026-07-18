@@ -177,8 +177,8 @@ void main() {
       expect(instance1, same(instance2));
     });
 
-    test('Retrieve Factory Singleton with Custom Parameter', () {
-      expectLater(
+    test('Retrieve Factory Singleton with Custom Parameter', () async {
+      await expectLater(
         () => DDI.instance.register(
           factory: SingletonFactory(
             builder: (RecordParameter parameter) async {

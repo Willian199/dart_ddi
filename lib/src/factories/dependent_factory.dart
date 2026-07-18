@@ -30,10 +30,10 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     Set<Object>? requires,
   })  : _builder = builder,
         _canDestroy = canDestroy,
-        _decorators = decorators,
-        _interceptors = interceptors,
-        _children = children,
-        _requires = requires;
+        _decorators = List.of(decorators),
+        _interceptors = Set.of(interceptors),
+        _children = Set.of(children),
+        _requires = requires == null ? null : Set.of(requires);
 
   /// The factory builder responsible for creating the Bean.
   final CustomBuilder<FutureOr<BeanT>> _builder;
@@ -379,9 +379,10 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       return null;
     }
 
+    final previousState = _state;
     _state = BeanStateEnum.beingDestroyed;
 
-    return InstanceDestroyUtils.destroyInstance<BeanT>(
+    final result = InstanceDestroyUtils.destroyInstance<BeanT>(
       apply: apply,
       instance: null,
       interceptors: _interceptors,
@@ -389,6 +390,15 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
       ddiInstance: ddiInstance,
       moduleContext: _moduleContext,
     );
+
+    if (result == null) {
+      return null;
+    }
+
+    return result.onError((Object error, StackTrace stackTrace) {
+      _state = previousState;
+      Error.throwWithStackTrace(error, stackTrace);
+    });
   }
 
   /// Disposes only child instances; dependent scope does not retain instances of
@@ -432,7 +442,7 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     _checkState(type);
 
     if (_decorators.isEmpty) {
-      _decorators = newDecorators;
+      _decorators = List.of(newDecorators);
       return;
     }
 
@@ -448,7 +458,7 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     _checkState(type);
 
     if (_interceptors.isEmpty) {
-      _interceptors = newInterceptors;
+      _interceptors = Set.of(newInterceptors);
       return;
     }
 
@@ -464,7 +474,7 @@ class DependentFactory<BeanT extends Object> extends DDIScopeFactory<BeanT> {
     _checkState(type);
 
     if (_children.isEmpty) {
-      _children = child;
+      _children = Set.of(child);
       return;
     }
 
